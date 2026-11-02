@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bias–Variance Analysis</title>
+<meta name="description" content="Bias–variance analysis at comprehensive-exam depth: the squared-error decomposition with full derivation, bias and variance of estimators and shrinkage, the trade-off against model complexity, learning curves, cross-validation including blocked CV for ecological data, ridge and lasso as variance reduction, bagging and boosting, double descent, and equifinality in process models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .thin { stroke-width: 1.4; }
+  .ch .hair { stroke-width: 1; stroke-opacity: 0.22; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ann { font-size: 11px; fill: var(--muted); }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 1.2; }
+  .ch .area { stroke: none; }
+  .ch .fold { stroke: var(--surface); stroke-width: 1; }
+  .chartbox { position: relative; }
+  .ctrl select { width: 100%; font: inherit; font-size: 0.85rem; padding: 0.25rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .twocharts { display: grid; gap: 0.5rem; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Bias–variance analysis</div>
+    <div class="eyebrow">Topic 6 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Bias–Variance Analysis</h1>
+    <p class="lead">Why a flexible model can predict worse than a crude one, why averaging many models helps, why regularisation is not cheating, and why a process model with twelve free parameters fitted to one site may be the least reliable model you own.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>A prediction can be wrong for two separate reasons: the method systematically misses the truth (<strong>bias</strong>) or the method's output swings from one training set to the next (<strong>variance</strong>). For squared error these add exactly: expected test error = bias² + variance + irreducible noise. Flexible methods (high-degree polynomials, deep trees, small k in kNN, many free process parameters) have low bias and high variance; rigid methods have the opposite. Test error is therefore U-shaped in complexity and the best model is neither the simplest nor the most flexible, but the one where the two terms balance for the amount of data in hand. Everything else on this page is a tool for moving along or beneath that curve: cross-validation locates the minimum, regularisation and shrinkage trade a little bias for a lot of variance, bagging and random forests average away variance, boosting chips away bias, and partial pooling across sites is the ecologist's version of James–Stein shrinkage. The same arithmetic explains why a multi-model ensemble mean usually beats any single ecosystem model and why an over-parameterised soil-carbon model fitted to one incubation transfers badly to the next.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>You should be able to write the decomposition and derive it in four lines, draw the U-shaped curve with the three components labelled, explain where cross-validation sits in the picture and when ordinary k-fold is wrong (autocorrelated ecological data), state the bias and variance of a ridge estimator, and argue in words why bagging reduces variance but not bias while boosting does the reverse. Then connect it to a process model: what does "overfitting" mean for FvCB or a soil model, and what does equifinality have to do with variance?</p></div>
+  </section>
+
+  <section id="decomposition">
+    <h2>The decomposition</h2>
+    <p>Let the data be generated by \(y = f(x) + \varepsilon\) with \(E[\varepsilon] = 0\), \(\operatorname{Var}(\varepsilon) = \sigma^2\), and let \(\hat f(x)\) be the prediction of a method trained on a random training set \(\mathcal D\). At a fixed test point x, with a fresh noisy observation y, the expected squared error over both the training set and the noise is</p>
+    <div class="keybox"><h3>Derivation</h3>
+      <div class="eq">$$\begin{aligned}
+      E\big[(y - \hat f)^2\big] &= E\big[(f + \varepsilon - \hat f)^2\big] \\
+      &= E\big[(f - \hat f)^2\big] + 2E\big[\varepsilon (f - \hat f)\big] + E[\varepsilon^2] \\
+      &= E\big[(f - \hat f)^2\big] + \sigma^2 \qquad (\varepsilon \text{ independent of } \mathcal D,\ E[\varepsilon]=0) \\
+      &= E\big[(f - E\hat f + E\hat f - \hat f)^2\big] + \sigma^2 \\
+      &= \underbrace{(f - E\hat f)^2}_{\text{Bias}^2} + \underbrace{E\big[(\hat f - E\hat f)^2\big]}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{noise}},
+      \end{aligned}$$</div>
+      <p style="margin-top:0.5rem">where the cross term \(2(f - E\hat f)\,E[E\hat f - \hat f]\) vanishes because \(E[\hat f - E\hat f] = 0\). All expectations are over training sets \(\mathcal D\) at fixed x; \(E\hat f(x)\) is the average prediction the method would make if you could repeat the experiment many times. Integrating over the distribution of x gives the expected test error of the method.</p></div>
+    <p>Three remarks. First, bias and variance are properties of a <em>method</em> (polynomial regression of degree 5, a random forest with these settings, FvCB fitted by least squares), not of one fitted model; you can only see them by refitting on new training sets, which is why the lab simulates many. Second, the noise term σ² is a floor: no method can beat it, and a test error near σ² is as good as it gets. Third, the decomposition is exact for squared error only; for other losses (absolute error, 0–1 classification loss) analogous but messier decompositions exist (Domingos [5]).</p>
+    <h3>The same idea for estimators</h3>
+    <p>For a parameter estimate \(\hat\theta\) of a true θ the identical algebra gives the <strong>mean squared error</strong></p>
+    <div class="eq">$$\mathrm{MSE}(\hat\theta) = E[(\hat\theta - \theta)^2] = \operatorname{Var}(\hat\theta) + \big(E[\hat\theta] - \theta\big)^2 = \text{Variance} + \text{Bias}^2.$$</div>
+    <p>Unbiasedness is not sacred: the sample variance with divisor n has bias −σ²/n but, for normal data, lower MSE than the unbiased s² (Var(σ̂²<sub>n</sub>) = 2(n−1)σ⁴/n² versus 2σ⁴/(n−1)); the divisor n + 1 is better still. <strong>Shrinkage</strong> pushes this further. Stein's result [6, 7]: if you estimate p ≥ 3 independent normal means from one observation each, \(x_i \sim N(\theta_i, 1)\), the obvious estimator \(\hat\theta_i = x_i\) is inadmissible: the <strong>James–Stein</strong> estimator</p>
+    <div class="eq">$$\hat\theta^{JS} = \left(1 - \frac{p-2}{\|x\|^2}\right)x$$</div>
+    <p>has strictly smaller total MSE \(\sum_i E[(\hat\theta_i - \theta_i)^2]\) for every θ. Shrinking all estimates toward a common value (zero here, or the grand mean) adds a little bias to each but removes more variance in total. Efron and Morris [8] made this concrete with baseball batting averages and toxoplasmosis rates; in ecology it is the reason to estimate site-specific V<sub>cmax</sub> or Q<sub>10</sub> values with a hierarchical model that shrinks each site toward the population mean (partial pooling, Gelman &amp; Hill [13]) rather than fitting each site alone. Sites with little data are shrunk most, which is exactly where the unpooled estimate has the highest variance.</p>
+  </section>
+
+  <section id="tradeoff">
+    <h2>The trade-off against model complexity</h2>
+    <p>Every learning method has a knob that sets its flexibility: polynomial degree, the number of neighbours k in kNN (small k = flexible), tree depth or minimum leaf size, the bandwidth of a kernel smoother, the penalty λ in ridge or lasso (small λ = flexible), the number of boosting rounds, the number of hidden units, the number of free parameters in a process model. Turning the knob toward flexibility lowers bias (the method can represent more shapes) and raises variance (it can also represent the noise). Test error is the sum and is typically U-shaped; training error keeps falling, because a flexible model fits the training noise. A method left of the minimum <strong>underfits</strong> (high bias: the straight line through a light-response curve), a method right of it <strong>overfits</strong> (high variance: a degree-9 polynomial through 15 points that oscillates between them). The gap between training and test error is the signature of variance.</p>
+    <p>One important exception: the number of trees in a bagged ensemble or random forest is <em>not</em> a complexity knob. Adding trees averages more draws of the same random quantity and can only lower variance; test error decreases monotonically and plateaus. The knobs that matter in a forest are tree depth and the number of candidate variables per split (see the decision-tree page).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Bias–variance simulator: fitting a light-response curve from repeated samples</h3><div class="btnrow"><button class="btn small" id="bvBtn" type="button">Resample</button><span class="small muted">Hover for values</span></div></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="bvSvg1" viewBox="0 0 640 300" role="img" aria-label="Forty fitted curves from independent training sets, their mean, and the true light-response curve"></svg>
+            <div class="chart-tip" id="bvTip1" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="bvSvg2" viewBox="0 0 640 220" role="img" aria-label="Squared bias, variance and total error as functions of light level"></svg>
+            <div class="chart-tip" id="bvTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">40 individual fits (thin)</span><span style="--c:var(--series-1)">mean fit E[f̂]</span><span style="--c:var(--fg)">true f (dashed)</span><span style="--c:var(--series-2)">bias²(x)</span><span style="--c:var(--series-3)">variance(x)</span><span style="--c:var(--accent-2)">bias² + variance + σ²</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="bvTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bvMode"><span>Method</span></label><select id="bvMode"><option value="poly" selected>polynomial regression (degree d)</option><option value="knn">k-nearest-neighbour regression</option></select></div>
+          <div class="ctrl"><label for="bvD"><span>Polynomial degree d</span><output id="bvDO">3</output></label><input type="range" id="bvD" min="0" max="10" step="1" value="3"></div>
+          <div class="ctrl"><label for="bvK"><span>Neighbours k (kNN)</span><output id="bvKO">5</output></label><input type="range" id="bvK" min="1" max="25" step="1" value="5"></div>
+          <div class="ctrl"><label for="bvN"><span>Training-set size n</span><output id="bvNO">20</output></label><input type="range" id="bvN" min="8" max="100" step="1" value="20"></div>
+          <div class="ctrl"><label for="bvS"><span>Noise σ (µmol m⁻² s⁻¹)</span><output id="bvSO">2.0</output></label><input type="range" id="bvS" min="0.25" max="6" step="0.25" value="2"></div>
+          <dl class="readout">
+            <dt>Mean bias² over x</dt><dd id="bvB"></dd>
+            <dt>Mean variance over x</dt><dd id="bvV"></dd>
+            <dt>Noise σ²</dt><dd id="bvN2"></dd>
+            <dt>Sum = expected test MSE</dt><dd id="bvT"></dd>
+            <dt>Empirical test MSE (new data)</dt><dd id="bvE"></dd>
+            <dt>Mean training MSE</dt><dd id="bvTr"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Truth: non-rectangular hyperbola (A<sub>max</sub> = 25, φ = 0.05, θ = 0.8, R<sub>d</sub> = 1.5), x uniform on 0–2000 µmol photons m⁻² s⁻¹. Suggested experiments: d = 1 (all bias), d = 9 (all variance, wild at the ends), d = 3–4 (balance); switch to kNN and sweep k from 1 to 25; double n and watch variance fall while bias stays; raise σ and watch variance scale with σ².</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>The U-curve: training and test error against polynomial degree</h3><div class="btnrow"><button class="btn small" id="ucBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="ucSvg" viewBox="0 0 640 320" role="img" aria-label="Training and test mean squared error against polynomial degree, averaged over simulations"></svg>
+            <div class="chart-tip" id="ucTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">training MSE</span><span style="--c:var(--series-2)">test MSE</span><span style="--c:var(--series-3)">bias² + variance (decomposed)</span><span style="--c:var(--muted)">noise floor σ²</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="ucTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="ucN"><span>Training-set size n</span><output id="ucNO">20</output></label><input type="range" id="ucN" min="12" max="120" step="1" value="20"></div>
+          <div class="ctrl"><label for="ucS"><span>Noise σ</span><output id="ucSO">2.0</output></label><input type="range" id="ucS" min="0.25" max="6" step="0.25" value="2"></div>
+          <dl class="readout">
+            <dt>Degree with lowest test MSE</dt><dd id="ucBest"></dd>
+            <dt>Test MSE there</dt><dd id="ucMin"></dd>
+            <dt>Training MSE at degree 10</dt><dd id="ucTr10"></dd>
+            <dt>Test MSE at degree 10</dt><dd id="ucTe10"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Averages over 40 simulated training sets per degree; test MSE on 300 fresh points; log scale because the right arm rises by orders of magnitude (high-degree fits extrapolate wildly where training points are sparse). Suggested experiments: n = 12 (the minimum moves left and the right arm explodes); n = 120 (the minimum moves right and the U flattens: more data supports more complexity); σ small (the floor drops, the optimal degree rises).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="learning">
+    <h2>Learning curves, data volume and double descent</h2>
+    <p>Holding complexity fixed and varying n gives the <strong>learning curve</strong>. For a method with bias b² and variance that falls like c/n, test error \(\approx \sigma^2 + b^2 + c/n\) declines toward the floor \(\sigma^2 + b^2\), while training error rises toward the same floor from below (with few points a flexible model interpolates them). Two diagnostics follow. If training and test curves have converged and both are high, the model is biased: more data will not help, you need a more flexible model or better predictors. If they are far apart, the model has high variance: more data will help, as will regularisation. This is also the honest answer to "why does machine learning need big data": a random forest or neural network has very low bias and very high variance, so its error is dominated by the c/n term and it keeps improving with n long after a parametric model has flattened out. Conversely, with 30 flux towers or 12 incubation jars, a low-variance model (a few parameters, strong priors, process constraints) is the better bet.</p>
+    <p><strong>Double descent</strong> (Belkin et al. [10]) is the modern caveat. When the number of parameters p passes the number of observations n, the classic U-curve says variance should be catastrophic, and at the interpolation threshold p ≈ n it is: the model must thread every point and its fit between points is wild. But as p grows further, among the many interpolating solutions the training algorithm (gradient descent, minimum-norm least squares) picks the smoothest, and test error <em>descends again</em>, sometimes below the classical minimum. The bias–variance decomposition still holds exactly; what changes is that "complexity" is no longer the parameter count but the effective flexibility the algorithm uses, which implicit regularisation keeps small. For ecosystem modelling the practical relevance is limited (we are rarely past the interpolation threshold with meaningful data), but the lesson that parameter count is a poor measure of complexity applies to process models too: a 40-parameter model with 35 parameters fixed from literature is less flexible than a 6-parameter model with all six free.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Learning curves: a rigid and a flexible model as n grows</h3><div class="btnrow"><button class="btn small" id="lcBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="lcSvg" viewBox="0 0 640 320" role="img" aria-label="Training and test error against training-set size for a degree-1 and a degree-7 polynomial"></svg>
+            <div class="chart-tip" id="lcTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">degree 1, test</span><span style="--c:var(--series-1)">degree 1, training (dashed)</span><span style="--c:var(--series-2)">degree 7, test</span><span style="--c:var(--series-2)">degree 7, training (dashed)</span><span style="--c:var(--muted)">noise floor σ²</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lcS"><span>Noise σ</span><output id="lcSO">2.0</output></label><input type="range" id="lcS" min="0.25" max="6" step="0.25" value="2"></div>
+          <div class="ctrl"><label for="lcHi"><span>Degree of the flexible model</span><output id="lcHiO">7</output></label><input type="range" id="lcHi" min="3" max="10" step="1" value="7"></div>
+          <dl class="readout">
+            <dt>Degree 1 test MSE at n = 256</dt><dd id="lcA"></dd>
+            <dt>Flexible test MSE at n = 256</dt><dd id="lcB"></dd>
+            <dt>n at which the flexible model wins</dt><dd id="lcX"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Averages over 25 training sets per n; log scale on n. The rigid model's curves converge quickly to a high plateau (bias); the flexible model starts far worse and ends better once n is large enough to tame its variance. Suggested experiments: σ = 6 (the crossover moves right); degree 10 (more data needed still).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cv">
+    <h2>Estimating test error: cross-validation</h2>
+    <p>Training error is a biased (optimistic) estimate of test error, and the bias grows with flexibility. To locate the minimum of the U-curve you need an estimate of test error from the training data alone. <strong>k-fold cross-validation</strong> splits the n observations into k folds, trains on k − 1, predicts the held-out fold, and averages the held-out squared errors:</p>
+    <div class="eq">$$\mathrm{CV}_k = \frac1n\sum_{j=1}^{k}\sum_{i \in \text{fold } j}\big(y_i - \hat f^{(-j)}(x_i)\big)^2.$$</div>
+    <p><strong>Leave-one-out</strong> (LOO) is k = n. The CV estimate has its own bias and variance (Kohavi [11], Arlot &amp; Celisse [12]): each fold's model is trained on n(k − 1)/k points, so CV estimates the error of a slightly smaller training set and is pessimistic, more so for small k; LOO is nearly unbiased for the n-point model but has high variance, because the n fitted models are almost identical and their errors are highly correlated, so averaging them gains little. k = 5 or 10 is the usual compromise, and <strong>repeated</strong> k-fold with different random partitions reduces the variance that comes from the particular split (the lab shows how large that is). For linear smoothers LOO has a closed form, \(\mathrm{CV}_n = \frac1n\sum_i \big[(y_i - \hat y_i)/(1 - h_{ii})\big]^2\), with h<sub>ii</sub> the leverage, so it costs one fit.</p>
+    <p>Two rules are routinely broken. First, <strong>any step that uses the response</strong> (choosing predictors, choosing λ, choosing the degree) must be inside the CV loop, otherwise the estimate is optimistic. If you then want an honest error for the <em>selected</em> model, you need <strong>nested CV</strong>: an outer loop to estimate error, an inner loop within each outer training set to select. Second, CV assumes the held-out points are independent of the training points. With spatially or temporally autocorrelated data (soil samples 2 m apart, flux half-hours, pixels), random folds place near-duplicates of each test point in the training set, so the model is rewarded for interpolating its neighbours and the CV error can be far below the error of predicting a new site or year. Roberts et al. [9] formalise <strong>blocked cross-validation</strong>: build folds from spatial, temporal or phylogenetic blocks larger than the autocorrelation range, so each held-out block is a genuine extrapolation. For a species-distribution model or a machine-learning upscaling of flux-tower GPP (FLUXCOM-style), leave-site-out or leave-region-out CV is the only estimate that matches how the model will be used; random CV on half-hours is close to meaningless.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>k-fold cross-validation: the folds and the variability of the estimate</h3><div class="btnrow"><button class="btn small" id="cvBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cvSvg1" viewBox="0 0 640 170" role="img" aria-label="Fold assignment of the observations for one random partition"></svg>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cvSvg2" viewBox="0 0 640 260" role="img" aria-label="Cross-validation error estimates across random partitions for several values of k, with the true test error"></svg>
+            <div class="chart-tip" id="cvTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">CV estimate from one random partition</span><span style="--c:var(--fg)">mean over 30 partitions</span><span style="--c:var(--accent-2)">true test error of the model trained on all n points</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cvK"><span>Folds k shown in the top chart</span><output id="cvKO">5</output></label><input type="range" id="cvK" min="2" max="40" step="1" value="5"></div>
+          <div class="ctrl"><label for="cvD"><span>Polynomial degree being evaluated</span><output id="cvDO">3</output></label><input type="range" id="cvD" min="1" max="9" step="1" value="3"></div>
+          <div class="ctrl"><label for="cvS"><span>Noise σ</span><output id="cvSO">2.0</output></label><input type="range" id="cvS" min="0.25" max="6" step="0.25" value="2"></div>
+          <dl class="readout">
+            <dt>n = 40 · training MSE (all data)</dt><dd id="cvTr"></dd>
+            <dt>True test MSE (10 000 new points)</dt><dd id="cvTrue"></dd>
+            <dt>CV<sub>k</sub> for the shown partition</dt><dd id="cvOne"></dd>
+            <dt>k = 2: mean ± SD over partitions</dt><dd id="cv2"></dd>
+            <dt>k = 5: mean ± SD</dt><dd id="cv5"></dd>
+            <dt>k = 10: mean ± SD</dt><dd id="cv10"></dd>
+            <dt>LOO (k = 40)</dt><dd id="cv40"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: compare the spread of k = 2 with k = 10; note that small k is biased upward (smaller training sets) as well as variable; set degree 9 and watch every CV estimate blow up; LOO has no partition variability but is not closer to the truth on average than repeated 10-fold.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="regularisation">
+    <h2>Regularisation as variance reduction</h2>
+    <p><strong>Ridge regression</strong> minimises \(\|y - X\beta\|^2 + \lambda\|\beta\|^2\), giving \(\hat\beta_\lambda = (X^\top X + \lambda I)^{-1}X^\top y\). The bias–variance arithmetic is transparent for an <strong>orthonormal design</strong> (XᵀX = I), where the ridge estimate is simply the OLS estimate shrunk by a constant factor:</p>
+    <div class="eq">$$\hat\beta_{\lambda,j} = \frac{\hat\beta^{OLS}_j}{1+\lambda}, \qquad \mathrm{Bias}_j = -\frac{\lambda}{1+\lambda}\beta_j, \qquad \operatorname{Var}(\hat\beta_{\lambda,j}) = \frac{\sigma^2}{(1+\lambda)^2}, \qquad \mathrm{MSE}_j = \frac{\sigma^2 + \lambda^2\beta_j^2}{(1+\lambda)^2}.$$</div>
+    <p>Differentiating the total MSE \(\sum_j \mathrm{MSE}_j\) at λ = 0 gives \(-2p\sigma^2 &lt; 0\): there is <em>always</em> some λ &gt; 0 that beats OLS (the Hoerl–Kennard existence theorem [14]); the optimum is λ* = pσ²/‖β‖², larger when noise is high, coefficients are small, or predictors are many. For a general design the shrinkage acts along the principal components of X, shrinking the low-variance directions most, which is precisely where OLS coefficients are unstable under collinearity (the lab uses six correlated predictors). The <strong>lasso</strong> [15], with penalty λ‖β‖₁, shrinks and also sets coefficients exactly to zero, trading a little more bias on the retained coefficients for variable selection; the elastic net combines both. In every case λ is a complexity knob chosen by cross-validation, and the "one-standard-error rule" (take the simplest model whose CV error is within one SE of the minimum) is an explicit bias-for-variance trade. The maximum-likelihood page shows that each penalty is a prior: ridge is a Gaussian prior, lasso a Laplace prior, and the background term of a data-assimilation cost function is ridge-type shrinkage toward the prior parameter vector, which is why a well-chosen prior covariance B stabilises an otherwise equifinal calibration.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Ridge path on a collinear design: coefficient shrinkage and test error against λ</h3><div class="btnrow"><button class="btn small" id="rgBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rgSvg1" viewBox="0 0 640 260" role="img" aria-label="Ridge coefficient estimates for six correlated predictors as a function of the penalty"></svg>
+            <div class="chart-tip" id="rgTip1" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rgSvg2" viewBox="0 0 640 230" role="img" aria-label="Training and test mean squared error as a function of the ridge penalty"></svg>
+            <div class="chart-tip" id="rgTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">β₁ (true 3)</span><span style="--c:var(--series-2)">β₂ (true −2)</span><span style="--c:var(--series-3)">β₃ (true 0)</span><span style="--c:var(--accent)">β₄ (true 1.5)</span><span style="--c:var(--accent-2)">β₅ (true 0)</span><span style="--c:var(--muted)">β₆ (true 0.5)</span><span style="--c:var(--series-1)">training MSE</span><span style="--c:var(--series-2)">test MSE</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="rgTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rgN"><span>Observations n</span><output id="rgNO">30</output></label><input type="range" id="rgN" min="12" max="200" step="1" value="30"></div>
+          <div class="ctrl"><label for="rgR"><span>Collinearity (shared signal fraction)</span><output id="rgRO">0.90</output></label><input type="range" id="rgR" min="0" max="0.98" step="0.02" value="0.9"></div>
+          <div class="ctrl"><label for="rgS"><span>Noise σ</span><output id="rgSO">2.0</output></label><input type="range" id="rgS" min="0.25" max="6" step="0.25" value="2"></div>
+          <dl class="readout">
+            <dt>Condition number of XᵀX</dt><dd id="rgCond"></dd>
+            <dt>OLS (λ → 0) test MSE</dt><dd id="rgOls"></dd>
+            <dt>Best λ · test MSE there</dt><dd id="rgBest"></dd>
+            <dt>‖β̂<sub>OLS</sub> − β‖² · ‖β̂<sub>λ*</sub> − β‖²</dt><dd id="rgErr"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Six standardised predictors built from two latent factors plus independent noise (think of leaf N, LMA, chlorophyll, P, thickness and water content predicting V<sub>cmax</sub>). Suggested experiments: collinearity 0 (OLS is nearly optimal, the best λ is small); 0.98 (OLS coefficients are wild, the test-error minimum sits far to the right); n = 200 (variance shrinks, ridge helps less).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ensembles">
+    <h2>Averaging: bagging, forests, boosting and multi-model ensembles</h2>
+    <p>If B predictors each have variance σ<sub>f</sub>² and pairwise correlation ρ, their average has variance</p>
+    <div class="eq">$$\operatorname{Var}\!\left(\frac1B\sum_{b=1}^B \hat f_b\right) = \rho\,\sigma_f^2 + \frac{1-\rho}{B}\,\sigma_f^2,$$</div>
+    <p>which falls toward ρσ<sub>f</sub>² as B grows. This is the whole theory of <strong>bagging</strong> (Breiman [16]): fit the same flexible, low-bias, high-variance method (a deep tree) to B bootstrap resamples and average. Bias is unchanged (the average of the same biased method is just as biased) and the remaining variance is set by ρ, which is why <strong>random forests</strong> randomise the candidate split variables: that de-correlates the trees and lowers ρ. <strong>Boosting</strong> works from the other end: it starts with a high-bias, low-variance learner (a stump or shallow tree) and fits each new tree to the residuals of the ensemble so far, so bias falls round by round; variance rises slowly and the number of rounds becomes the complexity knob, chosen by CV. The decision-tree page develops both.</p>
+    <p>The same arithmetic applies when the "predictors" are ecosystem or land-surface models. In a model intercomparison (TRENDY, CMIP, the MsTMIP ensemble) the multi-model mean usually scores better against observations than most individual models, because the structural errors of different models are only partly correlated and averaging removes the independent part. What averaging cannot remove is the shared bias: every model that omits phosphorus limitation or microbial dormancy is biased in the same direction, and the ensemble mean inherits it. The spread of the ensemble measures <strong>structural uncertainty</strong>, a variance term, but it is a lower bound on the error, because of that shared bias. Weighting the models by performance (Bayesian model averaging) is the ensemble version of boosting and shrinkage combined, and over-weighting the best model on one benchmark re-introduces variance.</p>
+  </section>
+
+  <section id="other">
+    <h2>Classification, measurement error and other corners</h2>
+    <p>For <strong>0–1 loss</strong> the decomposition is not additive in the same way. Domingos [5] defines the main prediction as the majority vote over training sets, bias as whether the main prediction is wrong, and variance as the frequency with which an individual prediction differs from the main one; then expected loss = bias + c·variance with c = +1 on unbiased points and c = −1 on biased points. Variance can therefore <em>help</em> in classification: if the majority vote is wrong, random disagreement occasionally lands on the right class. This is why bagging gains less for stable classifiers and why "a little noise in the predictions" is not always bad for a species-presence model.</p>
+    <p><strong>Measurement error in predictors</strong> is a bias problem that looks like a variance problem. Regressing y on an observed x* = x + u (soil moisture from a noisy probe, LAI from a sensor) gives a slope attenuated toward zero by the reliability ratio \(\lambda = \sigma_x^2/(\sigma_x^2 + \sigma_u^2)\); more data do not fix it (the attenuation is consistent), only better measurement, replication of the predictor, or an errors-in-variables model do. An environmental response fitted from noisy driver data is therefore systematically too flat, and so is the model built on it.</p>
+  </section>
+
+  <section id="process">
+    <h2>Bias and variance in process-model parameter estimation</h2>
+    <p>Everything above transfers to a mechanistic model whose parameters are estimated from data. Fitting FvCB to an A–C<sub>i</sub> curve with V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub>, R<sub>d</sub> and g<sub>m</sub> all free is a flexible method: it has low bias (the model can follow the curve closely) and high variance (refit the same leaf tomorrow, or a sister leaf, and g<sub>m</sub> and V<sub>cmax</sub> swing together along their trade-off ridge). Fixing g<sub>m</sub> at infinity and T<sub>p</sub> from the literature introduces bias (an apparent C<sub>i</sub>-based V<sub>cmax</sub> that is too low) but cuts the variance drastically, and for the purpose of comparing treatments or parameterising a canopy model the biased estimate is often the better one. Multi-pool soil-carbon models are the extreme case: with only CO₂ efflux observed, pool sizes and rate constants are not separately identified, the likelihood has flat ridges, and the "best" fit from one incubation predicts the next poorly. Beven's <strong>equifinality</strong> [17] is this variance, seen from the parameter side: many parameter sets fit equally well, and which one your optimiser returns is an accident of the data and starting point. The remedies are the ones this page has already listed: constrain (priors, fixed literature values, shrinkage toward a population mean across sites, i.e. a hierarchical model), add data that break the ridge (isotopes, pool fractionation), simplify the model to what the data can identify, or ensemble over the equifinal set (GLUE, posterior predictive distributions) instead of picking one member.</p>
+    <p>There is also a bias side in process models that no amount of data removes: structural error. A one-pool model fitted to a two-pool world has a systematically wrong temperature response; an FvCB model with no g<sub>m</sub> has biased temperature parameters because the g<sub>m</sub> temperature response is folded into them. Such bias is invisible in-sample (the model fits) and appears as failure to transfer across conditions; it is what "model validation" at new sites or years is designed to detect, and it is why blocked cross-validation and multi-site hierarchical calibration are the honest tests for ecosystem models as well as for machine-learning ones.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Choosing how many parameters to calibrate.</strong> In a DALEC, BioCro or DayCent calibration the number of free parameters is the complexity knob; calibrating all of them to one site's fluxes gives low in-sample error and poor transfer (variance), calibrating none gives the literature defaults (bias). Posterior predictive checks at held-out years and leave-site-out tests estimate where the U-curve's minimum lies.</li>
+      <li><strong>Multi-model ensembles.</strong> The TRENDY/CMIP multi-model mean beating individual models is variance reduction by averaging; the ensemble spread is a variance estimate; shared structural omissions (nutrient limitation, disturbance) are bias that the spread does not show.</li>
+      <li><strong>Hierarchical parameters across sites and species.</strong> Partial pooling of V<sub>cmax</sub>, g<sub>1</sub> or Q<sub>10</sub> across sites (James–Stein in disguise) gives better site-level estimates than unpooled fits and better global ones than complete pooling; the TRY-based PFT parameter tables in CLM and JULES are complete pooling (maximal shrinkage), with correspondingly large bias for any particular site.</li>
+      <li><strong>Machine-learning upscaling.</strong> FLUXCOM-style random-forest or neural-network products that upscale tower GPP to the globe are low-bias, high-variance methods trained on a few hundred sites; their reported CV accuracy is only meaningful under leave-site-out or spatially blocked validation (Roberts et al. [9]), and their extrapolation to under-sampled biomes is a variance problem that more towers, not fancier models, address.</li>
+      <li><strong>Regularised retrievals.</strong> Inverting radiative-transfer models for LAI and chlorophyll from reflectance, or soil properties from spectra, is ill-posed; the priors and smoothness constraints in the retrieval are ridge-type shrinkage that trades bias for stability.</li>
+      <li><strong>Model benchmarking metrics.</strong> RMSE between model and observation contains model bias, model variance (across parameter uncertainty) and observation noise; reporting the decomposition (bias, variance ratio, correlation, as in the Kling–Gupta or Taylor diagnostics) tells you which term to work on.</li>
+      <li><strong>Experimental design.</strong> Because variance falls with n and bias does not, the choice between more replicates of a simple measurement and fewer replicates of a richer one (more A–C<sub>i</sub> points per leaf vs more leaves) is a bias–variance decision about the eventual parameter estimate.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers and formulas to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Formula / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Squared-error decomposition</td><td class="num">E[(y − f̂)²] = Bias² + Var + σ²</td><td>At fixed x; expectations over training sets</td></tr>
+        <tr><td>Estimator MSE</td><td class="num">Var(θ̂) + Bias(θ̂)²</td><td>Unbiased is not the same as best</td></tr>
+        <tr><td>Bias of σ̂² (divisor n)</td><td class="num">−σ²/n</td><td>Lower MSE than s² for normal data</td></tr>
+        <tr><td>James–Stein</td><td class="num">(1 − (p−2)/‖x‖²) x, p ≥ 3</td><td>Dominates the MLE in total MSE</td></tr>
+        <tr><td>Ridge, orthonormal X</td><td class="num">β̂/(1+λ); Var σ²/(1+λ)²; Bias −λβ/(1+λ)</td><td>Some λ &gt; 0 always beats OLS; λ* = pσ²/‖β‖²</td></tr>
+        <tr><td>Variance of an average of B correlated predictors</td><td class="num">ρσ² + (1−ρ)σ²/B</td><td>Bagging floor ρσ²; forests lower ρ</td></tr>
+        <tr><td>Learning curve</td><td class="num">test ≈ σ² + b² + c/n</td><td>Training error rises to the same floor</td></tr>
+        <tr><td>k-fold CV training fraction</td><td class="num">(k−1)/k</td><td>Pessimistic bias largest at k = 2</td></tr>
+        <tr><td>Default CV</td><td class="num">k = 5 or 10, repeated</td><td>LOO: low bias, high variance, n fits</td></tr>
+        <tr><td>LOO for linear smoothers</td><td class="num">(1/n) Σ [(y<sub>i</sub> − ŷ<sub>i</sub>)/(1 − h<sub>ii</sub>)]²</td><td>One fit; h<sub>ii</sub> = leverage</td></tr>
+        <tr><td>Blocked CV block size</td><td class="num">&gt; autocorrelation range</td><td>Roberts et al. [9]</td></tr>
+        <tr><td>Attenuation by predictor error</td><td class="num">slope × σ<sub>x</sub>²/(σ<sub>x</sub>² + σ<sub>u</sub>²)</td><td>Not cured by more data</td></tr>
+        <tr><td>Interpolation threshold</td><td class="num">p ≈ n</td><td>Peak of double descent</td></tr>
+        <tr><td>0–1 loss (Domingos)</td><td class="num">bias + c·variance, c = ±1</td><td>Variance can help on biased points</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Derive the bias–variance decomposition of expected squared prediction error at a point, stating every assumption. Why does the cross term vanish, and over what is each expectation taken?</span></summary><div class="a"><p>Assume y = f(x) + ε with E[ε] = 0, Var(ε) = σ², ε independent of the training set D, and let f̂ = f̂(x; D) be the prediction at a fixed x. Then E[(y − f̂)²] = E[(f − f̂ + ε)²] = E[(f − f̂)²] + 2E[ε(f − f̂)] + E[ε²]. The middle term is zero because ε is independent of f̂ (which depends only on D) and has mean zero, so E[ε(f − f̂)] = E[ε]E[f − f̂] = 0; the last term is σ². Now add and subtract the mean prediction f̄ = E<sub>D</sub>[f̂]: E[(f − f̂)²] = E[(f − f̄ + f̄ − f̂)²] = (f − f̄)² + E[(f̄ − f̂)²] + 2(f − f̄)E[f̄ − f̂]. The cross term vanishes because f − f̄ is a constant (not random) and E[f̄ − f̂] = f̄ − f̄ = 0. The first term is the squared bias (f − f̄)², the second the variance Var<sub>D</sub>(f̂). Hence E[(y − f̂)²] = Bias² + Variance + σ². The expectations are over training sets D (which determine f̂) and over the test noise ε, at fixed x; integrating over the distribution of x gives the expected test error of the method. The result requires squared loss (it uses the expansion of a square) and additive noise independent of the training sample; it does not require f̂ to be linear or unbiased.</p></div></details>
+    <details class="q"><summary><span>2. Sketch training and test error against model complexity, label the bias and variance regimes, and explain how you would locate the minimum in practice. What changes in the sketch when n is doubled?</span></summary><div class="a"><p>On axes of error (y) against complexity (x: polynomial degree, 1/k for kNN, tree depth, 1/λ), training error decreases monotonically toward zero, because a more flexible model fits the training noise as well as the signal. Test error is U-shaped: on the left it is dominated by bias² (underfitting: the model cannot represent f; training and test errors are both high and close together), on the right by variance (overfitting: the model represents noise; training error is low and test error high, the gap being the signature of variance), and the noise floor σ² is a horizontal line that test error can approach but not cross. The minimum is found by estimating test error from the training data with k-fold cross-validation (5 or 10 folds, repeated), choosing the complexity with the smallest CV error or, by the one-standard-error rule, the simplest complexity within one standard error of it; for autocorrelated ecological data the folds must be blocks (sites, years, spatial blocks) so that the CV estimate reflects genuine prediction of new units. Doubling n leaves the bias curve unchanged (bias is a property of the model class, not of the sample) and roughly halves the variance term at every complexity, so the test-error curve drops on the right, flattens, and its minimum moves to the right: more data justifies a more flexible model. Training error rises slightly at each complexity because the model has more points to fit, and the training–test gap narrows.</p></div></details>
+    <details class="q"><summary><span>3. For an orthonormal design, derive the bias, variance and MSE of the ridge estimator and show that some λ &gt; 0 always improves on OLS. Interpret λ as a prior.</span></summary><div class="a"><p>With XᵀX = I, OLS is β̂ = Xᵀy with E[β̂] = β and Var(β̂) = σ²I. Ridge solves (XᵀX + λI)β = Xᵀy, i.e. (1 + λ)β = Xᵀy, so β̂<sub>λ</sub> = β̂/(1 + λ) component-wise. Then E[β̂<sub>λ,j</sub>] = β<sub>j</sub>/(1 + λ), so Bias<sub>j</sub> = −λβ<sub>j</sub>/(1 + λ); Var(β̂<sub>λ,j</sub>) = σ²/(1 + λ)²; MSE<sub>j</sub> = [σ² + λ²β<sub>j</sub>²]/(1 + λ)². Summing over j, M(λ) = [pσ² + λ²‖β‖²]/(1 + λ)². Differentiate: M′(λ) = [2λ‖β‖²(1 + λ)² − 2(1 + λ)(pσ² + λ²‖β‖²)]/(1 + λ)⁴ = 2[λ‖β‖² − pσ²]/(1 + λ)³. At λ = 0 this is −2pσ² &lt; 0, so MSE decreases as λ moves away from zero: some positive λ beats OLS whatever β is (the Hoerl–Kennard existence theorem). Setting M′ = 0 gives λ* = pσ²/‖β‖², large when the noise is large, the coefficients small, or the predictors many. As a prior: ridge is the MAP estimate under β ~ N(0, τ²I) with Gaussian errors, λ = σ²/τ²; λ* corresponds to τ² = ‖β‖²/p, the average squared coefficient, i.e. a prior whose spread matches the true coefficient scale. For a general design the same shrinkage acts along principal components of X, by the factor d<sub>j</sub>²/(d<sub>j</sub>² + λ) on the j-th singular direction, so low-variance directions, where collinear predictors make OLS unstable, are shrunk most.</p></div></details>
+    <details class="q"><summary><span>4. Explain why bagging reduces variance but not bias, and why random forests go further. Then explain why the multi-model mean of an ecosystem-model intercomparison often beats every member, and what it cannot fix.</span></summary><div class="a"><p>Let f̂<sub>b</sub> be the predictor fitted to bootstrap sample b. Bagging averages B of them. The expectation of an average equals the expectation of one, E[f̂<sub>bag</sub>] ≈ E[f̂<sub>b</sub>], so the bias is essentially that of the base learner (there is a small change because bootstrap samples differ from the original, but no systematic reduction). The variance of the average of B identically distributed predictors with variance σ<sub>f</sub>² and pairwise correlation ρ is ρσ<sub>f</sub>² + (1 − ρ)σ<sub>f</sub>²/B, which falls with B toward ρσ<sub>f</sub>². Bagging therefore pays off for base learners with high variance and low bias (deep trees) and does nothing for stable, biased learners (linear regression). Random forests reduce ρ by restricting each split to a random subset of m of the p predictors, so that trees are less alike (a dominant predictor no longer appears at the top of every tree), lowering the ρσ<sub>f</sub>² floor at a small cost in per-tree bias. Adding trees never increases test error, so B is not a tuning parameter. For ecosystem models the members have different structures and parameterisations, so their errors on a benchmark are partly independent; averaging removes the independent part, which is why the ensemble mean usually scores better than most or all members in TRENDY/CMIP comparisons. The ensemble spread is a variance estimate of structural uncertainty. What averaging cannot fix is the correlated part of the error, the shared bias: processes that all models omit or represent the same wrong way (nutrient limitation, disturbance, microbial dormancy, a common V<sub>cmax</sub> database) are not averaged out, the ensemble mean inherits them, and the spread understates the true error. Performance weighting of members (Bayesian model averaging) is a shrinkage step that can help but re-introduces variance if the weights are fitted to a small benchmark.</p></div></details>
+    <details class="q"><summary><span>5. A colleague reports 10-fold cross-validated R² = 0.92 for a random forest that predicts half-hourly GPP from meteorology and remote sensing across 60 flux towers. Explain why this number is misleading, how bias and variance of the CV estimate itself arise, and what validation you would run instead.</span></summary><div class="a"><p>Random 10-fold CV on half-hours places, for every held-out half-hour, its neighbours from the same site, day and season in the training set. Because GPP is strongly autocorrelated in time and the predictors (radiation, temperature, NDVI) are nearly identical for adjacent half-hours, the forest can interpolate from near-duplicates, so the CV error measures within-site interpolation, not the model's ability to predict a new site or year, which is how the product will be used. The 0.92 is therefore optimistically biased for the intended use. The CV estimate has its own bias and variance in general: bias because each fold's model is trained on 90% of the data (slightly pessimistic for i.i.d. data, strongly optimistic here through dependence), and variance from the particular random partition (reduced by repeating the CV) and from the sampling of sites (60 sites is a small sample of ecosystems, so a leave-site-out estimate has substantial variance across which sites were included). If any tuning (number of trees, mtry, predictor selection) was done using the same CV, a further optimistic bias arises and nested CV is needed. The right validation is blocked: leave-one-site-out (or leave-group-of-sites-out, grouped by biome or region) to estimate spatial transfer; leave-year-out within sites to estimate temporal transfer; and ideally spatial blocks larger than the autocorrelation range of the predictors (Roberts et al. 2017). Expect R² to fall substantially, and report both the within-site and the across-site numbers, with their spread across folds, since they answer different questions. Also report the error in absolute units (RMSE in µmol m⁻² s⁻¹ or g C m⁻² d⁻¹) rather than R² alone, because R² at half-hourly resolution is inflated by the diurnal cycle that any model captures.</p></div></details>
+    <details class="q"><summary><span>6. State the James–Stein result and explain why it is relevant to estimating site-specific parameters such as Q<sub>10</sub> or V<sub>cmax</sub> across a network of sites. What is the connection to mixed models and to the parameter tables used in land-surface models?</span></summary><div class="a"><p>Stein (1956) and James &amp; Stein (1961): if x<sub>i</sub> ~ N(θ<sub>i</sub>, 1) independently for i = 1, …, p with p ≥ 3, the estimator θ̂<sup>JS</sup> = (1 − (p − 2)/‖x‖²)x has total mean squared error Σ<sub>i</sub>E[(θ̂<sub>i</sub> − θ<sub>i</sub>)²] strictly smaller than that of the MLE θ̂ = x for every θ. Shrinking each estimate toward zero (or, in the usual variant, toward the grand mean) introduces a bias on each component but reduces variance by more, and the total MSE improves even though the θ<sub>i</sub> are unrelated. Relevance: fitting Q<sub>10</sub> separately at each of 30 flux sites gives 30 unpooled estimates with large variance at sites with short records; complete pooling (one Q<sub>10</sub> for all) has low variance but biases every site toward the mean. The James–Stein estimator is the compromise, and it is exactly what a hierarchical (mixed) model does: with site effects Q<sub>10,i</sub> ~ N(μ, τ²), the posterior mean for site i is a weighted average of the site's own estimate and μ, with weight on the site estimate equal to τ²/(τ² + σ<sub>i</sub>²/n<sub>i</sub>), so noisy sites are shrunk most. The variance components μ and τ² are estimated from the data (empirical Bayes), which is how James–Stein arises. Land-surface model parameter tables (one V<sub>cmax</sub> per plant functional type in CLM or JULES, from TRY or the Kattge et al. compilations) are complete pooling: minimal variance, maximal bias for any particular site, and the reason site-level simulations often need "recalibration". A hierarchical PFT-by-site parameterisation, or trait–environment relationships that predict the site deviation, is the partial-pooling alternative that modern model development is moving toward.</p></div></details>
+    <details class="q"><summary><span>7. Two students fit the same incubation data: one with a one-pool exponential decay (2 parameters), the other with a three-pool model (6 parameters). The three-pool model has lower RSS. Discuss which is more likely to predict a second incubation of similar soil, using bias–variance language, and what you would do to decide.</span></summary><div class="a"><p>The three-pool model has lower bias (it can represent a wider class of decay curves, including the fast initial flush followed by slow decline that incubations typically show) but far higher variance: with only cumulative CO₂ observed, the six parameters are poorly identified, the likelihood has flat ridges along which pool sizes and rates trade off (equifinality), and the fitted values depend on noise and starting points. Its lower RSS is guaranteed by its flexibility and says nothing about prediction. The one-pool model is biased (it will misrepresent the early flush and the long tail) but stable: refit to a second jar it would give nearly the same k. Which predicts the second incubation better depends on where the U-curve minimum lies for this amount of data: with 12 noisy time points the variance of the six-parameter fit is likely to dominate and the one-pool (or a two-pool) model is the safer predictor; with 40 points over several years and low noise the three-pool model may win. To decide: (i) compare AICc or, better, held-out prediction, fitting each model to jar A and predicting jar B (and vice versa), since that is the actual task; (ii) examine identifiability with profile likelihoods or the eigenvalues of the Hessian, and if the three-pool parameters are not identified, constrain them (fix the slow-pool rate from literature, impose priors, or shrink toward values pooled across many soils), which reduces variance at a small bias cost; (iii) check the residuals of the one-pool model for systematic structure (early underprediction), which would show that its bias matters at the time scales of interest; (iv) report prediction intervals, not just point predictions, because the three-pool model's posterior predictive spread will reveal its variance honestly even if its best fit looks superior.</p></div></details>
+    <details class="q"><summary><span>8. What is double descent, and does it contradict the bias–variance trade-off? What lesson, if any, carries over to process-based ecosystem models?</span></summary><div class="a"><p>Double descent is the empirical finding (Belkin et al. 2019; earlier for linear models and random features) that when model capacity is increased past the interpolation threshold, where the number of parameters p equals the number of training points n and the model can fit the training data exactly, the test error, which peaks at that threshold as the classical U-curve predicts, falls again as p grows further and can end up below the classical minimum. The mechanism is that beyond the threshold there are many interpolating solutions and the training procedure (gradient descent from small initial weights, minimum-norm least squares, or explicit regularisation) selects the smoothest or smallest-norm one; as p grows the chosen interpolant becomes smoother, so variance falls even though the fit remains exact. It does not contradict the decomposition, which is an identity: expected error is still bias² + variance + noise, and in the overparameterised regime both terms decrease with p. What it contradicts is the assumption that parameter count measures effective complexity; the effective complexity is set jointly by the model class and the fitting algorithm's implicit regularisation. For ecosystem models the regime p &gt; n with meaningful data is rare, but the lesson transfers: the relevant complexity of a calibration is not how many parameters the model has but how many directions in parameter space the data and priors actually leave free. A model with 50 parameters, 45 fixed by priors or literature, is effectively a 5-parameter fit; conversely a 6-parameter model with uninformative priors fitted to one short time series can be past its own interpolation threshold. Judge complexity by identifiability (Hessian eigenvalues, profile likelihoods, posterior contraction) and by out-of-sample prediction, not by counting parameters, and remember that in the classical regime that ecosystem models occupy, the U-curve still governs.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Geman S, Bienenstock E, Doursat R (1992). Neural networks and the bias/variance dilemma. <em>Neural Computation</em> 4: 1–58. <a href="https://doi.org/10.1162/neco.1992.4.1.1">doi:10.1162/neco.1992.4.1.1</a><span class="why">The paper that made the decomposition a standard tool for learning methods; the simulations in section 3 are the template for the lab.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer, New York. <span class="why">Chapter 2 (the decomposition, kNN vs linear models) and chapter 7 (model assessment, CV, AIC, the bias and variance of CV).</span></li>
+      <li>James G, Witten D, Hastie T, Tibshirani R (2013). <em>An Introduction to Statistical Learning</em>. Springer, New York. <span class="why">Chapter 2 gives the gentlest treatment of the trade-off, with the U-curve figures everyone redraws.</span></li>
+      <li>Bishop CM (2006). <em>Pattern Recognition and Machine Learning</em>. Springer, New York. <span class="why">Section 3.2 derives the decomposition and shows it with regularised sinusoid fits; the figure with 100 fits is the ancestor of the ensemble plot above.</span></li>
+      <li>Domingos P (2000). A unified bias–variance decomposition and its applications. <em>Proceedings of the 17th International Conference on Machine Learning (ICML)</em>, pp. 231–238. Morgan Kaufmann. <span class="why">The decomposition for 0–1 and other losses, and why variance can help in classification.</span></li>
+      <li>Stein C (1956). Inadmissibility of the usual estimator for the mean of a multivariate normal distribution. <em>Proceedings of the Third Berkeley Symposium on Mathematical Statistics and Probability</em> 1: 197–206. <span class="why">The original inadmissibility result.</span></li>
+      <li>James W, Stein C (1961). Estimation with quadratic loss. <em>Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability</em> 1: 361–379. <span class="why">The explicit James–Stein estimator and its risk.</span></li>
+      <li>Efron B, Morris C (1977). Stein's paradox in statistics. <em>Scientific American</em> 236(5): 119–127. <a href="https://doi.org/10.1038/scientificamerican0577-119">doi:10.1038/scientificamerican0577-119</a><span class="why">The batting-average exposition; the clearest intuition for shrinkage ever written.</span></li>
+      <li>Roberts DR, Bahn V, Ciuti S, et al. (2017). Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure. <em>Ecography</em> 40: 913–929. <a href="https://doi.org/10.1111/ecog.02881">doi:10.1111/ecog.02881</a><span class="why">Blocked cross-validation for ecological data; required reading before validating any spatial or flux-based model.</span></li>
+      <li>Belkin M, Hsu D, Ma S, Mandal S (2019). Reconciling modern machine-learning practice and the classical bias–variance trade-off. <em>PNAS</em> 116: 15849–15854. <a href="https://doi.org/10.1073/pnas.1903070116">doi:10.1073/pnas.1903070116</a><span class="why">Double descent.</span></li>
+      <li>Kohavi R (1995). A study of cross-validation and bootstrap for accuracy estimation and model selection. <em>Proceedings of the 14th International Joint Conference on Artificial Intelligence (IJCAI)</em>, pp. 1137–1143. <span class="why">Empirical comparison of LOO, k-fold and bootstrap; the source of the "use 10-fold" advice.</span></li>
+      <li>Arlot S, Celisse A (2010). A survey of cross-validation procedures for model selection. <em>Statistics Surveys</em> 4: 40–79. <a href="https://doi.org/10.1214/09-SS054">doi:10.1214/09-SS054</a><span class="why">Theory of the bias and variance of CV estimators and when each variant is consistent.</span></li>
+      <li>Gelman A, Hill J (2007). <em>Data Analysis Using Regression and Multilevel/Hierarchical Models</em>. Cambridge University Press, Cambridge. <span class="why">Partial pooling explained with the radon example; chapter 12 for the shrinkage formula.</span></li>
+      <li>Hoerl AE, Kennard RW (1970). Ridge regression: biased estimation for nonorthogonal problems. <em>Technometrics</em> 12: 55–67. <a href="https://doi.org/10.1080/00401706.1970.10488634">doi:10.1080/00401706.1970.10488634</a><span class="why">Ridge regression and the existence theorem that some λ &gt; 0 always reduces MSE.</span></li>
+      <li>Tibshirani R (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society B</em> 58: 267–288. <a href="https://doi.org/10.1111/j.2517-6161.1996.tb02080.x">doi:10.1111/j.2517-6161.1996.tb02080.x</a><span class="why">The lasso.</span></li>
+      <li>Breiman L (1996). Bagging predictors. <em>Machine Learning</em> 24: 123–140. <a href="https://doi.org/10.1007/BF00058655">doi:10.1007/BF00058655</a><span class="why">Bagging as variance reduction for unstable learners.</span></li>
+      <li>Beven K (2006). A manifesto for the equifinality thesis. <em>Journal of Hydrology</em> 320: 18–36. <a href="https://doi.org/10.1016/j.jhydrol.2005.07.007">doi:10.1016/j.jhydrol.2005.07.007</a><span class="why">Equifinality in environmental models, and GLUE as an ensemble over the equifinal set.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="maximum-likelihood.html">← Maximum-Likelihood Estimation</a><a href="logistic-regression.html">Logistic Regression →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#decomposition">The decomposition</a></li>
+      <li><a href="#tradeoff">Trade-off vs complexity</a></li>
+      <li><a href="#learning">Learning curves, double descent</a></li>
+      <li><a href="#cv">Cross-validation</a></li>
+      <li><a href="#regularisation">Regularisation</a></li>
+      <li><a href="#ensembles">Bagging, boosting, ensembles</a></li>
+      <li><a href="#other">Classification, measurement error</a></li>
+      <li><a href="#process">Process models</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Simulations use a seeded pseudo-random generator (mulberry32) with Box–Muller normal draws; the Resample buttons advance the seed. Polynomial fits use scaled predictors and closed-form least squares; ridge paths are computed on standardised predictors.</div></footer>
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function $(id) { return document.getElementById(id); }
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { if (!isFinite(x)) return '–'; return Number(x).toFixed(d === undefined ? 2 : d); }
+  function fmtP(p) { if (p < 1e-4) return '< 0.0001'; return p.toFixed(4); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- seeded RNG and normal draws ---------- */
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { var u = 0, v = 0; while (u === 0) u = r(); v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  /* ---------- distribution functions ---------- */
+  function lgamma(x) {
+    var c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x);
+    x -= 1; var a = c[0], t = x + 7.5; for (var i = 1; i < 9; i++) a += c[i] / (x + i);
+    return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+  }
+  function betacf(a, b, x) {
+    var FP = 1e-300, qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FP) d = FP; d = 1 / d; var h = d;
+    for (var m = 1; m <= 300; m++) { var m2 = 2 * m, aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; var del = d * c; h *= del; if (Math.abs(del - 1) < 3e-14) break; }
+    return h;
+  }
+  function ibeta(x, a, b) { if (x <= 0) return 0; if (x >= 1) return 1; var bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x)); if (x < (a + 1) / (a + b + 2)) return bt * betacf(a, b, x) / a; return 1 - bt * betacf(b, a, 1 - x) / b; }
+  function tcdf(t, df) { var p = 0.5 * ibeta(df / (df + t * t), df / 2, 0.5); return t > 0 ? 1 - p : p; }
+  function tpdf(t, df) { return Math.exp(lgamma((df + 1) / 2) - lgamma(df / 2)) / Math.sqrt(df * Math.PI) * Math.pow(1 + t * t / df, -(df + 1) / 2); }
+  function ncdf(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)); var d = 0.3989422804014327 * Math.exp(-z * z / 2); var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+  function npdf(z) { return 0.3989422804014327 * Math.exp(-z * z / 2); }
+  function qt(p, df) { var lo = -60, hi = 60; for (var i = 0; i < 90; i++) { var m = (lo + hi) / 2; if (tcdf(m, df) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function qn(p) { var lo = -12, hi = 12; for (var i = 0; i < 80; i++) { var m = (lo + hi) / 2; if (ncdf(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+  function sd(a) { var m = mean(a), s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+  function skew(a) { var m = mean(a), s2 = 0, s3 = 0; for (var i = 0; i < a.length; i++) { var d = a[i] - m; s2 += d * d; s3 += d * d * d; } s2 /= a.length; s3 /= a.length; return s3 / Math.pow(s2, 1.5); }
+  function quant(sorted, q) { var pos = q * (sorted.length - 1), lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo); }
+
+  /* ---------- chart helper ---------- */
+  function ticks(a, b, n) { var span = b - a; if (span <= 0) return [a]; var step = Math.pow(10, Math.floor(Math.log(span / n) / Math.LN10)); var e = span / n / step; if (e >= 5) step *= 5; else if (e >= 2) step *= 2; var out = []; for (var v = Math.ceil(a / step - 1e-9) * step; v <= b + 1e-9; v += step) out.push(+v.toFixed(10)); return out; }
+  function chart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 360, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 16, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB, x0 = o.x0, x1 = o.x1, y0 = o.y0, y1 = o.y1;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    function sx(x) { return mL + (x - x0) / (x1 - x0) * pw; }
+    function sy(y) { return mT + (y1 - y) / (y1 - y0) * ph; }
+    (o.yt || ticks(y0, y1, 5)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < y0 - 1e-9 || v > y1 + 1e-9) return; var y = sy(v); svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: y, y2: y })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: y + 4, 'text-anchor': 'end' }, l)); });
+    (o.xt || ticks(x0, x1, 7)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < x0 - 1e-9 || v > x1 + 1e-9) return; var x = sx(v); svg.appendChild(el('line', { 'class': 'ax', x1: x, x2: x, y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: x, y: mT + ph + 18, 'text-anchor': 'middle' }, l)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xl) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xl));
+    if (o.yl) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    var ch = { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, x0: x0, x1: x1, y0: y0, y1: y1 };
+    ch.cy = function (y) { return sy(Math.max(y0, Math.min(y1, y))); };
+    ch.cx = function (x) { return sx(Math.max(x0, Math.min(x1, x))); };
+    ch.path = function (fn, cls, stroke, N) { N = N || 240; var d = ''; for (var i = 0; i <= N; i++) { var x = x0 + (x1 - x0) * i / N, y = fn(x); if (!isFinite(y)) continue; d += (d === '' ? 'M' : 'L') + sx(x).toFixed(1) + ',' + ch.cy(y).toFixed(1); } var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); svg.appendChild(p); return p; };
+    ch.area = function (fn, a, b, fill, op, N) { N = N || 120; a = Math.max(a, x0); b = Math.min(b, x1); if (b <= a) return null; var d = 'M' + sx(a).toFixed(1) + ',' + sy(y0).toFixed(1); for (var i = 0; i <= N; i++) { var x = a + (b - a) * i / N; d += 'L' + sx(x).toFixed(1) + ',' + ch.cy(fn(x)).toFixed(1); } d += 'L' + sx(b).toFixed(1) + ',' + sy(y0).toFixed(1) + 'Z'; var p = el('path', { 'class': 'area', d: d, fill: fill, 'fill-opacity': op === undefined ? 0.25 : op }); svg.appendChild(p); return p; };
+    ch.vline = function (x, stroke, dash, w) { if (x < x0 || x > x1) return null; var l = el('line', { x1: sx(x), x2: sx(x), y1: mT, y2: mT + ph, stroke: stroke, 'stroke-width': w || 1.5 }); if (dash) l.setAttribute('stroke-dasharray', dash); svg.appendChild(l); return l; };
+    ch.label = function (x, y, t, attrs) { var a = { 'class': 'dl', x: x, y: y }; for (var k in attrs) a[k] = attrs[k]; var e = el('text', a, t); svg.appendChild(e); return e; };
+    return ch;
+  }
+  function hover(ch, tip, fn) {
+    var svg = ch.svg;
+    var xh = el('line', { 'class': 'xh', y1: ch.mT, y2: ch.mT + ch.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: ch.mL, y: ch.mT, width: ch.pw, height: ch.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = ch.x0 + (p.x - ch.mL) / ch.pw * (ch.x1 - ch.x0); x = Math.max(ch.x0, Math.min(ch.x1, x));
+      var r = fn(x); if (!r) { leave(); return; }
+      xh.setAttribute('x1', ch.sx(x)); xh.setAttribute('x2', ch.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y !== undefined && isFinite(r.y)) { dot.setAttribute('cx', ch.sx(x)); dot.setAttribute('cy', ch.cy(r.y)); dot.setAttribute('visibility', 'visible'); } else dot.setAttribute('visibility', 'hidden');
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function histogram(data, lo, hi, nb) { var w = (hi - lo) / nb, c = []; for (var i = 0; i < nb; i++) c.push(0); for (var j = 0; j < data.length; j++) { var k = Math.floor((data[j] - lo) / w); if (k >= 0 && k < nb) c[k]++; } return { counts: c, w: w, lo: lo, dens: c.map(function (v) { return v / (data.length * w); }) }; }
+  function drawHist(ch, h, cls) { for (var i = 0; i < h.counts.length; i++) { if (!h.counts[i]) continue; var xa = ch.sx(h.lo + i * h.w), xb = ch.sx(h.lo + (i + 1) * h.w), y = ch.cy(h.dens[i]); ch.svg.appendChild(el('rect', { 'class': cls || 'bar', x: xa, y: y, width: Math.max(0.5, xb - xa), height: ch.sy(ch.y0) - y })); } }
+
+  /* ---------- numerical helpers ---------- */
+  function solveLinear(A, b) { // Gaussian elimination with partial pivoting
+    var n = b.length, M = A.map(function (r, i) { return r.slice().concat([b[i]]); });
+    for (var c = 0; c < n; c++) {
+      var piv = c; for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+      var tmp = M[c]; M[c] = M[piv]; M[piv] = tmp;
+      if (Math.abs(M[c][c]) < 1e-14) return null;
+      for (var r2 = 0; r2 < n; r2++) { if (r2 === c) continue; var f = M[r2][c] / M[c][c]; for (var k = c; k <= n; k++) M[r2][k] -= f * M[c][k]; }
+    }
+    return M.map(function (r, i) { return r[n] / r[i]; });
+  }
+  function lstsq(X, y) { // least squares via modified Gram-Schmidt QR; X is array of rows
+    var n = X.length, p = X[0].length, Q = [], R = [];
+    for (var j = 0; j < p; j++) { R.push([]); for (var k = 0; k < p; k++) R[j].push(0); }
+    var cols = []; for (var c = 0; c < p; c++) { var v = []; for (var i = 0; i < n; i++) v.push(X[i][c]); cols.push(v); }
+    for (var j2 = 0; j2 < p; j2++) {
+      var v2 = cols[j2].slice();
+      for (var k2 = 0; k2 < j2; k2++) { var d = 0; for (var i2 = 0; i2 < n; i2++) d += Q[k2][i2] * v2[i2]; R[k2][j2] = d; for (var i3 = 0; i3 < n; i3++) v2[i3] -= d * Q[k2][i3]; }
+      var nrm = 0; for (var i4 = 0; i4 < n; i4++) nrm += v2[i4] * v2[i4]; nrm = Math.sqrt(nrm); if (nrm < 1e-12) nrm = 1e-12; R[j2][j2] = nrm; Q.push(v2.map(function (t) { return t / nrm; }));
+    }
+    var qty = []; for (var a = 0; a < p; a++) { var s = 0; for (var i5 = 0; i5 < n; i5++) s += Q[a][i5] * y[i5]; qty.push(s); }
+    var b = new Array(p); for (var r = p - 1; r >= 0; r--) { var t2 = qty[r]; for (var c2 = r + 1; c2 < p; c2++) t2 -= R[r][c2] * b[c2]; b[r] = t2 / R[r][r]; }
+    return b;
+  }
+  function polyDesign(xs, d) { return xs.map(function (x) { var row = [], v = 1; for (var i = 0; i <= d; i++) { row.push(v); v *= x; } return row; }); }
+  function polyval(cf, x) { var v = 0; for (var i = cf.length - 1; i >= 0; i--) v = v * x + cf[i]; return v; }
+  function nrh(Q) { var Am = 25, phi = 0.05, th = 0.8, Rd = 1.5; var s = phi * Q + Am; return (s - Math.sqrt(s * s - 4 * th * phi * Q * Am)) / (2 * th) - Rd; }
+  function sc(Q) { return Q / 1000 - 1; }
+  function fitPoly(Q, y, d) { var cf = lstsq(polyDesign(Q.map(sc), d), y); return function (q) { return polyval(cf, sc(q)); }; }
+  function fitKnn(Q, y, k) { return function (q) { var idx = Q.map(function (x, i) { return i; }); idx.sort(function (a, b) { return Math.abs(Q[a] - q) - Math.abs(Q[b] - q); }); var s = 0, m = Math.min(k, Q.length); for (var i = 0; i < m; i++) s += y[idx[i]]; return s / m; }; }
+  function mse(fn, X, Y) { var s = 0; for (var i = 0; i < X.length; i++) { var e = Y[i] - fn(X[i]); s += e * e; } return s / X.length; }
+  function sample(r, n, sig) { var X = [], Y = []; for (var i = 0; i < n; i++) { var q = 2000 * r(); X.push(q); Y.push(nrh(q) + sig * gauss(r)); } return { X: X, Y: Y }; }
+  function fmtBig(x) { if (!isFinite(x)) return '–'; return Math.abs(x) >= 1e4 ? x.toExponential(2) : fmt(x, 2); }
+  function logTicks(lo, hi) { var sup = '⁰¹²³⁴⁵⁶⁷⁸⁹'; var t = []; for (var e = Math.ceil(lo); e <= Math.floor(hi); e++) { var l; if (e < 0) l = Math.pow(10, e).toFixed(-e); else if (e <= 3) l = String(Math.pow(10, e)); else l = '10' + String(e).split('').map(function (c) { return sup[+c]; }).join(''); t.push({ v: e, l: l }); } return t; }
+
+  /* ---------- Lab A: bias-variance simulator ---------- */
+  var seedBv = 3;
+  function labBv() {
+    var mode = $('bvMode').value, d = +$('bvD').value, k = +$('bvK').value, n = +$('bvN').value, sig = +$('bvS').value;
+    $('bvDO').textContent = d; $('bvKO').textContent = k; $('bvNO').textContent = n; $('bvSO').textContent = sig.toFixed(2);
+    var r = mulberry32(seedBv), M = 40, G = 61, grid = []; for (var g = 0; g < G; g++) grid.push(2000 * g / (G - 1));
+    var test = sample(r, 200, sig), preds = [], trSum = 0, teSum = 0;
+    for (var m = 0; m < M; m++) {
+      var tr = sample(r, n, sig); var fn = mode === 'poly' ? fitPoly(tr.X, tr.Y, d) : fitKnn(tr.X, tr.Y, k);
+      preds.push(grid.map(fn)); trSum += mse(fn, tr.X, tr.Y); teSum += mse(fn, test.X, test.Y);
+    }
+    var meanP = [], bias2 = [], vari = [], total = [], b2 = 0, vv = 0;
+    for (var g2 = 0; g2 < G; g2++) { var s = 0; for (var m2 = 0; m2 < M; m2++) s += preds[m2][g2]; var mp = s / M, v = 0; for (var m3 = 0; m3 < M; m3++) v += (preds[m3][g2] - mp) * (preds[m3][g2] - mp); v /= M; var b = (mp - nrh(grid[g2])) * (mp - nrh(grid[g2])); meanP.push(mp); bias2.push(b); vari.push(v); total.push(b + v + sig * sig); b2 += b / G; vv += v / G; }
+    $('bvB').textContent = fmt(b2, 2); $('bvV').textContent = fmt(vv, 2); $('bvN2').textContent = fmt(sig * sig, 2); $('bvT').textContent = fmt(b2 + vv + sig * sig, 2); $('bvE').textContent = fmt(teSum / M, 2); $('bvTr').textContent = fmt(trSum / M, 2);
+    var c1 = chart($('bvSvg1'), { W: 640, H: 300, x0: 0, x1: 2000, y0: -10, y1: 35, xl: 'PPFD (µmol photons m⁻² s⁻¹)', yl: 'A (µmol CO₂ m⁻² s⁻¹)', mB: 40, mR: 24, xt: [0, 500, 1000, 1500, 2000], yt: [-10, 0, 10, 20, 30] });
+    for (var m4 = 0; m4 < M; m4++) { var dd = ''; for (var g3 = 0; g3 < G; g3++) dd += (g3 ? 'L' : 'M') + c1.sx(grid[g3]).toFixed(1) + ',' + c1.cy(preds[m4][g3]).toFixed(1); c1.svg.appendChild(el('path', { 'class': 'ser hair', d: dd, stroke: 'var(--series-1)' })); }
+    var dm = ''; for (var g4 = 0; g4 < G; g4++) dm += (g4 ? 'L' : 'M') + c1.sx(grid[g4]).toFixed(1) + ',' + c1.cy(meanP[g4]).toFixed(1); c1.svg.appendChild(el('path', { 'class': 'ser', d: dm, stroke: 'var(--series-1)', 'stroke-width': 2.6 }));
+    c1.path(nrh, 'dash net');
+    c1.label(c1.sx(1250), c1.cy(nrh(1250)) + 16, 'true f', {}); c1.label(c1.sx(300), c1.cy(meanP[9]) - 10, 'mean of fits', { fill: 'var(--series-1)' });
+    hover(c1, $('bvTip1'), function (q) { var g5 = Math.round(q / 2000 * (G - 1)); return { y: meanP[g5], html: 'PPFD <b>' + fmt(q, 0) + '</b><br>true f <b>' + fmt(nrh(grid[g5]), 2) + '</b> · mean fit <b>' + fmt(meanP[g5], 2) + '</b><br>bias² <b>' + fmt(bias2[g5], 2) + '</b> · variance <b>' + fmt(vari[g5], 2) + '</b>' }; });
+    var sorted = total.slice().sort(function (a, b) { return a - b; }), cap = Math.min(Math.max.apply(null, total), 3 * sorted[Math.floor(0.9 * (G - 1))]) * 1.1;
+    var c2 = chart($('bvSvg2'), { W: 640, H: 220, x0: 0, x1: 2000, y0: 0, y1: Math.max(cap, sig * sig * 1.5), xl: 'PPFD (µmol photons m⁻² s⁻¹)', yl: 'squared error', mB: 40, mR: 24, xt: [0, 500, 1000, 1500, 2000] });
+    function line(arr, cls, col) { var p = ''; for (var i = 0; i < G; i++) p += (i ? 'L' : 'M') + c2.sx(grid[i]).toFixed(1) + ',' + c2.cy(arr[i]).toFixed(1); var e = el('path', { 'class': 'ser ' + cls, d: p, stroke: col }); c2.svg.appendChild(e); }
+    c2.svg.appendChild(el('line', { x1: c2.sx(0), x2: c2.sx(2000), y1: c2.cy(sig * sig), y2: c2.cy(sig * sig), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    c2.label(c2.sx(1900), c2.cy(sig * sig) - 4, 'σ²', { 'class': 'ann', 'text-anchor': 'end' });
+    line(total, '', 'var(--accent-2)'); line(bias2, '', 'var(--series-2)'); line(vari, '', 'var(--series-3)');
+    hover(c2, $('bvTip2'), function (q) { var g6 = Math.round(q / 2000 * (G - 1)); return { y: total[g6], html: 'PPFD <b>' + fmt(q, 0) + '</b><br>bias² <b>' + fmt(bias2[g6], 2) + '</b> · variance <b>' + fmt(vari[g6], 2) + '</b> · total <b>' + fmt(total[g6], 2) + '</b>' }; });
+    var html = '<thead><tr><th class="num">PPFD</th><th class="num">true f</th><th class="num">mean fit</th><th class="num">bias²</th><th class="num">variance</th><th class="num">total</th></tr></thead><tbody>';
+    for (var g7 = 0; g7 < G; g7 += 6) html += '<tr><td class="num">' + fmt(grid[g7], 0) + '</td><td class="num">' + fmt(nrh(grid[g7]), 2) + '</td><td class="num">' + fmt(meanP[g7], 2) + '</td><td class="num">' + fmt(bias2[g7], 2) + '</td><td class="num">' + fmt(vari[g7], 2) + '</td><td class="num">' + fmt(total[g7], 2) + '</td></tr>';
+    $('bvTable').innerHTML = html + '</tbody>';
+  }
+  ['bvMode', 'bvD', 'bvK', 'bvN', 'bvS'].forEach(function (id) { $(id).addEventListener('input', labBv); $(id).addEventListener('change', labBv); });
+  $('bvBtn').addEventListener('click', function () { seedBv += 1; labBv(); });
+  labBv();
+
+  /* ---------- Lab B: U-curve ---------- */
+  var seedUc = 9;
+  function labUc() {
+    var n = +$('ucN').value, sig = +$('ucS').value; $('ucNO').textContent = n; $('ucSO').textContent = sig.toFixed(2);
+    var r = mulberry32(seedUc), M = 40, test = sample(r, 300, sig), D = 10, tr = [], te = [], preds = [];
+    for (var d = 0; d <= D; d++) { tr.push(0); te.push(0); preds.push([]); }
+    for (var m = 0; m < M; m++) { var s = sample(r, n, sig); for (var d2 = 0; d2 <= D; d2++) { var fn = fitPoly(s.X, s.Y, d2); tr[d2] += mse(fn, s.X, s.Y) / M; te[d2] += mse(fn, test.X, test.Y) / M; preds[d2].push(test.X.map(fn)); } }
+    var bv = [], rows = [];
+    for (var d3 = 0; d3 <= D; d3++) { var b2 = 0, vv = 0; for (var i = 0; i < test.X.length; i++) { var mp = 0; for (var m2 = 0; m2 < M; m2++) mp += preds[d3][m2][i]; mp /= M; var v = 0; for (var m3 = 0; m3 < M; m3++) v += Math.pow(preds[d3][m3][i] - mp, 2); v /= M; b2 += Math.pow(mp - nrh(test.X[i]), 2) / test.X.length; vv += v / test.X.length; } bv.push(b2 + vv + sig * sig); rows.push({ d: d3, tr: tr[d3], te: te[d3], b2: b2, v: vv }); }
+    var best = 0; for (var d4 = 1; d4 <= D; d4++) if (te[d4] < te[best]) best = d4;
+    $('ucBest').textContent = best; $('ucMin').textContent = fmtBig(te[best]); $('ucTr10').textContent = fmtBig(tr[10]); $('ucTe10').textContent = fmtBig(te[10]);
+    var lg = function (v) { return Math.log(Math.max(v, 1e-2)) / Math.LN10; };
+    var allv = tr.concat(te, bv), ylo = Math.floor(lg(Math.min.apply(null, allv))), yhi = Math.ceil(lg(Math.min(Math.max.apply(null, allv), 1e7)));
+    var ch = chart($('ucSvg'), { W: 640, H: 320, x0: -0.5, x1: 10.5, y0: ylo, y1: yhi, xl: 'Polynomial degree', yl: 'mean squared error (log scale)', mR: 24, xt: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], yt: logTicks(ylo, yhi) });
+    ch.svg.appendChild(el('line', { x1: ch.sx(-0.5), x2: ch.sx(10.5), y1: ch.cy(lg(sig * sig)), y2: ch.cy(lg(sig * sig)), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    ch.label(ch.sx(10.4), ch.cy(lg(sig * sig)) - 4, 'σ²', { 'class': 'ann', 'text-anchor': 'end' });
+    function ser(arr, cls, col) { var p = ''; for (var i = 0; i <= D; i++) p += (i ? 'L' : 'M') + ch.sx(i).toFixed(1) + ',' + ch.cy(lg(arr[i])).toFixed(1); ch.svg.appendChild(el('path', { 'class': 'ser ' + cls, d: p, stroke: col })); for (var j = 0; j <= D; j++) ch.svg.appendChild(el('circle', { cx: ch.sx(j), cy: ch.cy(lg(arr[j])), r: 3, fill: col })); }
+    ser(bv, 'dash', 'var(--series-3)'); ser(te, '', 'var(--series-2)'); ser(tr, '', 'var(--series-1)');
+    ch.vline(best, 'var(--accent)', '3 3', 1.2); ch.label(ch.sx(best) + 5, ch.mT + 12, 'min test MSE at d = ' + best, { fill: 'var(--accent)' });
+    ch.label(ch.sx(10) - 6, ch.cy(lg(tr[10])) + 14, 'training', { fill: 'var(--series-1)', 'text-anchor': 'end' }); ch.label(ch.sx(10) - 6, ch.cy(lg(te[10])) - 6, 'test', { fill: 'var(--series-2)', 'text-anchor': 'end' });
+    hover(ch, $('ucTip'), function (x) { var d5 = Math.max(0, Math.min(D, Math.round(x))); var o = rows[d5]; return { y: lg(te[d5]), html: 'degree <b>' + d5 + '</b><br>training MSE <b>' + fmt(o.tr, 2) + '</b> · test MSE <b>' + fmtBig(o.te) + '</b><br>bias² <b>' + fmtBig(o.b2) + '</b> · variance <b>' + fmtBig(o.v) + '</b> · σ² <b>' + fmt(sig * sig, 2) + '</b>' }; });
+    var html = '<thead><tr><th class="num">Degree</th><th class="num">Training MSE</th><th class="num">Test MSE</th><th class="num">Bias²</th><th class="num">Variance</th><th class="num">Bias² + Var + σ²</th></tr></thead><tbody>';
+    rows.forEach(function (o) { html += '<tr><td class="num">' + o.d + '</td><td class="num">' + fmtBig(o.tr) + '</td><td class="num">' + fmtBig(o.te) + '</td><td class="num">' + fmtBig(o.b2) + '</td><td class="num">' + fmtBig(o.v) + '</td><td class="num">' + fmtBig(o.b2 + o.v + sig * sig) + '</td></tr>'; });
+    $('ucTable').innerHTML = html + '</tbody>';
+  }
+  ['ucN', 'ucS'].forEach(function (id) { $(id).addEventListener('input', labUc); });
+  $('ucBtn').addEventListener('click', function () { seedUc += 1; labUc(); });
+  labUc();
+
+  /* ---------- Lab D: learning curves ---------- */
+  var seedLc = 17;
+  function labLc() {
+    var sig = +$('lcS').value, hi = +$('lcHi').value; $('lcSO').textContent = sig.toFixed(2); $('lcHiO').textContent = hi;
+    var r = mulberry32(seedLc), ns = [8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256], M = 25, test = sample(r, 400, sig), res = [];
+    ns.forEach(function (n) { var o = { n: n, tr1: 0, te1: 0, trh: 0, teh: 0 }; for (var m = 0; m < M; m++) { var s = sample(r, n, sig); var f1 = fitPoly(s.X, s.Y, 1), fh = fitPoly(s.X, s.Y, hi); o.tr1 += mse(f1, s.X, s.Y) / M; o.te1 += mse(f1, test.X, test.Y) / M; o.trh += mse(fh, s.X, s.Y) / M; o.teh += mse(fh, test.X, test.Y) / M; } res.push(o); });
+    var cross = null; res.forEach(function (o) { if (cross === null && o.teh < o.te1) cross = o.n; });
+    $('lcA').textContent = fmtBig(res[res.length - 1].te1); $('lcB').textContent = fmtBig(res[res.length - 1].teh); $('lcX').textContent = cross === null ? 'not within 256' : cross;
+    var lg = function (v) { return Math.log(Math.max(v, 1e-3)) / Math.LN10; };
+    var allv = []; res.forEach(function (o) { allv.push(o.tr1, o.te1, o.trh, o.teh); });
+    var ylo = Math.floor(lg(Math.max(Math.min.apply(null, allv), 0.01))), yhi = Math.ceil(lg(Math.min(Math.max.apply(null, allv), 1e5)));
+    var ch = chart($('lcSvg'), { W: 640, H: 320, x0: 2.8, x1: 8.2, y0: ylo, y1: yhi, xl: 'Training-set size n (log scale)', yl: 'MSE (log scale)', mR: 24, xt: ns.map(function (n) { return { v: Math.log(n) / Math.LN2, l: n }; }), yt: logTicks(ylo, yhi) });
+    ch.svg.appendChild(el('line', { x1: ch.sx(2.8), x2: ch.sx(8.2), y1: ch.cy(lg(sig * sig)), y2: ch.cy(lg(sig * sig)), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    ch.label(ch.sx(8.15), ch.cy(lg(sig * sig)) - 4, 'σ²', { 'class': 'ann', 'text-anchor': 'end' });
+    function ser(key, cls, col) { var p = ''; res.forEach(function (o, i) { p += (i ? 'L' : 'M') + ch.sx(Math.log(o.n) / Math.LN2).toFixed(1) + ',' + ch.cy(lg(o[key])).toFixed(1); }); ch.svg.appendChild(el('path', { 'class': 'ser ' + cls, d: p, stroke: col })); }
+    ser('tr1', 'dash', 'var(--series-1)'); ser('te1', '', 'var(--series-1)'); ser('trh', 'dash', 'var(--series-2)'); ser('teh', '', 'var(--series-2)');
+    ch.label(ch.sx(8) + 4, ch.cy(lg(res[10].te1)) + 4, 'd=1', { fill: 'var(--series-1)' }); ch.label(ch.sx(8) + 4, ch.cy(lg(res[10].teh)) + 4, 'd=' + hi, { fill: 'var(--series-2)' });
+    hover(ch, $('lcTip'), function (x) { var best = 0; res.forEach(function (o, i) { if (Math.abs(Math.log(o.n) / Math.LN2 - x) < Math.abs(Math.log(res[best].n) / Math.LN2 - x)) best = i; }); var o = res[best]; return { y: lg(o.teh), html: 'n = <b>' + o.n + '</b><br>degree 1: train <b>' + fmtBig(o.tr1) + '</b> · test <b>' + fmtBig(o.te1) + '</b><br>degree ' + hi + ': train <b>' + fmtBig(o.trh) + '</b> · test <b>' + fmtBig(o.teh) + '</b>' }; });
+  }
+  ['lcS', 'lcHi'].forEach(function (id) { $(id).addEventListener('input', labLc); });
+  $('lcBtn').addEventListener('click', function () { seedLc += 1; labLc(); });
+  labLc();
+
+  /* ---------- Lab E: k-fold CV ---------- */
+  var seedCv = 31;
+  function cvEstimate(X, Y, d, k, r) {
+    var n = X.length, idx = []; for (var i = 0; i < n; i++) idx.push(i);
+    if (r) for (var j = n - 1; j > 0; j--) { var t = Math.floor(r() * (j + 1)); var tmp = idx[j]; idx[j] = idx[t]; idx[t] = tmp; }
+    var fold = new Array(n); idx.forEach(function (v, pos) { fold[v] = pos % k; });
+    var sse = 0;
+    for (var f = 0; f < k; f++) { var tx = [], ty = [], hx = [], hy = []; for (var q = 0; q < n; q++) { if (fold[q] === f) { hx.push(X[q]); hy.push(Y[q]); } else { tx.push(X[q]); ty.push(Y[q]); } } if (!hx.length) continue; var fn = fitPoly(tx, ty, d); for (var h = 0; h < hx.length; h++) { var e = hy[h] - fn(hx[h]); sse += e * e; } }
+    return { cv: sse / n, fold: fold };
+  }
+  function labCv() {
+    var k = +$('cvK').value, d = +$('cvD').value, sig = +$('cvS').value; $('cvKO').textContent = k; $('cvDO').textContent = d; $('cvSO').textContent = sig.toFixed(2);
+    var r = mulberry32(seedCv), n = 40, data = sample(r, n, sig), big = sample(r, 10000, sig), full = fitPoly(data.X, data.Y, d);
+    var trueErr = mse(full, big.X, big.Y), trErr = mse(full, data.X, data.Y);
+    var shown = cvEstimate(data.X, data.Y, d, k, r);
+    var ks = [2, 5, 10, 40], P = 30, sets = ks.map(function (kk) { var arr = []; var reps = kk === 40 ? 1 : P; for (var p = 0; p < reps; p++) arr.push(cvEstimate(data.X, data.Y, d, kk, r).cv); return arr; });
+    function ms(a) { var m = mean(a); return a.length > 1 ? fmt(m, 2) + ' ± ' + fmt(sd(a), 2) : fmt(m, 2); }
+    $('cvTr').textContent = fmtBig(trErr); $('cvTrue').textContent = fmtBig(trueErr); $('cvOne').textContent = fmtBig(shown.cv); $('cv2').textContent = ms(sets[0]); $('cv5').textContent = ms(sets[1]); $('cv10').textContent = ms(sets[2]); $('cv40').textContent = ms(sets[3]);
+    // chart 1: fold layout
+    var s1 = $('cvSvg1'); clear(s1); s1.setAttribute('viewBox', '0 0 640 170');
+    var cols = ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--accent)', 'var(--accent-2)', 'var(--muted)'];
+    s1.appendChild(el('text', { 'class': 'axlbl', x: 320, y: 16, 'text-anchor': 'middle' }, 'One random partition of the n = 40 observations into k = ' + k + ' folds (colour = fold; each fold is held out once)'));
+    var order = data.X.map(function (x, i) { return i; }).sort(function (a, b) { return data.X[a] - data.X[b]; });
+    var cw = 600 / n;
+    order.forEach(function (i, pos) { var f = shown.fold[i]; s1.appendChild(el('rect', { 'class': 'fold', x: 20 + pos * cw, y: 30, width: cw, height: 60, fill: cols[f % 6], 'fill-opacity': 0.35 + 0.55 * ((Math.floor(f / 6) % 2) ? 0.5 : 1) })); if (k <= 20) s1.appendChild(el('text', { 'class': 'tick', x: 20 + pos * cw + cw / 2, y: 64, 'text-anchor': 'middle' }, f + 1)); });
+    s1.appendChild(el('text', { 'class': 'ann', x: 20, y: 110 }, 'observations sorted by PPFD →'));
+    s1.appendChild(el('text', { 'class': 'ann', x: 20, y: 130 }, 'each fold trains on ' + (n - Math.ceil(n / k)) + '–' + (n - Math.floor(n / k)) + ' points and predicts the ' + Math.floor(n / k) + '–' + Math.ceil(n / k) + ' held out; CV' + k + ' for this partition = ' + fmt(shown.cv, 2)));
+    s1.appendChild(el('text', { 'class': 'ann', x: 20, y: 150 }, 'true test MSE of the degree-' + d + ' model trained on all 40 points = ' + fmt(trueErr, 2) + ' (training MSE ' + fmt(trErr, 2) + ')'));
+    // chart 2: CV estimates
+    var allv = []; sets.forEach(function (a) { allv = allv.concat(a); }); allv.push(trueErr);
+    var ylo = Math.min.apply(null, allv), yhi = Math.max.apply(null, allv), pad = (yhi - ylo) * 0.12 + 0.1;
+    var c2 = chart($('cvSvg2'), { W: 640, H: 260, x0: 0.4, x1: 4.6, y0: Math.max(0, ylo - pad), y1: yhi + pad, xl: 'Number of folds k', yl: 'CV estimate of MSE', mB: 40, mR: 24, xt: [{ v: 1, l: 'k = 2' }, { v: 2, l: 'k = 5' }, { v: 3, l: 'k = 10' }, { v: 4, l: 'LOO (k = 40)' }] });
+    c2.svg.appendChild(el('line', { x1: c2.sx(0.4), x2: c2.sx(4.6), y1: c2.cy(trueErr), y2: c2.cy(trueErr), stroke: 'var(--accent-2)', 'stroke-width': 1.6, 'stroke-dasharray': '5 4' }));
+    c2.label(c2.sx(4.55), c2.cy(trueErr) - 5, 'true test MSE ' + fmt(trueErr, 2), { fill: 'var(--accent-2)', 'text-anchor': 'end' });
+    var jr = mulberry32(99);
+    sets.forEach(function (a, i) { a.forEach(function (v) { c2.svg.appendChild(el('circle', { cx: c2.sx(i + 1 + (jr() - 0.5) * 0.4), cy: c2.cy(v), r: 3.2, fill: 'var(--series-1)', 'fill-opacity': 0.6 })); }); var m = mean(a); c2.svg.appendChild(el('line', { x1: c2.sx(i + 0.7), x2: c2.sx(i + 1.3), y1: c2.cy(m), y2: c2.cy(m), stroke: 'var(--fg)', 'stroke-width': 2.4 })); });
+    hover(c2, $('cvTip2'), function (x) { var i = Math.max(0, Math.min(3, Math.round(x) - 1)); var a = sets[i]; return { html: 'k = <b>' + ks[i] + '</b> · ' + a.length + ' partition' + (a.length > 1 ? 's' : '') + '<br>mean <b>' + fmt(mean(a), 2) + '</b>' + (a.length > 1 ? ' · SD <b>' + fmt(sd(a), 2) + '</b>' : '') + ' · true <b>' + fmt(trueErr, 2) + '</b>' }; });
+  }
+  ['cvK', 'cvD', 'cvS'].forEach(function (id) { $(id).addEventListener('input', labCv); });
+  $('cvBtn').addEventListener('click', function () { seedCv += 1; labCv(); });
+  labCv();
+
+  /* ---------- Lab C: ridge path ---------- */
+  var seedRg = 12;
+  function jacobiEig(A) { // symmetric eigenvalues
+    var n = A.length, M = A.map(function (r) { return r.slice(); });
+    for (var sweep = 0; sweep < 60; sweep++) { var off = 0; for (var i = 0; i < n; i++) for (var j = i + 1; j < n; j++) off += M[i][j] * M[i][j]; if (off < 1e-18) break;
+      for (var p = 0; p < n; p++) for (var q = p + 1; q < n; q++) { if (Math.abs(M[p][q]) < 1e-14) continue; var th = (M[q][q] - M[p][p]) / (2 * M[p][q]); var t = (th >= 0 ? 1 : -1) / (Math.abs(th) + Math.sqrt(th * th + 1)); var c = 1 / Math.sqrt(t * t + 1), s = t * c;
+        for (var k = 0; k < n; k++) { var mkp = M[k][p], mkq = M[k][q]; M[k][p] = c * mkp - s * mkq; M[k][q] = s * mkp + c * mkq; }
+        for (var k2 = 0; k2 < n; k2++) { var mpk = M[p][k2], mqk = M[q][k2]; M[p][k2] = c * mpk - s * mqk; M[q][k2] = s * mpk + c * mqk; } } }
+    var ev = []; for (var d = 0; d < n; d++) ev.push(M[d][d]); return ev;
+  }
+  function labRg() {
+    var n = +$('rgN').value, rho = +$('rgR').value, sig = +$('rgS').value; $('rgNO').textContent = n; $('rgRO').textContent = rho.toFixed(2); $('rgSO').textContent = sig.toFixed(2);
+    var r = mulberry32(seedRg), p = 6, beta = [3, -2, 0, 1.5, 0, 0.5], L = [[1, 0], [1, 0.3], [0.7, 0.7], [0, 1], [0.3, 1], [1, -0.5]];
+    function gen(m) { var X = [], Y = []; for (var i = 0; i < m; i++) { var z1 = gauss(r), z2 = gauss(r), row = []; for (var j = 0; j < p; j++) { var nl = Math.sqrt(L[j][0] * L[j][0] + L[j][1] * L[j][1]); row.push(Math.sqrt(rho) * (L[j][0] * z1 + L[j][1] * z2) / nl + Math.sqrt(1 - rho) * gauss(r)); } X.push(row); var y = 0; for (var j2 = 0; j2 < p; j2++) y += beta[j2] * row[j2]; Y.push(y + sig * gauss(r)); } return { X: X, Y: Y }; }
+    var tr = gen(n), te = gen(2000);
+    var mu = [], sdv = []; for (var j = 0; j < p; j++) { var col = tr.X.map(function (row) { return row[j]; }); mu.push(mean(col)); sdv.push(sd(col)); }
+    function std(X) { return X.map(function (row) { return row.map(function (v, j) { return (v - mu[j]) / sdv[j]; }); }); }
+    var Xs = std(tr.X), Xt = std(te.X), ybar = mean(tr.Y), yc = tr.Y.map(function (v) { return v - ybar; });
+    var XtX = [], Xty = []; for (var a = 0; a < p; a++) { XtX.push([]); Xty.push(0); for (var b = 0; b < p; b++) XtX[a].push(0); }
+    for (var i = 0; i < n; i++) for (var a2 = 0; a2 < p; a2++) { Xty[a2] += Xs[i][a2] * yc[i]; for (var b2 = 0; b2 < p; b2++) XtX[a2][b2] += Xs[i][a2] * Xs[i][b2]; }
+    var ev = jacobiEig(XtX), cond = Math.max.apply(null, ev) / Math.max(1e-12, Math.min.apply(null, ev));
+    function ridge(lam) { var A = XtX.map(function (row, a3) { return row.map(function (v, b3) { return v + (a3 === b3 ? lam : 0); }); }); return solveLinear(A, Xty); }
+    function predMse(bh, X, Y) { var s = 0; for (var i = 0; i < X.length; i++) { var yh = ybar; for (var j = 0; j < p; j++) yh += bh[j] * X[i][j]; s += (Y[i] - yh) * (Y[i] - yh); } return s / X.length; }
+    var bTrue = beta.map(function (b, j) { return b * sdv[j]; }); // coefficients on standardised scale
+    var grid = []; for (var g = -2; g <= 3.5 + 1e-9; g += 0.125) grid.push(g);
+    var rows = grid.map(function (lg) { var bh = ridge(Math.pow(10, lg)); return { lg: lg, b: bh, tr: predMse(bh, Xs, yc.map(function (v) { return v + ybar; })), te: predMse(bh, Xt, te.Y) }; });
+    var ols = ridge(1e-9), olsTe = predMse(ols, Xt, te.Y); var best = rows[0]; rows.forEach(function (o) { if (o.te < best.te) best = o; });
+    function err2(bh) { var s = 0; for (var j = 0; j < p; j++) s += Math.pow(bh[j] - bTrue[j], 2); return s; }
+    $('rgCond').textContent = fmt(cond, 1); $('rgOls').textContent = fmt(olsTe, 2); $('rgBest').textContent = 'λ = ' + fmt(Math.pow(10, best.lg), 1) + ' · ' + fmt(best.te, 2); $('rgErr').textContent = fmt(err2(ols), 2) + ' · ' + fmt(err2(best.b), 2);
+    var cols = ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--accent)', 'var(--accent-2)', 'var(--muted)'];
+    var allb = []; rows.forEach(function (o) { o.b.forEach(function (v) { allb.push(v); }); }); bTrue.forEach(function (v) { allb.push(v); });
+    var blo = Math.min.apply(null, allb), bhi = Math.max.apply(null, allb), bpad = (bhi - blo) * 0.1;
+    var c1 = chart($('rgSvg1'), { W: 640, H: 260, x0: -2, x1: 3.5, y0: blo - bpad, y1: bhi + bpad, xl: 'log₁₀ λ', yl: 'coefficient (standardised x)', mB: 40, mL: 64, mR: 40, xt: [-2, -1, 0, 1, 2, 3] });
+    c1.svg.appendChild(el('line', { x1: c1.sx(-2), x2: c1.sx(3.5), y1: c1.cy(0), y2: c1.cy(0), stroke: 'var(--line)' }));
+    for (var j3 = 0; j3 < p; j3++) { var dd = ''; rows.forEach(function (o, i) { dd += (i ? 'L' : 'M') + c1.sx(o.lg).toFixed(1) + ',' + c1.cy(o.b[j3]).toFixed(1); }); c1.svg.appendChild(el('path', { 'class': 'ser', d: dd, stroke: cols[j3] })); c1.svg.appendChild(el('circle', { cx: c1.sx(-2) - 6, cy: c1.cy(bTrue[j3]), r: 3, fill: 'none', stroke: cols[j3], 'stroke-width': 1.5 })); c1.label(c1.sx(3.5) + 4, c1.cy(rows[rows.length - 1].b[j3]) + 4, 'β' + (j3 + 1), { fill: cols[j3] }); }
+    c1.vline(best.lg, 'var(--accent)', '3 3', 1.2); c1.label(c1.sx(best.lg) + 4, c1.mT + 12, 'best λ (test)', { fill: 'var(--accent)' });
+    c1.label(c1.sx(3.5) - 4, c1.mT + ch2lbl(c1), 'open circles at left: true coefficients', { 'class': 'ann', 'text-anchor': 'end' });
+    hover(c1, $('rgTip1'), function (x) { var i = 0; rows.forEach(function (o, q) { if (Math.abs(o.lg - x) < Math.abs(rows[i].lg - x)) i = q; }); var o = rows[i]; return { html: 'λ = <b>' + fmt(Math.pow(10, o.lg), 2) + '</b><br>β̂ = <b>' + o.b.map(function (v) { return fmt(v, 2); }).join(', ') + '</b><br>true (std. scale) = ' + bTrue.map(function (v) { return fmt(v, 2); }).join(', ') }; });
+    var tes = rows.map(function (o) { return o.te; }), trs = rows.map(function (o) { return o.tr; });
+    var ylo2 = 0, yhi2 = Math.max.apply(null, tes.concat(trs)) * 1.1;
+    var c2 = chart($('rgSvg2'), { W: 640, H: 230, x0: -2, x1: 3.5, y0: ylo2, y1: yhi2, xl: 'log₁₀ λ', yl: 'MSE', mB: 40, mL: 64, mR: 40, xt: [-2, -1, 0, 1, 2, 3] });
+    function ser(key, col) { var dd = ''; rows.forEach(function (o, i) { dd += (i ? 'L' : 'M') + c2.sx(o.lg).toFixed(1) + ',' + c2.cy(o[key]).toFixed(1); }); c2.svg.appendChild(el('path', { 'class': 'ser', d: dd, stroke: col })); }
+    ser('tr', 'var(--series-1)'); ser('te', 'var(--series-2)');
+    c2.svg.appendChild(el('line', { x1: c2.sx(-2), x2: c2.sx(3.5), y1: c2.cy(sig * sig), y2: c2.cy(sig * sig), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    c2.label(c2.sx(3.45), c2.cy(sig * sig) - 4, 'σ²', { 'class': 'ann', 'text-anchor': 'end' });
+    c2.vline(best.lg, 'var(--accent)', '3 3', 1.2);
+    c2.label(c2.sx(-1.9), c2.cy(rows[0].te) - 8, 'test', { fill: 'var(--series-2)' }); c2.label(c2.sx(-1.9), c2.cy(rows[0].tr) + 14, 'training', { fill: 'var(--series-1)' });
+    hover(c2, $('rgTip2'), function (x) { var i = 0; rows.forEach(function (o, q) { if (Math.abs(o.lg - x) < Math.abs(rows[i].lg - x)) i = q; }); var o = rows[i]; return { y: o.te, html: 'λ = <b>' + fmt(Math.pow(10, o.lg), 2) + '</b><br>training MSE <b>' + fmt(o.tr, 2) + '</b> · test MSE <b>' + fmt(o.te, 2) + '</b>' }; });
+    var html = '<thead><tr><th class="num">log₁₀ λ</th><th class="num">β̂₁</th><th class="num">β̂₂</th><th class="num">β̂₃</th><th class="num">β̂₄</th><th class="num">β̂₅</th><th class="num">β̂₆</th><th class="num">train</th><th class="num">test</th></tr></thead><tbody>';
+    rows.forEach(function (o, i) { if (i % 4) return; html += '<tr><td class="num">' + fmt(o.lg, 1) + '</td>' + o.b.map(function (v) { return '<td class="num">' + fmt(v, 2) + '</td>'; }).join('') + '<td class="num">' + fmt(o.tr, 2) + '</td><td class="num">' + fmt(o.te, 2) + '</td></tr>'; });
+    $('rgTable').innerHTML = html + '</tbody>';
+  }
+  function ch2lbl(c) { return c.ph - 6; }
+  ['rgN', 'rgR', 'rgS'].forEach(function (id) { $(id).addEventListener('input', labRg); });
+  $('rgBtn').addEventListener('click', function () { seedRg += 1; labRg(); });
+  labRg();
+})();
+</script>
+</body>
+</html>

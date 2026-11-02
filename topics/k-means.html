@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>k-Means Clustering</title>
+<meta name="description" content="k-means clustering at comprehensive-exam depth: the within-cluster sum-of-squares objective, Lloyd's algorithm and its convergence, k-means++ seeding, choosing k with the elbow, silhouette and gap statistic, failure modes, relatives (GMM, k-medoids, Ward, DBSCAN), and ecological applications from climate classification to plant functional types.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  :root { --k1: var(--series-1); --k2: var(--series-2); --k3: var(--series-3); --k4: #8a5cd6; --k5: #cf3f93; --k6: #a0862a; --k7: #1f9fb5; --k8: #7d7d7d; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --k4: #a98be6; --k5: #e06ab1; --k6: #c9ab45; --k7: #3fbfd4; --k8: #9a9a9a; } }
+  :root[data-theme="dark"] { --k4: #a98be6; --k5: #e06ab1; --k6: #c9ab45; --k7: #3fbfd4; --k8: #9a9a9a; }
+  .km text { font-family: var(--font-display); fill: var(--fg); }
+  .km .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .km .axlbl { font-size: 12px; fill: var(--muted); }
+  .km .gridline { stroke: var(--grid); stroke-width: 1; }
+  .km .ax { stroke: var(--line); }
+  .km .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .km .dl { font-size: 11.5px; font-weight: 600; }
+  .km .xh { stroke: var(--muted); stroke-width: 1; }
+  .km .cell { stroke: var(--surface); stroke-width: 1.2; fill-opacity: 0.12; }
+  .km .cen { stroke: var(--fg); stroke-width: 1.6; }
+  .km .pt { stroke: var(--surface); stroke-width: 0.8; }
+  .km .ttl { font-size: 12.5px; font-weight: 600; }
+  .chartbox { position: relative; }
+  .ctrl select, .ctrl button { font-family: var(--font-display); font-size: 0.85rem; }
+  .ctrl select { width: 100%; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 760px) { .twocol { grid-template-columns: 1fr; } }
+  .pseudo { font-family: var(--font-mono); font-size: 0.85rem; background: var(--surface-2); padding: 0.75rem 1rem; border-radius: 8px; overflow-x: auto; white-space: pre; line-height: 1.5; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 0.3rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › k-means clustering</div>
+    <div class="eyebrow">Topic 9 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">k-Means Clustering</h1>
+    <p class="lead">The simplest useful answer to "are there groups in these data?": partition points so that the squared distance to their group's mean is as small as possible, and iterate assignment and averaging until nothing moves. Everything else on this page is about what that objective assumes, when it fails, and how ecologists use it.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p><strong>Unsupervised learning</strong> looks for structure in inputs \(x_1,\dots,x_n\) without any labels: groups (clustering), low-dimensional structure (PCA), or the density itself (mixture models). k-means is the workhorse of the first task. Given a user-chosen \(k\), it seeks \(k\) centres \(\mu_1,\dots,\mu_k\) and a hard assignment of every point to one centre that minimise the <strong>within-cluster sum of squares</strong> (also called distortion or inertia). The global problem is NP-hard, so in practice we run <strong>Lloyd's algorithm</strong>: assign each point to its nearest centre, replace each centre by the mean of its points, repeat. Each step cannot increase the objective, so the algorithm converges, but only to a local minimum that depends on the starting centres; <strong>k-means++</strong> seeding and multiple restarts tame that. The method implicitly assumes clusters are roughly spherical, similar in size and spread, and separable by straight (Voronoi) boundaries in whatever feature space and units you give it. When those assumptions fail, soft, elliptical (Gaussian mixture), density-based (DBSCAN) or hierarchical alternatives exist, and the next two pages (GMM and PCA) are its natural companions.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Examiners use k-means to test three things: can you write down an objective function and show that an algorithm decreases it (the Lloyd proof); do you know what a method <em>assumes</em> (spherical, equal-variance clusters; scaled features; a known \(k\)); and can you connect it to probabilistic modelling (k-means is the \(\sigma^2 \to 0\) limit of EM for an isotropic Gaussian mixture). Have one ecological example ready for each: climate classification, plant functional types from traits, and phenology regimes from NDVI time series.</p></div>
+  </section>
+
+  <section id="objective">
+    <h2>The objective: within-cluster sum of squares</h2>
+    <p>Let \(x_n \in \mathbb{R}^d\) for \(n = 1,\dots,N\) and introduce binary indicators \(r_{nk} \in \{0,1\}\) with \(\sum_k r_{nk} = 1\) (each point belongs to exactly one cluster). k-means minimises the <strong>distortion</strong></p>
+    <div class="eq">$$J(\{r_{nk}\},\{\mu_k\}) \;=\; \sum_{n=1}^{N}\sum_{k=1}^{K} r_{nk}\,\lVert x_n - \mu_k\rVert^2 ,$$</div>
+    <p>the total squared Euclidean distance from every point to the centre of its cluster. Two facts about this objective carry the whole method.</p>
+    <h3>Why the centroid is the right centre</h3>
+    <p>Fix the assignments and consider one cluster \(C_k\) with \(N_k\) points. Its contribution to \(J\) is \(S(\mu) = \sum_{n \in C_k} \lVert x_n - \mu\rVert^2\). Differentiating with respect to \(\mu\) and setting to zero,</p>
+    <div class="eq">$$\frac{\partial S}{\partial \mu} = -2\sum_{n\in C_k}(x_n - \mu) = 0 \quad\Longrightarrow\quad \mu_k = \frac{1}{N_k}\sum_{n\in C_k} x_n = \bar x_k .$$</div>
+    <p>Because \(S\) is a convex quadratic in \(\mu\) (its Hessian is \(2N_k I\), positive definite) the stationary point is the unique minimiser. An equivalent identity makes the point without calculus: for any \(\mu\),</p>
+    <div class="eq">$$\sum_{n\in C_k}\lVert x_n - \mu\rVert^2 = \sum_{n\in C_k}\lVert x_n - \bar x_k\rVert^2 + N_k\,\lVert \bar x_k - \mu\rVert^2 ,$$</div>
+    <p>so moving the centre anywhere away from the mean adds a non-negative penalty. The mean is also why k-means is tied to <em>squared Euclidean</em> distance: with absolute distance the minimiser would be the coordinate-wise median (k-medians), and with an arbitrary dissimilarity there is no closed form at all, which is why k-medoids restricts the centre to be one of the data points.</p>
+    <h3>Why the assignment is a Voronoi partition</h3>
+    <p>Now fix the centres. Each term of \(J\) involves one point and the centre it is assigned to, so \(J\) is minimised point by point by choosing \(r_{nk} = 1\) for the nearest centre, \(k = \arg\min_j \lVert x_n - \mu_j\rVert^2\). Geometrically every centre owns the region of space closer to it than to any other centre, its <strong>Voronoi cell</strong> \(V_k = \{x : \lVert x - \mu_k\rVert \le \lVert x - \mu_j\rVert\ \forall j\}\). The boundary between two cells is the perpendicular bisector of the segment joining the centres, a straight line in 2-D and a hyperplane in general. k-means can therefore only ever produce <strong>convex, linearly separated</strong> clusters; a crescent or ring is unreachable no matter how the algorithm is initialised. The playground below draws these cells so that you can watch them move.</p>
+    <p>A useful decomposition for the model-selection section: the total sum of squares about the grand mean \(\bar x\) splits exactly into within- and between-cluster parts,</p>
+    <div class="eq">$$\underbrace{\sum_n \lVert x_n - \bar x\rVert^2}_{T} \;=\; \underbrace{\sum_k \sum_{n\in C_k}\lVert x_n - \bar x_k\rVert^2}_{W(k)} \;+\; \underbrace{\sum_k N_k \lVert \bar x_k - \bar x\rVert^2}_{B(k)} ,$$</div>
+    <p>so minimising \(W\) is the same as maximising \(B\), and \(W(k)\) is non-increasing in \(k\) (with \(W(N) = 0\)), which is why "pick the \(k\) with the lowest SSE" is meaningless and why the elbow method exists.</p>
+  </section>
+
+  <section id="lloyd">
+    <h2>Lloyd's algorithm: assign, average, repeat</h2>
+    <p>The objective is a mixed combinatorial–continuous problem: \(K^N\) possible assignments, each with a closed-form optimal set of centres. Lloyd (1957, published 1982) proposed alternating the two easy sub-problems, and MacQueen (1967) gave the method its name; Steinhaus had stated the problem in 1956. Written out:</p>
+    <div class="pseudo">initialise μ₁…μ_K (random points, or k-means++)
+repeat
+   assign:  r_nk ← 1 if k = argmin_j ‖x_n − μ_j‖², else 0
+   update:  μ_k  ← Σ_n r_nk x_n / Σ_n r_nk
+until no assignment changes</div>
+    <h3>Monotone decrease and finite convergence</h3>
+    <p>Let \((r^{(t)}, \mu^{(t)})\) be the state after iteration \(t\). The assignment step chooses, for fixed \(\mu^{(t)}\), the assignments minimising \(J\), so \(J(r^{(t+1)}, \mu^{(t)}) \le J(r^{(t)}, \mu^{(t)})\). The update step chooses, for fixed \(r^{(t+1)}\), the centres minimising \(J\) (the centroid derivation above), so \(J(r^{(t+1)}, \mu^{(t+1)}) \le J(r^{(t+1)}, \mu^{(t)})\). Chaining, \(J\) is non-increasing and bounded below by zero. Because there are finitely many partitions and \(J\) strictly decreases whenever an assignment changes (ties broken consistently), the algorithm must stop after finitely many iterations at a state where no point wants to move: a <strong>partition-stable local minimum</strong>. Nothing in the argument says it is the global minimum, and in practice different starts give different answers on the same data. Theoretical worst cases need exponentially many iterations (Vattani 2011) but real data converge in tens of iterations, and each iteration costs \(O(NKd)\).</p>
+    <h3>Two readings of the same algorithm</h3>
+    <p><strong>Coordinate descent.</strong> \(J\) is a function of two blocks of variables, \(r\) and \(\mu\); Lloyd's algorithm minimises exactly over one block while holding the other fixed, i.e. block coordinate descent on a non-convex objective. That is why it converges but not globally.</p>
+    <p><strong>Expectation–maximisation.</strong> Take a mixture of \(K\) isotropic Gaussians with equal weights \(\pi_k = 1/K\) and shared variance \(\sigma^2 I\). The E-step responsibility of component \(k\) for point \(n\) is</p>
+    <div class="eq">$$\gamma_{nk} = \frac{\exp\!\big(-\lVert x_n-\mu_k\rVert^2/2\sigma^2\big)}{\sum_j \exp\!\big(-\lVert x_n-\mu_j\rVert^2/2\sigma^2\big)} \;\xrightarrow{\;\sigma^2\to 0\;}\; r_{nk} \in\{0,1\},$$</div>
+    <p>because the smallest distance dominates the sum. The expected complete-data log-likelihood becomes \(-\tfrac{1}{2\sigma^2}\sum_n\sum_k r_{nk}\lVert x_n-\mu_k\rVert^2 + \text{const} = -J/2\sigma^2 + \text{const}\), so the M-step (maximise over \(\mu\)) is exactly the centroid update. k-means is "hard EM" for a spherical equal-variance mixture, which is simultaneously its justification and a list of its assumptions. The GMM page develops the soft version.</p>
+    <h3>NP-hardness and initialisation</h3>
+    <p>Finding the global minimum of \(J\) is NP-hard even for \(K = 2\) in general dimension (Aloise et al. 2009) and even in the plane for general \(K\) (Mahajan, Nimbhorkar &amp; Varadarajan 2009). Lloyd's algorithm is a heuristic, and its weakest point is the start. Random seeding (MacQueen's choice of \(K\) random data points, or Forgy's) frequently places two seeds in one true cluster and none in another; the algorithm then splits one group and merges two, and no local move can fix that. The standard cure is <strong>k-means++</strong> (Arthur &amp; Vassilvitskii 2007):</p>
+    <ol>
+      <li>Choose the first centre uniformly at random from the data.</li>
+      <li>For every point compute \(D(x)\), the distance to the nearest centre chosen so far.</li>
+      <li>Choose the next centre from the data with probability proportional to \(D(x)^2\) ("D² sampling").</li>
+      <li>Repeat until \(K\) centres are chosen, then run Lloyd's algorithm.</li>
+    </ol>
+    <p>D² sampling spreads seeds out (far points are likely) without being deterministic (so a single outlier does not always win). Its theoretical payoff is that the expected distortion of the seeding alone satisfies</p>
+    <div class="eq">$$\mathbb{E}[J_{\text{k-means++}}] \;\le\; 8\,(\ln K + 2)\; J_{\text{opt}},$$</div>
+    <p>an \(O(\log K)\) approximation guarantee, whereas uniform random seeding has no bound at all. Lloyd iterations afterwards can only improve on it. Practical implementations (scikit-learn, R's <code>kmeans</code> with <code>nstart</code>) also run several independent restarts and keep the lowest \(J\); ten restarts is a common default.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · k-means playground: watch Lloyd's algorithm move the Voronoi cells</h3>
+        <div class="steps"><button class="btn small" id="kmInitR" type="button">Init random</button><button class="btn small" id="kmInitPP" type="button">Init k-means++</button><button class="btn small primary" id="kmStep" type="button">Step: assign ›</button><button class="btn small" id="kmRun" type="button">Run to convergence</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="km" id="kmSvg" viewBox="0 0 640 440" role="img" aria-label="Two-dimensional scatter of points coloured by k-means cluster with Voronoi cell boundaries and centroids"></svg>
+          </div>
+          <div class="legend" id="kmLegend"></div>
+          <div class="stepnote"><div class="eyebrow" id="kmTitle">Not started</div><p id="kmText">Choose a scenario and k, then initialise. Each click of "Step" performs one half-iteration of Lloyd's algorithm so you can see the assignment and the update separately.</p></div>
+          <div class="figwrap" style="margin-top:0.75rem"><svg class="km" id="kmSse" viewBox="0 0 640 150" role="img" aria-label="Within-cluster sum of squares versus iteration"></svg></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (SSE by iteration)</summary><div class="tablewrap"><table id="kmTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="kmScen"><span>Data scenario</span></label><select id="kmScen"><option value="blobs">Three well-separated blobs</option><option value="unequal">Unequal variances and sizes</option><option value="elong">Two elongated clusters</option><option value="moons">Two moons (non-convex)</option><option value="uniform">Uniform noise (no clusters)</option></select></div>
+          <div class="ctrl"><label for="kmK"><span>Number of clusters, k</span><output id="kmKO">3</output></label><input type="range" id="kmK" min="1" max="8" step="1" value="3"></div>
+          <div class="ctrl"><label for="kmSeed"><span>Random seed</span><output id="kmSeedO">7</output></label><input type="range" id="kmSeed" min="1" max="50" step="1" value="7"></div>
+          <div class="ctrl"><label for="kmN"><span>Points, N</span><output id="kmNO">150</output></label><input type="range" id="kmN" min="60" max="300" step="10" value="150"></div>
+          <dl class="readout">
+            <dt>Iteration</dt><dd id="kmIt">–</dd>
+            <dt>SSE, J</dt><dd id="kmJ">–</dd>
+            <dt>Reassigned last step</dt><dd id="kmMoved">–</dd>
+            <dt>Cluster sizes</dt><dd id="kmSizes">–</dd>
+            <dt>Best SSE of 10 restarts</dt><dd id="kmBest">–</dd>
+            <dt>Mean silhouette</dt><dd id="kmSil">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: on the three blobs, click "Init random" with seeds 3, 9 and 14 and run to convergence; compare the final SSE with the best-of-10 value to see local minima. Switch to "Two moons" and note that no k recovers the crescents. On "Unequal variances" watch the small tight cluster steal points from its large neighbour. Set the uniform scenario and observe that k-means happily returns k clusters anyway.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="choosingk">
+    <h2>Choosing k</h2>
+    <p>k-means needs \(K\) as an input and will cheerfully partition structureless data into \(K\) pieces (try the uniform scenario above). Choosing \(K\) is therefore a model-selection problem, and the honest answer in an exam is that no single criterion is decisive: use two or three, and let domain knowledge (how many phenology regimes or soil horizons are plausible, and interpretable?) have the last word.</p>
+    <h3>Elbow</h3>
+    <p>Plot \(W(k)\) against \(k\). Adding a centre inside a real cluster buys little, so \(W(k)\) drops steeply until \(k\) equals the number of real groups and then flattens: the "elbow". It is quick and often all you need for well-separated data, but the elbow is frequently a gentle curve rather than a corner, and for nested or hierarchical structure there may be several.</p>
+    <h3>Silhouette (Rousseeuw 1987)</h3>
+    <p>For point \(i\) in cluster \(A\), define the mean distance to its own cluster and the mean distance to the nearest other cluster:</p>
+    <div class="eq">$$a(i) = \frac{1}{|A|-1}\sum_{j\in A,\,j\ne i} d(i,j), \qquad b(i) = \min_{B\ne A}\ \frac{1}{|B|}\sum_{j\in B} d(i,j), \qquad s(i) = \frac{b(i)-a(i)}{\max\{a(i),\,b(i)\}} .$$</div>
+    <p>Because \(a, b \ge 0\), dividing by the larger of the two bounds \(s(i)\) in \([-1, 1]\): \(s \approx 1\) when the point is much closer to its own cluster than to the next (\(a \ll b\)), \(s \approx 0\) when it sits on a boundary (\(a \approx b\)), and \(s &lt; 0\) when it is on average closer to a neighbouring cluster, i.e. probably misassigned. Singletons are given \(s = 0\) by convention. The <strong>mean silhouette</strong> \(\bar s(k)\) is maximised over \(k\); Kaufman &amp; Rousseeuw's rule of thumb is that \(\bar s &gt; 0.7\) indicates strong structure, 0.5–0.7 reasonable, 0.25–0.5 weak, and below 0.25 essentially none. The per-point silhouette plot (Lab C) is more informative than the mean: it reveals clusters that are coherent and clusters that are leftovers. Note that the silhouette uses any distance, not only Euclidean, so it also validates k-medoids or hierarchical results; and that it is biased toward compact, well-separated, similarly sized clusters, the same assumptions as k-means itself.</p>
+    <h3>Gap statistic (Tibshirani, Walther &amp; Hastie 2001)</h3>
+    <p>Compare \(\log W(k)\) with its expectation under a null of no cluster structure, estimated by clustering \(B\) reference datasets drawn uniformly over the bounding box (or the principal-component box) of the data:</p>
+    <div class="eq">$$\text{Gap}(k) = \frac{1}{B}\sum_{b=1}^{B}\log W^{*}_{b}(k) - \log W(k), \qquad \hat k = \min\{k : \text{Gap}(k) \ge \text{Gap}(k+1) - s_{k+1}\},$$</div>
+    <p>where \(s_{k+1}\) is the standard deviation of \(\log W^*_b(k+1)\) scaled by \(\sqrt{1 + 1/B}\). The gap is large where the data drop faster than noise would. Unlike the silhouette it is defined for \(k = 1\), so it can say "there are no clusters" (choose \(k = 1\)), which matters for ecological data where the honest answer is often a continuum.</p>
+    <h3>Calinski–Harabasz (1974) and BIC via a mixture</h3>
+    <p>The <strong>CH index</strong> is a pseudo-F ratio using the decomposition \(T = W + B\):</p>
+    <div class="eq">$$\text{CH}(k) = \frac{B(k)/(k-1)}{W(k)/(N-k)} ,$$</div>
+    <p>maximised over \(k \ge 2\). It rewards separation relative to compactness and penalises extra clusters through the degrees of freedom, and it is cheap (no pairwise distances). Finally, because k-means is a limiting Gaussian mixture, one can fit GMMs for a range of \(k\) and choose by <strong>BIC</strong>, \(-2\log L + p\log N\), which adds a formal penalty for the \(p\) parameters; the GMM page does this interactively. In applied ecology the choice is usually settled by asking whether the \(k\)-th cluster is interpretable (does it correspond to a recognisable biome, a distinct soil horizon, a known phenological strategy?) and whether it survives resampling (see validation below).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Elbow, silhouette, gap and CH for k = 1…10 (best of 10 k-means++ restarts)</h3><span class="small muted">Uses the data from Lab A</span></div>
+      <div class="twocol">
+        <div class="chartbox figwrap"><svg class="km" id="elbSvg" viewBox="0 0 420 300" role="img" aria-label="Within-cluster sum of squares versus number of clusters"></svg><div class="chart-tip" id="elbTip" hidden></div></div>
+        <div class="chartbox figwrap"><svg class="km" id="silSvg" viewBox="0 0 420 300" role="img" aria-label="Mean silhouette and gap statistic versus number of clusters"></svg><div class="chart-tip" id="silTip" hidden></div></div>
+      </div>
+      <div class="legend"><span style="--c:var(--fg)">W(k), within-cluster SSE</span><span style="--c:var(--series-1)">mean silhouette s̄(k)</span><span style="--c:var(--series-2)">Gap(k) (B = 6 reference sets)</span></div>
+      <dl class="readout" style="grid-template-columns:1fr auto 1fr auto">
+        <dt>k by max silhouette</dt><dd id="selSil">–</dd><dt>k by gap rule</dt><dd id="selGap">–</dd>
+        <dt>k by max CH</dt><dd id="selCH">–</dd><dt>Elbow (max 2nd difference of W)</dt><dd id="selElb">–</dd>
+      </dl>
+      <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="elbTable"></table></div></details>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: on the three blobs all four criteria should agree on 3. On "Unequal variances" see which criteria are fooled by the large diffuse cluster. On uniform noise the silhouette and CH will still nominate some k (they must), while the gap statistic can return k = 1: that is the point of having a null model.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Silhouette plot for the current Lab A clustering</h3><span class="small muted">Per-point s(i), sorted within each cluster</span></div>
+      <div class="lab-grid">
+        <div class="figwrap"><svg class="km" id="silPlot" viewBox="0 0 640 360" role="img" aria-label="Horizontal bars of silhouette values grouped by cluster"></svg></div>
+        <div>
+          <dl class="readout" style="border-top:0;padding-top:0">
+            <dt>Mean silhouette</dt><dd id="spMean">–</dd>
+            <dt>Points with s &lt; 0</dt><dd id="spNeg">–</dd>
+            <dt>Per-cluster means</dt><dd id="spPer">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0.5rem 0 0">A well-chosen k shows every cluster's bars reaching past the dashed mean line with few negative values. A cluster whose bars are uniformly short is a leftover or a split of a real group. Change k in Lab A, run to convergence, and watch this plot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="assumptions">
+    <h2>Assumptions, failure modes, scale and distance</h2>
+    <p>Everything k-means does follows from minimising squared Euclidean distance to a mean, and each word in that phrase is an assumption.</p>
+    <ul>
+      <li><strong>Spherical, equal-variance clusters.</strong> The Voronoi boundary between two centres is their perpendicular bisector, which is the Bayes boundary only when the two groups have the same isotropic covariance. A large diffuse cluster next to a small tight one loses its edge to the tight one (Lab A, "Unequal variances"). Elongated clusters are sliced across their long axis.</li>
+      <li><strong>Similar cluster sizes.</strong> Because \(J\) sums over points, splitting a large cluster saves more SSE than correctly isolating a small one, so k-means tends toward equal-population clusters. A rare ecoregion or a small set of outlier sites will be absorbed.</li>
+      <li><strong>Convexity.</strong> Linear boundaries cannot represent crescents, rings or intertwined manifolds (the two-moons scenario). Density-based (DBSCAN) or spectral methods are required.</li>
+      <li><strong>Sensitivity to outliers.</strong> The mean is not robust; a few extreme sites drag a centroid or get a cluster of their own. k-medoids, trimmed k-means, or removing outliers first are the remedies.</li>
+      <li><strong>Scale.</strong> Squared Euclidean distance adds variances in each feature's units. A temperature in °C (spread of ~20) and an annual precipitation in mm (spread of ~1500) do not compete fairly: precipitation alone decides the clusters (Lab E). Standardise (z-scores) unless the features share units <em>and</em> the raw scale is the one you mean. Standardising also implicitly weights all features equally, which may be wrong in the other direction; weighting features by expert judgement or using Mahalanobis distance are the alternatives.</li>
+      <li><strong>k is fixed, and there are always clusters.</strong> k-means returns \(K\) groups whether or not the data have any; the gap statistic or a GMM with BIC are the tools that can answer "none".</li>
+    </ul>
+    <h3>Curse of dimensionality</h3>
+    <p>For independent features the squared distance between two random points is a sum of \(d\) terms, so its mean grows like \(d\) while its standard deviation grows like \(\sqrt d\): the ratio of the farthest to the nearest neighbour tends to 1 as \(d\) grows, and "nearest centre" stops meaning much. Hyperspectral reflectance (hundreds of bands) or long NDVI time series (hundreds of dates) are routinely reduced with <a href="pca.html">PCA</a> first, which also decorrelates the inputs so that redundant bands do not get counted ten times. Whitening (dividing PC scores by their standard deviations) makes the implied metric Mahalanobis, which can help or hurt: it equalises directions, including noise directions.</p>
+    <h3>Which distance?</h3>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Distance</th><th>Formula</th><th>When it is the right choice</th></tr></thead>
+      <tbody>
+        <tr><td>Euclidean (squared)</td><td>\(\sum_j (x_j - y_j)^2\)</td><td>Standardised continuous traits; the only distance for which the centroid is the exact minimiser.</td></tr>
+        <tr><td>Mahalanobis</td><td>\((x-y)^\top \Sigma^{-1}(x-y)\)</td><td>Correlated features with known covariance; equivalent to k-means on whitened PCA scores. Per-cluster \(\Sigma_k\) is the GMM.</td></tr>
+        <tr><td>Correlation distance</td><td>\(1 - r(x,y)\)</td><td>Time series (NDVI, soil moisture) where the <em>shape</em> matters and amplitude/offset do not; equals Euclidean on z-scored series up to a factor.</td></tr>
+        <tr><td>Manhattan (L1)</td><td>\(\sum_j |x_j - y_j|\)</td><td>Robustness to a few extreme features; centre becomes the median (k-medians).</td></tr>
+        <tr><td>Bray–Curtis / Jaccard</td><td>ecological dissimilarities</td><td>Species abundance or presence data; use k-medoids/PAM or hierarchical clustering, not k-means (no meaningful mean).</td></tr>
+      </tbody></table></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab E · Scaling: clustering sites by temperature and precipitation before and after standardisation</h3></div>
+      <div class="twocol">
+        <div class="figwrap"><svg class="km" id="scRaw" viewBox="0 0 420 320" role="img" aria-label="Sites clustered on raw temperature and precipitation"></svg></div>
+        <div class="figwrap"><svg class="km" id="scStd" viewBox="0 0 420 320" role="img" aria-label="Sites clustered on standardised temperature and precipitation"></svg></div>
+      </div>
+      <div class="lab-grid" style="margin-top:0.75rem">
+        <dl class="readout" style="border-top:0;padding-top:0;grid-template-columns:1fr auto 1fr auto">
+          <dt>ARI vs true climate group, raw units</dt><dd id="scAriRaw">–</dd>
+          <dt>ARI, standardised</dt><dd id="scAriStd">–</dd>
+          <dt>SD of temperature (°C) · precipitation (mm)</dt><dd id="scSd">–</dd>
+          <dt>Share of raw squared distance from precipitation</dt><dd id="scShare">–</dd>
+        </dl>
+        <div class="controls">
+          <div class="ctrl"><label for="scSeed"><span>Random seed</span><output id="scSeedO">3</output></label><input type="range" id="scSeed" min="1" max="40" step="1" value="3"></div>
+          <div class="ctrl"><label for="scPsd"><span>Within-group SD of precipitation (mm)</span><output id="scPsdO">150</output></label><input type="range" id="scPsd" min="50" max="400" step="10" value="150"></div>
+          <p class="small muted" style="margin:0">Three synthetic climate groups (cold–dry, warm–dry, mild–wet), k = 3, best of 10 k-means++ runs. Both panels are drawn in original units; only the distance used for clustering differs. The adjusted Rand index (ARI) compares the recovered partition with the true groups: 1 = identical, 0 = chance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="relatives">
+    <h2>Relatives and alternatives</h2>
+    <h3>Gaussian mixtures (soft k-means)</h3>
+    <p>Replace hard assignments by responsibilities \(\gamma_{nk} \in [0,1]\) and give each component its own weight \(\pi_k\) and covariance \(\Sigma_k\). Boundaries become quadratic, clusters can be elliptical and of unequal size, and every point gets a probability of membership rather than a label. The cost is more parameters (a full 2-D covariance has 3, a \(d\)-dimensional one \(d(d+1)/2\)) and the possibility of a component collapsing onto a single point. The <a href="gaussian-mixture-models.html">GMM page</a> derives EM in full; Lab D shows the difference for one point.</p>
+    <h3>k-medoids / PAM</h3>
+    <p>Partitioning Around Medoids (Kaufman &amp; Rousseeuw 1990) requires each centre to be an actual observation (the medoid) and minimises the sum of dissimilarities (not squared) to it. It works with <em>any</em> dissimilarity matrix (Bray–Curtis on species abundances, Gower on mixed trait types), is robust to outliers, and returns a representative real site or species per cluster, which ecologists like. It costs \(O(K(N-K)^2)\) per iteration in the original swap algorithm; CLARA and CLARANS subsample for large \(N\).</p>
+    <h3>Mini-batch k-means</h3>
+    <p>For \(N\) in the millions (every pixel of a Landsat scene) use a random mini-batch of \(b\) points per iteration and update each centre toward the batch mean with a per-centre learning rate \(\eta_k = 1/n_k\), where \(n_k\) counts points so far assigned to \(k\): \(\mu_k \leftarrow \mu_k + \eta_k (x - \mu_k)\). This is MacQueen's original online update. The result is a slightly worse \(J\) for a large reduction in time and memory.</p>
+    <h3>Hierarchical (agglomerative) clustering</h3>
+    <p>Start with \(N\) singletons and repeatedly merge the two closest clusters, recording the merge height in a <strong>dendrogram</strong>; cut the tree at any height to obtain a partition, so \(K\) need not be fixed in advance and nested structure is visible. The <em>linkage</em> defines "closest": single (minimum pairwise distance, chains and finds non-convex shapes but is noise-sensitive), complete (maximum, compact spherical groups), average (UPGMA, the ecologist's default), and <strong>Ward's method</strong> (1963), which merges the pair giving the smallest increase in total within-cluster SSE,</p>
+    <div class="eq">$$\Delta(A,B) = \frac{N_A N_B}{N_A + N_B}\,\lVert \bar x_A - \bar x_B\rVert^2 ,$$</div>
+    <p>i.e. the same criterion as k-means, optimised greedily and hierarchically rather than iteratively for a fixed \(K\). A common recipe is Ward to choose \(K\) and seed centres, then k-means to refine. Hierarchical methods cost \(O(N^2)\) memory for the distance matrix, which limits them to tens of thousands of objects.</p>
+    <h3>DBSCAN and spectral clustering</h3>
+    <p><strong>DBSCAN</strong> (Ester et al. 1996) defines clusters as connected regions of density: a point is a core point if at least <code>minPts</code> neighbours lie within radius \(\varepsilon\); clusters are chains of core points, border points attach to them, and everything else is noise. It discovers arbitrary shapes, finds \(K\) itself and labels outliers explicitly, but struggles when clusters have different densities and \(\varepsilon\) is hard to choose in high dimension (HDBSCAN relaxes this). <strong>Spectral clustering</strong> builds a similarity graph, takes the eigenvectors of its (normalised) Laplacian, and runs k-means on the first \(K\) eigenvectors; connected components of the graph become separable in that embedding, so moons and rings are recovered. It is k-means after a nonlinear change of coordinates, which is also a fair description of kernel PCA followed by k-means.</p>
+    <h3>Validation and stability</h3>
+    <p>Internal indices (silhouette, CH, gap) judge geometry; external indices compare two partitions. The <strong>Rand index</strong> is the fraction of point pairs on which two partitions agree (same cluster in both, or different in both). Because it is high by chance for many clusters, Hubert &amp; Arabie (1985) adjusted it:</p>
+    <div class="eq">$$\text{ARI} = \frac{\text{RI} - \mathbb{E}[\text{RI}]}{\max(\text{RI}) - \mathbb{E}[\text{RI}]} = \frac{\sum_{ij}\binom{n_{ij}}{2} - \big[\sum_i \binom{a_i}{2}\sum_j \binom{b_j}{2}\big]/\binom{N}{2}}{\tfrac12\big[\sum_i\binom{a_i}{2} + \sum_j\binom{b_j}{2}\big] - \big[\sum_i\binom{a_i}{2}\sum_j\binom{b_j}{2}\big]/\binom{N}{2}},$$</div>
+    <p>where \(n_{ij}\) is the contingency table of the two partitions with margins \(a_i, b_j\). ARI is 1 for identical partitions, 0 on average for independent ones, and can be negative. <strong>Stability analysis</strong> uses it internally: bootstrap or subsample the data, re-cluster, and compute the ARI between the partitions restricted to common points; a \(K\) whose clusters reappear across resamples (ARI ≳ 0.8) is trustworthy, whereas a \(K\) with ARI near 0.5 is slicing a continuum arbitrarily. Lab E uses ARI against known groups.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · Hard versus soft assignment: k-means label and GMM responsibilities for one probe point</h3><span class="small muted">Preview of the next page</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap"><svg class="km" id="hsSvg" viewBox="0 0 640 400" role="img" aria-label="Scatter with k-means centroids, GMM ellipses and a movable probe point"></svg></div>
+          <div class="legend" id="hsLegend"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="hsX"><span>Probe x</span><output id="hsXO">5.0</output></label><input type="range" id="hsX" min="0" max="10" step="0.05" value="5"></div>
+          <div class="ctrl"><label for="hsY"><span>Probe y</span><output id="hsYO">5.0</output></label><input type="range" id="hsY" min="0" max="10" step="0.05" value="5"></div>
+          <div class="figwrap"><svg class="km" id="hsBar" viewBox="0 0 260 150" role="img" aria-label="Bar chart of GMM responsibilities for the probe point"></svg></div>
+          <dl class="readout">
+            <dt>k-means label</dt><dd id="hsHard">–</dd>
+            <dt>Distances to centroids</dt><dd id="hsDist">–</dd>
+            <dt>GMM max γ</dt><dd id="hsSoft">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0">Both models use k from Lab A and the current data; the GMM (full covariances) is initialised from the k-means solution and run for 60 EM iterations. Drag the probe onto a Voronoi boundary: k-means flips its label abruptly while the responsibilities change smoothly. Try the elongated scenario, where the ellipses and the Voronoi cells disagree most.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="applications">
+    <h2>Ecological applications and remote sensing</h2>
+    <p><strong>Vector quantisation.</strong> k-means originated as a signal-compression method (Lloyd worked at Bell Labs on pulse-code modulation): represent every vector by the index of its nearest codebook entry (centroid), so \(N\) vectors in \(d\) dimensions become \(N\) integers plus \(K\) centroids. The distortion \(J\) is literally the quantisation error. This is exactly what <strong>unsupervised classification of imagery</strong> does: every pixel's spectral vector is replaced by a class index. <strong>ISODATA</strong> (Iterative Self-Organizing Data Analysis), the classic remote-sensing algorithm, is k-means with heuristics that split clusters whose standard deviation exceeds a threshold and merge clusters whose centres are closer than another threshold, so \(K\) floats within user bounds. Analysts then label clusters as land-cover types by inspection; the clusters are spectral classes, not necessarily informational ones.</p>
+    <p><strong>Climate classification.</strong> The Köppen system is a set of hand-made rules in temperature–precipitation space; clustering offers an objective alternative. Metzger et al. (2013) built the Global Environmental Stratification by PCA of 42 bioclimatic variables followed by ISODATA clustering into 125 strata grouped into 18 zones, now widely used to stratify sampling and to test the representativeness of networks such as FLUXNET. Any such product inherits k-means' properties: strata are convex regions of climate space, their boundaries are bisectors, and their number is a choice.</p>
+    <p><strong>Plant functional types.</strong> Land-surface models need discrete PFTs with fixed parameters (\(V_{cmax}\), SLA, leaf lifespan, rooting depth). Clustering species in trait space (the leaf economics spectrum of Wright et al. 2004: LMA, leaf N, photosynthetic capacity, lifespan) is the empirical route to defining them and to asking how many are justified. Because trait data are log-normal and span orders of magnitude, log-transform and standardise first; because they are strongly correlated, cluster on the first few PCs. The usual finding is a continuum with weak modes, which is an argument for trait-based (continuous) rather than PFT-based model parameterisation.</p>
+    <p><strong>Phenology regimes from NDVI.</strong> Treat each pixel's annual NDVI curve (23 or 46 dates) as a vector, use correlation distance (or standardise each curve) so that timing and shape rather than amplitude drive the grouping, and cluster. Resulting regimes (single summer peak, bimodal, evergreen, cropland double-cropping) map land-management and climate seasonality and are used to stratify phenology-model calibration.</p>
+    <p><strong>Flux-tower site clustering.</strong> Clustering sites by climate, vegetation and flux characteristics (Papale et al. 2015) identifies redundant and missing site types in the network and defines the strata within which machine-learning upscaling (FLUXCOM-type products) can be trusted. <strong>Soil horizons and pedons</strong> are grouped by clustering depth-wise profiles of colour, texture, carbon and pH; cluster centroids become representative profiles for parameterising soil hydraulic and biogeochemical models.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Discretising continuous drivers.</strong> PFTs, soil classes and climate zones in CLM, JULES, ORCHIDEE and DayCent are, in effect, cluster centroids with a fixed parameter vector each. k-means makes the implicit step explicit and lets you quantify within-cluster trait variance that the model discards (compare \(W(k)\) with \(T\)).</li>
+      <li><strong>Site selection and representativeness.</strong> Clustering the environmental space of a region and choosing one site per cluster (or checking which clusters contain no sites) is standard practice for designing networks and for judging how far a model calibrated at towers can be extrapolated.</li>
+      <li><strong>Reducing ensembles and parameter sets.</strong> After a large Monte Carlo or Latin-hypercube run, clustering parameter vectors that give acceptable fits (the "behavioural" set in GLUE) reveals equifinality: several distinct regions of parameter space that reproduce the data equally well. Cluster centroids are then used as representative parameter sets.</li>
+      <li><strong>Regime detection in model output.</strong> Clustering simulated state trajectories (soil moisture, LAI, NEE seasonal cycles) across grid cells groups them into dynamical regimes, which is a compact way to evaluate a model against observed regime maps (phenology regimes from NDVI, hydrological regimes from streamflow).</li>
+      <li><strong>Preprocessing for emulators and data assimilation.</strong> Vector quantisation of forcing data or initial states reduces the number of model runs needed; cluster-wise emulators (one per regime) are often more accurate than a single global emulator.</li>
+      <li><strong>Honesty about assumptions.</strong> Whenever a model uses discrete classes derived by clustering, the spherical, equal-variance, fixed-\(k\) assumptions have been baked in. A GMM with BIC, or trait-continuum approaches, are the alternatives when the clusters are not convincing.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Item</th><th class="num">Value / form</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Objective</td><td class="num">\(J=\sum_n\sum_k r_{nk}\lVert x_n-\mu_k\rVert^2\)</td><td>Within-cluster SSE, distortion, inertia; units of the features squared</td></tr>
+        <tr><td>Centroid update</td><td class="num">\(\mu_k = N_k^{-1}\sum_{n\in C_k}x_n\)</td><td>Unique minimiser of SSE for fixed assignments</td></tr>
+        <tr><td>Cost per Lloyd iteration</td><td class="num">\(O(NKd)\)</td><td>Typical convergence in 10–50 iterations; worst case exponential</td></tr>
+        <tr><td>Global problem</td><td class="num">NP-hard</td><td>Even for \(K=2\) (general \(d\)) or \(d=2\) (general \(K\))</td></tr>
+        <tr><td>k-means++ guarantee</td><td class="num">\(\mathbb{E}[J]\le 8(\ln K+2)\,J_{opt}\)</td><td>Seeding by D² sampling; Lloyd steps only improve it</td></tr>
+        <tr><td>Silhouette</td><td class="num">\(s=(b-a)/\max(a,b)\in[-1,1]\)</td><td>Strong &gt; 0.7; reasonable 0.5–0.7; weak 0.25–0.5; none &lt; 0.25</td></tr>
+        <tr><td>Gap statistic</td><td class="num">\(\mathbb{E}^*[\log W_k]-\log W_k\)</td><td>Choose smallest \(k\) with Gap(k) ≥ Gap(k+1) − s<sub>k+1</sub>; can return k = 1</td></tr>
+        <tr><td>Calinski–Harabasz</td><td class="num">\(\frac{B/(k-1)}{W/(N-k)}\)</td><td>Pseudo-F; maximise</td></tr>
+        <tr><td>Ward merge cost</td><td class="num">\(\frac{N_AN_B}{N_A+N_B}\lVert\bar x_A-\bar x_B\rVert^2\)</td><td>Increase in SSE; same criterion as k-means</td></tr>
+        <tr><td>k-means as GMM limit</td><td class="num">\(\sigma^2\to 0\), equal \(\pi_k\), \(\Sigma_k=\sigma^2 I\)</td><td>Hard EM; expected complete log-likelihood = −J/2σ² + const</td></tr>
+        <tr><td>Restarts</td><td class="num">≈ 10</td><td>Common default; keep the lowest J</td></tr>
+        <tr><td>Standardisation</td><td class="num">\(z=(x-\bar x)/s\)</td><td>Always with mixed units; log-transform skewed traits first</td></tr>
+        <tr><td>Köppen–Geiger / GEnS</td><td class="num">5 groups, ~30 types / 18 zones, 125 strata</td><td>Rule-based vs clustering-based climate stratification</td></tr>
+        <tr><td>ARI</td><td class="num">1 identical; ≈ 0 chance</td><td>Stability: ARI ≳ 0.8 across bootstraps is reassuring</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Write down the k-means objective and prove that Lloyd's algorithm converges. Does it find the global minimum?</summary><div class="a"><p>\(J = \sum_n \sum_k r_{nk}\lVert x_n - \mu_k\rVert^2\) with \(r_{nk}\in\{0,1\}\), \(\sum_k r_{nk} = 1\). Lloyd alternates two exact minimisations. (i) With \(\mu\) fixed, \(J\) is a sum over points of \(\lVert x_n - \mu_{k(n)}\rVert^2\); choosing the nearest centre minimises each term independently, so \(J\) cannot increase. (ii) With \(r\) fixed, \(J\) separates into per-cluster convex quadratics \(\sum_{n\in C_k}\lVert x_n-\mu\rVert^2\) whose gradient \(-2\sum(x_n-\mu)\) vanishes at the mean, and the Hessian \(2N_kI\) is positive definite, so the mean is the unique minimiser and again \(J\) cannot increase. Hence \(J^{(t)}\) is non-increasing and bounded below by 0. There are finitely many partitions (at most \(K^N\)), and whenever the assignment changes \(J\) strictly decreases (with consistent tie-breaking), so no partition can recur and the algorithm terminates after finitely many steps at a partition-stable point. This is a local minimum of the combinatorial problem; the global problem is NP-hard and different initialisations give different local minima (hence k-means++ and restarts).</p></div></details>
+    <details class="q"><summary>2. Derive the silhouette coefficient, explain why it lies in [−1, 1], and state its limitations as a criterion for k.</summary><div class="a"><p>For point \(i\) in cluster \(A\): \(a(i)\) = mean distance to the other members of \(A\); \(b(i)\) = the smallest, over other clusters \(B\), of the mean distance from \(i\) to members of \(B\) (the "neighbouring cluster"). \(s(i) = (b-a)/\max(a,b)\). Since \(a,b\ge 0\): if \(b &gt; a\), \(s = 1 - a/b \in (0,1]\); if \(a &gt; b\), \(s = b/a - 1 \in [-1,0)\); if equal, \(s = 0\). So \(s \to 1\) for a point deep inside a well-separated cluster, \(s \approx 0\) on a boundary, \(s &lt; 0\) when a point is on average closer to another cluster. Mean \(\bar s\) over all points is maximised over \(k\). Limitations: it needs all pairwise distances (\(O(N^2)\)), is undefined for \(k = 1\) so cannot say "no clusters", favours compact spherical clusters of similar size (the k-means geometry), and can prefer a coarse \(k = 2\) split when clusters are nested. The per-point plot is more diagnostic than the mean.</p></div></details>
+    <details class="q"><summary>3. Explain k-means++ seeding. Why does sampling proportional to D² work better than either uniform sampling or always choosing the farthest point?</summary><div class="a"><p>Choose the first centre uniformly from the data; then repeatedly compute each point's squared distance \(D(x)^2\) to its nearest existing centre and sample the next centre with probability \(D(x)^2/\sum_x D(x)^2\); after \(K\) seeds run Lloyd. Uniform sampling often places two seeds in one dense cluster and none in a distant small one, a mistake Lloyd cannot repair since no local move crosses the gap. The deterministic farthest-first rule always picks the most extreme point, so a handful of outliers become the seeds. D² sampling is the compromise: distant regions are strongly favoured (quadratically), yet a dense cluster with many moderately distant points accumulates enough total probability to be chosen, and a single outlier is not guaranteed to win. Arthur and Vassilvitskii proved the seeding alone is \(O(\log K)\)-competitive, \(\mathbb{E}[J] \le 8(\ln K + 2)J_{opt}\), and in experiments it is both faster (fewer Lloyd iterations) and better than random seeding.</p></div></details>
+    <details class="q"><summary>4. Show that k-means is a limiting case of EM for a Gaussian mixture, and list which assumptions of k-means that limit makes explicit.</summary><div class="a"><p>Take a mixture with \(\pi_k = 1/K\) and \(\Sigma_k = \sigma^2 I\). E-step: \(\gamma_{nk} = \exp(-\lVert x_n-\mu_k\rVert^2/2\sigma^2)/\sum_j \exp(-\lVert x_n-\mu_j\rVert^2/2\sigma^2)\). Dividing numerator and denominator by the largest term, as \(\sigma^2\to 0\) every term with a non-minimal distance decays as \(\exp(-\Delta/2\sigma^2)\to 0\), so \(\gamma_{nk}\to 1\) for the nearest centre and 0 otherwise: hard assignment. The expected complete-data log-likelihood \(\sum_n\sum_k\gamma_{nk}[\log\pi_k + \log\mathcal N(x_n|\mu_k,\sigma^2 I)] = -\frac{1}{2\sigma^2}\sum_n\sum_k r_{nk}\lVert x_n-\mu_k\rVert^2 + \text{const}\), so maximising it over \(\mu\) (M-step) is the centroid update and the quantity being improved is \(-J\). Assumptions made explicit: all clusters share one isotropic covariance (spherical, equal variance, hence linear bisector boundaries), equal mixing weights (so clusters are expected to be equally populous), Gaussian (so sensitivity to outliers), and hard membership (no uncertainty on boundaries). Relaxing each gives the general GMM.</p></div></details>
+    <details class="q"><summary>5. You cluster 400 flux-tower sites on mean annual temperature (°C), annual precipitation (mm) and LAI (m² m⁻²). A colleague says standardising is "arbitrary". Respond, and describe what happens if you do not.</summary><div class="a"><p>Squared Euclidean distance sums squared differences across features in their own units. Precipitation differences are of order 10³ mm, temperature 10 °C, LAI 1; squared, precipitation contributes ~10⁶ versus 10² and 1, so the partition is determined by precipitation alone and the other two variables are decorative. Raw-unit clustering is therefore not "neutral"; it is an implicit weighting by the accident of unit choice (switch mm to m and the result changes completely). Standardising to unit variance makes the implicit weighting equal, which is a defensible default and at least an explicit choice. If equal weights are not what is meant, scale features by weights reflecting their expected importance, or use Mahalanobis distance to also remove correlations (temperature and LAI covary). Skewed variables (precipitation, LAI) should be log-transformed first so that a few very wet sites do not dominate even after scaling. The scaling demo on this page shows ARI against the true groups rising from near 0 to near 1 after standardisation.</p></div></details>
+    <details class="q"><summary>6. Compare k-means, k-medoids, Ward's hierarchical clustering and DBSCAN for grouping species by six leaf traits. Which would you use, and why?</summary><div class="a"><p><em>k-means</em>: fast, needs \(K\), squared Euclidean on (log-)standardised traits, spherical clusters, sensitive to outliers; good first pass after PCA on the traits. <em>k-medoids/PAM</em>: any dissimilarity (Gower for mixed types), robust, returns a representative real species per cluster, \(O(N^2)\) but fine for a few thousand species. <em>Ward</em>: same SSE criterion as k-means but hierarchical; produces a dendrogram that shows whether trait space is a continuum (merge heights increase smoothly) or has distinct groups (large jumps), and does not require \(K\) upfront; \(O(N^2)\) memory. <em>DBSCAN</em>: finds arbitrary shapes and labels outliers, but trait data are typically a single dense ellipsoid (the leaf economics spectrum) so density-based methods find one cluster or fragment it depending on \(\varepsilon\). Recommended: log-transform and standardise, PCA, Ward to inspect the dendrogram and choose a candidate \(K\) (checking with silhouette/gap and bootstrap stability), then k-means or PAM with that \(K\) to refine; expect a continuum and be ready to conclude that discrete PFTs are a modelling convenience rather than a biological fact.</p></div></details>
+    <details class="q"><summary>7. Describe the gap statistic. Why is it the only criterion among elbow, silhouette, CH and gap that can conclude that there is one cluster?</summary><div class="a"><p>Gap\((k) = \mathbb{E}^*[\log W_k] - \log W_k\), where the expectation is estimated by clustering \(B\) reference datasets drawn uniformly over the data's bounding box (or over the box aligned with the principal components) and averaging \(\log W^*_b(k)\). The gap measures how much faster the real data's within-cluster dispersion falls than that of structureless data. Choose the smallest \(k\) such that Gap\((k) \ge\) Gap\((k+1) - s_{k+1}\), \(s_{k+1} = \text{sd}_b[\log W^*_b(k+1)]\sqrt{1+1/B}\). Because \(W(1)\) and \(W^*(1)\) are both defined (total SSE about the grand mean), Gap(1) exists and is a legitimate candidate: when the data are uniform, Gap(k) hovers near zero for all \(k\) and the rule stops at \(k=1\). The silhouette needs at least two clusters (\(b(i)\) is undefined otherwise), CH divides by \(k-1\), and the elbow compares successive decreases, so none of them can return 1. In ecological data, where continua are common, that capability is valuable.</p></div></details>
+    <details class="q"><summary>8. Explain how you would validate a k-means classification of phenology regimes derived from NDVI time series, and what distance you would use.</summary><div class="a"><p>Distance: each pixel is a vector of 23–46 NDVI values; standardise each curve (or use correlation distance \(1 - r\)) so that the shape and timing of the seasonal cycle, not its amplitude or baseline, drive the clustering; alternatively reduce to a few PCs or to phenometrics (start, peak, end of season) first. Validation: (i) internal, with silhouette plots and the gap statistic over \(k\), looking for a \(k\) that is both supported and interpretable (single-peak temperate, evergreen flat, bimodal double-cropping, arid pulse); (ii) stability, by bootstrapping pixels, re-clustering and computing the adjusted Rand index between partitions, retaining a \(k\) whose ARI across replicates is high (≳ 0.8); (iii) external, comparing the regimes against independent land-cover and crop-calendar maps with ARI or confusion matrices, noting that spectral clusters need not coincide with informational classes; (iv) sensitivity, repeating with different initialisations, years and sensors to check that boundaries are not artefacts. Finally, inspect the centroid curves themselves: they should be physically plausible phenologies, and the Voronoi geometry means intermediate pixels are assigned to the nearest regime even if they are transitional, which a GMM's responsibilities would show.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>MacQueen J (1967). Some methods for classification and analysis of multivariate observations. In <em>Proceedings of the 5th Berkeley Symposium on Mathematical Statistics and Probability</em>, vol. 1, pp. 281–297. University of California Press. <span class="why">Coined the name "k-means" and gave the online (sequential) update that mini-batch k-means still uses.</span></li>
+      <li>Lloyd SP (1982). Least squares quantization in PCM. <em>IEEE Transactions on Information Theory</em> 28: 129–137 (Bell Labs technical note, 1957). <a href="https://doi.org/10.1109/TIT.1982.1056489">doi:10.1109/TIT.1982.1056489</a><span class="why">The alternating assign/average algorithm, derived for signal quantisation; the origin of "distortion".</span></li>
+      <li>Steinhaus H (1956). Sur la division des corps matériels en parties. <em>Bulletin de l'Académie Polonaise des Sciences</em> 4: 801–804. <span class="why">Earliest statement of the sum-of-squares partitioning problem.</span></li>
+      <li>Arthur D, Vassilvitskii S (2007). k-means++: the advantages of careful seeding. In <em>Proceedings of the 18th ACM–SIAM Symposium on Discrete Algorithms (SODA)</em>, pp. 1027–1035. <span class="why">D² sampling and the \(8(\ln k + 2)\) approximation guarantee; now the default initialiser in most software.</span></li>
+      <li>Jain AK (2010). Data clustering: 50 years beyond K-means. <em>Pattern Recognition Letters</em> 31: 651–666. <a href="https://doi.org/10.1016/j.patrec.2009.09.011">doi:10.1016/j.patrec.2009.09.011</a><span class="why">The best single review: history, user dilemmas (which k, which distance, validation), and the landscape of alternatives.</span></li>
+      <li>Rousseeuw PJ (1987). Silhouettes: a graphical aid to the interpretation and validation of cluster analysis. <em>Journal of Computational and Applied Mathematics</em> 20: 53–65. <a href="https://doi.org/10.1016/0377-0427(87)90125-7">doi:10.1016/0377-0427(87)90125-7</a><span class="why">Definition of \(s(i)\) and the silhouette plot used in Lab C.</span></li>
+      <li>Tibshirani R, Walther G, Hastie T (2001). Estimating the number of clusters in a data set via the gap statistic. <em>Journal of the Royal Statistical Society B</em> 63: 411–423. <a href="https://doi.org/10.1111/1467-9868.00293">doi:10.1111/1467-9868.00293</a><span class="why">The gap statistic and its "one standard error" selection rule.</span></li>
+      <li>Caliński T, Harabasz J (1974). A dendrite method for cluster analysis. <em>Communications in Statistics</em> 3: 1–27. <a href="https://doi.org/10.1080/03610927408827101">doi:10.1080/03610927408827101</a><span class="why">The pseudo-F (variance ratio) criterion.</span></li>
+      <li>Kaufman L, Rousseeuw PJ (1990). <em>Finding Groups in Data: An Introduction to Cluster Analysis</em>. Wiley, New York. <span class="why">PAM/k-medoids, CLARA, silhouettes and the interpretation thresholds for \(\bar s\).</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer. Chapter 14 (Unsupervised learning). <span class="why">k-means, k-medoids, hierarchical clustering, gap statistic and vector quantisation in one chapter, with the SSE decomposition.</span></li>
+      <li>Bishop CM (2006). <em>Pattern Recognition and Machine Learning</em>. Springer. Chapter 9. <span class="why">k-means as the \(\sigma^2 \to 0\) limit of EM for a Gaussian mixture, with the responsibilities derivation used above.</span></li>
+      <li>Ester M, Kriegel H-P, Sander J, Xu X (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. In <em>Proceedings of KDD-96</em>, pp. 226–231. AAAI Press. <span class="why">DBSCAN: core points, \(\varepsilon\), minPts, explicit noise.</span></li>
+      <li>Ward JH (1963). Hierarchical grouping to optimize an objective function. <em>Journal of the American Statistical Association</em> 58: 236–244. <a href="https://doi.org/10.1080/01621459.1963.10500845">doi:10.1080/01621459.1963.10500845</a><span class="why">Ward's minimum-variance linkage, the hierarchical cousin of k-means.</span></li>
+      <li>Hubert L, Arabie P (1985). Comparing partitions. <em>Journal of Classification</em> 2: 193–218. <a href="https://doi.org/10.1007/BF01908075">doi:10.1007/BF01908075</a><span class="why">The adjusted Rand index used for stability and external validation.</span></li>
+      <li>Aloise D, Deshpande A, Hansen P, Popat P (2009). NP-hardness of Euclidean sum-of-squares clustering. <em>Machine Learning</em> 75: 245–248. <a href="https://doi.org/10.1007/s10994-009-5103-0">doi:10.1007/s10994-009-5103-0</a><span class="why">Short proof that the global k-means problem is NP-hard even for \(K = 2\).</span></li>
+      <li>Legendre P, Legendre L (2012). <em>Numerical Ecology</em>, 3rd English ed. Elsevier, Amsterdam. Chapter 8 (Cluster analysis). <span class="why">Ecological dissimilarities, linkage methods, and when k-means is or is not appropriate for community data.</span></li>
+      <li>Metzger MJ, Bunce RGH, Jongman RHG, Sayre R, Trabucco A, Zomer R (2013). A high-resolution bioclimate map of the world: a unifying framework for global biodiversity research and monitoring. <em>Global Ecology and Biogeography</em> 22: 630–638. <a href="https://doi.org/10.1111/geb.12022">doi:10.1111/geb.12022</a><span class="why">PCA + ISODATA clustering of bioclimatic variables into 125 strata: a worked example of climate classification by clustering.</span></li>
+      <li>Papale D, Black TA, Carvalhais N, et al. (2015). Effect of spatial sampling from European flux towers for estimating carbon and water fluxes with artificial neural networks. <em>Journal of Geophysical Research: Biogeosciences</em> 120: 1941–1957. <a href="https://doi.org/10.1002/2015JG002997">doi:10.1002/2015JG002997</a><span class="why">Clustering of climate–vegetation space to assess how representative a flux network is for upscaling.</span></li>
+      <li>Wright IJ, Reich PB, Westoby M, et al. (2004). The worldwide leaf economics spectrum. <em>Nature</em> 428: 821–827. <a href="https://doi.org/10.1038/nature02403">doi:10.1038/nature02403</a><span class="why">The trait space in which plant functional types are usually clustered; shows why a continuum, not discrete groups, is the typical finding.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="newton-raphson.html">← Previous: The Newton–Raphson Method</a><a href="gaussian-mixture-models.html">Next: Gaussian Mixture Models →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#objective">The objective</a></li>
+      <li><a href="#lloyd">Lloyd's algorithm</a></li>
+      <li><a href="#choosingk">Choosing k</a></li>
+      <li><a href="#assumptions">Assumptions &amp; scale</a></li>
+      <li><a href="#relatives">Relatives &amp; alternatives</a></li>
+      <li><a href="#applications">Ecological applications</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas &amp; numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use small synthetic datasets generated with a seeded pseudo-random generator (mulberry32 with Box–Muller normals) so that every seed is reproducible. Algorithms are textbook implementations written for clarity, not speed.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(SVGNS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- seeded RNG ---------- */
+  function mulberry32(seed) { var a = seed >>> 0; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(rng) { var u = 0, v = 0; while (u === 0) u = rng(); v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  /* ---------- palette (resolved to rgb for mixing) ---------- */
+  var KC = ['var(--k1)', 'var(--k2)', 'var(--k3)', 'var(--k4)', 'var(--k5)', 'var(--k6)', 'var(--k7)', 'var(--k8)'];
+  var RGB = [];
+  function resolvePalette() {
+    var probe = document.createElement('span'); probe.style.display = 'none'; document.body.appendChild(probe);
+    RGB = KC.map(function (c) { probe.style.color = c; var s = getComputedStyle(probe).color; var m = s.match(/[\d.]+/g); return m ? [+m[0], +m[1], +m[2]] : [128, 128, 128]; });
+    document.body.removeChild(probe);
+  }
+  resolvePalette();
+  document.addEventListener('themechange', function () { resolvePalette(); if (hsDraw) hsDraw(); });
+  function mixColor(w) { var r = 0, g = 0, b = 0; for (var k = 0; k < w.length; k++) { r += w[k] * RGB[k][0]; g += w[k] * RGB[k][1]; b += w[k] * RGB[k][2]; } return 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')'; }
+
+  /* ---------- data generators (coordinates roughly in [0,10]^2) ---------- */
+  function genData(scen, N, seed) {
+    var rng = mulberry32(seed * 7919 + 17), X = [], lab = [], i, n, t;
+    function blob(cx, cy, sx, sy, n, l) { for (var j = 0; j < n; j++) { X.push([cx + sx * gauss(rng), cy + sy * gauss(rng)]); lab.push(l); } }
+    if (scen === 'blobs') { n = Math.round(N / 3); blob(2.6, 2.8, 0.7, 0.7, n, 0); blob(7.4, 3.2, 0.7, 0.7, n, 1); blob(5.0, 7.6, 0.7, 0.7, N - 2 * n, 2); }
+    else if (scen === 'unequal') { n = Math.round(N * 0.2); blob(2.8, 3.0, 0.35, 0.35, n, 0); blob(6.6, 4.2, 1.7, 1.5, N - 2 * n, 1); blob(3.0, 7.8, 0.6, 0.6, n, 2); }
+    else if (scen === 'elong') { var c = Math.cos(0.6), s = Math.sin(0.6); n = Math.round(N / 2); for (i = 0; i < N; i++) { var l = i < n ? 0 : 1; var a = 2.4 * gauss(rng), b = 0.35 * gauss(rng); var cx = l === 0 ? 4.0 : 6.0, cy = l === 0 ? 3.6 : 6.4; X.push([cx + a * c - b * s, cy + a * s + b * c]); lab.push(l); } }
+    else if (scen === 'moons') { n = Math.round(N / 2); for (i = 0; i < N; i++) { var l2 = i < n ? 0 : 1; t = Math.PI * rng(); var x, y; if (l2 === 0) { x = Math.cos(t); y = Math.sin(t); } else { x = 1 - Math.cos(t); y = 1 - Math.sin(t) - 0.5; } X.push([3.0 + 3.0 * x + 0.18 * gauss(rng), 4.0 + 3.0 * y + 0.18 * gauss(rng)]); lab.push(l2); } }
+    else { for (i = 0; i < N; i++) { X.push([0.5 + 9 * rng(), 0.5 + 9 * rng()]); lab.push(0); } }
+    for (i = 0; i < X.length; i++) { X[i][0] = Math.max(0.05, Math.min(9.95, X[i][0])); X[i][1] = Math.max(0.05, Math.min(9.95, X[i][1])); }
+    return { X: X, lab: lab };
+  }
+
+  /* ---------- k-means core ---------- */
+  function d2(a, b) { var s = 0; for (var j = 0; j < a.length; j++) { var t = a[j] - b[j]; s += t * t; } return s; }
+  function assign(X, C) { var lab = new Array(X.length), sse = 0; for (var n = 0; n < X.length; n++) { var best = 0, bd = Infinity; for (var k = 0; k < C.length; k++) { var d = d2(X[n], C[k]); if (d < bd) { bd = d; best = k; } } lab[n] = best; sse += bd; } return { lab: lab, sse: sse }; }
+  function update(X, lab, C) { var K = C.length, d = X[0].length, S = [], cnt = []; for (var k = 0; k < K; k++) { S.push(new Array(d).fill(0)); cnt.push(0); } for (var n = 0; n < X.length; n++) { var k2 = lab[n]; cnt[k2]++; for (var j = 0; j < d; j++) S[k2][j] += X[n][j]; } var NC = []; for (var k3 = 0; k3 < K; k3++) { if (cnt[k3] === 0) NC.push(C[k3].slice()); else NC.push(S[k3].map(function (v) { return v / cnt[k3]; })); } return { C: NC, cnt: cnt }; }
+  function initRandom(X, K, rng) { var idx = [], C = []; while (C.length < K && C.length < X.length) { var i = Math.floor(rng() * X.length); if (idx.indexOf(i) < 0) { idx.push(i); C.push(X[i].slice()); } } return C; }
+  function initPP(X, K, rng) { var C = [X[Math.floor(rng() * X.length)].slice()]; var D = X.map(function (x) { return d2(x, C[0]); }); while (C.length < K) { var tot = 0; for (var n = 0; n < D.length; n++) tot += D[n]; var r = rng() * tot, acc = 0, pick = D.length - 1; for (var m = 0; m < D.length; m++) { acc += D[m]; if (acc >= r) { pick = m; break; } } C.push(X[pick].slice()); for (var q = 0; q < D.length; q++) D[q] = Math.min(D[q], d2(X[q], C[C.length - 1])); } return C; }
+  function runKmeans(X, K, rng, pp, maxIter) { var C = pp ? initPP(X, K, rng) : initRandom(X, K, rng), lab = null, sse = 0; for (var it = 0; it < (maxIter || 100); it++) { var a = assign(X, C); sse = a.sse; if (lab && a.lab.every(function (v, i) { return v === lab[i]; })) break; lab = a.lab; C = update(X, lab, C).C; } var fin = assign(X, C); return { C: C, lab: fin.lab, sse: fin.sse }; }
+  function bestOf(X, K, restarts, seed) { var rng = mulberry32(seed * 104729 + 3), best = null; for (var r = 0; r < restarts; r++) { var res = runKmeans(X, K, rng, true); if (!best || res.sse < best.sse) best = res; } return best; }
+  function totalSS(X) { var d = X[0].length, m = new Array(d).fill(0); X.forEach(function (x) { for (var j = 0; j < d; j++) m[j] += x[j] / X.length; }); var T = 0; X.forEach(function (x) { T += d2(x, m); }); return T; }
+
+  /* ---------- validation indices ---------- */
+  function silhouette(X, lab, K) { var N = X.length, s = new Array(N).fill(0), D = []; for (var i = 0; i < N; i++) { D.push(new Float64Array(N)); } for (var a = 0; a < N; a++) for (var b = a + 1; b < N; b++) { var d = Math.sqrt(d2(X[a], X[b])); D[a][b] = d; D[b][a] = d; } var cnt = new Array(K).fill(0); lab.forEach(function (l) { cnt[l]++; }); for (var n = 0; n < N; n++) { var sums = new Array(K).fill(0); for (var m = 0; m < N; m++) if (m !== n) sums[lab[m]] += D[n][m]; var own = lab[n]; if (cnt[own] <= 1) { s[n] = 0; continue; } var av = sums[own] / (cnt[own] - 1), bv = Infinity; for (var k = 0; k < K; k++) if (k !== own && cnt[k] > 0) bv = Math.min(bv, sums[k] / cnt[k]); if (!isFinite(bv)) { s[n] = 0; continue; } s[n] = (bv - av) / Math.max(av, bv); } return s; }
+  function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+  function chIndex(X, lab, C, sse, K) { if (K < 2) return NaN; var T = totalSS(X), B = T - sse; return (B / (K - 1)) / (sse / (X.length - K)); }
+  function ari(a, b) { var N = a.length, ka = Math.max.apply(null, a) + 1, kb = Math.max.apply(null, b) + 1, n = []; for (var i = 0; i < ka; i++) n.push(new Array(kb).fill(0)); for (var t = 0; t < N; t++) n[a[t]][b[t]]++; function c2(x) { return x * (x - 1) / 2; } var sumij = 0, ai = new Array(ka).fill(0), bj = new Array(kb).fill(0); for (var p = 0; p < ka; p++) for (var q = 0; q < kb; q++) { sumij += c2(n[p][q]); ai[p] += n[p][q]; bj[q] += n[p][q]; } var sa = 0, sb = 0; ai.forEach(function (v) { sa += c2(v); }); bj.forEach(function (v) { sb += c2(v); }); var exp = sa * sb / c2(N), mx = (sa + sb) / 2; return mx === exp ? 1 : (sumij - exp) / (mx - exp); }
+
+  /* ---------- 2-D GMM (full covariance) for Lab D ---------- */
+  function gmmFromKmeans(X, km, iters) { var K = km.C.length, N = X.length, pi = [], mu = [], S = []; for (var k = 0; k < K; k++) { var idx = []; for (var n = 0; n < N; n++) if (km.lab[n] === k) idx.push(n); pi.push(Math.max(idx.length, 1) / N); mu.push(km.C[k].slice()); var sxx = 0, sxy = 0, syy = 0; idx.forEach(function (i) { var dx = X[i][0] - mu[k][0], dy = X[i][1] - mu[k][1]; sxx += dx * dx; sxy += dx * dy; syy += dy * dy; }); var m = Math.max(idx.length, 1); S.push([sxx / m + 0.02, sxy / m, syy / m + 0.02]); } var G = { pi: pi, mu: mu, S: S }; for (var it = 0; it < iters; it++) { var R = gmmResp(X, G); var npi = [], nmu = [], nS = []; for (var k2 = 0; k2 < K; k2++) { var Nk = 0, mx = 0, my = 0; for (var n2 = 0; n2 < N; n2++) { Nk += R[n2][k2]; mx += R[n2][k2] * X[n2][0]; my += R[n2][k2] * X[n2][1]; } Nk = Math.max(Nk, 1e-9); mx /= Nk; my /= Nk; var a = 0, b = 0, c = 0; for (var n3 = 0; n3 < N; n3++) { var dx = X[n3][0] - mx, dy = X[n3][1] - my; a += R[n3][k2] * dx * dx; b += R[n3][k2] * dx * dy; c += R[n3][k2] * dy * dy; } npi.push(Nk / N); nmu.push([mx, my]); nS.push([a / Nk + 0.01, b / Nk, c / Nk + 0.01]); } G = { pi: npi, mu: nmu, S: nS }; } return G; }
+  function logN2(x, mu, S) { var det = S[0] * S[2] - S[1] * S[1]; if (det < 1e-12) det = 1e-12; var dx = x[0] - mu[0], dy = x[1] - mu[1]; var q = (S[2] * dx * dx - 2 * S[1] * dx * dy + S[0] * dy * dy) / det; return -0.5 * q - Math.log(2 * Math.PI) - 0.5 * Math.log(det); }
+  function gmmRespPoint(x, G) { var K = G.pi.length, lp = [], mx = -Infinity; for (var k = 0; k < K; k++) { lp.push(Math.log(G.pi[k]) + logN2(x, G.mu[k], G.S[k])); if (lp[k] > mx) mx = lp[k]; } var s = 0; var r = lp.map(function (v) { var e = Math.exp(v - mx); s += e; return e; }); return r.map(function (v) { return v / s; }); }
+  function gmmResp(X, G) { return X.map(function (x) { return gmmRespPoint(x, G); }); }
+  function ellipse(mu, S, scale) { var tr = S[0] + S[2], df = S[0] - S[2]; var disc = Math.sqrt(Math.max(0, df * df / 4 + S[1] * S[1])); var l1 = tr / 2 + disc, l2 = Math.max(tr / 2 - disc, 1e-9); var ang = 0.5 * Math.atan2(2 * S[1], df); return { cx: mu[0], cy: mu[1], rx: scale * Math.sqrt(l1), ry: scale * Math.sqrt(l2), ang: ang }; }
+
+  /* ---------- chart helpers ---------- */
+  function frame(svg, o) {
+    var W = o.W, H = o.H, mL = o.mL, mR = o.mR, mT = o.mT, mB = o.mB, pw = W - mL - mR, ph = H - mT - mB;
+    function sx(x) { return mL + (x - o.xmin) / (o.xmax - o.xmin) * pw; }
+    function sy(y) { return mT + (o.ymax - y) / (o.ymax - o.ymin) * ph; }
+    var xt = o.xticks || [], yt = o.yticks || [];
+    yt.forEach(function (v) { if (o.grid !== false) svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 7, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 16, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 6, 'text-anchor': 'middle' }, o.xlab));
+    if (o.ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(13,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylab));
+    if (o.title) svg.appendChild(el('text', { 'class': 'ttl', x: mL, y: mT - 6 }, o.title));
+    return { sx: sx, sy: sy, pw: pw, ph: ph, mL: mL, mT: mT };
+  }
+  function clipHalf(poly, a, b) { // keep points closer to a than b
+    var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, nx = b[0] - a[0], ny = b[1] - a[1];
+    function f(p) { return (p[0] - mx) * nx + (p[1] - my) * ny; } // <=0 inside
+    var out = []; for (var i = 0; i < poly.length; i++) { var P = poly[i], Q = poly[(i + 1) % poly.length], fp = f(P), fq = f(Q); if (fp <= 0) out.push(P); if ((fp < 0 && fq > 0) || (fp > 0 && fq < 0)) { var t = fp / (fp - fq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); } } return out;
+  }
+  function voronoi(C, box) { return C.map(function (c, i) { var poly = [[box[0], box[2]], [box[1], box[2]], [box[1], box[3]], [box[0], box[3]]]; for (var j = 0; j < C.length; j++) if (j !== i && poly.length) poly = clipHalf(poly, c, C[j]); return poly; }); }
+  function hoverTip(svg, tip, fr, xs, series, xfmt) { // series: [{name, y:[]}]
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: fr.mT, y2: fr.mT + fr.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: fr.mL, y: fr.mT, width: fr.pw, height: fr.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; var p = pt.matrixTransform(svg.getScreenCTM().inverse()); var best = 0, bd = Infinity; xs.forEach(function (x, i) { var d = Math.abs(fr.sx(x) - p.x); if (d < bd) { bd = d; best = i; } }); xh.setAttribute('x1', fr.sx(xs[best])); xh.setAttribute('x2', fr.sx(xs[best])); xh.setAttribute('visibility', 'visible'); var html = (xfmt ? xfmt(xs[best]) : xs[best]); series.forEach(function (s) { var v = s.y[best]; html += '<br>' + s.name + ' <b>' + (v === null || isNaN(v) ? '–' : fmt(v, s.d === undefined ? 2 : s.d)) + '</b>'; }); tip.innerHTML = html; tip.hidden = false; var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave); hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab A: playground ---------- */
+  var kmSvg = document.getElementById('kmSvg'), kmSse = document.getElementById('kmSse');
+  var inScen = document.getElementById('kmScen'), inK = document.getElementById('kmK'), inSeed = document.getElementById('kmSeed'), inN = document.getElementById('kmN');
+  var data = null, st = null, bestCache = null, anim = null;
+  function loadData() { data = genData(inScen.value, +inN.value, +inSeed.value); bestCache = null; st = null; }
+  function newState(pp) { var K = +inK.value, rng = mulberry32(+inSeed.value * 31 + 1000 * K + (pp ? 7 : 0)); st = { C: pp ? initPP(data.X, K, rng) : initRandom(data.X, K, rng), lab: null, phase: 0, it: 0, hist: [], moved: null, converged: false, ppInit: pp }; }
+  function stepOnce() {
+    if (!st || st.converged) return false;
+    var K = st.C.length;
+    if (st.phase === 0) { var a = assign(data.X, st.C); var moved = st.lab ? a.lab.reduce(function (c, v, i) { return c + (v !== st.lab[i] ? 1 : 0); }, 0) : null; if (st.lab && moved === 0) { st.converged = true; st.moved = 0; st.sse = a.sse; return false; } st.lab = a.lab; st.sse = a.sse; st.moved = moved; st.phase = 1; st.hist.push({ it: st.it, step: 'assign', sse: a.sse }); }
+    else { var u = update(data.X, st.lab, st.C); st.prevC = st.C; st.C = u.C; st.phase = 0; st.it++; var a2 = assign(data.X, st.C); st.sseAfter = a2.sse; st.hist.push({ it: st.it, step: 'update', sse: sumSSE(data.X, st.lab, st.C) }); }
+    return true;
+  }
+  function sumSSE(X, lab, C) { var s = 0; for (var n = 0; n < X.length; n++) s += d2(X[n], C[lab[n]]); return s; }
+  function drawKm(Cdraw) {
+    clear(kmSvg);
+    var fr = frame(kmSvg, { W: 640, H: 440, mL: 44, mR: 14, mT: 14, mB: 40, xmin: 0, xmax: 10, ymin: 0, ymax: 10, xticks: [0, 2, 4, 6, 8, 10], yticks: [0, 2, 4, 6, 8, 10], xlab: 'feature 1 (standardised units)', ylab: 'feature 2 (standardised units)', grid: false });
+    var X = data.X;
+    if (st) {
+      var C = Cdraw || st.C;
+      var cells = voronoi(C, [0, 10, 0, 10]);
+      cells.forEach(function (poly, k) { if (poly.length < 3) return; kmSvg.appendChild(el('polygon', { 'class': 'cell', points: poly.map(function (p) { return fr.sx(p[0]).toFixed(1) + ',' + fr.sy(p[1]).toFixed(1); }).join(' '), fill: KC[k % 8], stroke: KC[k % 8] })); });
+    }
+    X.forEach(function (x, n) { var col = (st && st.lab) ? KC[st.lab[n] % 8] : 'var(--muted)'; kmSvg.appendChild(el('circle', { 'class': 'pt', cx: fr.sx(x[0]), cy: fr.sy(x[1]), r: 3.6, fill: col })); });
+    if (st) { (Cdraw || st.C).forEach(function (c, k) { var cx = fr.sx(c[0]), cy = fr.sy(c[1]); kmSvg.appendChild(el('path', { 'class': 'cen', d: 'M' + cx + ',' + (cy - 8) + 'L' + (cx + 8) + ',' + cy + 'L' + cx + ',' + (cy + 8) + 'L' + (cx - 8) + ',' + cy + 'Z', fill: KC[k % 8] })); }); }
+    var leg = document.getElementById('kmLegend'); leg.innerHTML = ''; if (st) { st.C.forEach(function (c, k) { var s = document.createElement('span'); s.style.setProperty('--c', KC[k % 8]); s.textContent = 'cluster ' + (k + 1); leg.appendChild(s); }); var s2 = document.createElement('span'); s2.style.setProperty('--c', 'var(--fg)'); s2.textContent = '◆ centroid; shaded regions are Voronoi cells'; leg.appendChild(s2); }
+  }
+  function drawSse() {
+    clear(kmSse);
+    var h = st ? st.hist : [];
+    var ymax = 1; h.forEach(function (p) { ymax = Math.max(ymax, p.sse); }); if (!h.length && data) ymax = totalSS(data.X);
+    ymax *= 1.08;
+    var n = Math.max(h.length, 2);
+    var fr = frame(kmSse, { W: 640, H: 150, mL: 56, mR: 14, mT: 20, mT: 20, mB: 30, xmin: 0, xmax: n - 1, ymin: 0, ymax: ymax, xticks: [], yticks: [0, ymax / 2, ymax].map(function (v) { return Math.round(v / 1.08); }), yfmt: function (v) { return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v; }, xlab: 'half-steps (assign, update, assign, …)', ylab: 'SSE, J', title: 'Within-cluster SSE after each half-step' });
+    if (h.length) { var d = ''; h.forEach(function (p, i) { d += (i ? 'L' : 'M') + fr.sx(i).toFixed(1) + ',' + fr.sy(Math.min(p.sse, ymax)).toFixed(1); }); kmSse.appendChild(el('path', { 'class': 'ser', d: d, stroke: 'var(--fg)' })); h.forEach(function (p, i) { kmSse.appendChild(el('circle', { cx: fr.sx(i), cy: fr.sy(Math.min(p.sse, ymax)), r: 3.5, fill: p.step === 'assign' ? 'var(--series-1)' : 'var(--series-2)' })); }); }
+    var tb = document.getElementById('kmTable'); var html = '<thead><tr><th class="num">Iteration</th><th>Half-step</th><th class="num">SSE</th></tr></thead><tbody>'; h.forEach(function (p) { html += '<tr><td class="num">' + p.it + '</td><td>' + p.step + '</td><td class="num">' + fmt(p.sse, 2) + '</td></tr>'; }); tb.innerHTML = html + '</tbody>';
+  }
+  function readouts() {
+    document.getElementById('kmKO').textContent = inK.value; document.getElementById('kmSeedO').textContent = inSeed.value; document.getElementById('kmNO').textContent = inN.value;
+    var btn = document.getElementById('kmStep');
+    if (!st) { document.getElementById('kmIt').textContent = '–'; document.getElementById('kmJ').textContent = '–'; document.getElementById('kmMoved').textContent = '–'; document.getElementById('kmSizes').textContent = '–'; document.getElementById('kmSil').textContent = '–'; btn.textContent = 'Step: assign ›'; btn.disabled = true; document.getElementById('kmTitle').textContent = 'Not started'; document.getElementById('kmText').textContent = 'Choose a scenario and k, then initialise. Each click of "Step" performs one half-iteration of Lloyd\'s algorithm so you can see the assignment and the update separately.'; }
+    else {
+      btn.disabled = st.converged; btn.textContent = st.converged ? 'Converged' : (st.phase === 0 ? 'Step: assign ›' : 'Step: update ›');
+      document.getElementById('kmIt').textContent = st.it + (st.converged ? ' (converged)' : '');
+      var J = st.lab ? sumSSE(data.X, st.lab, st.C) : null;
+      document.getElementById('kmJ').textContent = J === null ? '–' : fmt(J, 2);
+      document.getElementById('kmMoved').textContent = st.moved === null ? '–' : st.moved;
+      if (st.lab) { var cnt = new Array(st.C.length).fill(0); st.lab.forEach(function (l) { cnt[l]++; }); document.getElementById('kmSizes').textContent = cnt.join(' / '); var s = st.C.length > 1 ? mean(silhouette(data.X, st.lab, st.C.length)) : NaN; document.getElementById('kmSil').textContent = isNaN(s) ? 'n/a for k = 1' : fmt(s, 3); } else { document.getElementById('kmSizes').textContent = '–'; document.getElementById('kmSil').textContent = '–'; }
+      var ttl = st.converged ? 'Converged after ' + st.it + ' iterations' : (st.phase === 0 ? (st.it === 0 ? 'Initialised (' + (st.ppInit ? 'k-means++' : 'random') + ')' : 'After update ' + st.it) : 'After assignment ' + (st.it + 1));
+      var txt;
+      if (st.converged) txt = 'No point changed cluster, so the centroids are the means of their Voronoi cells and the cells are the nearest-centre regions of those means: a fixed point of Lloyd\'s algorithm. Compare the final SSE with the best-of-10 value in the readouts; if it is higher, this run is stuck in a local minimum.';
+      else if (st.phase === 0 && st.it === 0) txt = st.ppInit ? 'Seeds chosen by D² sampling: each new seed is drawn with probability proportional to its squared distance from the nearest seed already chosen, so seeds spread across the data. Click Step to assign every point to its nearest seed.' : 'Seeds are k distinct data points chosen uniformly at random. Nothing stops two seeds landing in the same group. Click Step to assign every point to its nearest seed.';
+      else if (st.phase === 1) txt = 'Assignment step: each point is coloured by its nearest centroid, i.e. the Voronoi cell it falls in. This minimises J for the current centroids; ' + (st.moved === null ? 'all points were assigned for the first time.' : st.moved + ' point(s) changed cluster.') + ' Next: move each centroid to the mean of its points.';
+      else txt = 'Update step: each centroid moved to the mean of the points assigned to it, which minimises J for the current assignment. The Voronoi boundaries moved with the centroids, so some points may now be on the wrong side of a boundary. Next: reassign.';
+      document.getElementById('kmTitle').textContent = ttl; document.getElementById('kmText').textContent = txt;
+    }
+    if (!bestCache) bestCache = bestOf(data.X, +inK.value, 10, +inSeed.value);
+    document.getElementById('kmBest').textContent = fmt(bestCache.sse, 2);
+  }
+  function refreshAll() { drawKm(); drawSse(); readouts(); drawSilPlot(); if (hsDraw) hsDraw(); }
+  function animateUpdate(from, to, done) {
+    if (reduced || !from) { done(); return; }
+    var t0 = null, dur = 350;
+    function tick(ts) { if (!t0) t0 = ts; var u = Math.min(1, (ts - t0) / dur); u = u * u * (3 - 2 * u); var Ci = from.map(function (c, k) { return [c[0] + (to[k][0] - c[0]) * u, c[1] + (to[k][1] - c[1]) * u]; }); drawKm(Ci); if (u < 1) anim = requestAnimationFrame(tick); else { anim = null; done(); } }
+    anim = requestAnimationFrame(tick);
+  }
+  document.getElementById('kmInitR').addEventListener('click', function () { if (anim) cancelAnimationFrame(anim); newState(false); refreshAll(); });
+  document.getElementById('kmInitPP').addEventListener('click', function () { if (anim) cancelAnimationFrame(anim); newState(true); refreshAll(); });
+  document.getElementById('kmStep').addEventListener('click', function () { if (!st || anim) return; var wasUpdate = st.phase === 1; var prev = st.C; stepOnce(); if (wasUpdate) { animateUpdate(prev, st.C, refreshAll); drawSse(); readouts(); } else refreshAll(); });
+  document.getElementById('kmRun').addEventListener('click', function () { if (anim) cancelAnimationFrame(anim); if (!st) newState(true); var guard = 0; while (!st.converged && guard++ < 400) stepOnce(); refreshAll(); });
+  [inScen, inSeed, inN].forEach(function (i) { i.addEventListener('input', function () { if (anim) cancelAnimationFrame(anim); loadData(); refreshAll(); runElbow(); }); });
+  inK.addEventListener('input', function () { if (anim) cancelAnimationFrame(anim); bestCache = null; st = null; refreshAll(); });
+
+  /* ---------- Lab C: silhouette plot ---------- */
+  var spSvg = document.getElementById('silPlot');
+  function drawSilPlot() {
+    clear(spSvg);
+    var lab = st && st.lab ? st.lab : null, K = st ? st.C.length : 0;
+    var W = 640, H = 360, mL = 60, mR = 20, mT = 26, mB = 36, pw = W - mL - mR, ph = H - mT - mB;
+    function sx(v) { return mL + (v + 1) / 2 * pw; }
+    [-1, -0.5, 0, 0.5, 1].forEach(function (v) { spSvg.appendChild(el('line', { 'class': 'gridline', x1: sx(v), x2: sx(v), y1: mT, y2: mT + ph })); spSvg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 16, 'text-anchor': 'middle' }, v)); });
+    spSvg.appendChild(el('line', { 'class': 'ax', x1: sx(0), x2: sx(0), y1: mT, y2: mT + ph, stroke: 'var(--muted)' }));
+    spSvg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 4, 'text-anchor': 'middle' }, 'silhouette s(i)'));
+    if (!lab || K < 2) { spSvg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: mT + ph / 2, 'text-anchor': 'middle' }, lab ? 'Silhouette needs k ≥ 2' : 'Initialise and step Lab A to obtain a clustering')); document.getElementById('spMean').textContent = '–'; document.getElementById('spNeg').textContent = '–'; document.getElementById('spPer').textContent = '–'; return; }
+    var s = silhouette(data.X, lab, K), N = s.length, order = [], per = [];
+    for (var k = 0; k < K; k++) { var idx = []; for (var n = 0; n < N; n++) if (lab[n] === k) idx.push(n); idx.sort(function (a, b) { return s[b] - s[a]; }); per.push(idx.length ? mean(idx.map(function (i) { return s[i]; })) : NaN); order.push(idx); }
+    var bh = ph / (N + K), y = mT, neg = 0;
+    order.forEach(function (idx, k) { var y0 = y; idx.forEach(function (i) { var v = s[i]; if (v < 0) neg++; var x0 = Math.min(sx(0), sx(v)), w = Math.abs(sx(v) - sx(0)); spSvg.appendChild(el('rect', { x: x0, y: y, width: Math.max(w, 0.5), height: Math.max(bh - 0.3, 0.4), fill: KC[k % 8] })); y += bh; }); if (idx.length) spSvg.appendChild(el('text', { 'class': 'tick', x: mL - 6, y: (y0 + y) / 2 + 4, 'text-anchor': 'end', fill: KC[k % 8] }, 'C' + (k + 1) + ' (' + idx.length + ')')); y += bh; });
+    var m = mean(s); spSvg.appendChild(el('line', { x1: sx(m), x2: sx(m), y1: mT, y2: mT + ph, stroke: 'var(--fg)', 'stroke-dasharray': '5 4', 'stroke-width': 1.5 })); spSvg.appendChild(el('text', { 'class': 'dl', x: sx(m) + 5, y: mT - 8 }, 'mean s̄ = ' + fmt(m, 3)));
+    document.getElementById('spMean').textContent = fmt(m, 3); document.getElementById('spNeg').textContent = neg + ' of ' + N; document.getElementById('spPer').textContent = per.map(function (v) { return isNaN(v) ? '–' : fmt(v, 2); }).join(' / ');
+  }
+
+  /* ---------- Lab B: elbow / silhouette / gap / CH ---------- */
+  var elbSvg = document.getElementById('elbSvg'), silSvg = document.getElementById('silSvg'), elbTip = document.getElementById('elbTip'), silTip = document.getElementById('silTip');
+  function runElbow() {
+    var X = data.X, N = X.length, ks = [], W = [], S = [], CH = [], G = [], sk = [], B = 6;
+    var xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity; X.forEach(function (x) { xmin = Math.min(xmin, x[0]); xmax = Math.max(xmax, x[0]); ymin = Math.min(ymin, x[1]); ymax = Math.max(ymax, x[1]); });
+    var refs = []; for (var b = 0; b < B; b++) { var rng = mulberry32(5000 + b * 17 + (+inSeed.value)); var R = []; for (var n = 0; n < N; n++) R.push([xmin + (xmax - xmin) * rng(), ymin + (ymax - ymin) * rng()]); refs.push(R); }
+    for (var k = 1; k <= 10; k++) {
+      ks.push(k); var res = bestOf(X, k, 10, +inSeed.value + k); W.push(res.sse);
+      S.push(k >= 2 ? mean(silhouette(X, res.lab, k)) : NaN); CH.push(k >= 2 ? chIndex(X, res.lab, res.C, res.sse, k) : NaN);
+      var lw = []; refs.forEach(function (R, bi) { lw.push(Math.log(bestOf(R, k, 3, 900 + bi + k).sse)); }); var ml = mean(lw); var sd = Math.sqrt(mean(lw.map(function (v) { return (v - ml) * (v - ml); })));
+      G.push(ml - Math.log(res.sse)); sk.push(sd * Math.sqrt(1 + 1 / B));
+    }
+    var kSil = 2, kCH = 2; for (var i = 1; i < 10; i++) { if (S[i] > S[kSil - 1]) kSil = i + 1; if (CH[i] > CH[kCH - 1]) kCH = i + 1; }
+    var kGap = 10; for (var g = 0; g < 9; g++) { if (G[g] >= G[g + 1] - sk[g + 1]) { kGap = g + 1; break; } }
+    var kElb = 2, bestD = -Infinity; for (var e = 1; e < 9; e++) { var d2v = (W[e - 1] - W[e]) - (W[e] - W[e + 1]); if (d2v > bestD) { bestD = d2v; kElb = e + 1; } }
+    document.getElementById('selSil').textContent = kSil + ' (s̄ = ' + fmt(S[kSil - 1], 3) + ')'; document.getElementById('selGap').textContent = kGap; document.getElementById('selCH').textContent = kCH + ' (CH = ' + fmt(CH[kCH - 1], 0) + ')'; document.getElementById('selElb').textContent = kElb;
+    // chart 1: W(k)
+    clear(elbSvg); var wmax = W[0] * 1.05;
+    var fr1 = frame(elbSvg, { W: 420, H: 300, mL: 56, mR: 16, mT: 26, mB: 40, xmin: 1, xmax: 10, ymin: 0, ymax: wmax, xticks: ks, yticks: [0, 0.25, 0.5, 0.75, 1].map(function (f) { return Math.round(f * wmax / 1.05); }), yfmt: function (v) { return v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v; }, xlab: 'number of clusters, k', ylab: 'W(k), within-cluster SSE', title: 'Elbow plot' });
+    var d = ''; ks.forEach(function (k, i) { d += (i ? 'L' : 'M') + fr1.sx(k).toFixed(1) + ',' + fr1.sy(W[i]).toFixed(1); }); elbSvg.appendChild(el('path', { 'class': 'ser', d: d, stroke: 'var(--fg)' })); ks.forEach(function (k, i) { elbSvg.appendChild(el('circle', { cx: fr1.sx(k), cy: fr1.sy(W[i]), r: 3.5, fill: 'var(--fg)' })); });
+    elbSvg.appendChild(el('line', { x1: fr1.sx(kElb), x2: fr1.sx(kElb), y1: fr1.mT, y2: fr1.mT + fr1.ph, stroke: 'var(--accent)', 'stroke-dasharray': '4 4' })); elbSvg.appendChild(el('text', { 'class': 'dl', x: fr1.sx(kElb) + 5, y: fr1.mT + 14, fill: 'var(--accent)' }, 'elbow k = ' + kElb));
+    hoverTip(elbSvg, elbTip, fr1, ks, [{ name: 'W(k)', y: W, d: 1 }, { name: 'CH', y: CH, d: 1 }], function (k) { return 'k = ' + k; });
+    // chart 2: silhouette and gap (both dimensionless, shared axis −0.2..1.1)
+    clear(silSvg); var gmax = Math.max(1, Math.max.apply(null, G) * 1.1), gmin = Math.min(-0.2, Math.min.apply(null, G));
+    var fr2 = frame(silSvg, { W: 420, H: 300, mL: 56, mR: 16, mT: 26, mB: 40, xmin: 1, xmax: 10, ymin: gmin, ymax: gmax, xticks: ks, yticks: [0, 0.25, 0.5, 0.75, 1], yfmt: function (v) { return v.toFixed(2); }, xlab: 'number of clusters, k', ylab: 'mean silhouette · Gap(k)', title: 'Silhouette and gap statistic' });
+    var ds = '', dg = ''; ks.forEach(function (k, i) { if (!isNaN(S[i])) ds += (ds ? 'L' : 'M') + fr2.sx(k).toFixed(1) + ',' + fr2.sy(S[i]).toFixed(1); dg += (i ? 'L' : 'M') + fr2.sx(k).toFixed(1) + ',' + fr2.sy(Math.max(gmin, Math.min(gmax, G[i]))).toFixed(1); });
+    silSvg.appendChild(el('path', { 'class': 'ser', d: dg, stroke: 'var(--series-2)' })); silSvg.appendChild(el('path', { 'class': 'ser', d: ds, stroke: 'var(--series-1)' }));
+    ks.forEach(function (k, i) { var gy = fr2.sy(Math.max(gmin, Math.min(gmax, G[i]))); silSvg.appendChild(el('line', { x1: fr2.sx(k), x2: fr2.sx(k), y1: fr2.sy(Math.max(gmin, Math.min(gmax, G[i] - sk[i]))), y2: fr2.sy(Math.max(gmin, Math.min(gmax, G[i] + sk[i]))), stroke: 'var(--series-2)', 'stroke-width': 1 })); silSvg.appendChild(el('circle', { cx: fr2.sx(k), cy: gy, r: 3, fill: 'var(--series-2)' })); if (!isNaN(S[i])) silSvg.appendChild(el('circle', { cx: fr2.sx(k), cy: fr2.sy(S[i]), r: 3.5, fill: 'var(--series-1)' })); });
+    silSvg.appendChild(el('text', { 'class': 'dl', x: fr2.sx(10) - 4, y: fr2.sy(S[9]) - 8, 'text-anchor': 'end', fill: 'var(--series-1)' }, 'silhouette')); silSvg.appendChild(el('text', { 'class': 'dl', x: fr2.sx(10) - 4, y: fr2.sy(Math.max(gmin, Math.min(gmax, G[9]))) + 14, 'text-anchor': 'end', fill: 'var(--series-2)' }, 'gap ± s'));
+    hoverTip(silSvg, silTip, fr2, ks, [{ name: 's̄(k)', y: S, d: 3 }, { name: 'Gap(k)', y: G, d: 3 }, { name: 's_k', y: sk, d: 3 }], function (k) { return 'k = ' + k; });
+    var tb = document.getElementById('elbTable'); var html = '<thead><tr><th class="num">k</th><th class="num">W(k)</th><th class="num">s̄(k)</th><th class="num">CH(k)</th><th class="num">Gap(k)</th><th class="num">s_k</th></tr></thead><tbody>'; ks.forEach(function (k, i) { html += '<tr><td class="num">' + k + '</td><td class="num">' + fmt(W[i], 1) + '</td><td class="num">' + (isNaN(S[i]) ? '–' : fmt(S[i], 3)) + '</td><td class="num">' + (isNaN(CH[i]) ? '–' : fmt(CH[i], 1)) + '</td><td class="num">' + fmt(G[i], 3) + '</td><td class="num">' + fmt(sk[i], 3) + '</td></tr>'; }); tb.innerHTML = html + '</tbody>';
+  }
+
+  /* ---------- Lab D: hard vs soft ---------- */
+  var hsSvg = document.getElementById('hsSvg'), hsBar = document.getElementById('hsBar'), hsX = document.getElementById('hsX'), hsY = document.getElementById('hsY');
+  var hsCache = null, hsDraw = null;
+  hsDraw = function () {
+    var K = +inK.value, key = inScen.value + '|' + inSeed.value + '|' + inN.value + '|' + K;
+    if (!hsCache || hsCache.key !== key) { var km = bestOf(data.X, K, 10, +inSeed.value); hsCache = { key: key, km: km, G: gmmFromKmeans(data.X, km, 60) }; }
+    var km = hsCache.km, G = hsCache.G, px = +hsX.value, py = +hsY.value; document.getElementById('hsXO').textContent = fmt(px, 2); document.getElementById('hsYO').textContent = fmt(py, 2);
+    clear(hsSvg);
+    var fr = frame(hsSvg, { W: 640, H: 400, mL: 44, mR: 14, mT: 14, mB: 40, xmin: 0, xmax: 10, ymin: 0, ymax: 10, xticks: [0, 2, 4, 6, 8, 10], yticks: [0, 2, 4, 6, 8, 10], xlab: 'feature 1', ylab: 'feature 2', grid: false });
+    voronoi(km.C, [0, 10, 0, 10]).forEach(function (poly, k) { if (poly.length > 2) hsSvg.appendChild(el('polygon', { points: poly.map(function (p) { return fr.sx(p[0]).toFixed(1) + ',' + fr.sy(p[1]).toFixed(1); }).join(' '), fill: 'none', stroke: 'var(--muted)', 'stroke-dasharray': '4 3', 'stroke-width': 1 })); });
+    var R = gmmResp(data.X, G);
+    data.X.forEach(function (x, n) { hsSvg.appendChild(el('circle', { 'class': 'pt', cx: fr.sx(x[0]), cy: fr.sy(x[1]), r: 3.4, fill: mixColor(R[n]), opacity: 0.85 })); });
+    var sxScale = fr.pw / 10, syScale = fr.ph / 10;
+    G.mu.forEach(function (m, k) { [1, 2].forEach(function (sc) { var E = ellipse(m, G.S[k], sc); hsSvg.appendChild(el('ellipse', { cx: fr.sx(E.cx), cy: fr.sy(E.cy), rx: E.rx * sxScale, ry: E.ry * syScale, transform: 'rotate(' + (-E.ang * 180 / Math.PI) + ' ' + fr.sx(E.cx) + ' ' + fr.sy(E.cy) + ')', fill: 'none', stroke: KC[k % 8], 'stroke-width': sc === 1 ? 2 : 1.2, 'stroke-dasharray': sc === 1 ? '' : '3 3' })); }); });
+    km.C.forEach(function (c, k) { var cx = fr.sx(c[0]), cy = fr.sy(c[1]); hsSvg.appendChild(el('path', { 'class': 'cen', d: 'M' + cx + ',' + (cy - 8) + 'L' + (cx + 8) + ',' + cy + 'L' + cx + ',' + (cy + 8) + 'L' + (cx - 8) + ',' + cy + 'Z', fill: KC[k % 8] })); });
+    var r = gmmRespPoint([px, py], G), dists = km.C.map(function (c) { return Math.sqrt(d2([px, py], c)); }), hard = dists.indexOf(Math.min.apply(null, dists));
+    hsSvg.appendChild(el('circle', { cx: fr.sx(px), cy: fr.sy(py), r: 9, fill: mixColor(r), stroke: 'var(--fg)', 'stroke-width': 2.5 }));
+    hsSvg.appendChild(el('text', { 'class': 'dl', x: fr.sx(px) + 13, y: fr.sy(py) + 4 }, 'probe → k-means C' + (hard + 1)));
+    var leg = document.getElementById('hsLegend'); leg.innerHTML = ''; km.C.forEach(function (c, k) { var s = document.createElement('span'); s.style.setProperty('--c', KC[k % 8]); s.textContent = 'component ' + (k + 1) + ' (ellipses: 1σ solid, 2σ dashed)'; leg.appendChild(s); }); var s3 = document.createElement('span'); s3.style.setProperty('--c', 'var(--muted)'); s3.textContent = 'dashed straight lines: k-means Voronoi boundaries; point colour = responsibility mix'; leg.appendChild(s3);
+    clear(hsBar); var W2 = 260, H2 = 150, mL2 = 34, mT2 = 22, pw2 = W2 - mL2 - 10, ph2 = H2 - mT2 - 28; var bw = pw2 / K;
+    hsBar.appendChild(el('text', { 'class': 'ttl', x: mL2, y: 14 }, 'Responsibilities γ_k (probe)'));
+    [0, 0.5, 1].forEach(function (v) { var yy = mT2 + ph2 - v * ph2; hsBar.appendChild(el('line', { 'class': 'gridline', x1: mL2, x2: mL2 + pw2, y1: yy, y2: yy })); hsBar.appendChild(el('text', { 'class': 'tick', x: mL2 - 5, y: yy + 4, 'text-anchor': 'end' }, v)); });
+    r.forEach(function (v, k) { hsBar.appendChild(el('rect', { x: mL2 + k * bw + bw * 0.15, y: mT2 + ph2 - v * ph2, width: bw * 0.7, height: v * ph2, fill: KC[k % 8] })); hsBar.appendChild(el('text', { 'class': 'tick', x: mL2 + k * bw + bw / 2, y: mT2 + ph2 + 14, 'text-anchor': 'middle' }, 'C' + (k + 1))); if (k === hard) hsBar.appendChild(el('text', { 'class': 'tick', x: mL2 + k * bw + bw / 2, y: mT2 + ph2 + 26, 'text-anchor': 'middle' }, 'hard')); });
+    document.getElementById('hsHard').textContent = 'C' + (hard + 1); document.getElementById('hsDist').textContent = dists.map(function (v) { return fmt(v, 2); }).join(' / ');
+    var mr = Math.max.apply(null, r); document.getElementById('hsSoft').textContent = 'C' + (r.indexOf(mr) + 1) + ' with γ = ' + fmt(mr, 3);
+  };
+  [hsX, hsY].forEach(function (i) { i.addEventListener('input', hsDraw); });
+
+  /* ---------- Lab E: scaling ---------- */
+  var scSeed = document.getElementById('scSeed'), scPsd = document.getElementById('scPsd');
+  function drawScaling() {
+    var seed = +scSeed.value, psd = +scPsd.value; document.getElementById('scSeedO').textContent = seed; document.getElementById('scPsdO').textContent = psd;
+    var rng = mulberry32(seed * 977 + 5), X = [], truth = [];
+    var groups = [[2, 700], [16, 750], [9, 1600]];
+    groups.forEach(function (g, gi) { for (var i = 0; i < 40; i++) { X.push([g[0] + 2.2 * gauss(rng), Math.max(50, g[1] + psd * gauss(rng))]); truth.push(gi); } });
+    var mT_ = mean(X.map(function (x) { return x[0]; })), mP = mean(X.map(function (x) { return x[1]; }));
+    var sT = Math.sqrt(mean(X.map(function (x) { return (x[0] - mT_) * (x[0] - mT_); }))), sP = Math.sqrt(mean(X.map(function (x) { return (x[1] - mP) * (x[1] - mP); })));
+    var Z = X.map(function (x) { return [(x[0] - mT_) / sT, (x[1] - mP) / sP]; });
+    var raw = bestOf(X, 3, 10, seed), std = bestOf(Z, 3, 10, seed);
+    document.getElementById('scAriRaw').textContent = fmt(ari(truth, raw.lab), 3); document.getElementById('scAriStd').textContent = fmt(ari(truth, std.lab), 3);
+    document.getElementById('scSd').textContent = fmt(sT, 1) + ' · ' + fmt(sP, 0); document.getElementById('scShare').textContent = fmt(100 * sP * sP / (sP * sP + sT * sT), 1) + '%';
+    function panel(svg, lab, C, title, stdC) {
+      clear(svg); var fr = frame(svg, { W: 420, H: 320, mL: 54, mR: 12, mT: 26, mB: 40, xmin: -6, xmax: 24, ymin: 0, ymax: 2400, xticks: [-5, 0, 5, 10, 15, 20], yticks: [0, 600, 1200, 1800, 2400], xlab: 'mean annual temperature (°C)', ylab: 'annual precipitation (mm)', title: title });
+      X.forEach(function (x, n) { var shape = truth[n]; var cx = fr.sx(x[0]), cy = fr.sy(Math.min(2400, x[1])); if (shape === 0) svg.appendChild(el('circle', { 'class': 'pt', cx: cx, cy: cy, r: 3.6, fill: KC[lab[n]] })); else if (shape === 1) svg.appendChild(el('rect', { 'class': 'pt', x: cx - 3.3, y: cy - 3.3, width: 6.6, height: 6.6, fill: KC[lab[n]] })); else svg.appendChild(el('path', { 'class': 'pt', d: 'M' + cx + ',' + (cy - 4.3) + 'L' + (cx + 4) + ',' + (cy + 3) + 'L' + (cx - 4) + ',' + (cy + 3) + 'Z', fill: KC[lab[n]] })); });
+      C.forEach(function (c, k) { var cc = stdC ? [c[0] * sT + mT_, c[1] * sP + mP] : c; var cx = fr.sx(cc[0]), cy = fr.sy(Math.min(2400, cc[1])); svg.appendChild(el('path', { 'class': 'cen', d: 'M' + cx + ',' + (cy - 8) + 'L' + (cx + 8) + ',' + cy + 'L' + cx + ',' + (cy + 8) + 'L' + (cx - 8) + ',' + cy + 'Z', fill: KC[k] })); });
+      svg.appendChild(el('text', { 'class': 'tick', x: fr.mL + fr.pw - 4, y: fr.mT + 12, 'text-anchor': 'end' }, 'marker shape = true group; colour = k-means cluster'));
+    }
+    panel(document.getElementById('scRaw'), raw.lab, raw.C, 'Raw units: distance dominated by precipitation', false);
+    panel(document.getElementById('scStd'), std.lab, std.C, 'Standardised (z-scores) before clustering', true);
+  }
+  [scSeed, scPsd].forEach(function (i) { i.addEventListener('input', drawScaling); });
+
+  /* ---------- boot ---------- */
+  loadData(); newState(true); refreshAll(); runElbow(); drawScaling();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Canopy Upscaling</title>
+<meta name="description" content="Canopy upscaling at comprehensive-exam depth: leaf area index and its measurement, Beer–Lambert light extinction, leaf angle distributions and clumping, sunlit and shaded leaves, big-leaf, two-leaf and multilayer canopy models, canopy nitrogen distribution, light-use efficiency and the diffuse-light effect.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .chartbox { position: relative; }
+  .modebtns { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Canopy upscaling</div>
+    <div class="eyebrow">Topic 7 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Canopy Upscaling</h1>
+    <p class="lead">How a leaf-level model of photosynthesis and conductance becomes a flux per square metre of ground: leaf area index, Beer–Lambert light extinction, sunlit and shaded leaves, and the big-leaf, two-leaf and multilayer schemes that ecosystem models use to integrate over a canopy.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Everything a land model knows about leaves (FvCB photosynthesis, a stomatal model, leaf energy balance) is written per unit <em>leaf</em> area, while every flux it must deliver (GPP, transpiration, sensible heat) is per unit <em>ground</em> area. The bridge is the <strong>leaf area index</strong> (LAI, m² leaf per m² ground) together with a description of how light is distributed over those leaves. Light decays with cumulative leaf area roughly as the Beer–Lambert law, \(I(L) = I_0 e^{-kL}\), where the extinction coefficient <em>k</em> depends on leaf angle distribution, solar zenith angle and clumping. Because the leaf light response is strongly nonlinear, you cannot simply multiply the response of an average leaf by LAI: a <strong>big-leaf</strong> model that does so overestimates canopy photosynthesis. Splitting the canopy into <strong>sunlit and shaded</strong> fractions (two-leaf model) removes almost all of that error, and <strong>multilayer</strong> models resolve the vertical profiles of light, nitrogen, temperature and wind explicitly. Which scheme a model uses, and how it distributes nitrogen (hence V<sub>cmax</sub>) with depth, is one of the largest structural choices in a land-surface model.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>The examiner wants to see that you can (i) derive Beer's law from gap probability and say what <em>k</em> depends on, (ii) explain in one sentence why averaging light before applying a nonlinear response gives the wrong answer (Jensen's inequality), (iii) write the sunlit LAI formula, and (iv) name which models use which scheme and what they assume about nitrogen with depth. Every lab on this page is designed to make one of those four points visible.</p></div>
+  </section>
+
+  <section id="lai">
+    <h2>Leaf area index: definition and measurement</h2>
+    <p>Chen &amp; Black (1992) [8] define LAI as <strong>half the total leaf surface area per unit horizontal ground area</strong>; for flat leaves this equals the one-sided projected area, but for needles and other non-flat leaves the "half total area" definition is the one that makes radiation theory consistent. Related quantities: <em>plant area index</em> includes stems and branches (what optical instruments actually see); <em>effective LAI</em> \(L_e = \Omega L\) is what a gap-fraction inversion returns if leaves are assumed randomly distributed; <em>cumulative LAI</em> \(L\) counts leaf area from the canopy top downward and is the depth coordinate in all equations below.</p>
+    <p>Measurement methods, roughly in order of directness:</p>
+    <ul>
+      <li><strong>Destructive harvest</strong>: strip and measure leaves (area meter) from a known ground area. The reference method for crops; impractical for forests.</li>
+      <li><strong>Allometry and litterfall</strong>: in deciduous stands, collect leaf litter in traps over the season and convert mass to area with specific leaf area (SLA); in evergreens, divide by leaf lifespan. Gives true LAI integrated over the year.</li>
+      <li><strong>Gap-fraction inversion (LAI-2000/2200, DHP)</strong>: measure the fraction of sky visible, \(P(\theta)\), in several zenith rings (the LAI-2200 uses five, centred at 7°, 23°, 38°, 53°, 68°) under diffuse light. Miller's (1967) theorem gives, for any leaf angle distribution, \(L_e = 2\int_0^{\pi/2} -\ln P(\theta)\cos\theta\sin\theta\,d\theta\). Digital hemispherical photography (DHP) does the same from a fish-eye image. Both return \(L_e\), so clumping must be corrected separately [21, 22].</li>
+      <li><strong>Gap-size distribution (TRAC)</strong>: walking a transect under direct sun, record gap sizes; large gaps that a random canopy would not produce reveal clumping, giving Ω directly (Chen &amp; Cihlar 1995; Chen et al. 1997 [9]).</li>
+      <li><strong>Remote sensing</strong>: empirical NDVI–LAI relations (which saturate above LAI ≈ 3–4) or inversion of a canopy radiative-transfer model (MODIS MOD15A2H LAI/fPAR). Satellite LAI is itself an "effective" quantity dependent on the assumed clumping and leaf optics.</li>
+    </ul>
+    <p>Typical values: annual crops 3–6 at peak, temperate broadleaf forest 4–6, boreal and temperate conifers 3–8 (true LAI; optical estimates are much lower unless clumping-corrected), grasslands 1–3, tropical rainforest 5–7. Chen (1996) converts optical to true LAI as \(L = (1-\alpha)\,L_e\,\gamma_E/\Omega_E\), where α is the woody-to-total area ratio and γ<sub>E</sub> the needle-to-shoot area ratio (~1.4–1.8 for conifers).</p>
+  </section>
+
+  <section id="beer">
+    <h2>Beer–Lambert extinction and where k comes from</h2>
+    <p>Consider a horizontally homogeneous canopy with leaves positioned at random. A thin layer of leaf area \(dL\) intercepts a beam from zenith angle θ with probability equal to the projected leaf area in the beam direction divided by the horizontal area, \(G(\theta)\,dL/\cos\theta\), where \(G(\theta)\) is the mean projection of unit leaf area onto a plane normal to the beam (Nilson 1971 [3]; Ross 1981). Monsi &amp; Saeki (1953) [1] first applied this to canopies. The probability that a beam passes a layer unintercepted is therefore \(1 - G\,dL/\cos\theta\), and for random (Poisson) leaf placement the probabilities of successive layers multiply:</p>
+    <div class="eq">$$P_0(\theta, L) = \lim_{n\to\infty}\left(1 - \frac{G(\theta)}{\cos\theta}\frac{L}{n}\right)^n = \exp\!\left(-\frac{G(\theta)}{\cos\theta}\,L\right) = e^{-k_b L}, \qquad k_b = \frac{G(\theta)}{\cos\theta}.$$</div>
+    <p>\(P_0\) is simultaneously the gap probability, the beam transmittance and the <strong>sunlit leaf fraction</strong> at depth <em>L</em>. For a spherical (isotropic) leaf angle distribution the projection is the same in all directions, \(G = 0.5\), giving the textbook \(k_b = 0.5/\cos\theta\). For horizontal leaves \(G = \cos\theta\) and \(k_b = 1\); for vertical leaves \(G = (2/\pi)\sin\theta\). In general <em>k</em> depends jointly on the leaf angle distribution and the sun's position, which is why "the extinction coefficient of this canopy" is only meaningful once you specify the direction of the light.</p>
+    <h3>Campbell's ellipsoidal distribution</h3>
+    <p>Campbell (1986, 1990) [4] showed that leaf normals distributed like the surface of an ellipsoid with ratio χ of horizontal to vertical semi-axes reproduce most measured canopies with one parameter. χ = 1 is spherical, χ &gt; 1 planophile (horizontal leaves: clover, many broadleaf trees), χ &lt; 1 erectophile (grasses, maize, conifer shoots). The beam extinction coefficient is</p>
+    <div class="eq">$$k_b(\theta) = \frac{\sqrt{\chi^2 + \tan^2\theta}}{\chi + 1.774\,(\chi + 1.182)^{-0.733}}, \qquad \bar\alpha \approx 9.65\,(3+\chi)^{-1.65}\ \text{rad},$$</div>
+    <p>where \(\bar\alpha\) is the mean leaf inclination. Planophile canopies have large <em>k</em> at high sun (they shade efficiently) and small <em>k</em> at low sun; erectophile canopies do the opposite, which is one reason erect-leaved crops tolerate high LAI and achieve high light-use efficiency at midday.</p>
+    <h3>Clumping</h3>
+    <p>Real leaves are grouped into shoots, whorls, branches and crowns, so the gap probability is larger than Poisson predicts. Nilson (1971) [3] introduced the <strong>clumping index</strong> Ω (a Markov parameter) so that \(P_0 = \exp(-k_b\,\Omega\,L)\): the canopy behaves like a random one with <em>effective</em> leaf area \(\Omega L\). Ω = 1 is random, Ω &lt; 1 clumped (Ω &gt; 1 would be regular, rarely seen). Conifers have Ω ≈ 0.5–0.7 at the shoot-plus-crown level, broadleaf forests 0.8–0.95, and crops near 1 except in rows at early growth. Neglecting clumping over-estimates light interception and photosynthesis per unit true LAI, and under-estimates true LAI from optical instruments by the same factor [8, 9].</p>
+    <h3>Diffuse light</h3>
+    <p>Diffuse sky radiation arrives from all directions, so its transmittance is the hemispheric average of the beam result, weighted by sky brightness. For a uniform overcast sky, \(\tau_d(L) = 2\int_0^{\pi/2} e^{-k_b(\theta)\Omega L}\sin\theta\cos\theta\,d\theta\). This is not exactly exponential in <em>L</em>, but it is well approximated by one with \(k_d \approx 0.7\) for a spherical canopy (de Pury &amp; Farquhar use 0.719 including scattering). Diffuse light penetrates deeper, lights leaves from many directions and is more uniformly distributed over leaf area, all of which matter later for the diffuse-fertilisation effect.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Beer's law explorer: light and sunlit fraction through the canopy</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="beerSvg" viewBox="0 0 640 380" role="img" aria-label="Fraction of above-canopy light reaching depth L for direct beam, diffuse sky and the total, versus cumulative leaf area index"></svg>
+            <div class="chart-tip" id="beerTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-2)">Beam transmittance = sunlit fraction, e<sup>−Ωk<sub>b</sub>L</sup></span><span style="--c:var(--series-1)">Diffuse transmittance τ<sub>d</sub>(L)</span><span style="--c:var(--fg)">Total I(L)/I<sub>0</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="beerTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bLAI"><span>Leaf area index (m² m⁻²)</span><output id="bLAIO">4</output></label><input type="range" id="bLAI" min="0.5" max="8" step="0.25" value="4"></div>
+          <div class="ctrl"><label for="bChi"><span>Leaf angle parameter χ (1 = spherical)</span><output id="bChiO">1</output></label><input type="range" id="bChi" min="0.2" max="5" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="bZen"><span>Solar zenith angle (°)</span><output id="bZenO">30</output></label><input type="range" id="bZen" min="0" max="80" step="1" value="30"></div>
+          <div class="ctrl"><label for="bOm"><span>Clumping index Ω</span><output id="bOmO">1</output></label><input type="range" id="bOm" min="0.4" max="1" step="0.02" value="1"></div>
+          <div class="ctrl"><label for="bFd"><span>Diffuse fraction of PAR</span><output id="bFdO">0.2</output></label><input type="range" id="bFd" min="0" max="1" step="0.05" value="0.2"></div>
+          <dl class="readout">
+            <dt>G(θ)</dt><dd id="bG"></dd>
+            <dt>k<sub>b</sub> = G/cos θ</dt><dd id="bKb0"></dd>
+            <dt>Clumped k<sub>b</sub>Ω</dt><dd id="bKb"></dd>
+            <dt>Effective k<sub>d</sub></dt><dd id="bKd"></dd>
+            <dt>Effective LAI Ω·LAI (m² m⁻²)</dt><dd id="bLe"></dd>
+            <dt>fAPAR (intercepted)</dt><dd id="bF"></dd>
+            <dt>Sunlit LAI (m² m⁻²)</dt><dd id="bLs"></dd>
+            <dt>Sunlit ceiling 1/(k<sub>b</sub>Ω)</dt><dd id="bLc"></dd>
+            <dt>Shaded LAI (m² m⁻²)</dt><dd id="bLsh"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Scattering is ignored here (fAPAR is the intercepted fraction). Suggested experiments: set χ = 3 (planophile) and move the sun from 0° to 70°, then repeat with χ = 0.3; notice that the sunlit LAI saturates near 1/k<sub>b</sub> however large the LAI; set Ω = 0.6 for a conifer stand and see how much the same LAI of foliage lets through; push the diffuse fraction to 1 (overcast) and compare the depth of penetration.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Leaf angle distribution lab: extinction coefficient vs solar zenith</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="gSvg" viewBox="0 0 640 380" role="img" aria-label="Beam extinction coefficient versus solar zenith angle for planophile, spherical, erectophile and a user-chosen leaf angle distribution"></svg>
+            <div class="chart-tip" id="gTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Your χ</span><span style="--c:var(--series-2)">Planophile χ = 3</span><span style="--c:var(--series-1)">Spherical χ = 1 (k = 0.5/cos θ)</span><span style="--c:var(--series-3)">Erectophile χ = 0.3</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="gTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="gChi"><span>Leaf angle parameter χ</span><output id="gChiO">1</output></label><input type="range" id="gChi" min="0.1" max="6" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="gZen"><span>Solar zenith for readouts (°)</span><output id="gZenO">45</output></label><input type="range" id="gZen" min="0" max="85" step="1" value="45"></div>
+          <dl class="readout">
+            <dt>Mean leaf inclination ᾱ (°)</dt><dd id="gAng"></dd>
+            <dt>G(θ) at this zenith</dt><dd id="gG"></dd>
+            <dt>k<sub>b</sub>(θ) at this zenith</dt><dd id="gK"></dd>
+            <dt>k<sub>b</sub> spherical at this zenith</dt><dd id="gKs"></dd>
+            <dt>Diffuse τ<sub>d</sub> at L = 1</dt><dd id="gKd"></dd>
+            <dt>Implied k<sub>d</sub></dt><dd id="gKd2"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Campbell (1986) ellipsoidal distribution [4]. Suggested experiments: find the zenith angle at which all distributions give the same k (near 57°, where G ≈ 0.5 for every distribution); note that planophile canopies have k ≈ 1 at noon while erectophile ones have k ≈ 0.3; check that the mean leaf angle for χ = 1 is close to the spherical value of 57.3°.</p>
+    </div>
+  </section>
+
+  <section id="sunshade">
+    <h2>Sunlit and shaded leaves</h2>
+    <p>At any depth the beam either hits a leaf or it does not. The leaves it hits (fraction \(f_{sun}(L) = e^{-k_b L}\)) receive the full direct beam on their projected area <em>plus</em> diffuse and scattered light; the rest receive only diffuse and scattered light. The amount of sunlit leaf area in the whole canopy is</p>
+    <div class="eq">$$L_{sun} = \int_0^{L_c} e^{-k_b L}\,dL = \frac{1 - e^{-k_b L_c}}{k_b}, \qquad L_{sh} = L_c - L_{sun},$$</div>
+    <p>which saturates at \(1/k_b\) (about 2 m² m⁻² for a spherical canopy at 30° zenith) no matter how dense the canopy. Adding leaf area beyond LAI ≈ 3–4 therefore adds only shaded leaves. Following de Pury &amp; Farquhar (1997) [6] the absorbed irradiance per unit leaf area is, with leaf scattering coefficient σ ≈ 0.15 for PAR and canopy reflectances ρ<sub>cb</sub>, ρ<sub>cd</sub>,</p>
+    <div class="eq">$$I_{sh}(L) = \underbrace{I_{d0}(1-\rho_{cd})\,k_d' e^{-k_d' L}}_{\text{diffuse}} + \underbrace{I_{b0}\left[(1-\rho_{cb})\,k_b' e^{-k_b' L} - (1-\sigma)\,k_b e^{-k_b L}\right]}_{\text{scattered beam}}$$</div>
+    <div class="eq">$$I_{sun}(L) = I_{sh}(L) + (1-\sigma)\,k_b I_{b0},$$</div>
+    <p>with \(k_b' = k_b\sqrt{1-\sigma}\) and \(k_d' \approx 0.719\) the extinction coefficients including scattering. The key qualitative point: the direct-beam term absorbed by a sunlit leaf, \((1-\sigma)k_b I_{b0}\), <em>does not depend on depth</em>. Sunlit leaves deep in the canopy are nearly as brightly lit as those at the top, so the canopy is really a bimodal mixture of bright and dim leaves at every level, not a smooth gradient. Any model that uses the <em>mean</em> irradiance at a depth hides this bimodality, which is precisely why the big-leaf approach fails.</p>
+  </section>
+
+  <section id="schemes">
+    <h2>Big-leaf, two-leaf and multilayer schemes</h2>
+    <h3>Big-leaf (Sellers et al. 1992)</h3>
+    <p>Sellers' insight [5] was that if photosynthetic capacity (V<sub>cmax</sub>, through leaf N) declines with depth in proportion to time-averaged light, \(V_{cmax}(L) = V_{cmax,0}\,e^{-k_n L}\) with \(k_n = k\), then the leaf-level FvCB equations integrate analytically: every term scales by the same factor, so</p>
+    <div class="eq">$$A_{canopy} = A_{leaf,0}\;\frac{1 - e^{-k L_c}}{k}, \qquad V_{cmax,canopy} = V_{cmax,0}\;\frac{1 - e^{-k_n L_c}}{k_n}.$$</div>
+    <p>The canopy behaves like one "big leaf" with the top leaf's response and a capacity equal to the integral of the capacity profile. SiB2 and early versions of CLM, ORCHIDEE and many global models used this. Its assumptions are: (i) nitrogen tracks light exactly (\(k_n = k\)); (ii) the leaf response is linear in the scaling factor, which is true for Rubisco-limited rates but not for the light-limited rate at a given irradiance; (iii) the sunlit/shaded bimodality is irrelevant.</p>
+    <p>de Pury &amp; Farquhar (1997) [6] tested the big-leaf model against a multilayer model and found that when canopy-integrated absorbed PAR is fed to the big leaf, photosynthesis is overestimated substantially (tens of percent at high light, the exact figure depending on LAI, light saturation and the diffuse fraction), because the saturating light response of the top leaves is applied to light that is actually spread over many shaded leaves operating on the linear part of their response. The error grows with LAI, with direct-beam fraction and with how light-saturated the top leaves are, and it is not fixed by tuning k<sub>n</sub>.</p>
+    <h3>Two-leaf (sun/shade) models</h3>
+    <p>Their remedy is to integrate separately over the sunlit and shaded populations. For each class compute the integrated absorbed PAR and the integrated capacity,</p>
+    <div class="eq">$$I_{c,sun} = \int_0^{L_c} f_{sun}(L)\,I_{sun}(L)\,dL,\qquad V_{c,sun} = \int_0^{L_c} f_{sun}(L)\,V_{cmax}(L)\,dL = V_{cmax,0}\,\frac{1 - e^{-(k_n + k_b)L_c}}{k_n + k_b},$$</div>
+    <p>and similarly for the shaded class, then run the leaf model once for each class with those canopy-scale inputs (the FvCB equations are homogeneous in V<sub>cmax</sub>, J<sub>max</sub> and light, so canopy totals can be fed in directly). Because the irradiance <em>within</em> each class varies much less than across the whole canopy, the error from averaging drops to a few percent. Wang &amp; Leuning (1998) [7] extended the scheme to a full coupled two-leaf model of photosynthesis, stomatal conductance, energy balance and leaf temperature, which is the basis of CABLE and, in modified form, of the CLM4.5/CLM5 "two-big-leaf" canopy.</p>
+    <h3>Multilayer models</h3>
+    <p>Multilayer models (Norman 1979 CUPID [2]; Baldocchi &amp; Harley 1995 CANOAK [13]; MAESTRA/MAESPA [24]; Bonan et al. 2014, 2018 CLM-ml [14, 15]) divide the canopy into 10–100 layers and, in each, compute radiative transfer (beam, diffuse, scattered, usually with sunlit/shaded leaves within the layer too), leaf energy balance and temperature, photosynthesis and conductance, with vertical profiles of N (V<sub>cmax</sub>), leaf angle and often wind, temperature and humidity. The within-canopy microclimate is the hard part: <strong>K-theory</strong> (first-order gradient-diffusion closure) fails inside canopies because turbulence is dominated by large intermittent eddies and counter-gradient fluxes occur; <strong>Lagrangian</strong> localised-near-field theory (Raupach 1989) or higher-order closure is needed, and Bonan et al. (2018) use a roughness-sublayer parameterisation with a well-mixed-layer assumption to make a multilayer canopy affordable in a global model. Multilayer models are the reference against which the simpler schemes are judged and are what you need for leaf temperature, within-canopy CO₂ and isotope profiles, or canopy structure questions; they are not necessarily more accurate for GPP alone because their extra parameters (profiles of N, leaf angle, wind) are rarely known.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Canopy photosynthesis: big-leaf vs two-leaf vs multilayer</h3>
+        <div class="modebtns"><span class="small muted">x-axis:</span><button class="btn small on" id="cModeI" type="button">PAR above canopy</button><button class="btn small" id="cModeL" type="button">Leaf area index</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cSvg" viewBox="0 0 640 380" role="img" aria-label="Canopy photosynthesis from big-leaf, two-leaf and multilayer schemes versus incident PAR or leaf area index"></svg>
+            <div class="chart-tip" id="cTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-2)">Big-leaf (integrated PAR and capacity, one leaf)</span><span style="--c:var(--series-1)">Two-leaf (sunlit + shaded classes)</span><span style="--c:var(--fg)">Multilayer (60 layers, reference)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cLAI"><span>Leaf area index (m² m⁻²)</span><output id="cLAIO">4</output></label><input type="range" id="cLAI" min="0.5" max="8" step="0.25" value="4"></div>
+          <div class="ctrl"><label for="cI0"><span>PAR above canopy, I<sub>0</sub> (µmol m⁻² s⁻¹)</span><output id="cI0O">1500</output></label><input type="range" id="cI0" min="0" max="2000" step="50" value="1500"></div>
+          <div class="ctrl"><label for="cFd"><span>Diffuse fraction</span><output id="cFdO">0.2</output></label><input type="range" id="cFd" min="0" max="1" step="0.05" value="0.2"></div>
+          <div class="ctrl"><label for="cKn"><span>Nitrogen/capacity gradient k<sub>n</sub></span><output id="cKnO">0.2</output></label><input type="range" id="cKn" min="0" max="0.8" step="0.02" value="0.2"></div>
+          <div class="ctrl"><label for="cZen"><span>Solar zenith (°)</span><output id="cZenO">30</output></label><input type="range" id="cZen" min="0" max="75" step="1" value="30"></div>
+          <div class="ctrl"><label for="cAmax"><span>Top-leaf A<sub>max</sub> (µmol m⁻² s⁻¹)</span><output id="cAmaxO">25</output></label><input type="range" id="cAmax" min="5" max="50" step="1" value="25"></div>
+          <dl class="readout">
+            <dt>Multilayer A<sub>c</sub> (µmol m⁻² s⁻¹)</dt><dd id="cMl"></dd>
+            <dt>Two-leaf A<sub>c</sub></dt><dd id="cTwo"></dd>
+            <dt>Two-leaf error</dt><dd id="cTwoE"></dd>
+            <dt>Big-leaf A<sub>c</sub></dt><dd id="cBig"></dd>
+            <dt>Big-leaf error</dt><dd id="cBigE"></dd>
+            <dt>fAPAR (with scattering)</dt><dd id="cF"></dd>
+            <dt>Sunlit LAI (m² m⁻²)</dt><dd id="cLs"></dd>
+            <dt>k<sub>b</sub></dt><dd id="cKb"></dd>
+            <dt>∫A<sub>max</sub> dL (µmol m⁻² s⁻¹)</dt><dd id="cCap"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Leaf model: non-rectangular hyperbola in absorbed PAR (quantum yield 0.07 mol mol⁻¹, θ = 0.8, R<sub>d</sub> = 0.015 A<sub>max</sub>) with A<sub>max</sub>(L) = A<sub>max,0</sub> e<sup>−k<sub>n</sub>L</sup>; radiation after de Pury &amp; Farquhar (1997) with a spherical leaf angle distribution, σ = 0.15, k<sub>d</sub>′ = 0.719. Suggested experiments: at the defaults read off the big-leaf overestimate; set the diffuse fraction to 1 and watch it shrink (no bimodality); raise LAI to 8 and k<sub>n</sub> to 0 (uniform canopy) to make it worst; set k<sub>n</sub> ≈ 0.5 so that capacity tracks light and see which schemes converge. Switch the x-axis to LAI and note where each curve saturates.</p>
+    </div>
+
+    <div class="keybox"><h3>Why averaging first is wrong: Jensen's inequality</h3>
+      <p>For a concave function <em>f</em> (any saturating light response) and a random variable <em>I</em> (irradiance over leaves), \(\mathbb{E}[f(I)] \le f(\mathbb{E}[I])\). The big-leaf model computes \(f(\mathbb{E}[I])\); the canopy actually does \(\mathbb{E}[f(I)]\). The gap is proportional to the variance of <em>I</em> and to the curvature of <em>f</em>, so it is largest under clear skies (bimodal sunlit/shaded light), at high LAI and when top leaves are light-saturated, and vanishes under fully diffuse light or in the linear part of the response. The same inequality explains why spatial averaging of soil moisture over a grid cell biases evapotranspiration, and why temporal averaging of temperature biases respiration: the lesson generalises to every nonlinear process in a land model.</p></div>
+  </section>
+
+  <section id="nitrogen">
+    <h2>Canopy nitrogen distribution and the optimal-allocation hypothesis</h2>
+    <p>Because V<sub>cmax</sub> and J<sub>max</sub> scale with leaf nitrogen, the vertical profile of N sets the vertical profile of capacity. Field (1983) and Hirose &amp; Werger (1987) [16] asked how a fixed canopy N pool should be distributed to maximise daily canopy photosynthesis. The answer from the calculus of variations is that the marginal return \(\partial A/\partial N\) must be equal in all leaves, which, with a linear A<sub>max</sub>–N relation and light-saturated top leaves, means N should be proportional to local light: \(N(L) \propto e^{-kL}\), i.e. \(k_n = k\). Hirose &amp; Werger showed in <em>Solidago</em> that the observed non-uniform distribution raised canopy photosynthesis by about 20% over a uniform distribution, but was still less steep than optimal. That observation has held up across hundreds of canopies: <strong>measured N gradients are consistently shallower than the light gradient</strong> (k<sub>n</sub> ≈ 0.1–0.3 while k ≈ 0.5–0.7). Niinemets (2007) [17] reviews the explanations: a fraction of leaf N is structural and cannot be redistributed, leaf age and hydraulic position co-vary with depth, photosynthesis in shaded leaves is more sensitive to N than the simple model assumes, and plants may hedge against variable light. Lloyd et al. (2010) found that k<sub>n</sub> increases with the top-leaf V<sub>cmax</sub> across tropical forests, which CLM4.5/5 adopt as \(k_n = \exp(0.00963\,V_{cmax,0} - 2.43)\). For modellers the practical point is that <em>k<sub>n</sub> is a free parameter that controls canopy capacity at given leaf N</em>, and setting it equal to k (as the Sellers big-leaf requires) over-concentrates capacity at the top.</p>
+  </section>
+
+  <section id="conductance">
+    <h2>Canopy conductance, light-use efficiency and diffuse light</h2>
+    <h3>From g<sub>s</sub> to G<sub>c</sub> and Penman–Monteith</h3>
+    <p>Stomatal conductance integrates the same way as photosynthesis: \(G_c = \int_0^{L_c} g_s(L)\,dL\), or in a two-leaf model \(G_c = g_{s,sun}L_{sun} + g_{s,sh}L_{sh}\). G<sub>c</sub> (mol m⁻² ground s⁻¹, or m s⁻¹) is the surface conductance that enters the Penman–Monteith equation for canopy transpiration, together with an aerodynamic conductance G<sub>a</sub>. Because g<sub>s</sub> is roughly proportional to A in coupled models, G<sub>c</sub> saturates with LAI just as GPP does, and the canopy's control of transpiration weakens as LAI rises (the decoupling coefficient of Jarvis &amp; McNaughton 1986 grows with G<sub>c</sub>/G<sub>a</sub>). When a model uses the big-leaf scheme for photosynthesis it also inherits a big-leaf G<sub>c</sub>, so the photosynthesis overestimate propagates into transpiration.</p>
+    <h3>Light-use efficiency: the upscaling behind MODIS GPP</h3>
+    <p>Monteith (1972) [18] observed that crop dry-matter production is nearly linear in intercepted radiation over a season, so</p>
+    <div class="eq">$$\mathrm{GPP} = \varepsilon \cdot f_{APAR} \cdot \mathrm{PAR}, \qquad f_{APAR} \approx 1 - e^{-k\,L_c},$$</div>
+    <p>with light-use efficiency ε ≈ 0.5–1.5 g C MJ⁻¹ PAR for natural vegetation and up to ~3 for C4 crops. The MODIS MOD17 algorithm uses this with a biome-specific ε<sub>max</sub> reduced by scalars for minimum temperature and VPD, with fAPAR from MOD15. Why does a nonlinear leaf response give a linear canopy response? Because at the canopy scale most absorbed light goes to shaded leaves on the linear part of their curve, and because daily and seasonal averaging over sun angles and cloud cover smooths out the saturation. The LUE model is therefore the extreme "integrate everything then apply a linear response" upscaling, and it is accurate precisely where Jensen's inequality bites least: long time averages, high LAI, diffuse-rich conditions.</p>
+    <h3>The diffuse-light fertilisation effect</h3>
+    <p>Gu et al. (2002) [19] showed at Harvard Forest that canopy photosynthesis per unit absorbed PAR is higher under cloudy than clear skies, and that the volcanic aerosol from Mount Pinatubo (1991) increased forest carbon uptake by scattering sunlight into the diffuse component. Mechanism: diffuse light is distributed more evenly over leaf area (smaller variance in <em>I</em>, so less Jensen penalty), penetrates deeper, and arrives without the heat and VPD load of direct sun. Mercado et al. (2009) [20] implemented this in JULES and estimated that changes in diffuse fraction enhanced the global land carbon sink by roughly a quarter between 1960 and 1999 ("global dimming"). Any scheme that resolves sunlit and shaded leaves reproduces the effect; a big-leaf scheme cannot.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Model</th><th>Canopy scheme</th><th>Radiation</th><th>Capacity profile</th></tr></thead>
+      <tbody>
+        <tr><td>SiB2 / early CLM, ORCHIDEE</td><td>Big-leaf (Sellers 1992)</td><td>Two-stream, Beer's law</td><td>V<sub>cmax</sub> ∝ e<sup>−kL</sup>, k<sub>n</sub> = k</td></tr>
+        <tr><td>CLM4.5, CLM5</td><td>Two-big-leaf (sunlit/shaded)</td><td>Two-stream (Sellers 1985) with χ<sub>L</sub> leaf-angle index per PFT</td><td>V<sub>cmax</sub> ∝ e<sup>−k<sub>n</sub>L</sup>, k<sub>n</sub> from Lloyd et al. 2010; Ω = 1</td></tr>
+        <tr><td>CABLE</td><td>Two-leaf (Wang &amp; Leuning 1998)</td><td>Goudriaan beam/diffuse with scattering</td><td>Exponential N profile</td></tr>
+        <tr><td>JULES</td><td>Multilayer (10 layers) with sunlit/shaded leaves per layer (can_rad_mod 5/6)</td><td>Two-stream per layer, diffuse-light effect of Mercado 2009</td><td>N ∝ e<sup>−k<sub>n</sub>L</sup>, k<sub>n</sub> = 0.78 for sunlit/shaded version</td></tr>
+        <tr><td>CLM-ml (Bonan 2014, 2018)</td><td>Multilayer with roughness-sublayer turbulence</td><td>Norman multilayer radiative transfer, leaf energy balance per layer</td><td>Prescribed profile; tests of N optimality</td></tr>
+        <tr><td>MAESTRA / MAESPA</td><td>Multilayer, 3-D crowns of individual trees</td><td>Ray tracing through array of crowns, clumping explicit</td><td>Per-layer, per-tree</td></tr>
+        <tr><td>BioCro (WIMOVAC lineage)</td><td>Multilayer (typically 10 layers), sunlit/shaded per layer</td><td>Beam/diffuse Beer's law per layer with χ, wind and RH profiles</td><td>Exponential N decline with depth (k<sub>pLN</sub>)</td></tr>
+        <tr><td>MOD17 (MODIS GPP)</td><td>Light-use efficiency</td><td>fAPAR from MOD15 LAI/fPAR product</td><td>None (ε<sub>max</sub> per biome)</td></tr>
+      </tbody></table></div>
+    <p>Two structural points to make in an exam. First, the canopy scheme and the N profile together decide how much CO₂ fertilisation and how much warming response a model produces, because they set how much of the canopy is light-limited versus Rubisco-limited. Second, each scheme has a matching LAI product: a big-leaf model calibrated to optical LAI implicitly absorbs clumping into k, whereas a multilayer model needs true LAI plus Ω and leaf angle, so swapping LAI datasets between schemes without recalibration is a classic source of error.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>G for spherical leaf angle distribution</td><td class="num">0.5 (all directions)</td><td>k<sub>b</sub> = 0.5/cos θ; k<sub>b</sub> = 0.5 at θ = 0, 1.0 at 60°</td></tr>
+        <tr><td>Zenith where all distributions give G ≈ 0.5</td><td class="num">≈ 57°</td><td>Useful for LAI-2000 single-ring inversion</td></tr>
+        <tr><td>Mean leaf angle, spherical</td><td class="num">57.3°</td><td>Campbell: ᾱ = 9.65(3 + χ)<sup>−1.65</sup> rad</td></tr>
+        <tr><td>Diffuse extinction coefficient k<sub>d</sub></td><td class="num">≈ 0.7 (0.719 with scattering)</td><td>Spherical canopy, uniform sky [6]</td></tr>
+        <tr><td>Leaf scattering coefficient for PAR, σ</td><td class="num">≈ 0.15</td><td>Reflectance + transmittance; ≈ 0.8 in the NIR</td></tr>
+        <tr><td>Clumping index Ω</td><td class="num">0.5–0.7 conifers · 0.8–0.95 broadleaf · ≈ 1 crops</td><td>[8, 9]; effective LAI = Ω·LAI</td></tr>
+        <tr><td>Sunlit LAI ceiling</td><td class="num">1/k<sub>b</sub> ≈ 1.7–2 m² m⁻²</td><td>At 30° zenith, spherical</td></tr>
+        <tr><td>fAPAR at LAI 3, k = 0.5</td><td class="num">0.78</td><td>1 − e<sup>−1.5</sup>; LAI 6 gives 0.95</td></tr>
+        <tr><td>N/capacity gradient k<sub>n</sub> observed</td><td class="num">0.1–0.3</td><td>Shallower than light (k ≈ 0.5–0.7) [17]</td></tr>
+        <tr><td>Big-leaf overestimate of canopy A</td><td class="num">~10–40% at high light</td><td>Depends on LAI, diffuse fraction, saturation [6]</td></tr>
+        <tr><td>Light-use efficiency ε</td><td class="num">0.5–1.5 g C MJ⁻¹ PAR (C4 crops ~3)</td><td>Monteith 1972 [18]; MOD17 ε<sub>max</sub> by biome</td></tr>
+        <tr><td>Diffuse-light enhancement of land sink</td><td class="num">≈ one quarter, 1960–1999</td><td>Mercado et al. 2009 [20]</td></tr>
+        <tr><td>Typical LAI</td><td class="num">crops 3–6 · broadleaf 4–6 · conifer 3–8 · grass 1–3</td><td>True LAI; optical values lower by Ω</td></tr>
+        <tr><td>NDVI–LAI saturation</td><td class="num">LAI ≈ 3–4</td><td>Why satellite LAI of dense forest is uncertain</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Derive the Beer–Lambert law for light in a canopy from first principles, stating the assumptions, and show what the extinction coefficient depends on.</summary><div class="a"><p>Assume a horizontally homogeneous canopy with leaves positioned independently at random (Poisson), with leaf angle distribution characterised by the mean projection G(θ) of unit leaf area onto a plane normal to a beam from zenith θ. A layer containing leaf area dL (per unit ground) presents projected area G dL to the beam, which travels a path 1/cos θ longer than the vertical, so the probability of interception is G dL/cos θ. Dividing the canopy into n layers of L/n each, independence lets probabilities multiply: P<sub>0</sub> = (1 − G L/(n cos θ))<sup>n</sup> → exp(−G L/cos θ) as n → ∞. So I(L) = I<sub>0</sub> exp(−k<sub>b</sub>L) with k<sub>b</sub> = G(θ)/cos θ. k therefore depends on the leaf angle distribution (through G: 0.5 for spherical, cos θ for horizontal, (2/π) sin θ for vertical leaves), on the solar zenith angle, and, once clumping is admitted, on the clumping index Ω which multiplies L. For diffuse light k is the hemispheric average (≈ 0.7). Assumptions violated in reality: random dispersion (clumping lowers interception), horizontal homogeneity (rows, crowns, gaps), opaque leaves (scattering adds a diffuse component), and constant leaf angle with depth.</p></div></details>
+    <details class="q"><summary>2. What is the sunlit leaf area of a canopy, why does it saturate, and what does that imply for the value of adding leaf area?</summary><div class="a"><p>The sunlit fraction at depth L equals the beam gap probability e<sup>−k<sub>b</sub>L</sup>; integrating from 0 to L<sub>c</sub> gives L<sub>sun</sub> = (1 − e<sup>−k<sub>b</sub>L<sub>c</sub></sup>)/k<sub>b</sub>, which tends to 1/k<sub>b</sub> as L<sub>c</sub> → ∞ (about 2 m² m⁻² for a spherical canopy with the sun at 30°, less at low sun). The ceiling exists because the sun can only illuminate a projected area equal to the ground area divided by k<sub>b</sub>: once the beam is fully intercepted, more leaves can only be shaded. Beyond LAI ≈ 3–4 almost all extra leaf area is shaded, receives only diffuse and scattered light, and contributes little photosynthesis while still costing respiration and N; this is why canopy GPP and fAPAR saturate with LAI, why NDVI saturates, and why the "optimal LAI" at which marginal gain equals marginal cost is finite. Erectophile canopies (small k<sub>b</sub> at high sun) have a higher ceiling, which is one reason they support higher LAI.</p></div></details>
+    <details class="q"><summary>3. Explain why a big-leaf model overestimates canopy photosynthesis and how the two-leaf model fixes it. Under what conditions is the big-leaf error small?</summary><div class="a"><p>The leaf light response f(I) is concave (saturating). A big-leaf model computes canopy A as f applied to the canopy-average or canopy-total absorbed PAR with the canopy-integrated capacity, i.e. f(E[I]). The real canopy sums the responses of individual leaves, E[f(I)]. By Jensen's inequality E[f(I)] ≤ f(E[I]) for concave f, with the gap growing with the variance of I across leaves and the curvature of f. Under clear sky the irradiance distribution is bimodal: sunlit leaves at any depth receive the full beam (which is depth-independent per unit sunlit area) while shaded leaves receive only diffuse and scattered light, so the variance is large and the big leaf overestimates, by tens of percent in de Pury &amp; Farquhar's tests and in the lab above. The two-leaf model integrates PAR and capacity separately over the sunlit and shaded populations and applies f once to each; within each class the variance in I is small, so the error falls to a few percent. The big-leaf error is small when the light is mostly diffuse (overcast), when the LAI is low (few shaded leaves), when top leaves are far from saturation (low light, high V<sub>cmax</sub>), or when the quantity of interest is a long-term average (which is why light-use-efficiency models work).</p></div></details>
+    <details class="q"><summary>4. State the optimal-allocation hypothesis for canopy nitrogen, derive its prediction for the N profile, and compare it with observations.</summary><div class="a"><p>Hypothesis (Field 1983; Hirose &amp; Werger 1987): for a fixed total canopy N, the distribution that maximises daily canopy photosynthesis is the one for which the marginal gain ∂A/∂N is equal across leaves (otherwise moving N from a low-return to a high-return leaf would increase the total). If A<sub>max</sub> is proportional to N and leaves are light-saturated, then A ≈ min(φI, aN) implies that N should track the light profile so that each leaf is co-limited, giving N(L) ∝ I(L) ∝ e<sup>−kL</sup>, i.e. k<sub>n</sub> = k, with the extreme implication that N below the light compensation point should be zero. Observations: N does decline with depth, and the non-uniform distribution does raise canopy photosynthesis (≈ 20% in Hirose &amp; Werger's <em>Solidago</em> canopy), but k<sub>n</sub> is typically 0.1–0.3, less than half of k, and N never falls to zero. Explanations reviewed by Niinemets (2007): a structural N fraction that cannot be withdrawn; co-variation of leaf age, hydraulic supply and leaf mass per area with depth; the true A–N relation being curvilinear and the light response of shaded leaves being more N-sensitive; and selection for robustness to variable light rather than mean-light optimality. Model consequence: setting k<sub>n</sub> = k (the Sellers big-leaf assumption) over-concentrates capacity at the top; models now use empirical k<sub>n</sub> (CLM: k<sub>n</sub> = exp(0.00963 V<sub>cmax,0</sub> − 2.43)).</p></div></details>
+    <details class="q"><summary>5. The LAI-2200 gives a boreal spruce stand an LAI of 2.1 while litterfall-based estimates give 4.5. Explain the discrepancy and how you would reconcile the two.</summary><div class="a"><p>The LAI-2200 measures gap fraction P(θ) in five zenith rings and inverts it with Miller's formula assuming randomly dispersed foliage; what it returns is the effective plant area index L<sub>e</sub> = Ω L<sub>t</sub>, where Ω is the clumping index and L<sub>t</sub> includes woody area. Spruce foliage is clumped at the needle-to-shoot scale (needles hide behind each other within a shoot, γ<sub>E</sub> ≈ 1.4–1.8) and at the crown scale (gaps between crowns), so Ω ≈ 0.5–0.7 and L<sub>e</sub> is roughly half the true value; conversely stems and branches add to the optical signal. Chen's correction L = (1 − α) L<sub>e</sub> γ<sub>E</sub>/Ω<sub>E</sub> with α ≈ 0.1–0.3 (woody fraction), γ<sub>E</sub> from shoot measurements and Ω<sub>E</sub> from TRAC gap-size analysis or hemispherical photographs typically brings 2.1 up to 4–5, consistent with litterfall. Litterfall itself needs leaf lifespan (several years for spruce) and SLA that varies with canopy position, so it has its own uncertainties. For a model the important question is which LAI the canopy scheme expects: a Beer's-law scheme without an explicit Ω should be driven by L<sub>e</sub> (or by L with k reduced by Ω), while a multilayer model with explicit clumping needs the true LAI.</p></div></details>
+    <details class="q"><summary>6. Why does canopy photosynthesis per unit absorbed PAR increase on cloudy days, and how is this effect represented (or not) in land-surface models?</summary><div class="a"><p>Three mechanisms. (i) Distribution: diffuse light arrives from the whole sky and is spread far more evenly over leaf area than the direct beam, which concentrates on the sunlit fraction; a more uniform distribution over a concave response raises the mean response (Jensen's inequality in reverse). (ii) Penetration: diffuse light has a smaller effective extinction coefficient than the midday beam in many canopies and illuminates leaves from many angles, reaching shaded leaves on the linear part of their light response where quantum yield is highest. (iii) Microclimate: cloudy conditions reduce leaf temperature and VPD, lowering photorespiration and stomatal limitation. Gu et al. (2002) documented the effect at Harvard Forest and after Pinatubo; Mercado et al. (2009) used JULES, which resolves sunlit and shaded leaves in each layer and treats diffuse radiation explicitly, to estimate that the 1960–1999 change in diffuse fraction enhanced the land sink by roughly a quarter. Any sunlit/shaded or multilayer scheme reproduces the effect because it carries the direct/diffuse split through to leaf-level light; big-leaf and light-use-efficiency schemes using total PAR cannot, unless given an ad hoc dependence of ε on diffuse fraction. Caveat: the enhancement is per unit PAR; total PAR falls under clouds, so absolute GPP peaks at intermediate cloudiness.</p></div></details>
+    <details class="q"><summary>7. Compare K-theory and Lagrangian approaches to within-canopy turbulent transport and explain why the choice matters for a multilayer model.</summary><div class="a"><p>K-theory (gradient-diffusion, first-order closure) writes the vertical flux of a scalar as F = −K ∂c/∂z, assuming that transport is by eddies small compared with the scale of the gradient. Inside canopies this fails: turbulence is dominated by intermittent, canopy-scale sweeps and ejections generated at the canopy top (the mixing-layer analogy), so the eddy size is comparable to the canopy height, fluxes can be counter-gradient (e.g. heat flux upward while temperature increases with height), and K cannot be defined locally. Lagrangian localised-near-field theory (Raupach 1989) instead follows fluid parcels released from each source layer: the concentration profile is the sum of a near-field part (parcels that have not yet lost memory of their release, producing large local concentration excursions) and a far-field part that does obey gradient diffusion. It requires profiles of the vertical velocity variance σ<sub>w</sub>(z) and Lagrangian time scale T<sub>L</sub>(z), and is used in CANOAK and in the inverse-Lagrangian methods that infer source profiles from measured concentrations. For a multilayer model the choice sets the within-canopy temperature, humidity and CO₂ profiles that leaf energy balance and photosynthesis see; K-theory tends to overestimate gradients and so misplaces leaf temperature and VPD, whereas the Lagrangian approach needs turbulence statistics that are rarely measured. Bonan et al. (2018) avoid the full problem with a roughness-sublayer parameterisation and a well-mixed assumption calibrated against large-eddy simulations.</p></div></details>
+    <details class="q"><summary>8. A land model switches from a big-leaf to a sunlit/shaded canopy scheme without changing other parameters. Predict the direction of change in GPP, transpiration and the CO₂-fertilisation response, and explain.</summary><div class="a"><p>GPP will fall, most under clear skies, high LAI and high light, because the sunlit/shaded scheme removes the Jensen overestimate (typically 10–40%, largest under clear sky). Transpiration will fall less than proportionally: in a coupled model g<sub>s</sub> ∝ A/(C<sub>a</sub>(1 + D/D<sub>0</sub>)) or similar, so canopy conductance declines with GPP, but transpiration is also controlled by aerodynamic conductance and available energy (Penman–Monteith), and with high G<sub>c</sub>/G<sub>a</sub> the canopy is decoupled, so a given fall in G<sub>c</sub> gives a smaller fall in E; WUE therefore changes. The CO₂-fertilisation response (dGPP/dC<sub>a</sub>) will change in sign-dependent ways: shaded leaves are light-limited and their response to CO₂ is governed only by the Γ*/C<sub>c</sub> term (weak), whereas sunlit leaves are Rubisco-limited and respond strongly; a scheme that correctly identifies more of the canopy as light-limited will usually show a <em>smaller</em> relative CO₂ response than the big leaf, which treats the whole canopy as a scaled top leaf. The temperature response changes similarly because light-limited and Rubisco-limited rates have different temperature optima. To recover realistic GPP after the switch, modellers typically re-tune V<sub>cmax,25</sub> or k<sub>n</sub>, which is why parameter values are not portable between canopy schemes.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Monsi M, Saeki T (1953, translated 2005). On the factor light in plant communities and its importance for matter production. <em>Annals of Botany</em> 95: 549–567. <a href="https://doi.org/10.1093/aob/mci052">doi:10.1093/aob/mci052</a><span class="why">The origin of Beer's law in canopies and of the extinction coefficient; the 2005 translation has a useful introduction.</span></li>
+      <li>Norman JM (1979). Modeling the complete crop canopy. In: Barfield BJ, Gerber JF (eds) <em>Modification of the Aerial Environment of Crops</em>, ASAE Monograph 2, pp. 249–277. Norman JM (1982). Simulation of microclimates. In: Hatfield JL, Thomason IJ (eds) <em>Biometeorology in Integrated Pest Management</em>, Academic Press. <span class="why">The CUPID multilayer model and the layer-wise radiation, energy balance and turbulence scheme that later multilayer models follow.</span></li>
+      <li>Nilson T (1971). A theoretical analysis of the frequency of gaps in plant stands. <em>Agricultural Meteorology</em> 8: 25–38. <a href="https://doi.org/10.1016/0002-1571(71)90092-6">doi:10.1016/0002-1571(71)90092-6</a><span class="why">Gap probability for random, clumped and regular dispersions; the origin of the clumping index.</span></li>
+      <li>Campbell GS (1986). Extinction coefficients for radiation in plant canopies calculated using an ellipsoidal inclination angle distribution. <em>Agricultural and Forest Meteorology</em> 36: 317–321. <a href="https://doi.org/10.1016/0168-1923(86)90010-9">doi:10.1016/0168-1923(86)90010-9</a><span class="why">The one-parameter (χ) leaf angle distribution used in the leaf-angle lab and in many models; see also Campbell 1990 for the mean-angle relation.</span></li>
+      <li>Sellers PJ (1985). Canopy reflectance, photosynthesis and transpiration. <em>International Journal of Remote Sensing</em> 6: 1335–1372. <a href="https://doi.org/10.1080/01431168508948283">doi:10.1080/01431168508948283</a>; Sellers PJ, Berry JA, Collatz GJ, Field CB, Hall FG (1992). Canopy reflectance, photosynthesis, and transpiration. III. A reanalysis using improved leaf models and a new canopy integration scheme. <em>Remote Sensing of Environment</em> 42: 187–216. <a href="https://doi.org/10.1016/0034-4257(92)90102-P">doi:10.1016/0034-4257(92)90102-P</a><span class="why">The two-stream canopy radiation scheme and the big-leaf integration (capacity ∝ light) used in SiB2 and inherited by CLM.</span></li>
+      <li>de Pury DGG, Farquhar GD (1997). Simple scaling of photosynthesis from leaves to canopies without the errors of big-leaf models. <em>Plant, Cell &amp; Environment</em> 20: 537–557. <a href="https://doi.org/10.1111/j.1365-3040.1997.00094.x">doi:10.1111/j.1365-3040.1997.00094.x</a><span class="why">The sun/shade model, the radiation equations used in the canopy lab, and the quantitative critique of big-leaf models. Read in full.</span></li>
+      <li>Wang Y-P, Leuning R (1998). A two-leaf model for canopy conductance, photosynthesis and partitioning of available energy I: Model description and comparison with a multi-layered model. <em>Agricultural and Forest Meteorology</em> 91: 89–111. <a href="https://doi.org/10.1016/S0168-1923(98)00061-6">doi:10.1016/S0168-1923(98)00061-6</a><span class="why">Coupled two-leaf model including energy balance and conductance; basis of CABLE.</span></li>
+      <li>Chen JM, Black TA (1992). Defining leaf area index for non-flat leaves. <em>Plant, Cell &amp; Environment</em> 15: 421–429. <a href="https://doi.org/10.1111/j.1365-3040.1992.tb00992.x">doi:10.1111/j.1365-3040.1992.tb00992.x</a><span class="why">The half-total-area definition of LAI and why it matters for needles.</span></li>
+      <li>Chen JM, Rich PM, Gower ST, Norman JM, Plummer S (1997). Leaf area index of boreal forests: theory, techniques, and measurements. <em>Journal of Geophysical Research</em> 102: 29429–29443. <a href="https://doi.org/10.1029/97JD01107">doi:10.1029/97JD01107</a><span class="why">Clumping, TRAC, and the correction from effective to true LAI in conifers.</span></li>
+      <li>Jonckheere I, Fleck S, Nackaerts K, et al. (2004). Review of methods for in situ leaf area index determination. Part I. Theories, sensors and hemispherical photography. <em>Agricultural and Forest Meteorology</em> 121: 19–35. <a href="https://doi.org/10.1016/j.agrformet.2003.08.027">doi:10.1016/j.agrformet.2003.08.027</a><span class="why">Direct and indirect LAI methods compared.</span></li>
+      <li>Weiss M, Baret F, Smith GJ, Jonckheere I, Coppin P (2004). Review of methods for in situ leaf area index (LAI) determination. Part II. Estimation of LAI, errors and sampling. <em>Agricultural and Forest Meteorology</em> 121: 37–53. <a href="https://doi.org/10.1016/j.agrformet.2003.08.001">doi:10.1016/j.agrformet.2003.08.001</a><span class="why">Gap-fraction inversion theory, clumping corrections and sampling design.</span></li>
+      <li>Goudriaan J (1977). <em>Crop Micrometeorology: A Simulation Study</em>. Pudoc, Wageningen. <span class="why">Classic treatment of beam, diffuse and scattered radiation in canopies; the source of many approximations in two-leaf models.</span></li>
+      <li>Baldocchi DD, Harley PC (1995). Scaling carbon dioxide and water vapour exchange from leaf to canopy in a deciduous forest. II. Model testing and application. <em>Plant, Cell &amp; Environment</em> 18: 1157–1173. <a href="https://doi.org/10.1111/j.1365-3040.1995.tb00626.x">doi:10.1111/j.1365-3040.1995.tb00626.x</a><span class="why">CANOAK: a multilayer model with Lagrangian turbulence tested against eddy covariance.</span></li>
+      <li>Bonan GB, Williams M, Fisher RA, Oleson KW (2014). Modeling stomatal conductance in the earth system: linking leaf water-use efficiency and water transport along the soil–plant–atmosphere continuum. <em>Geoscientific Model Development</em> 7: 2193–2222. <a href="https://doi.org/10.5194/gmd-7-2193-2014">doi:10.5194/gmd-7-2193-2014</a><span class="why">Multilayer canopy within CLM used to test stomatal and hydraulic schemes.</span></li>
+      <li>Bonan GB, Patton EG, Harman IN, et al. (2018). Modeling canopy-induced turbulence in the Earth system: a unified parameterization of turbulent exchange within plant canopies and the roughness sublayer (CLM-ml v0). <em>Geoscientific Model Development</em> 11: 1467–1496. <a href="https://doi.org/10.5194/gmd-11-1467-2018">doi:10.5194/gmd-11-1467-2018</a><span class="why">How to make a multilayer canopy with resolved turbulence affordable in a global model.</span></li>
+      <li>Hirose T, Werger MJA (1987). Maximizing daily canopy photosynthesis with respect to the leaf nitrogen allocation pattern in the canopy. <em>Oecologia</em> 72: 520–526. <a href="https://doi.org/10.1007/BF00378977">doi:10.1007/BF00378977</a><span class="why">The optimal-allocation calculation and the first field test (with Field 1983, Oecologia 56: 341).</span></li>
+      <li>Niinemets Ü (2007). Photosynthesis and resource distribution through plant canopies. <em>Plant, Cell &amp; Environment</em> 30: 1052–1071. <a href="https://doi.org/10.1111/j.1365-3040.2007.01683.x">doi:10.1111/j.1365-3040.2007.01683.x</a><span class="why">Why observed N gradients are shallower than optimal; also covers LMA and leaf angle gradients.</span></li>
+      <li>Monteith JL (1972). Solar radiation and productivity in tropical ecosystems. <em>Journal of Applied Ecology</em> 9: 747–766. <a href="https://doi.org/10.2307/2401901">doi:10.2307/2401901</a><span class="why">The light-use-efficiency concept behind MODIS GPP.</span></li>
+      <li>Gu L, Baldocchi D, Verma SB, et al. (2002). Advantages of diffuse radiation for terrestrial ecosystem productivity. <em>Journal of Geophysical Research</em> 107: 4050. <a href="https://doi.org/10.1029/2001JD001242">doi:10.1029/2001JD001242</a><span class="why">Field evidence for the diffuse-light effect and its mechanisms.</span></li>
+      <li>Mercado LM, Bellouin N, Sitch S, et al. (2009). Impact of changes in diffuse radiation on the global land carbon sink. <em>Nature</em> 458: 1014–1017. <a href="https://doi.org/10.1038/nature07949">doi:10.1038/nature07949</a><span class="why">Diffuse fertilisation at global scale with JULES.</span></li>
+      <li>Medlyn B, Barrett D, Landsberg J, Sands P, Clement R (2003). Conversion of canopy intercepted radiation to photosynthate: review of modelling approaches for regional scales. <em>Functional Plant Biology</em> 30: 153–169. <a href="https://doi.org/10.1071/FP02088">doi:10.1071/FP02088</a><span class="why">Compares LUE, big-leaf, two-leaf and multilayer approaches for regional upscaling.</span></li>
+      <li>Duursma RA, Medlyn BE (2012). MAESPA: a model to study interactions between water limitation, environmental drivers and vegetation function at tree and stand levels. <em>Geoscientific Model Development</em> 5: 919–940. <a href="https://doi.org/10.5194/gmd-5-919-2012">doi:10.5194/gmd-5-919-2012</a><span class="why">The MAESTRA lineage of 3-D crown models with explicit clumping and water balance.</span></li>
+      <li>Lloyd J, Patiño S, Paiva RQ, et al. (2010). Optimisation of photosynthetic carbon gain and within-canopy gradients of associated foliar traits for Amazon forest trees. <em>Biogeosciences</em> 7: 1833–1859. <a href="https://doi.org/10.5194/bg-7-1833-2010">doi:10.5194/bg-7-1833-2010</a><span class="why">Source of the k<sub>n</sub>–V<sub>cmax</sub> relation adopted by CLM4.5/5.</span></li>
+      <li>Bonan GB (2019). <em>Climate Change and Terrestrial Ecosystem Modeling</em>. Cambridge University Press. Chapters 14–16. <span class="why">Textbook derivations of canopy radiative transfer, two-stream approximation, big-leaf and multilayer integration with worked examples.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="stomatal-conductance.html">← Previous: Stomatal conductance models</a><a href="acclimation-thermal-response.html">Next: Acclimation and thermal response →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#lai">Leaf area index</a></li>
+      <li><a href="#beer">Beer–Lambert &amp; k</a></li>
+      <li><a href="#sunshade">Sunlit &amp; shaded leaves</a></li>
+      <li><a href="#schemes">Big-leaf, two-leaf, multilayer</a></li>
+      <li><a href="#nitrogen">Canopy nitrogen</a></li>
+      <li><a href="#conductance">G<sub>c</sub>, LUE, diffuse light</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (non-rectangular hyperbola leaf model, spherical leaf angles in the canopy lab, no leaf energy balance) chosen for intuition. Radiation equations follow de Pury &amp; Farquhar 1997 and Campbell 1986.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function $(id) { return document.getElementById(id); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = $(id); if (e) e.addEventListener('input', fn); }); }
+  function outs(ids) { ids.forEach(function (id) { var o = $(id + 'O'), e = $(id); if (o && e) o.textContent = e.value; }); }
+  function ticks(min, max, step) { var t = []; for (var v = min; v <= max + 1e-9; v += step) t.push(Math.round(v * 1000) / 1000); return t; }
+  function niceStep(range) { var raw = range / 6, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / p; return (r < 1.5 ? 1 : r < 3.5 ? 2 : r < 7.5 ? 5 : 10) * p; }
+
+  /* ---------- generic line chart ---------- */
+  function makeChart(svg, tip, cfg) {
+    var W = 640, H = 380, mL = 58, mR = cfg.mR == null ? 96 : cfg.mR, mT = 18, mB = 48;
+    var pw = W - mL - mR, ph = H - mT - mB, x = cfg.x, y = cfg.y;
+    function sx(v) { return mL + (v - x.min) / (x.max - x.min) * pw; }
+    function sy(v) { return mT + (y.max - v) / (y.max - y.min) * ph; }
+    function cy(v) { return sy(clamp(v, y.min, y.max)); }
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    y.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(t), y2: sy(t) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(t) + 4, 'text-anchor': 'end' }, y.fmt ? y.fmt(t) : t)); });
+    x.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(t), x2: sx(t), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(t), y: mT + ph + 18, 'text-anchor': 'middle' }, x.fmt ? x.fmt(t) : t)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    if (y.min < 0 && y.max > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, x.label));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, y.label));
+    (cfg.vlines || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ref', x1: sx(v.x), x2: sx(v.x), y1: mT, y2: mT + ph })); if (v.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(v.x) + 4, y: mT + 12 }, v.label)); });
+    (cfg.hlines || []).forEach(function (h) { svg.appendChild(el('line', { 'class': 'ref', x1: mL, x2: mL + pw, y1: sy(h.y), y2: sy(h.y) })); if (h.label) svg.appendChild(el('text', { 'class': 'tick', x: mL + 6, y: sy(h.y) - 4 }, h.label)); });
+    var n = cfg.n || 160;
+    function val(s, xv) {
+      if (s.f) return s.f(xv);
+      var p = s.pts; if (xv <= p[0][0]) return p[0][1];
+      for (var i = 1; i < p.length; i++) if (xv <= p[i][0]) { var a = p[i - 1], b = p[i]; return a[1] + (b[1] - a[1]) * (xv - a[0]) / ((b[0] - a[0]) || 1); }
+      return p[p.length - 1][1];
+    }
+    var labs = [];
+    cfg.series.forEach(function (s) {
+      var d = '';
+      if (s.pts) { s.pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + sx(p[0]).toFixed(1) + ',' + cy(p[1]).toFixed(1); }); }
+      else { for (var i = 0; i <= n; i++) { var xv = x.min + (x.max - x.min) * i / n; var yv = s.f(xv); if (!isFinite(yv)) continue; d += (d === '' ? 'M' : 'L') + sx(xv).toFixed(1) + ',' + cy(yv).toFixed(1); } }
+      var attrs = { 'class': 'ser', d: d, stroke: s.color };
+      if (s.dash) attrs['stroke-dasharray'] = s.dash;
+      if (s.width) attrs['stroke-width'] = s.width;
+      svg.appendChild(el('path', attrs));
+      if (s.label) { var last = s.pts ? s.pts[s.pts.length - 1][1] : s.f(x.max); labs.push({ t: s.label, y: cy(last), col: s.color }); }
+    });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    if (cfg.after) cfg.after({ svg: svg, sx: sx, sy: sy, cy: cy, mL: mL, mT: mT, pw: pw, ph: ph });
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dots = cfg.series.map(function (s) { var d = el('circle', { r: 4, fill: s.color, visibility: 'hidden' }); svg.appendChild(d); return d; });
+    var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = clamp(x.min + (p.x - mL) / pw * (x.max - x.min), x.min, x.max);
+      xh.setAttribute('x1', sx(xv)); xh.setAttribute('x2', sx(xv)); xh.setAttribute('visibility', 'visible');
+      var html = (x.name || 'x') + ' <b>' + (x.tipfmt ? x.tipfmt(xv) : fmt(xv, 1)) + '</b>';
+      cfg.series.forEach(function (s, i) { var v = val(s, xv); dots[i].setAttribute('cx', sx(xv)); dots[i].setAttribute('cy', cy(v)); dots[i].setAttribute('visibility', 'visible'); html += '<br>' + s.name + ' <b>' + (y.tipfmt ? y.tipfmt(v) : fmt(v, 2)) + '</b>'; });
+      if (cfg.extra) html += cfg.extra(xv);
+      tip.innerHTML = html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function table(tb, head, rows) {
+    var html = '<thead><tr>' + head.map(function (h) { return '<th class="num">' + h + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r) { html += '<tr>' + r.map(function (c) { return '<td class="num">' + c + '</td>'; }).join('') + '</tr>'; });
+    tb.innerHTML = html + '</tbody>';
+  }
+
+  /* ---------- canopy geometry (Campbell 1986) ---------- */
+  function Kell(chi, th) { var t = Math.tan(th); return Math.sqrt(chi * chi + t * t) / (chi + 1.774 * Math.pow(chi + 1.182, -0.733)); }
+  function Gfun(chi, th) { return Kell(chi, th) * Math.cos(th); }
+  function meanAngle(chi) { return 9.65 * Math.pow(3 + chi, -1.65) * 180 / Math.PI; }
+  function tauD(chi, Om, L) { var n = 45, s = 0, dth = (Math.PI / 2) / n; for (var i = 0; i < n; i++) { var th = (i + 0.5) * dth; s += Math.exp(-Om * Kell(chi, th) * L) * Math.sin(th) * Math.cos(th) * dth; } return 2 * s; }
+  var D2R = Math.PI / 180;
+
+  /* ---------- Lab A: Beer's law explorer ---------- */
+  var bIds = ['bLAI', 'bChi', 'bZen', 'bOm', 'bFd'];
+  function drawBeer() {
+    outs(bIds);
+    var LAI = +$('bLAI').value, chi = +$('bChi').value, zen = +$('bZen').value * D2R, Om = +$('bOm').value, fd = +$('bFd').value;
+    var kb = Kell(chi, zen), G = Gfun(chi, zen), kbe = Om * kb;
+    var tb = function (L) { return Math.exp(-kbe * L); };
+    var td = function (L) { return tauD(chi, Om, L); };
+    var tot = function (L) { return (1 - fd) * tb(L) + fd * td(L); };
+    var st = niceStep(LAI);
+    makeChart($('beerSvg'), $('beerTip'), {
+      x: { min: 0, max: LAI, ticks: ticks(0, LAI, st), label: 'Cumulative leaf area index from canopy top, L (m² m⁻²)', name: 'L', fmt: function (v) { return fmt(v, st < 1 ? 1 : 0); }, tipfmt: function (v) { return fmt(v, 2); } },
+      y: { min: 0, max: 1, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], label: 'Fraction of above-canopy PAR at depth L', fmt: function (v) { return fmt(v, 1); } },
+      series: [
+        { name: 'Beam τb = fsun', label: 'beam / fsun', color: 'var(--series-2)', f: tb },
+        { name: 'Diffuse τd', label: 'diffuse', color: 'var(--series-1)', f: td },
+        { name: 'Total I/I0', label: 'total', color: 'var(--fg)', f: tot, width: 2.6 }
+      ]
+    });
+    var Ls = (1 - Math.exp(-kbe * LAI)) / kbe;
+    $('bG').textContent = fmt(G, 3); $('bKb0').textContent = fmt(kb, 2);
+    $('bKb').textContent = fmt(kbe, 2);
+    $('bKd').textContent = fmt(-Math.log(td(LAI)) / LAI, 2);
+    $('bLe').textContent = fmt(Om * LAI, 2);
+    $('bF').textContent = fmt(1 - tot(LAI), 2);
+    $('bLs').textContent = fmt(Ls, 2); $('bLc').textContent = fmt(1 / kbe, 2);
+    $('bLsh').textContent = fmt(LAI - Ls, 2);
+    var rows = []; for (var i = 0; i <= 8; i++) { var L = LAI * i / 8; rows.push([fmt(L, 2), fmt(tb(L), 3), fmt(td(L), 3), fmt(tot(L), 3), fmt(tb(L) * 100, 0) + '%']); }
+    table($('beerTable'), ['L', 'τb', 'τd', 'I/I0', 'sunlit %'], rows);
+  }
+  bind(bIds, drawBeer); drawBeer();
+
+  /* ---------- Lab C: leaf angle distribution ---------- */
+  var gIds = ['gChi', 'gZen'];
+  function drawG() {
+    outs(gIds);
+    var chi = +$('gChi').value, zen = +$('gZen').value;
+    function K(c) { return function (deg) { return Math.min(3, Kell(c, deg * D2R)); }; }
+    makeChart($('gSvg'), $('gTip'), {
+      x: { min: 0, max: 85, ticks: ticks(0, 80, 10), label: 'Solar zenith angle θ (°)', name: 'θ', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 0) + '°'; } },
+      y: { min: 0, max: 3, ticks: [0, 0.5, 1, 1.5, 2, 2.5, 3], label: 'Beam extinction coefficient kb = G(θ)/cos θ', fmt: function (v) { return fmt(v, 1); } },
+      vlines: [{ x: zen, label: 'θ = ' + zen + '°' }],
+      series: [
+        { name: 'Planophile χ = 3', label: 'χ = 3', color: 'var(--series-2)', f: K(3) },
+        { name: 'Spherical χ = 1', label: 'χ = 1', color: 'var(--series-1)', f: K(1) },
+        { name: 'Erectophile χ = 0.3', label: 'χ = 0.3', color: 'var(--series-3)', f: K(0.3) },
+        { name: 'Your χ = ' + chi, label: 'χ = ' + chi, color: 'var(--fg)', f: K(chi), width: 2.6 }
+      ],
+      extra: function (xv) { return '<br>G(θ) for your χ <b>' + fmt(Gfun(chi, xv * D2R), 3) + '</b>'; }
+    });
+    var th = zen * D2R;
+    $('gAng').textContent = fmt(meanAngle(chi), 1) + '°';
+    $('gG').textContent = fmt(Gfun(chi, th), 3);
+    $('gK').textContent = fmt(Kell(chi, th), 2);
+    $('gKs').textContent = fmt(0.5 / Math.cos(th), 2);
+    var t1 = tauD(chi, 1, 1); $('gKd').textContent = fmt(t1, 3); $('gKd2').textContent = fmt(-Math.log(t1), 2);
+    var rows = []; for (var z = 0; z <= 80; z += 10) { var r = z * D2R; rows.push([z, fmt(Kell(chi, r), 2), fmt(Kell(3, r), 2), fmt(Kell(1, r), 2), fmt(Kell(0.3, r), 2), fmt(Gfun(chi, r), 3)]); }
+    table($('gTable'), ['θ (°)', 'k your χ', 'k χ=3', 'k χ=1', 'k χ=0.3', 'G your χ'], rows);
+  }
+  bind(gIds, drawG); drawG();
+
+  /* ---------- Lab B: big-leaf vs two-leaf vs multilayer ---------- */
+  var cIds = ['cLAI', 'cI0', 'cFd', 'cKn', 'cZen', 'cAmax'];
+  var cMode = 'I0';
+  function canopy(LAI, I0, fd, kn, zen, Amax0) {
+    var sig = 0.15, rhoh = (1 - Math.sqrt(1 - sig)) / (1 + Math.sqrt(1 - sig));
+    var kb = 0.5 / Math.cos(zen), kbp = kb * Math.sqrt(1 - sig), kdp = 0.719, rhocd = 0.036;
+    var rhocb = 1 - Math.exp(-2 * rhoh * kb / (1 + kb));
+    var Ib0 = (1 - fd) * I0, Id0 = fd * I0;
+    function Id(L) { return Id0 * (1 - rhocd) * kdp * Math.exp(-kdp * L); }
+    function Ibs(L) { return Ib0 * ((1 - rhocb) * kbp * Math.exp(-kbp * L) - (1 - sig) * kb * Math.exp(-kb * L)); }
+    var Ib = Ib0 * (1 - sig) * kb;
+    function Ish(L) { return Math.max(0, Id(L) + Ibs(L)); }
+    function fsun(L) { return Math.exp(-kb * L); }
+    function Amax(L) { return Amax0 * Math.exp(-kn * L); }
+    var phi = 0.07, th = 0.8, rdf = 0.015;
+    function leaf(I, Am) { if (Am <= 0) return 0; var b = phi * I + Am; return (b - Math.sqrt(Math.max(0, b * b - 4 * th * phi * I * Am))) / (2 * th) - rdf * Am; }
+    var n = 60, dL = LAI / n, Aml = 0, Psun = 0, Psh = 0, Amsun = 0, Amsh = 0, Lsun = 0;
+    for (var i = 0; i < n; i++) {
+      var L = (i + 0.5) * dL, fs = fsun(L), am = Amax(L), ish = Ish(L), isn = ish + Ib;
+      Aml += (fs * leaf(isn, am) + (1 - fs) * leaf(ish, am)) * dL;
+      Psun += fs * isn * dL; Psh += (1 - fs) * ish * dL; Amsun += fs * am * dL; Amsh += (1 - fs) * am * dL; Lsun += fs * dL;
+    }
+    var Ptot = Psun + Psh, Amtot = Amsun + Amsh;
+    return { ml: Aml, two: leaf(Psun, Amsun) + leaf(Psh, Amsh), big: leaf(Ptot, Amtot), APAR: Ptot, fAPAR: I0 > 0 ? Ptot / I0 : 0, Lsun: Lsun, cap: Amtot, kb: kb };
+  }
+  function drawCanopy() {
+    outs(cIds);
+    var LAI = +$('cLAI').value, I0 = +$('cI0').value, fd = +$('cFd').value, kn = +$('cKn').value, zen = +$('cZen').value * D2R, Am0 = +$('cAmax').value;
+    var cur = canopy(LAI, I0, fd, kn, zen, Am0);
+    var top = Math.max(10, Math.ceil((canopy(8, 2000, fd, kn, zen, Am0).big * 1.05) / 10) * 10);
+    var ymax = Math.min(top, Math.max(10, Math.ceil(canopy(cMode === 'I0' ? LAI : 8, cMode === 'I0' ? 2000 : I0, fd, kn, zen, Am0).big * 1.1 / 5) * 5));
+    var ystep = niceStep(ymax + 5);
+    var cfgx = cMode === 'I0'
+      ? { min: 0, max: 2000, ticks: ticks(0, 2000, 500), label: 'PAR above canopy, I₀ (µmol photons m⁻² s⁻¹)', name: 'I₀', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 0); } }
+      : { min: 0, max: 8, ticks: ticks(0, 8, 1), label: 'Leaf area index (m² m⁻²)', name: 'LAI', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 2); } };
+    function mk(key) { return function (xv) { var r = cMode === 'I0' ? canopy(LAI, xv, fd, kn, zen, Am0) : canopy(Math.max(xv, 0.02), I0, fd, kn, zen, Am0); return r[key]; }; }
+    makeChart($('cSvg'), $('cTip'), {
+      n: 100,
+      x: cfgx,
+      y: { min: -5, max: ymax, ticks: ticks(-5, ymax, ystep).filter(function (v) { return v >= -5; }), label: 'Canopy photosynthesis (µmol CO₂ m⁻² ground s⁻¹)', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1); } },
+      vlines: [cMode === 'I0' ? { x: I0, label: 'I₀ = ' + I0 } : { x: LAI, label: 'LAI = ' + LAI }],
+      series: [
+        { name: 'Big-leaf', label: 'big-leaf', color: 'var(--series-2)', f: mk('big') },
+        { name: 'Two-leaf', label: 'two-leaf', color: 'var(--series-1)', f: mk('two') },
+        { name: 'Multilayer', label: 'multilayer', color: 'var(--fg)', f: mk('ml'), width: 2.6 }
+      ],
+      extra: function (xv) { var b = mk('big')(xv), m = mk('ml')(xv); return m > 0.5 ? '<br>big-leaf error <b>' + (b > m ? '+' : '') + fmt((b - m) / m * 100, 1) + '%</b>' : ''; }
+    });
+    function err(v) { return cur.ml > 0.5 ? (v > cur.ml ? '+' : '') + fmt((v - cur.ml) / cur.ml * 100, 1) + '%' : 'n/a'; }
+    $('cMl').textContent = fmt(cur.ml, 1);
+    $('cTwo').textContent = fmt(cur.two, 1); $('cTwoE').textContent = err(cur.two);
+    $('cBig').textContent = fmt(cur.big, 1); $('cBigE').textContent = err(cur.big);
+    $('cF').textContent = fmt(cur.fAPAR, 2);
+    $('cLs').textContent = fmt(cur.Lsun, 2); $('cKb').textContent = fmt(cur.kb, 2);
+    $('cCap').textContent = fmt(cur.cap, 1);
+    var rows = [];
+    if (cMode === 'I0') { for (var q = 0; q <= 2000; q += 250) { var r = canopy(LAI, q, fd, kn, zen, Am0); rows.push([q, fmt(r.big, 1), fmt(r.two, 1), fmt(r.ml, 1), r.ml > 0.5 ? fmt((r.big - r.ml) / r.ml * 100, 1) + '%' : '–']); } table($('cTable'), ['I₀', 'big-leaf', 'two-leaf', 'multilayer', 'big-leaf error'], rows); }
+    else { for (var l = 0.5; l <= 8; l += 0.5) { var r2 = canopy(l, I0, fd, kn, zen, Am0); rows.push([l, fmt(r2.big, 1), fmt(r2.two, 1), fmt(r2.ml, 1), fmt(r2.fAPAR, 2), r2.ml > 0.5 ? fmt((r2.big - r2.ml) / r2.ml * 100, 1) + '%' : '–']); } table($('cTable'), ['LAI', 'big-leaf', 'two-leaf', 'multilayer', 'fAPAR', 'big-leaf error'], rows); }
+  }
+  bind(cIds, drawCanopy);
+  $('cModeI').addEventListener('click', function () { cMode = 'I0'; $('cModeI').classList.add('on'); $('cModeL').classList.remove('on'); drawCanopy(); });
+  $('cModeL').addEventListener('click', function () { cMode = 'LAI'; $('cModeL').classList.add('on'); $('cModeI').classList.remove('on'); drawCanopy(); });
+  drawCanopy();
+})();
+</script>
+</body>
+</html>

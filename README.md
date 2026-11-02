@@ -12,7 +12,8 @@ The syllabus is in `Syllabus for Comprehensive Exam.docx.md`.
 index.html                      landing page: all syllabus concepts, links to finished pages
 assets/site.css                 shared styles (light + dark theme)
 assets/site.js                  theme toggle, table-of-contents highlighting, KaTeX rendering
-topics/c3-photosynthesis.html   first concept page
+topics/<slug>.html              32 concept pages, one per syllabus topic (see PAGE_GUIDE.md for the canonical order)
+PAGE_GUIDE.md                   template and conventions for writing or revising a concept page
 .nojekyll                       tells GitHub Pages to serve files as-is
 ```
 
@@ -29,12 +30,17 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-## Adding a concept page
+## Status
 
-1. Copy `topics/c3-photosynthesis.html` to `topics/<new-slug>.html`.
-2. Replace the title, header, sections, questions and references.
-3. In `index.html`, change the matching `<div class="card planned">` into
-   `<a class="card" href="topics/<new-slug>.html">` and set the pill to `Ready`.
+All 32 syllabus concepts have a page (14 SPAC, 7 biogeochemistry, 11 statistics/ML).
+Every page has interactive figures, exam-style questions with model answers, and a reference
+list. Reference DOIs were written from memory and should be spot-checked before relying on them;
+each page says so at the end of its reference list.
+
+## Revising or adding a page
+
+Follow `PAGE_GUIDE.md`. Copy an existing page, keep the shared head/header/footer, and keep the
+pager links in the canonical order listed in the guide. Cards on `index.html` link to `topics/<slug>.html`.
 
 ## Publishing with GitHub Pages
 

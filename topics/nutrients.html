@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Macro- and Micronutrients</title>
+<meta name="description" content="Plant mineral nutrition at comprehensive-exam depth: the 17 essential elements, their forms and availability in soil, soil pH, salinity, uptake kinetics, nutrient use efficiency, ecosystem nutrient limitation, and how nutrients enter ecosystem models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .rowlbl { font-size: 12px; font-weight: 600; }
+  .ch .band { opacity: 0.75; }
+  .ch .band.macro { fill: var(--series-1); }
+  .ch .band.cation { fill: var(--series-2); }
+  .ch .band.anion { fill: var(--series-3); }
+  .ch .marker { stroke: var(--accent-2); stroke-width: 2; stroke-dasharray: 5 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .opt { fill: var(--accent-2); stroke: var(--surface); stroke-width: 2; }
+  .ch .tan { stroke: var(--accent-2); stroke-width: 1.2; stroke-dasharray: 4 4; }
+  .ch .root { fill: var(--accent-2-soft); stroke: var(--accent-2); stroke-width: 1.5; }
+  .ch .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .eltab td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
+  .eltab td { font-size: 0.9rem; }
+  .pill-list { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.4rem 0 0; }
+  .pill-list span { font-family: var(--font-display); font-size: 0.78rem; font-weight: 600; padding: 0.1rem 0.55rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+  .pill-list span.lim { background: var(--accent-2-soft); color: var(--accent-2); border-color: transparent; }
+  .pill-list span.red { background: var(--surface-2); color: var(--fg); }
+  .pill-list span.ok { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Macro- and micronutrients</div>
+    <div class="eyebrow">Topic 13 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Macro- and Micronutrients</h1>
+    <p class="lead">Which elements a plant cannot do without, what controls their supply from the soil, how roots take them up, and why the same chemistry that limits a wheat crop also limits the carbon sink in an Earth system model.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Seventeen elements are essential to higher plants: C, H and O from air and water, six <strong>macronutrients</strong> (N, P, K, Ca, Mg, S) needed at per-cent to per-mille concentrations, and eight <strong>micronutrients</strong> (Fe, Mn, Zn, Cu, B, Mo, Cl, Ni) needed in parts per million. The soil holds each in several pools, only a small fraction of which is in solution and immediately available; the rest is held on exchange sites, sorbed to oxide surfaces, precipitated as minerals, fixed in clay interlayers, or locked in organic matter and released by microbial mineralisation. <strong>Soil pH</strong> is the master variable: metal cations become roughly a hundred-fold less soluble per unit rise in pH, phosphate is pinned by Fe and Al at low pH and by Ca at high pH, Mo and B behave in the opposite sense, and below pH ~5 aluminium toxicity rather than any deficiency sets the limit. Roots obtain nutrients by mass flow, diffusion and interception, taking them up through saturable transporters described by Michaelis–Menten kinetics. At the field scale only about half of applied N is recovered by crops, and at the ecosystem scale N and P limitation of productivity are comparably common and often co-occur. Ecosystem models carry these ideas as stoichiometric constraints, competition schemes and carbon costs of acquisition.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Examiners use nutrients to test whether you can connect chemistry (speciation, sorption, exchange), physiology (transporters, mobility, deficiency symptoms), agronomy (efficiency indices, response curves) and modelling (how a biogeochemical model decides that growth is N- or P-limited). Be ready to sketch the pH–availability diagram, derive an efficiency index, write down the phosphate speciation from its pK<sub>a</sub> values, and criticise the way your favourite land model handles nutrient limitation.</p></div>
+  </section>
+
+  <section id="essential">
+    <h2>Essential elements: criteria, roles, mobility</h2>
+    <p>Arnon and Stout [4] set three criteria for essentiality that are still used: (i) the plant cannot complete its life cycle without the element; (ii) its function cannot be replaced by another element; (iii) it is directly involved in metabolism, as a constituent of an essential molecule or as a required cofactor. Nickel, the most recently admitted element (urease requires it), was shown essential only in 1987. Sodium, silicon, cobalt and selenium are <em>beneficial</em> for some species but fail criterion (i) in general.</p>
+    <p>The macro/micro division is purely quantitative. Epstein's adequate tissue concentrations run from about 1.5% N (15 g kg⁻¹ dry mass) down to 0.1 mg kg⁻¹ Mo, a span of five orders of magnitude; per million atoms of Mo an adequate leaf contains roughly 10⁶ N, 2.5 × 10⁵ K, 1.25 × 10⁵ Ca, 8 × 10⁴ Mg, 6 × 10⁴ P, 3 × 10⁴ S, 2000 Fe, 2000 B, 1000 Mn, 300 Zn, 100 Cu and 2 Ni.</p>
+    <div class="tablewrap"><table class="eltab">
+      <thead><tr><th>Element · form taken up</th><th class="num">Adequate (dry mass)</th><th>Principal roles</th><th>Mobility · where deficiency shows</th></tr></thead>
+      <tbody>
+        <tr><td>N · NO₃⁻, NH₄⁺</td><td class="num">15 g kg⁻¹</td><td>Amino acids, proteins, nucleic acids, chlorophyll; ~50% of leaf N in photosynthetic machinery</td><td>Mobile · uniform chlorosis of old leaves</td></tr>
+        <tr><td>P · H₂PO₄⁻, HPO₄²⁻</td><td class="num">2 g kg⁻¹</td><td>ATP, nucleic acids, phospholipids, phosphorylated metabolites, signalling</td><td>Mobile · dark green/purple old leaves, stunting</td></tr>
+        <tr><td>K · K⁺</td><td class="num">10 g kg⁻¹</td><td>Osmoticum, stomatal movement, charge balance, phloem loading, activates &gt;50 enzymes; not incorporated into structure</td><td>Mobile · marginal scorch of old leaves</td></tr>
+        <tr><td>Ca · Ca²⁺</td><td class="num">5 g kg⁻¹</td><td>Cell-wall pectate cross-links, membrane stability, second messenger</td><td>Immobile (xylem only) · tip burn, blossom-end rot, young tissue</td></tr>
+        <tr><td>Mg · Mg²⁺</td><td class="num">2 g kg⁻¹</td><td>Chlorophyll central atom, Rubisco activation, bridges ATP to enzymes</td><td>Mobile · interveinal chlorosis of old leaves</td></tr>
+        <tr><td>S · SO₄²⁻</td><td class="num">1 g kg⁻¹</td><td>Cysteine, methionine, Fe–S clusters, glutathione, coenzyme A</td><td>Weakly mobile · chlorosis of young leaves</td></tr>
+        <tr><td>Cl · Cl⁻</td><td class="num">100 mg kg⁻¹</td><td>PSII water-splitting cofactor, osmotic and charge balance</td><td>Mobile · wilting, bronzing (rare in the field)</td></tr>
+        <tr><td>Fe · Fe²⁺, Fe³⁺-chelates</td><td class="num">100 mg kg⁻¹</td><td>Cytochromes, Fe–S proteins, ferredoxin, chlorophyll synthesis</td><td>Immobile · interveinal chlorosis of young leaves (lime-induced)</td></tr>
+        <tr><td>Mn · Mn²⁺</td><td class="num">50 mg kg⁻¹</td><td>Mn₄CaO₅ cluster of PSII, Mn-SOD, decarboxylases</td><td>Immobile · interveinal chlorosis, young leaves</td></tr>
+        <tr><td>Zn · Zn²⁺</td><td class="num">20 mg kg⁻¹</td><td>Carbonic anhydrase, Cu/Zn-SOD, zinc-finger transcription factors, auxin synthesis</td><td>Immobile · little leaf, rosetting</td></tr>
+        <tr><td>B · H₃BO₃</td><td class="num">20 mg kg⁻¹</td><td>Cross-links rhamnogalacturonan-II in cell walls, membrane function, pollen</td><td>Immobile · death of growing points, hollow stem</td></tr>
+        <tr><td>Cu · Cu²⁺</td><td class="num">6 mg kg⁻¹</td><td>Plastocyanin, cytochrome c oxidase, lignification (laccase)</td><td>Immobile · twisted young leaves, dieback</td></tr>
+        <tr><td>Ni · Ni²⁺</td><td class="num">0.1 mg kg⁻¹</td><td>Urease</td><td>Urea accumulation, leaf-tip necrosis</td></tr>
+        <tr><td>Mo · MoO₄²⁻</td><td class="num">0.1 mg kg⁻¹</td><td>Nitrate reductase, nitrogenase, xanthine dehydrogenase (Mo-cofactor)</td><td>Mobile · whiptail, N-deficiency look in legumes</td></tr>
+      </tbody></table></div>
+    <p>The mobility column is the diagnostic key. Elements that are readily remobilised through the phloem (N, P, K, Mg) are withdrawn from old leaves to feed new growth, so deficiency shows first on old leaves. Elements that move only in the xylem or are bound in structures (Ca, B, Fe, Mn, Zn, Cu) cannot be redistributed, so new leaves and meristems suffer first. This is also why Ca and B must be supplied continuously through transpiration-driven xylem flow, and why fruits and enclosed leaves with low transpiration (tomato blossom-end rot, lettuce tip burn) are the typical Ca-deficient organs even in Ca-rich soils.</p>
+  </section>
+
+  <section id="soilforms">
+    <h2>Where the nutrients are in soil, and what pH does to them</h2>
+    <p>For every nutrient it helps to think of a cascade of pools in decreasing availability: soil solution → exchangeable or weakly sorbed → strongly sorbed/fixed/precipitated → structural or organic. Only the solution pool is taken up; the rest buffers it.</p>
+    <h3>Nitrogen</h3>
+    <p>More than 95% of soil N is organic. Microbial <strong>mineralisation</strong> (ammonification) releases NH₄⁺, which is held on cation exchange sites, fixed in some clay interlayers, volatilised as NH₃ at high pH, taken up, or oxidised by autotrophic nitrifiers to NO₃⁻. The reverse, <strong>immobilisation</strong>, is microbial uptake into biomass; net mineralisation is the balance and typically releases 1–3% of organic N per year, so a soil with 5 t N ha⁻¹ in organic matter supplies 50–150 kg N ha⁻¹ yr⁻¹. NO₃⁻ is mobile and is lost by leaching and by denitrification to N₂O and N₂. Inputs are biological fixation, atmospheric deposition, and fertiliser (industrial fixation now adds ~110–120 Tg N yr⁻¹, more than all natural terrestrial fixation; see the root–microbe and nitrogen-cycling pages).</p>
+    <h3>Phosphorus</h3>
+    <p>Orthophosphate is a triprotic acid with pK<sub>a</sub> values 2.15, 7.20 and 12.35, so over the soil pH range the solution species are H₂PO₄⁻ and HPO₄²⁻, equal at pH 7.2:</p>
+    <div class="eq">$$\alpha_{\mathrm{H_2PO_4^-}} = \frac{10^{-\mathrm{pH}}K_1}{10^{-2\,\mathrm{pH}} + 10^{-\mathrm{pH}}K_1 + K_1K_2 + K_1K_2K_3\,10^{\mathrm{pH}}}, \qquad K_i = 10^{-\mathrm{p}K_{a,i}}$$</div>
+    <p>Speciation is not what limits availability, however; sorption and precipitation are. Below pH ~6 phosphate adsorbs strongly by ligand exchange onto Fe and Al (hydr)oxides and precipitates as Al- and Fe-phosphates (variscite, strengite); above pH ~7.5 it precipitates with Ca as dicalcium phosphate, octacalcium phosphate and eventually hydroxyapatite. Phosphate sorbed on oxide surfaces that are later coated by new oxide becomes <strong>occluded</strong> and effectively unavailable. Organic P is 30–65% of total P (inositol phosphates, nucleic acids, phospholipids) and is released by phosphatases secreted by roots and microbes. The <strong>Hedley fractionation</strong> [14] operationalises the cascade with sequential extractions: resin-P (solution), NaHCO₃-P<sub>i</sub>/P<sub>o</sub> (labile), NaOH-P<sub>i</sub>/P<sub>o</sub> (Fe/Al-bound), HCl-P (Ca-bound), residual. Soil solution P is 0.1–10 µM, tiny against a plant demand that a maize crop meets only because 90% of P arrives by diffusion into depleted zones around roots. Hinsinger [10] shows how roots change this by acidifying or alkalinising the rhizosphere and exuding carboxylates.</p>
+    <h3>Potassium, sulphur, calcium and magnesium</h3>
+    <p>Total K is often 1–3% of the soil, 90–98% of it structural in feldspars and micas, 1–10% <strong>fixed</strong> in the interlayers of 2:1 clays (illite, vermiculite), 1–2% exchangeable, and only 1–10 mg L⁻¹ in solution. Exchangeable and fixed K buffer the solution so well that K deficiency is rare on young clay soils but common on sandy, kaolinitic or organic soils. Sulphur is >90% organic in surface soils and mineralises to SO₄²⁻, which is weakly retained (more so on acid, oxide-rich subsoils); the decline of SO₂ deposition since the 1980s has turned S into an emerging deficiency in Europe and North America. Ca and Mg are held on exchange sites (Ca typically 60–80% of exchangeable cations in neutral soils) and as carbonates in calcareous soils; both are leached as acidification proceeds.</p>
+    <h3>Micronutrients and the Truog diagram</h3>
+    <p>For a divalent metal in equilibrium with its oxide or hydroxide, M(OH)₂ + 2H⁺ ⇌ M²⁺ + 2H₂O gives log a(M²⁺) = const − 2pH: activity falls about 100-fold per unit pH. For Fe³⁺ the fall is 1000-fold per unit. Fe, Mn, Zn and Cu deficiencies are therefore the signature problems of calcareous soils (lime-induced chlorosis), while Mn and Al toxicity belong to acid soils. Molybdate (MoO₄²⁻) desorbs as pH rises, so Mo deficiency appears in acid soils and liming cures it; boric acid (pK<sub>a</sub> 9.2) is increasingly sorbed above pH 7.5, so B availability peaks near neutrality. Truog's 1946 chart summarised all of this as bands whose width shows relative availability against pH, with the broadest overall availability between pH 6 and 7. The explorer below is a quantitative sketch of that chart.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Nutrient availability versus soil pH, with phosphate speciation</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="phSvg" viewBox="0 0 640 420" role="img" aria-label="Truog-style chart: band width shows relative availability of each nutrient against soil pH from 4 to 9"></svg>
+            <div class="chart-tip" id="phTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">macronutrients</span><span style="--c:var(--series-2)">metal micronutrient cations</span><span style="--c:var(--series-3)">anionic micronutrients (B, Mo)</span><span style="--c:var(--accent-2)">selected pH</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="pSvg" viewBox="0 0 640 230" role="img" aria-label="Fraction of orthophosphate species H3PO4, H2PO4-, HPO4 2- and PO4 3- against pH"></svg>
+            <div class="chart-tip" id="pTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--muted)">H₃PO₄</span><span style="--c:var(--series-1)">H₂PO₄⁻</span><span style="--c:var(--series-2)">HPO₄²⁻</span><span style="--c:var(--series-3)">PO₄³⁻</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="phTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="phIn"><span>Soil pH (1:1 water)</span><output id="phInO">6.5</output></label><input type="range" id="phIn" min="4" max="9" step="0.1" value="6.5"></div>
+          <dl class="readout">
+            <dt>Strongly limited (index &lt; 0.5)</dt><dd id="phLim"></dd>
+            <dt>Reduced (0.5–0.75)</dt><dd id="phRed"></dd>
+            <dt>H₂PO₄⁻ fraction</dt><dd id="pF1"></dd>
+            <dt>HPO₄²⁻ fraction</dt><dd id="pF2"></dd>
+            <dt>Dominant P sink</dt><dd id="pSink"></dd>
+            <dt>Al³⁺ hazard</dt><dd id="phAl"></dd>
+            <dt>M²⁺ activity relative to pH 6.5</dt><dd id="phMet"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Band widths are an index (0–1) of relative availability in the spirit of Truog (1946), not a measurement. Suggested experiments: slide to pH 4.5 and list what limits (P, Ca, Mg, Mo; Al toxic); slide to pH 8.2 (calcareous) and note Fe, Mn, Zn, P; find the pH where the two phosphate species are equal.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ph">
+    <h2>Soil pH, acidity, exchange capacity</h2>
+    <p>Soil pH is −log₁₀ of H⁺ activity in a soil suspension (1:1 or 1:2 soil:water; 0.01 M CaCl₂ reads about 0.5 unit lower and is less sensitive to salt content). A soil's <strong>buffer capacity</strong> is the amount of acid or base needed per unit pH change; it comes from exchangeable cations and pH-dependent charge on clays and organic matter, from carbonates above pH 7, and from Al hydroxy-polymers below pH 5.5. Clays and humus-rich soils are strongly buffered; sands are not.</p>
+    <p>Soils acidify because H⁺ is produced faster than it is consumed. The main sources: (i) nitrification, NH₄⁺ + 2O₂ → NO₃⁻ + 2H⁺ + H₂O, so ammonium and urea fertilisers acidify unless the NO₃⁻ is taken up with release of OH⁻ (net one H⁺ per NH₄⁺ remains when nitrate leaches); (ii) leaching of base cations as counter-ions to NO₃⁻ and SO₄²⁻, which lowers base saturation; (iii) acid deposition (H₂SO₄, HNO₃); (iv) legume N fixation and harvest removal, because roots release H⁺ to balance excess cation over anion uptake; (v) organic acids and CO₂. <strong>Liming</strong> reverses it: CaCO₃ + 2H⁺ → Ca²⁺ + H₂O + CO₂. The lime requirement is read from a buffer curve or estimated from exchangeable acidity, expressed as calcium carbonate equivalent.</p>
+    <p>Below pH ~5.5 the exchange complex fills with Al³⁺ and its hydroxy species, and <strong>aluminium toxicity</strong> becomes the dominant constraint on roughly 30% of ice-free land and perhaps half of potentially arable soils. Micromolar Al³⁺ stops root elongation within hours by binding to pectin, the plasma membrane and DNA in the root apex. Tolerant genotypes exude malate or citrate from the root tip (ALMT1 and MATE transporters, [11]) to chelate Al, or tolerate it internally. <strong>Manganese toxicity</strong> (Mn²⁺ reduced and solubilised in acid, poorly aerated soils) and deficiencies of P, Ca, Mg and Mo complete the acid-soil syndrome. Liming to pH 5.5–6 removes the Al problem; the yield response to lime is usually larger than to any single nutrient on such soils.</p>
+    <p><strong>Cation exchange capacity</strong> (CEC, cmol(+) kg⁻¹) is the quantity of exchangeable cations a soil retains: kaolinite 3–15, illite 15–40, smectite 80–150, vermiculite 100–150, humus 100–300. Permanent charge comes from isomorphous substitution in 2:1 clays; pH-dependent charge from deprotonation of carboxyl and phenolic groups on organic matter and of edge hydroxyls on clays and oxides, so CEC rises with pH. <strong>Base saturation</strong> is the share of CEC occupied by Ca²⁺, Mg²⁺, K⁺ and Na⁺; it correlates with pH (roughly 20% at pH 4.5 to 100% at pH 7) and is a Soil Taxonomy criterion separating Alfisols (&gt;35%) from Ultisols. High CEC buffers both pH and nutrient supply, which is why texture and organic matter appear in every fertiliser recommendation.</p>
+  </section>
+
+  <section id="salinity">
+    <h2>Salinity and sodicity</h2>
+    <p>Salt-affected soils cover roughly 0.8–1 billion hectares, and about a fifth of irrigated land, with 1–2 Mha lost to salinisation every year. The US Salinity Laboratory (1954) classification uses the electrical conductivity of a saturated-paste extract: <strong>saline</strong> if EC<sub>e</sub> &gt; 4 dS m⁻¹ (about 40 mM NaCl, osmotic potential ≈ −0.036 × EC ≈ −0.14 MPa), <strong>sodic</strong> if the exchangeable sodium percentage ESP &gt; 15 (equivalently sodium adsorption ratio SAR &gt; 13), <strong>saline–sodic</strong> if both.</p>
+    <div class="eq">$$\mathrm{SAR} = \frac{[\mathrm{Na^+}]}{\sqrt{([\mathrm{Ca^{2+}}]+[\mathrm{Mg^{2+}}])/2}}\;(\text{mmol L}^{-1}),\qquad \Psi_\pi \approx -0.036\,\mathrm{EC}\;(\text{MPa, EC in dS m}^{-1})$$</div>
+    <p>Salinity hurts plants in two phases [12]. The <strong>osmotic phase</strong> is immediate: lower soil water potential reduces water uptake, cell expansion and stomatal conductance, much like drought. The <strong>ion-specific phase</strong> develops over weeks as Na⁺ (and Cl⁻) accumulate to toxic concentrations in old leaves, where they inhibit enzymes and compete with K⁺ for binding sites; cytosolic K⁺/Na⁺ ratio is the physiological variable that matters. Plants limit damage by excluding Na⁺ at the root (SOS1 efflux, HKT1;5 retrieval from the xylem), sequestering it in vacuoles (NHX antiporters) and synthesising compatible solutes. Sodicity is a soil-structure problem: when Na⁺ dominates the exchange complex and the solution is dilute, clay swells and disperses, pores clog, infiltration collapses and surface crusts form. Gypsum (CaSO₄) supplies Ca²⁺ to displace Na⁺, which is then leached.</p>
+    <p>Crop response is summarised by the <strong>Maas–Hoffman threshold–slope model</strong> [5]: relative yield is 100% up to a threshold EC<sub>e</sub> = a and then falls linearly with slope b (% per dS m⁻¹), <em>Y</em><sub>r</sub> = 100 − b(EC<sub>e</sub> − a). Thresholds span bean (1.0) to barley (8.0 dS m⁻¹); slopes are steepest for sensitive crops.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Maas–Hoffman salinity response explorer</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="sSvg" viewBox="0 0 640 340" role="img" aria-label="Relative yield of five crops against soil salinity using the Maas–Hoffman threshold–slope model"></svg>
+            <div class="chart-tip" id="sTip" hidden></div>
+          </div>
+          <div class="legend" id="sLegend"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="sTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sEC"><span>Soil salinity, EC<sub>e</sub> (dS m⁻¹)</span><output id="sECO">4.0</output></label><input type="range" id="sEC" min="0" max="20" step="0.1" value="4"></div>
+          <dl class="readout">
+            <dt>Classification</dt><dd id="sClass"></dd>
+            <dt>Osmotic potential (MPa)</dt><dd id="sPsi"></dd>
+            <dt>Bean (a = 1.0, b = 19)</dt><dd id="sY0"></dd>
+            <dt>Maize (1.7, 12)</dt><dd id="sY1"></dd>
+            <dt>Wheat (6.0, 7.1)</dt><dd id="sY2"></dd>
+            <dt>Cotton (7.7, 5.2)</dt><dd id="sY3"></dd>
+            <dt>Barley (8.0, 5.0)</dt><dd id="sY4"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Parameters from Maas &amp; Hoffman 1977 [5]. Suggested experiments: find the EC<sub>e</sub> at which each crop loses half its yield (EC₅₀ = a + 50/b); note that the 4 dS m⁻¹ "saline" boundary already costs beans more than half their yield while barley is untouched; compare the osmotic potential at 8 dS m⁻¹ with the −0.3 MPa at which many crops start closing stomata on the drought page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="uptake">
+    <h2>How nutrients reach and enter the root</h2>
+    <p>Barber's framework [3] splits supply to the root surface into three mechanisms. <strong>Root interception</strong>: nutrients in the soil volume the roots displace (roots occupy ~1% of topsoil volume, so this is small). <strong>Mass flow</strong>: solutes carried by the transpiration stream, flux = water flux × solution concentration. <strong>Diffusion</strong>: movement down the concentration gradient created when uptake exceeds mass flow, flux = −D<sub>e</sub> dC/dx with an effective diffusion coefficient</p>
+    <div class="eq">$$D_e = D_l\,\theta\,f\,/\,b,\qquad b = \frac{dC_{total}}{dC_{solution}}\ \text{(buffer power)}$$</div>
+    <p>where D<sub>l</sub> is the coefficient in free water, θ volumetric water content, f an impedance (tortuosity) factor, and b the buffer power. For maize, Barber estimated that mass flow delivers ~80% of N (NO₃⁻ at 1–10 mM), nearly all of the S, and more Ca and Mg than the plant needs (they accumulate at the root surface), whereas ~90% of P and ~80% of K arrive by diffusion. Because soil solution P is ~1 µM and strongly buffered, D<sub>e</sub> for P is 10⁻⁹–10⁻⁸ cm² s⁻¹ and the depletion zone around a root extends only 1–2 mm after a week; for NO₃⁻ it is centimetres. This is why root length density, root hairs and mycorrhizal hyphae matter so much for P and K and so little for N and Ca, and why P fertiliser is banded near the seed.</p>
+    <p>Uptake across the plasma membrane is by transporter proteins and is saturable. Epstein's adaptation of enzyme kinetics is the <strong>Michaelis–Menten uptake isotherm</strong>:</p>
+    <div class="eq">$$I = \frac{I_{max}\,(C - C_{min})}{K_m + (C - C_{min})}, \quad C > C_{min}$$</div>
+    <p>with I<sub>max</sub> the maximum net influx per unit root surface, K<sub>m</sub> the concentration (above C<sub>min</sub>) at half-maximal influx, and C<sub>min</sub> the concentration at which net influx is zero because efflux balances influx. Typical maize values: P I<sub>max</sub> ≈ 4 pmol cm⁻² s⁻¹, K<sub>m</sub> ≈ 5 µM, C<sub>min</sub> ≈ 0.2 µM; K K<sub>m</sub> ≈ 15 µM, C<sub>min</sub> ≈ 2 µM; NO₃⁻ K<sub>m</sub> ≈ 20–100 µM. Most nutrients have a <strong>high-affinity transport system</strong> (HATS, K<sub>m</sub> in the µM range, inducible, active: NRT2 for nitrate, AMT1 for ammonium, HAK5 for K⁺, PHT1 for phosphate, SULTR1 for sulphate) and a <strong>low-affinity system</strong> (LATS) that is nearly linear above ~0.5 mM (NRT1/NPF for nitrate, AKT1 channels for K⁺). Uptake of cations is driven by the membrane potential (−120 to −200 mV) set by the H⁺-ATPase; anions such as NO₃⁻ and H₂PO₄⁻ enter by H⁺-symport against the electrical gradient. Plants regulate I<sub>max</sub> to demand: P-starved roots up-regulate PHT1 several-fold, N-sufficient plants down-regulate NRT2.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Uptake kinetics and depletion zones</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="mmSvg" viewBox="0 0 640 300" role="img" aria-label="Michaelis–Menten net influx against solution concentration"></svg>
+            <div class="chart-tip" id="mmTip" hidden></div>
+          </div>
+          <div class="figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="dzSvg" viewBox="0 0 640 250" role="img" aria-label="Cartoon of concentration profiles away from a root surface: depletion of diffusion-limited phosphate and accumulation of mass-flow-supplied calcium"></svg>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="mmTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mImax"><span>I<sub>max</sub> (pmol cm⁻² s⁻¹)</span><output id="mImaxO">4</output></label><input type="range" id="mImax" min="0.5" max="20" step="0.5" value="4"></div>
+          <div class="ctrl"><label for="mKm"><span>K<sub>m</sub> (µM)</span><output id="mKmO">5</output></label><input type="range" id="mKm" min="0.5" max="60" step="0.5" value="5"></div>
+          <div class="ctrl"><label for="mCmin"><span>C<sub>min</sub> (µM)</span><output id="mCminO">0.2</output></label><input type="range" id="mCmin" min="0" max="5" step="0.1" value="0.2"></div>
+          <div class="ctrl"><label for="mT"><span>Time since root arrived (days)</span><output id="mTO">7</output></label><input type="range" id="mT" min="0.5" max="30" step="0.5" value="7"></div>
+          <dl class="readout">
+            <dt>Half-saturation concentration</dt><dd id="mHalf"></dd>
+            <dt>I at 1 µM, typical soil P (pmol cm⁻² s⁻¹)</dt><dd id="mI1"></dd>
+            <dt>I at 10 µM (pmol cm⁻² s⁻¹)</dt><dd id="mI10"></dd>
+            <dt>I at 100 µM (% of I<sub>max</sub>)</dt><dd id="mI100"></dd>
+            <dt>P depletion zone width (mm)</dt><dd id="mDzP"></dd>
+            <dt>Ca accumulation zone (mm)</dt><dd id="mDzCa"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Cartoon profiles use erfc solutions with D<sub>e</sub>(P) = 1 × 10⁻⁸ and D<sub>e</sub>(Ca) = 1 × 10⁻⁶ cm² s⁻¹, root-surface P held at 10% of bulk by uptake, Ca at the surface rising as mass flow outruns uptake. Suggested experiments: set K<sub>m</sub> = 50 µM (a low-affinity system) and see how little is taken up at 1 µM; raise C<sub>min</sub> to 1 µM and note where influx vanishes; extend time to 30 days and compare the P zone (still a few mm) with the Ca zone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="nue">
+    <h2>Nutrient use efficiency and fertility management</h2>
+    <p>Efficiency indices answer different questions, so define the one you mean. With fertiliser rate F, yield Y, yield Y₀ and uptake U₀ in an unfertilised control, and above-ground nutrient uptake U [6, 7]:</p>
+    <div class="eq">$$\mathrm{PFP} = \frac{Y}{F},\quad \mathrm{AE} = \frac{Y - Y_0}{F},\quad \mathrm{RE} = \frac{U - U_0}{F},\quad \mathrm{PE} = \frac{Y - Y_0}{U - U_0},\qquad \mathrm{AE} = \mathrm{RE}\times\mathrm{PE}$$</div>
+    <p>Partial factor productivity (kg grain per kg N applied) is what farm surveys report; agronomic efficiency isolates the fertiliser's contribution; apparent recovery efficiency is the fraction of applied nutrient found in the crop; physiological efficiency is yield per unit nutrient taken up. Moll, Kamprath and Jackson [6] defined NUE for a whole plant as grain per unit N supply and factored it into uptake efficiency and utilisation efficiency, NUE = (N<sub>t</sub>/N<sub>s</sub>)(G<sub>w</sub>/N<sub>t</sub>), which separates root/soil processes from internal allocation. For N, cereal AE is typically 10–30 kg grain kg⁻¹ N, RE 30–60%, and global cropland N use efficiency (harvested N / N input) has hovered near 40–50%: Lassaletta et al. [7] estimate ~47% in 2009 after a decline from ~68% in 1961, with wide national divergence; Zhang et al. [8] put the 2010 global figure at ~42% against a target of ~70% needed to feed 9 billion people within an N surplus of ~50 Tg yr⁻¹. The unrecovered half is lost as NO₃⁻ leaching, NH₃, N₂O and N₂, or accumulates in soil organic N. For P, apparent recovery in a single season is often only 10–25%, but much of the rest is retained as <strong>legacy P</strong> that later crops draw down, so long-term P use efficiency is far higher than single-season values suggest [15].</p>
+    <h3>Response curves and the economic optimum</h3>
+    <p>Liebig's law of the minimum (1840) says yield is set by the scarcest nutrient and responds linearly until another factor limits; it produces a linear-plateau response. Mitscherlich (1909) replaced this with diminishing returns, each increment of nutrient raising yield in proportion to the gap from the maximum:</p>
+    <div class="eq">$$\frac{dY}{dN} = c\,(Y_{max} - Y) \;\Rightarrow\; Y = Y_{max}\left[1 - e^{-c\,(N_0 + N)}\right]$$</div>
+    <p>where N₀ is the soil's own supply expressed in fertiliser-equivalent units and c the responsiveness (ha kg⁻¹). Quadratic and quadratic-plateau fits are the practical alternatives. The economically optimum rate is where the marginal yield equals the price ratio r (kg grain per kg N): dY/dN = r, hence N* = −ln[r/(c Y<sub>max</sub>)]/c − N₀. Because the curve is flat near the plateau, over-application costs little yield but wastes N and raises losses, which is the core argument for the <strong>4R</strong> framework (right source, rate, time, place). Soil testing calibrates N₀ against a <strong>critical level</strong> below which response is likely (Cate–Nelson analysis); for P and K, programmes either fertilise to sufficiency each year or <strong>build up and maintain</strong> soil test levels above the critical value, replacing crop removal. <strong>Enhanced-efficiency fertilisers</strong> (polymer-coated urea, urease inhibitors such as NBPT, nitrification inhibitors such as DCD, nitrapyrin, DMPP) delay the transformation of N into mobile or gaseous forms; <strong>precision agriculture</strong> uses canopy sensors, yield maps and variable-rate applicators to match supply to spatially variable demand; organic amendments add slow-release N and P plus CEC and buffering.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Fertiliser response and nutrient use efficiency explorer</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="nSvg" viewBox="0 0 640 360" role="img" aria-label="Mitscherlich grain yield response to applied nitrogen with the chosen rate and the economic optimum marked"></svg>
+            <div class="chart-tip" id="nTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">yield Y(N)</span><span style="--c:var(--series-1)">chosen rate</span><span style="--c:var(--accent-2)">economic optimum (tangent slope = price ratio)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="nTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="nYmax"><span>Y<sub>max</sub> (t ha⁻¹)</span><output id="nYmaxO">10</output></label><input type="range" id="nYmax" min="3" max="16" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="nC"><span>Responsiveness c (ha kg⁻¹ N)</span><output id="nCO">0.012</output></label><input type="range" id="nC" min="0.004" max="0.03" step="0.001" value="0.012"></div>
+          <div class="ctrl"><label for="nN0"><span>Soil N supply N₀ (kg ha⁻¹ eq.)</span><output id="nN0O">40</output></label><input type="range" id="nN0" min="0" max="200" step="5" value="40"></div>
+          <div class="ctrl"><label for="nLoss"><span>Fertiliser N lost before uptake (fraction)</span><output id="nLossO">0.30</output></label><input type="range" id="nLoss" min="0" max="0.7" step="0.05" value="0.3"></div>
+          <div class="ctrl"><label for="nR"><span>Price ratio r (kg grain per kg N)</span><output id="nRO">7</output></label><input type="range" id="nR" min="2" max="20" step="0.5" value="7"></div>
+          <div class="ctrl"><label for="nF"><span>Chosen N rate (kg ha⁻¹)</span><output id="nFO">150</output></label><input type="range" id="nF" min="0" max="300" step="5" value="150"></div>
+          <dl class="readout">
+            <dt>Yield at chosen rate (t ha⁻¹)</dt><dd id="oY"></dd>
+            <dt>Unfertilised yield Y₀ (t ha⁻¹)</dt><dd id="oY0"></dd>
+            <dt>PFP (kg grain kg⁻¹ N)</dt><dd id="oPFP"></dd>
+            <dt>AE (kg grain kg⁻¹ N)</dt><dd id="oAE"></dd>
+            <dt>RE (apparent recovery)</dt><dd id="oRE"></dd>
+            <dt>PE (kg grain kg⁻¹ N taken up)</dt><dd id="oPE"></dd>
+            <dt>Economic optimum N* (kg ha⁻¹)</dt><dd id="oNopt"></dd>
+            <dt>Yield at N* (t ha⁻¹)</dt><dd id="oYopt"></dd>
+            <dt>N surplus at chosen rate (kg ha⁻¹)</dt><dd id="oSur"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Crop N uptake is taken as 22 kg N per tonne of grain (whole plant), so RE = 22 × (Y − Y₀)/F. Suggested experiments: raise N₀ to 150 (a soil with high mineralisation) and watch N* fall to zero; raise the price ratio and see the optimum retreat; set the loss fraction to 0.5 and compare RE with the global 40–50% figure; find a rate where PFP is high but AE is low.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosystems">
+    <h2>Nutrient limitation in ecosystems</h2>
+    <p>Why should N limit so many ecosystems when N₂ is unlimited and fixers exist? Vitousek and Howarth [9] listed the reasons: fixation is energetically expensive and only pays when N is scarce relative to light and water; fixers are often limited by P, Mo or Fe, or preferentially grazed; N is lost in forms (NO₃⁻ leaching, gaseous N) that are not easily recaptured; and young landscapes start N-poor because parent material contains almost no N but does contain P. The Walker–Syers model of pedogenesis predicts the reverse for P: it is highest and most available in young soils and progressively weathered, occluded and leached, so old tropical soils on stable surfaces tend to P limitation. Vitousek et al. [13] distinguish P limitation that is depletion-driven, soil-barrier (sorption), transactional (competition with microbes and sorption), and anthropogenic.</p>
+    <p>Elser et al. [16] meta-analysed over a thousand fertilisation experiments and found that N and P limitation are of similar magnitude in terrestrial, freshwater and marine systems, and that adding both together produces a strongly synergistic response: <strong>co-limitation</strong> is the rule, not the exception. LeBauer and Treseder found N addition raised above-ground production by ~29% across biomes, including tropical forests once thought purely P-limited. Leaf N:P mass ratios offer a field diagnostic (&lt;14 suggests N limitation, &gt;16 P limitation), and global maps built on them show N limitation dominating cold and temperate regions and P limitation the lowland tropics. In the long run nutrient supply, not photosynthetic capacity, sets how much of the CO₂ fertilisation effect can be realised as biomass, which is why N and P have moved to the centre of land-model development.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p>Models need nutrients for two reasons: to constrain growth (stoichiometry) and to route decomposition products. The approaches differ mainly in how they decide who gets scarce N or P.</p>
+    <ul>
+      <li><strong>Century / DayCent</strong> (Parton and colleagues) couple N, P and S to the carbon pools through fixed or bounded C:N:P ratios; decomposition mineralises or immobilises nutrients to keep the receiving pool within its ratio, and plant growth is scaled down when mineral N cannot meet the C:N demand. Nitrification and denitrification produce N₂O and NO. This is the template for most "first-generation" C–N models and for crop-model nutrient routines.</li>
+      <li><strong>CLM4.5 and CLM5</strong> use the <strong>FUN</strong> model (Fixation and Uptake of Nitrogen, [17]): the plant buys N from the cheapest of several pathways (active root uptake from mineral N, symbiotic fixation, retranslocation from senescing leaves, and in CLM5 a mycorrhizal pathway), each with a carbon cost that depends on soil N and root biomass; the carbon spent is removed from NPP. CLM5 has no P cycle. Flexible leaf C:N and N-dependent V<sub>cmax</sub> (LUNA) link N status back to photosynthesis.</li>
+      <li><strong>ELM (E3SM Land Model)</strong> implements the <strong>Equilibrium Chemistry Approximation</strong> (ECA, [18]): plants, microbial decomposers, nitrifiers, denitrifiers and mineral surfaces compete for NH₄⁺, NO₃⁻ and phosphate as substrates of Michaelis–Menten consumers, with affinity parameters deciding the shares, instead of ad hoc "plants first" or "microbes first" rules. It carries a full P cycle (solution, labile, secondary, occluded, parent material, following Hedley-type pools) and has been used to argue that P limitation reduces the tropical carbon sink.</li>
+      <li><strong>ORCHIDEE-CNP, CASA-CNP, JSBACH, QUINCY</strong> add P with sorption isotherms and weathering inputs; <strong>JULES</strong> added N limitation (JULES-CN) only recently; <strong>MIMICS-CN</strong> and other microbial-explicit models follow C:N through microbial biomass so that N mineralisation is an emergent property of microbial growth efficiency.</li>
+      <li><strong>QUEFTS</strong> (Janssen et al. 1990) is the crop-fertility counterpart: it predicts yield from soil-supplied N, P and K with pairwise interactions and maximum/minimum dilution bounds, and underlies many fertiliser recommendation systems in the tropics.</li>
+    </ul>
+    <p>Three criticisms recur. Fixed stoichiometry forces growth down-regulation that real plants avoid by adjusting tissue N:P and by investing in acquisition, so down-regulation schemes (CLM4) tend to over-predict N limitation of the CO₂ response; cost-based schemes (FUN) can under-predict it. Michaelis–Menten competition is sensitive to poorly known K<sub>m</sub> values for microbes and surfaces. And most models still ignore pH, salinity and micronutrients altogether, although Al toxicity and P sorption are both pH-driven and the P-sorption parameters of land models are among their most uncertain.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Essential elements</td><td class="num">17 (3 + 6 macro + 8 micro)</td><td>Arnon &amp; Stout criteria [4]; Ni added 1987</td></tr>
+        <tr><td>Adequate leaf N · P · K</td><td class="num">1.5 · 0.2 · 1.0 % dry mass</td><td>Epstein; Marschner [1]</td></tr>
+        <tr><td>Phosphate pK<sub>a</sub> values</td><td class="num">2.15, 7.20, 12.35</td><td>H₂PO₄⁻ = HPO₄²⁻ at pH 7.2</td></tr>
+        <tr><td>Metal cation activity vs pH</td><td class="num">÷100 per unit pH (M²⁺); ÷1000 (Fe³⁺)</td><td>Lindsay 1979 solubility relations</td></tr>
+        <tr><td>Al³⁺ dominant below</td><td class="num">pH ≈ 5.0–5.5</td><td>~30% of ice-free land acidic [11]</td></tr>
+        <tr><td>Saline / sodic thresholds</td><td class="num">EC<sub>e</sub> 4 dS m⁻¹ / ESP 15 (SAR 13)</td><td>US Salinity Laboratory 1954</td></tr>
+        <tr><td>Osmotic potential per EC</td><td class="num">≈ −0.036 MPa per dS m⁻¹</td><td>4 dS m⁻¹ ≈ −0.14 MPa ≈ 40 mM NaCl</td></tr>
+        <tr><td>Maas–Hoffman thresholds</td><td class="num">bean 1.0 · maize 1.7 · wheat 6.0 · barley 8.0 dS m⁻¹</td><td>[5]</td></tr>
+        <tr><td>CEC by material</td><td class="num">kaolinite 3–15 · smectite 80–150 · humus 100–300 cmol kg⁻¹</td><td>Brady &amp; Weil [2]</td></tr>
+        <tr><td>Soil solution P</td><td class="num">0.1–10 µM</td><td>vs NO₃⁻ 0.1–10 mM; D<sub>e</sub>(P) 10⁻⁹–10⁻⁸ cm² s⁻¹</td></tr>
+        <tr><td>Supply of P / N to maize roots</td><td class="num">~90% diffusion / ~80% mass flow</td><td>Barber [3]</td></tr>
+        <tr><td>Maize P uptake kinetics</td><td class="num">I<sub>max</sub> ≈ 4 pmol cm⁻² s⁻¹, K<sub>m</sub> ≈ 5 µM, C<sub>min</sub> ≈ 0.2 µM</td><td>Barber [3], order of magnitude</td></tr>
+        <tr><td>Net N mineralisation</td><td class="num">1–3% of organic N yr⁻¹</td><td>50–150 kg N ha⁻¹ yr⁻¹ for 5 t N ha⁻¹</td></tr>
+        <tr><td>Global cropland NUE</td><td class="num">≈ 42–47% (2009–2010)</td><td>Lassaletta [7]; Zhang [8]; target ~70%</td></tr>
+        <tr><td>Cereal N AE · RE</td><td class="num">10–30 kg kg⁻¹ · 30–60%</td><td>Field ranges</td></tr>
+        <tr><td>Industrial N fixation</td><td class="num">≈ 110–120 Tg N yr⁻¹</td><td>Exceeds natural terrestrial BNF (~58 Tg)</td></tr>
+        <tr><td>Leaf N:P diagnostic</td><td class="num">&lt; 14 N-limited · &gt; 16 P-limited</td><td>Koerselman &amp; Meuleman 1996, mass basis</td></tr>
+        <tr><td>N addition effect on ANPP</td><td class="num">≈ +29% across biomes</td><td>LeBauer &amp; Treseder 2008</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. State the criteria for essentiality, list the essential elements, and explain why the location of deficiency symptoms is diagnostic.</summary><div class="a"><p>Arnon and Stout (1939): the plant cannot complete its life cycle without the element; no other element substitutes for it; it participates directly in metabolism. Seventeen elements qualify: C, H, O; macronutrients N, P, K, Ca, Mg, S; micronutrients Fe, Mn, Zn, Cu, B, Mo, Cl, Ni. Symptom location follows phloem mobility. Mobile elements (N, P, K, Mg) are remobilised from mature leaves to sinks when supply fails, so old leaves show the deficiency first (uniform chlorosis for N, interveinal chlorosis for Mg, marginal scorch for K, purpling for P). Immobile elements (Ca, B, and the micronutrient metals Fe, Mn, Zn, Cu, which are bound in structures or move only in the xylem) cannot be redistributed, so young leaves and meristems show symptoms (interveinal chlorosis of young leaves for Fe, death of growing points for B, tip burn for Ca). Sulphur is intermediate. A field diagnosis therefore starts by asking whether the youngest or oldest leaves are affected.</p></div></details>
+    <details class="q"><summary>2. Sketch the availability-versus-pH diagram and explain the chemistry behind the shapes for P, Fe, Mo and Al.</summary><div class="a"><p>Draw pH 4–9 on the x-axis and a horizontal band for each nutrient whose width shows availability. N, K, S, Ca and Mg widen from pH 5 to 6.5 and stay broad; P is a lens widest at pH 6–7; Fe, Mn, Zn, Cu are broad in acid soil and taper above 7; Mo is the mirror image, narrow in acid soil and broad above 7; B peaks near neutrality and narrows above 8. Chemistry: phosphate is removed from solution at low pH by ligand-exchange sorption onto Fe and Al (hydr)oxides and precipitation as Al/Fe phosphates, and at high pH by precipitation with Ca (dicalcium phosphate → octacalcium phosphate → apatite); the window between is the lens. Fe: Fe(OH)₃ + 3H⁺ ⇌ Fe³⁺ + 3H₂O gives a thousand-fold fall in Fe³⁺ activity per pH unit, so calcareous soils cause lime-induced chlorosis even though total Fe is abundant. Mo exists as the anion MoO₄²⁻, sorbed on positively charged oxide surfaces at low pH and released as surfaces lose positive charge with rising pH, hence Mo deficiency in acid soils and its cure by liming. Al: gibbsite dissolves below pH ~5.5 to Al³⁺ and Al(OH)²⁺, which saturate the exchange complex and are toxic to root apices at micromolar activity; above pH 5.5 Al precipitates and the problem disappears. The overall optimum near pH 6–7 reflects the overlap of these windows, not any single reaction.</p></div></details>
+    <details class="q"><summary>3. Derive the phosphate speciation fractions from the pKₐ values and compute the H₂PO₄⁻:HPO₄²⁻ ratio at pH 6.2 and 8.2.</summary><div class="a"><p>Write the dissociations H₃PO₄ ⇌ H₂PO₄⁻ + H⁺ (K₁), H₂PO₄⁻ ⇌ HPO₄²⁻ + H⁺ (K₂), HPO₄²⁻ ⇌ PO₄³⁻ + H⁺ (K₃). Express every species relative to H₃PO₄: [H₂PO₄⁻] = K₁[H₃PO₄]/[H⁺], [HPO₄²⁻] = K₁K₂[H₃PO₄]/[H⁺]², [PO₄³⁻] = K₁K₂K₃[H₃PO₄]/[H⁺]³. Dividing each by the sum gives the fractions with denominator D = [H⁺]³ + K₁[H⁺]² + K₁K₂[H⁺] + K₁K₂K₃; for example α(H₂PO₄⁻) = K₁[H⁺]²/D. The ratio of the two biologically relevant species is simply [H₂PO₄⁻]/[HPO₄²⁻] = [H⁺]/K₂ = 10^(pK₂ − pH). At pH 6.2 it is 10^1.0 = 10:1 in favour of H₂PO₄⁻; at pH 8.2 it is 10^−1 = 1:10 in favour of HPO₄²⁻. H₃PO₄ and PO₄³⁻ are negligible across the soil range (pK₁ = 2.15, pK₃ = 12.35). Plants take up H₂PO₄⁻ preferentially, which contributes to, but is not the main reason for, the higher P availability of slightly acid soils.</p></div></details>
+    <details class="q"><summary>4. Explain why a maize crop obtains most of its N by mass flow but most of its P by diffusion, and what this implies for root traits and fertiliser placement.</summary><div class="a"><p>Mass flow supplies nutrient at the rate (water flux) × (solution concentration). Nitrate is at 1–10 mM in fertilised soil; transpiring 300 mm of water carrying 5 mM NO₃⁻ delivers 3000 m³ ha⁻¹ × 70 mg N L⁻¹ ≈ 210 kg N ha⁻¹, about the crop's demand, so Barber's accounting attributes ~80% of N to mass flow. Phosphate is at ~1 µM, three to four orders of magnitude lower, so the same water carries &lt; 0.1 kg P ha⁻¹ against a demand of 20–30 kg. Uptake therefore draws the root-surface concentration down and the rest must diffuse along the gradient. Because P is strongly buffered (large b), D<sub>e</sub> = D<sub>l</sub>θf/b is 10⁻⁹–10⁻⁸ cm² s⁻¹ and the depletion zone extends only 1–2 mm in a week. Consequently P acquisition scales with the volume of soil explored per unit time: root length density, root hairs, mycorrhizal hyphae (which extend the effective radius by centimetres) and topsoil foraging all matter for P and K but little for N and Ca, which arrive on their own. Agronomically, P should be placed where roots will find it quickly (banded near the seed) and is immobile enough to build up, whereas N is applied broadcast and timed to demand because it moves with water and is lost with it.</p></div></details>
+    <details class="q"><summary>5. Define agronomic efficiency, recovery efficiency, physiological efficiency and partial factor productivity, show how they relate, and discuss why global N use efficiency is only ~45%.</summary><div class="a"><p>With fertiliser rate F, fertilised yield Y and uptake U, and unfertilised Y₀ and U₀: PFP = Y/F (kg grain per kg N applied, includes the soil's contribution); AE = (Y − Y₀)/F (yield gain per kg applied); RE = (U − U₀)/F (fraction of applied N recovered in the crop); PE = (Y − Y₀)/(U − U₀) (yield gain per kg of additional N taken up). Multiplying, RE × PE = (U − U₀)/F × (Y − Y₀)/(U − U₀) = AE, so agronomic efficiency decomposes into an acquisition term and a utilisation term, mirroring Moll et al. (1982) who factored NUE = G<sub>w</sub>/N<sub>s</sub> into (N<sub>t</sub>/N<sub>s</sub>)(G<sub>w</sub>/N<sub>t</sub>). Global cropland NUE (N harvested / N input) was ~47% in 2009 (Lassaletta et al. 2014), ~42% in 2010 (Zhang et al. 2015). The shortfall arises because mineral N is mobile and reactive: NO₃⁻ leaches below the root zone, NH₃ volatilises from urea and manure, nitrifiers and denitrifiers release N₂O and N₂, and some fertiliser N is immobilised in soil organic matter. Rates are often set above the economic optimum, where the Mitscherlich curve is flat and extra N adds nothing to yield but everything to losses; timing and placement are frequently poor; and NUE falls as rates rise, so regions with heavy subsidies (China, India) show NUE below 30% while N-depleting regions (parts of Africa) show NUE above 100%. Raising NUE to ~70% while increasing production is the Zhang et al. target; levers are 4R management, enhanced-efficiency fertilisers, legumes in rotation, recycling of manure and improved cultivars.</p></div></details>
+    <details class="q"><summary>6. Describe the two phases of salinity stress and the difference between a saline and a sodic soil. Why is "saline–sodic" soil easier to manage than sodic soil?</summary><div class="a"><p>Munns and Tester (2008): the osmotic phase begins as soon as root-zone salinity exceeds a threshold, lowering soil water potential (≈ −0.036 MPa per dS m⁻¹), reducing leaf expansion, stomatal conductance and tillering within minutes to days; it is largely independent of which salt is present. The ion-specific phase develops over weeks as Na⁺ and Cl⁻ transported to the shoot accumulate in older leaves beyond the vacuole's capacity to sequester them, inhibiting enzymes (Na⁺ competes with K⁺ at binding sites) and causing premature senescence, which cuts photosynthetic area. Tolerance mechanisms map onto the phases: osmotic adjustment and tissue tolerance (NHX vacuolar sequestration, compatible solutes) for the first, Na⁺ exclusion (SOS1 efflux, HKT1;5 xylem unloading) for the second. A saline soil has EC<sub>e</sub> &gt; 4 dS m⁻¹ with ESP &lt; 15: structure is good because the electrolyte flocculates clay, and it is reclaimed by leaching with good-quality water and drainage. A sodic soil has ESP &gt; 15 but low EC: Na⁺ on the exchange complex and a dilute solution let clays swell and disperse, so hydraulic conductivity collapses, crusts form and pH often exceeds 8.5. A saline–sodic soil has both, but its high electrolyte concentration keeps the clay flocculated; the danger is leaching the salts first, which converts it into a dispersed sodic soil. Management therefore adds Ca²⁺ (gypsum, or acidifying amendments on calcareous soils) to displace Na⁺ before or during leaching, and keeps drainage functional.</p></div></details>
+    <details class="q"><summary>7. Why is nitrogen the most common limiting nutrient in temperate ecosystems when the atmosphere is 78% N₂? Contrast with phosphorus limitation in the tropics and comment on co-limitation.</summary><div class="a"><p>Vitousek and Howarth (1991) argued that several constraints keep ecosystems from fixing their way out of N limitation. Fixation costs 6–12 g C per g N plus Mo, Fe and P for nitrogenase, so fixers are favoured only when N is scarce relative to light and other nutrients, and they are often limited by P or preferentially grazed. N is lost in mobile forms (NO₃⁻ leaching, denitrification, fire volatilisation) at rates that scale with N availability, creating a leaky system. Parent material contains almost no N, so primary succession starts N-poor, and disturbance resets the clock. Phosphorus shows the opposite trajectory (Walker and Syers): rock P is highest in young soils and is progressively weathered, leached and occluded in Fe/Al oxides over 10⁴–10⁶ years, so ancient, highly weathered tropical soils on stable surfaces become P-limited, with sorption acting as a soil barrier even where total P remains. Dust and weathering inputs are the only P sources; there is no atmospheric reservoir to tap. Elser et al. (2007) nevertheless found N and P limitation of similar magnitude across biomes and strong synergy when both are added, and LeBauer and Treseder showed N responses even in tropical forests. Co-limitation arises because plants adjust stoichiometry and acquisition investment, so relieving one nutrient quickly makes the other scarce (serial co-limitation), or because the two are needed together (N for phosphatases, P for N fixation). For models, this means single-nutrient down-regulation is too simple; coupled C–N–P with flexible stoichiometry and acquisition costs is needed to project the CO₂ fertilisation effect.</p></div></details>
+    <details class="q"><summary>8. Compare how CLM5 (FUN), ELM (ECA) and Century decide whether plant growth is nutrient-limited. What are the strengths and failure modes of each?</summary><div class="a"><p>Century/DayCent uses stoichiometric down-regulation: potential NPP from climate and light implies an N demand at the tissue C:N ratio; if mineral N after microbial immobilisation cannot meet it, growth is reduced to the N-supportable value (with some flexibility in C:N). Strength: simple, mass-conserving, decades of calibration. Failure: plants cannot invest to acquire more N, so N limitation of CO₂ fertilisation tends to be over-predicted, and the "who gets N first" rule (microbes before plants) is arbitrary. FUN (Fisher et al. 2010; CLM4.5/5) replaces the hard constraint with an economy: N is acquired through active uptake, fixation, retranslocation and (CLM5) mycorrhizae, each with a carbon cost that falls as soil N or root biomass rises; the plant spends NPP to meet demand, choosing the cheapest mix, and NPP available for growth is reduced by the C spent. Strength: trade-offs, fixation and root investment emerge; N limitation is graded rather than a cliff. Failure: cost functions are weakly constrained, retranslocation is cheap so demand is often met, and CLM5 has no P. ECA (Zhu et al. 2016; ELM) treats competition among plants, microbes, nitrifiers, denitrifiers and mineral surfaces for NH₄⁺, NO₃⁻ and phosphate with Michaelis–Menten kinetics solved simultaneously, so each consumer's share depends on its affinity and abundance; it includes a full P cycle with sorption and occlusion. Strength: a mechanistic, unbiased competition rule and explicit P. Failure: many poorly known K<sub>m</sub> and V<sub>max</sub> parameters for microbes and surfaces, and sensitivity to how sorption is represented. All three ignore pH, Al toxicity and micronutrients, and all depend on uncertain soil P pool initialisation.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Marschner P (ed.) (2012). <em>Marschner's Mineral Nutrition of Higher Plants</em>, 3rd ed. Academic Press, London. <span class="why">The standard reference for functions, uptake, mobility and deficiency physiology of every essential element.</span></li>
+      <li>Weil RR, Brady NC (2017). <em>The Nature and Properties of Soils</em>, 15th ed. Pearson, Columbus. <span class="why">Soil chemistry background: pH, CEC, base saturation, salinity classification, N, P, K and micronutrient pools.</span></li>
+      <li>Barber SA (1995). <em>Soil Nutrient Bioavailability: A Mechanistic Approach</em>, 2nd ed. Wiley, New York. <span class="why">Mass flow, diffusion and interception accounting, the effective diffusion coefficient, and Michaelis–Menten uptake parameters used in the uptake lab.</span></li>
+      <li>Arnon DI, Stout PR (1939). The essentiality of certain elements in minute quantity for plants with special reference to copper. <em>Plant Physiology</em> 14: 371–375. <a href="https://doi.org/10.1104/pp.14.2.371">doi:10.1104/pp.14.2.371</a><span class="why">Origin of the three criteria of essentiality.</span></li>
+      <li>Maas EV, Hoffman GJ (1977). Crop salt tolerance: current assessment. <em>Journal of the Irrigation and Drainage Division, ASCE</em> 103: 115–134. <span class="why">The threshold–slope model and the crop tolerance table used in the salinity lab.</span></li>
+      <li>Moll RH, Kamprath EJ, Jackson WA (1982). Analysis and interpretation of factors which contribute to efficiency of nitrogen utilization. <em>Agronomy Journal</em> 74: 562–564. <a href="https://doi.org/10.2134/agronj1982.00021962007400030037x">doi:10.2134/agronj1982.00021962007400030037x</a><span class="why">The factoring of NUE into uptake and utilisation efficiency.</span></li>
+      <li>Lassaletta L, Billen G, Grizzetti B, Anglade J, Garnier J (2014). 50 year trends in nitrogen use efficiency of world cropping systems: the relationship between yield and nitrogen input to cropland. <em>Environmental Research Letters</em> 9: 105011. <a href="https://doi.org/10.1088/1748-9326/9/10/105011">doi:10.1088/1748-9326/9/10/105011</a><span class="why">Global and national NUE trajectories; the ~47% figure.</span></li>
+      <li>Zhang X, Davidson EA, Mauzerall DL, Searchinger TD, Dumas P, Shen Y (2015). Managing nitrogen for sustainable development. <em>Nature</em> 528: 51–59. <a href="https://doi.org/10.1038/nature15743">doi:10.1038/nature15743</a><span class="why">NUE targets and the N surplus needed to feed 2050 within environmental limits.</span></li>
+      <li>Vitousek PM, Howarth RW (1991). Nitrogen limitation on land and in the sea: how can it occur? <em>Biogeochemistry</em> 13: 87–115. <a href="https://doi.org/10.1007/BF00002772">doi:10.1007/BF00002772</a><span class="why">The classic argument for why N limitation persists despite N₂ fixation.</span></li>
+      <li>Hinsinger P (2001). Bioavailability of soil inorganic P in the rhizosphere as affected by root-induced chemical changes: a review. <em>Plant and Soil</em> 237: 173–195. <a href="https://doi.org/10.1023/A:1013351617532">doi:10.1023/A:1013351617532</a><span class="why">How roots alter pH, redox and ligand chemistry to mobilise P.</span></li>
+      <li>Kochian LV, Hoekenga OA, Piñeros MA (2004). How do crop plants tolerate acid soils? Mechanisms of aluminum tolerance and phosphorous efficiency. <em>Annual Review of Plant Biology</em> 55: 459–493. <a href="https://doi.org/10.1146/annurev.arplant.55.031903.141655">doi:10.1146/annurev.arplant.55.031903.141655</a><span class="why">Al toxicity and organic-acid exclusion mechanisms; acid-soil extent.</span></li>
+      <li>Munns R, Tester M (2008). Mechanisms of salinity tolerance. <em>Annual Review of Plant Biology</em> 59: 651–681. <a href="https://doi.org/10.1146/annurev.arplant.59.032607.092911">doi:10.1146/annurev.arplant.59.032607.092911</a><span class="why">The two-phase model of salt stress and the transporters involved.</span></li>
+      <li>Vitousek PM, Porder S, Houlton BZ, Chadwick OA (2010). Terrestrial phosphorus limitation: mechanisms, implications, and nitrogen–phosphorus interactions. <em>Ecological Applications</em> 20: 5–15. <a href="https://doi.org/10.1890/08-0127.1">doi:10.1890/08-0127.1</a><span class="why">Types of P limitation and their link to pedogenesis.</span></li>
+      <li>Hedley MJ, Stewart JWB, Chauhan BS (1982). Changes in inorganic and organic soil phosphorus fractions induced by cultivation practices and by laboratory incubations. <em>Soil Science Society of America Journal</em> 46: 970–976. <a href="https://doi.org/10.2136/sssaj1982.03615995004600050017x">doi:10.2136/sssaj1982.03615995004600050017x</a><span class="why">The sequential P fractionation scheme that model P pools are mapped onto.</span></li>
+      <li>Sattari SZ, Bouwman AF, Giller KE, van Ittersum MK (2012). Residual soil phosphorus as the missing piece in the global phosphorus crisis puzzle. <em>PNAS</em> 109: 6348–6353. <a href="https://doi.org/10.1073/pnas.1113675109">doi:10.1073/pnas.1113675109</a><span class="why">Legacy P and long-term P use efficiency.</span></li>
+      <li>Elser JJ, Bracken MES, Cleland EE, et al. (2007). Global analysis of nitrogen and phosphorus limitation of primary producers in freshwater, marine and terrestrial ecosystems. <em>Ecology Letters</em> 10: 1135–1142. <a href="https://doi.org/10.1111/j.1461-0248.2007.01113.x">doi:10.1111/j.1461-0248.2007.01113.x</a><span class="why">Meta-analysis showing comparable N and P limitation and synergistic co-limitation.</span></li>
+      <li>Fisher JB, Sitch S, Malhi Y, et al. (2010). Carbon cost of plant nitrogen acquisition: a mechanistic, globally applicable model of plant nitrogen uptake, retranslocation, and fixation. <em>Global Biogeochemical Cycles</em> 24: GB1014. <a href="https://doi.org/10.1029/2009GB003621">doi:10.1029/2009GB003621</a><span class="why">The FUN model adopted in CLM4.5/CLM5.</span></li>
+      <li>Zhu Q, Riley WJ, Tang J, Koven CD (2016). Multiple soil nutrient competition between plants, microbes, and mineral surfaces: model development, parameterization, and example applications in several tropical forests. <em>Biogeosciences</em> 13: 341–363. <a href="https://doi.org/10.5194/bg-13-341-2016">doi:10.5194/bg-13-341-2016</a><span class="why">The ECA competition scheme for N and P used in ELM.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="drought-response-lai.html">← Previous: Drought Response and Leaf Area Index</a><a href="root-microbe-interactions.html">Next: Root–Microbe Interactions →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#essential">Essential elements</a></li>
+      <li><a href="#soilforms">Soil forms &amp; pH</a></li>
+      <li><a href="#ph">Acidity &amp; exchange</a></li>
+      <li><a href="#salinity">Salinity &amp; sodicity</a></li>
+      <li><a href="#uptake">Uptake</a></li>
+      <li><a href="#nue">Use efficiency</a></li>
+      <li><a href="#ecosystems">Ecosystem limitation</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (Truog-style availability indices, Mitscherlich response, erfc depletion profiles) chosen for intuition. Crop salt-tolerance parameters follow Maas &amp; Hoffman 1977.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function erfc(x) { // Abramowitz-Stegun 7.1.26
+    var s = x < 0 ? -1 : 1; x = Math.abs(x);
+    var t = 1 / (1 + 0.3275911 * x);
+    var y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return 1 - s * y;
+  }
+  /* Generic chart scaffold: axes, ticks, labels. Returns scales. */
+  function chart(svg, o) {
+    var W = o.W, H = o.H, mL = o.mL, mR = o.mR, mT = o.mT, mB = o.mB;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    function sx(x) { return mL + (x - o.xmin) / (o.xmax - o.xmin) * pw; }
+    function sy(y) { return mT + (o.ymax - y) / (o.ymax - o.ymin) * ph; }
+    if (o.yticks) o.yticks.forEach(function (v) {
+      svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v));
+    });
+    if (o.xticks) o.xticks.forEach(function (v) {
+      svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v));
+    });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xlabel) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xlabel));
+    if (o.ylabel) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylabel));
+    return { sx: sx, sy: sy, pw: pw, ph: ph, mL: mL, mT: mT, W: W, H: H };
+  }
+  function linePath(c, fn, xmin, xmax, n, ymin, ymax) {
+    var d = ''; for (var i = 0; i <= n; i++) { var x = xmin + (xmax - xmin) * i / n; var y = clamp(fn(x), ymin, ymax); d += (i === 0 ? 'M' : 'L') + c.sx(x).toFixed(1) + ',' + c.sy(y).toFixed(1); } return d;
+  }
+  /* Hover crosshair + tooltip. html(xval, yval) returns tooltip HTML or null. */
+  function hover(svg, tip, c, xmin, xmax, ymin, ymax, html) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: c.mT, y2: c.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: c.mL, y: c.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = clamp(xmin + (p.x - c.mL) / c.pw * (xmax - xmin), xmin, xmax);
+      var yv = ymax - (p.y - c.mT) / c.ph * (ymax - ymin);
+      xh.setAttribute('x1', c.sx(xv)); xh.setAttribute('x2', c.sx(xv)); xh.setAttribute('visibility', 'visible');
+      var h = html(xv, yv); if (!h) { tip.hidden = true; return; }
+      tip.innerHTML = h; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function interp(pts, x) {
+    if (x <= pts[0][0]) return pts[0][1]; var n = pts.length; if (x >= pts[n - 1][0]) return pts[n - 1][1];
+    for (var i = 1; i < n; i++) if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i]; return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); }
+    return pts[n - 1][1];
+  }
+
+  /* ---------- Lab A: availability vs pH, P speciation ---------- */
+  var nutrients = [
+    { n: 'N', g: 'macro', p: [[4, 0.3], [5, 0.55], [5.5, 0.75], [6, 0.95], [6.5, 1], [8, 1], [8.5, 0.9], [9, 0.8]] },
+    { n: 'P', g: 'macro', p: [[4, 0.2], [5, 0.35], [5.5, 0.6], [6, 0.9], [6.5, 1], [7, 0.95], [7.5, 0.6], [8, 0.45], [8.5, 0.4], [9, 0.35]] },
+    { n: 'K', g: 'macro', p: [[4, 0.45], [5, 0.65], [6, 0.9], [6.5, 1], [9, 1]] },
+    { n: 'S', g: 'macro', p: [[4, 0.4], [5, 0.65], [6, 0.95], [6.5, 1], [9, 1]] },
+    { n: 'Ca', g: 'macro', p: [[4, 0.2], [5, 0.4], [6, 0.75], [6.5, 0.9], [7, 1], [9, 1]] },
+    { n: 'Mg', g: 'macro', p: [[4, 0.2], [5, 0.4], [6, 0.75], [6.5, 0.9], [7, 1], [9, 1]] },
+    { n: 'Fe', g: 'cation', p: [[4, 1], [6, 1], [6.5, 0.8], [7, 0.55], [7.5, 0.3], [8, 0.15], [9, 0.08]] },
+    { n: 'Mn', g: 'cation', p: [[4, 1], [5.5, 1], [6.5, 0.75], [7, 0.5], [7.5, 0.3], [8, 0.2], [9, 0.1]] },
+    { n: 'Zn', g: 'cation', p: [[4, 1], [6, 0.95], [6.5, 0.8], [7, 0.6], [7.5, 0.4], [8, 0.25], [9, 0.15]] },
+    { n: 'Cu', g: 'cation', p: [[4, 0.9], [5, 1], [6.5, 0.8], [7, 0.6], [8, 0.35], [9, 0.2]] },
+    { n: 'B', g: 'anion', p: [[4, 0.55], [5, 0.85], [6, 1], [7, 1], [7.5, 0.75], [8, 0.5], [8.5, 0.35], [9, 0.3]] },
+    { n: 'Mo', g: 'anion', p: [[4, 0.1], [5, 0.25], [5.5, 0.4], [6, 0.6], [6.5, 0.75], [7, 0.9], [7.5, 1], [9, 1]] }
+  ];
+  var pK = [2.15, 7.20, 12.35];
+  function pSpec(pH) {
+    var h = Math.pow(10, -pH), K1 = Math.pow(10, -pK[0]), K2 = Math.pow(10, -pK[1]), K3 = Math.pow(10, -pK[2]);
+    var t0 = h * h * h, t1 = K1 * h * h, t2 = K1 * K2 * h, t3 = K1 * K2 * K3, D = t0 + t1 + t2 + t3;
+    return [t0 / D, t1 / D, t2 / D, t3 / D];
+  }
+  var phIn = document.getElementById('phIn'), phSvg = document.getElementById('phSvg'), phTip = document.getElementById('phTip');
+  var pSvg = document.getElementById('pSvg'), pTip = document.getElementById('pTip');
+  function drawPH() {
+    var pH = +phIn.value; document.getElementById('phInO').textContent = fmt(pH, 1);
+    clear(phSvg);
+    var W = 640, H = 420, mL = 56, mR = 24, mT = 26, mB = 44, pw = W - mL - mR, ph = H - mT - mB;
+    var n = nutrients.length, rowH = ph / n;
+    function sx(x) { return mL + (x - 4) / 5 * pw; }
+    for (var t = 4; t <= 9; t += 0.5) { phSvg.appendChild(el('line', { 'class': 'gridline', x1: sx(t), x2: sx(t), y1: mT, y2: mT + ph })); if (t === Math.floor(t)) phSvg.appendChild(el('text', { 'class': 'tick', x: sx(t), y: mT + ph + 18, 'text-anchor': 'middle' }, t)); }
+    nutrients.forEach(function (nu, i) {
+      var yc = mT + rowH * (i + 0.5), half = rowH * 0.42;
+      var up = '';
+      for (var x = 4; x <= 9.0001; x += 0.1) { var a = interp(nu.p, x); up += (x === 4 ? 'M' : 'L') + sx(x).toFixed(1) + ',' + (yc - half * a).toFixed(1); }
+      var lower = ''; // lower edge, traversed in reverse for (var x2 = 9; x2 >= 3.9999; x2 -= 0.1) { var a2 = interp(nu.p, x2); lower += 'L' + sx(x2).toFixed(1) + ',' + (yc + half * a2).toFixed(1); }
+      phSvg.appendChild(el('path', { 'class': 'band ' + nu.g, d: up + lower + 'Z' }));
+      phSvg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: yc + rowH / 2, y2: yc + rowH / 2 }));
+      phSvg.appendChild(el('text', { 'class': 'rowlbl', x: mL - 10, y: yc + 4, 'text-anchor': 'end' }, nu.n));
+    });
+    phSvg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    phSvg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    phSvg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, 'Soil pH'));
+    phSvg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, 'Band width = relative availability'));
+    phSvg.appendChild(el('line', { 'class': 'marker', x1: sx(pH), x2: sx(pH), y1: mT, y2: mT + ph }));
+    phSvg.appendChild(el('text', { 'class': 'tick', x: sx(pH) + (pH > 8 ? -6 : 6), y: mT - 8, 'text-anchor': pH > 8 ? 'end' : 'start', fill: 'var(--accent-2)' }, 'pH ' + fmt(pH, 1)));
+    var c = { sx: sx, sy: function (y) { return y; }, pw: pw, ph: ph, mL: mL, mT: mT };
+    hover(phSvg, phTip, c, 4, 9, 0, 1, function (xv, yv) {
+      var row = clamp(Math.floor((1 - yv) * n), 0, n - 1); var nu = nutrients[row];
+      return nu.n + ' at pH <b>' + fmt(xv, 1) + '</b><br>availability index <b>' + fmt(interp(nu.p, xv), 2) + '</b>';
+    });
+    // readouts
+    var lim = [], red = [];
+    nutrients.forEach(function (nu) { var a = interp(nu.p, pH); if (a < 0.5) lim.push(nu.n); else if (a < 0.75) red.push(nu.n); });
+    document.getElementById('phLim').innerHTML = lim.length ? '<span class="pill-list">' + lim.map(function (s) { return '<span class="lim">' + s + '</span>'; }).join('') + '</span>' : '<span class="muted">none</span>';
+    document.getElementById('phRed').innerHTML = red.length ? red.join(', ') : '<span class="muted">none</span>';
+    var sp = pSpec(pH);
+    document.getElementById('pF1').textContent = fmt(sp[1], 3);
+    document.getElementById('pF2').textContent = fmt(sp[2], 3);
+    document.getElementById('pSink').textContent = pH < 6 ? 'Fe/Al oxides, Al-P' : (pH <= 7.3 ? 'weak (optimum)' : 'Ca-phosphates');
+    document.getElementById('phAl').textContent = pH < 5 ? 'high (Al³⁺ dominant)' : (pH < 5.5 ? 'moderate' : 'none');
+    document.getElementById('phMet').textContent = '×' + (Math.pow(10, -2 * (pH - 6.5)) >= 1 ? fmt(Math.pow(10, -2 * (pH - 6.5)), 0) : Math.pow(10, -2 * (pH - 6.5)).toExponential(1));
+    // P speciation chart
+    clear(pSvg);
+    var pc = chart(pSvg, { W: 640, H: 230, mL: 56, mR: 24, mT: 12, mB: 40, xmin: 2, xmax: 12, ymin: 0, ymax: 1, xticks: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], yticks: [0, 0.25, 0.5, 0.75, 1], xlabel: 'pH', ylabel: 'Fraction of total P' });
+    var cols = ['var(--muted)', 'var(--series-1)', 'var(--series-2)', 'var(--series-3)'], names = ['H₃PO₄', 'H₂PO₄⁻', 'HPO₄²⁻', 'PO₄³⁻'];
+    for (var k = 0; k < 4; k++) { (function (k) { pSvg.appendChild(el('path', { 'class': 'ser', d: linePath(pc, function (x) { return pSpec(x)[k]; }, 2, 12, 200, 0, 1), stroke: cols[k] })); })(k); }
+    [[1, 4.6], [2, 9.8]].forEach(function (L) { pSvg.appendChild(el('text', { 'class': 'dl', x: pc.sx(L[1]), y: pc.sy(0.97) + 10, 'text-anchor': 'middle', fill: cols[L[0]] }, names[L[0]])); });
+    pSvg.appendChild(el('text', { 'class': 'dl', x: pc.sx(2.1), y: pc.sy(0.6), fill: cols[0] }, names[0]));
+    pSvg.appendChild(el('text', { 'class': 'dl', x: pc.sx(11.95), y: pc.sy(0.45), 'text-anchor': 'end', fill: cols[3] }, names[3]));
+    // shaded soil range
+    pSvg.appendChild(el('rect', { x: pc.sx(4), y: pc.mT, width: pc.sx(9) - pc.sx(4), height: pc.ph, fill: 'var(--accent)', opacity: 0.07 }));
+    pSvg.appendChild(el('text', { 'class': 'note', x: pc.sx(6.5), y: pc.mT + 12, 'text-anchor': 'middle' }, 'soil range'));
+    pSvg.appendChild(el('line', { 'class': 'marker', x1: pc.sx(pH), x2: pc.sx(pH), y1: pc.mT, y2: pc.mT + pc.ph }));
+    pSvg.appendChild(el('circle', { 'class': 'op', cx: pc.sx(pH), cy: pc.sy(sp[1]), r: 4 }));
+    pSvg.appendChild(el('circle', { 'class': 'op', cx: pc.sx(pH), cy: pc.sy(sp[2]), r: 4 }));
+    hover(pSvg, pTip, pc, 2, 12, 0, 1, function (xv) { var s = pSpec(xv); return 'pH <b>' + fmt(xv, 1) + '</b><br>H₂PO₄⁻ <b>' + fmt(s[1], 2) + '</b> · HPO₄²⁻ <b>' + fmt(s[2], 2) + '</b><br>H₃PO₄ <b>' + s[0].toExponential(1) + '</b> · PO₄³⁻ <b>' + s[3].toExponential(1) + '</b>'; });
+    // table
+    var html = '<thead><tr><th class="num">pH</th>'; nutrients.forEach(function (nu) { html += '<th class="num">' + nu.n + '</th>'; }); html += '<th class="num">H₂PO₄⁻</th><th class="num">HPO₄²⁻</th></tr></thead><tbody>';
+    for (var p2 = 4; p2 <= 9; p2 += 0.5) { html += '<tr><td class="num">' + fmt(p2, 1) + '</td>'; nutrients.forEach(function (nu) { html += '<td class="num">' + fmt(interp(nu.p, p2), 2) + '</td>'; }); var s2 = pSpec(p2); html += '<td class="num">' + fmt(s2[1], 2) + '</td><td class="num">' + fmt(s2[2], 2) + '</td></tr>'; }
+    document.getElementById('phTable').innerHTML = html + '</tbody>';
+  }
+  phIn.addEventListener('input', drawPH); drawPH();
+
+  /* ---------- Lab C: Maas-Hoffman ---------- */
+  var crops = [
+    { n: 'Bean', a: 1.0, b: 19, col: 'var(--series-2)' },
+    { n: 'Maize', a: 1.7, b: 12, col: 'var(--accent-2)' },
+    { n: 'Wheat', a: 6.0, b: 7.1, col: 'var(--series-1)' },
+    { n: 'Cotton', a: 7.7, b: 5.2, col: 'var(--accent)' },
+    { n: 'Barley', a: 8.0, b: 5.0, col: 'var(--series-3)' }
+  ];
+  function yr(cr, ec) { return clamp(100 - cr.b * (ec - cr.a), 0, 100); }
+  var sEC = document.getElementById('sEC'), sSvg = document.getElementById('sSvg'), sTip = document.getElementById('sTip');
+  document.getElementById('sLegend').innerHTML = crops.map(function (cr) { return '<span style="--c:' + cr.col + '">' + cr.n + ' (a = ' + cr.a + ', b = ' + cr.b + ')</span>'; }).join('') + '<span style="--c:var(--accent-2)">selected EC<sub>e</sub></span>';
+  function drawS() {
+    var ec = +sEC.value; document.getElementById('sECO').textContent = fmt(ec, 1);
+    clear(sSvg);
+    var c = chart(sSvg, { W: 640, H: 340, mL: 56, mR: 70, mT: 16, mB: 44, xmin: 0, xmax: 20, ymin: 0, ymax: 100, xticks: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20], yticks: [0, 20, 40, 60, 80, 100], xlabel: 'Soil salinity, ECe (dS m⁻¹)', ylabel: 'Relative yield (%)' });
+    // class boundaries
+    [2, 4, 8, 16].forEach(function (b) { sSvg.appendChild(el('line', { 'class': 'gridline', x1: c.sx(b), x2: c.sx(b), y1: c.mT, y2: c.mT + c.ph, 'stroke-dasharray': '2 4', stroke: 'var(--line)' })); });
+    [['non-saline', 1], ['slight', 3], ['moderate', 6], ['strong', 12], ['very strong', 18]].forEach(function (L) { sSvg.appendChild(el('text', { 'class': 'note', x: c.sx(L[1]), y: c.mT + c.ph - 6, 'text-anchor': 'middle' }, L[0])); });
+    var labs = [];
+    crops.forEach(function (cr) {
+      sSvg.appendChild(el('path', { 'class': 'ser', d: linePath(c, function (x) { return yr(cr, x); }, 0, 20, 200, 0, 100), stroke: cr.col }));
+      var ylab = yr(cr, 20); labs.push({ t: cr.n, y: c.sy(ylab), col: cr.col });
+    });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { sSvg.appendChild(el('text', { 'class': 'dl', x: c.mL + c.pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    sSvg.appendChild(el('line', { 'class': 'marker', x1: c.sx(ec), x2: c.sx(ec), y1: c.mT, y2: c.mT + c.ph }));
+    crops.forEach(function (cr, i) { var y = yr(cr, ec); sSvg.appendChild(el('circle', { cx: c.sx(ec), cy: c.sy(y), r: 4, fill: cr.col, stroke: 'var(--surface)', 'stroke-width': 2 })); document.getElementById('sY' + i).textContent = fmt(y, 0) + '%'; });
+    hover(sSvg, sTip, c, 0, 20, 0, 100, function (xv) { return 'ECe <b>' + fmt(xv, 1) + '</b> dS m⁻¹<br>' + crops.map(function (cr) { return cr.n + ' <b>' + fmt(yr(cr, xv), 0) + '%</b>'; }).join(' · '); });
+    document.getElementById('sClass').textContent = ec < 2 ? 'non-saline' : (ec < 4 ? 'slightly saline' : (ec < 8 ? 'moderately saline' : (ec < 16 ? 'strongly saline' : 'very strongly saline')));
+    document.getElementById('sPsi').textContent = fmt(-0.036 * ec, 2);
+    var html = '<thead><tr><th class="num">ECe</th>' + crops.map(function (cr) { return '<th class="num">' + cr.n + '</th>'; }).join('') + '</tr></thead><tbody>';
+    for (var e = 0; e <= 20; e += 2) html += '<tr><td class="num">' + e + '</td>' + crops.map(function (cr) { return '<td class="num">' + fmt(yr(cr, e), 0) + '</td>'; }).join('') + '</tr>';
+    html += '<tr><td>EC₅₀</td>' + crops.map(function (cr) { return '<td class="num">' + fmt(cr.a + 50 / cr.b, 1) + '</td>'; }).join('') + '</tr>';
+    document.getElementById('sTable').innerHTML = html + '</tbody>';
+  }
+  sEC.addEventListener('input', drawS); drawS();
+
+  /* ---------- Lab D: Michaelis-Menten uptake + depletion cartoon ---------- */
+  var mIds = ['mImax', 'mKm', 'mCmin', 'mT'], mIn = {}; mIds.forEach(function (id) { mIn[id] = document.getElementById(id); });
+  var mmSvg = document.getElementById('mmSvg'), mmTip = document.getElementById('mmTip'), dzSvg = document.getElementById('dzSvg');
+  function drawMM() {
+    var Imax = +mIn.mImax.value, Km = +mIn.mKm.value, Cmin = +mIn.mCmin.value, days = +mIn.mT.value;
+    document.getElementById('mImaxO').textContent = fmt(Imax, 1); document.getElementById('mKmO').textContent = fmt(Km, 1); document.getElementById('mCminO').textContent = fmt(Cmin, 1); document.getElementById('mTO').textContent = fmt(days, 1);
+    function I(C) { return C <= Cmin ? 0 : Imax * (C - Cmin) / (Km + C - Cmin); }
+    clear(mmSvg);
+    var ymax = Math.ceil(Imax * 1.1 / 2) * 2 || 2; var yt = []; for (var v = 0; v <= ymax; v += ymax / 4) yt.push(+v.toFixed(2));
+    var c = chart(mmSvg, { W: 640, H: 300, mL: 56, mR: 24, mT: 16, mB: 44, xmin: 0, xmax: 100, ymin: 0, ymax: ymax, xticks: [0, 20, 40, 60, 80, 100], yticks: yt, xlabel: 'Solution concentration at root surface, C (µM)', ylabel: 'Net influx, I (pmol cm⁻² s⁻¹)' });
+    mmSvg.appendChild(el('line', { 'class': 'gridline', x1: c.sx(0), x2: c.sx(100), y1: c.sy(Imax), y2: c.sy(Imax), 'stroke-dasharray': '4 4', stroke: 'var(--muted)' }));
+    mmSvg.appendChild(el('text', { 'class': 'note', x: c.sx(99), y: c.sy(Imax) - 4, 'text-anchor': 'end' }, 'Imax'));
+    mmSvg.appendChild(el('path', { 'class': 'ser net', d: linePath(c, I, 0, 100, 300, 0, ymax) }));
+    var half = Cmin + Km;
+    if (half <= 100) {
+      mmSvg.appendChild(el('line', { 'class': 'tan', x1: c.sx(half), x2: c.sx(half), y1: c.sy(0), y2: c.sy(Imax / 2) }));
+      mmSvg.appendChild(el('line', { 'class': 'tan', x1: c.sx(0), x2: c.sx(half), y1: c.sy(Imax / 2), y2: c.sy(Imax / 2) }));
+      mmSvg.appendChild(el('text', { 'class': 'dl', x: c.sx(half) + 5, y: c.sy(Imax / 2) + 14, fill: 'var(--accent-2)' }, 'Cmin + Km'));
+    }
+    if (Cmin > 0) mmSvg.appendChild(el('text', { 'class': 'dl', x: c.sx(Cmin) + 4, y: c.sy(0) - 6, fill: 'var(--accent-2)' }, 'Cmin'));
+    [1, 10].forEach(function (cc) { mmSvg.appendChild(el('circle', { 'class': 'op', cx: c.sx(cc), cy: c.sy(I(cc)), r: 4 })); });
+    hover(mmSvg, mmTip, c, 0, 100, 0, ymax, function (xv) { return 'C <b>' + fmt(xv, 1) + '</b> µM<br>I <b>' + fmt(I(xv), 2) + '</b> pmol cm⁻² s⁻¹ (' + fmt(100 * I(xv) / Imax, 0) + '% of Imax)'; });
+    document.getElementById('mHalf').textContent = fmt(half, 1) + ' µM';
+    document.getElementById('mI1').textContent = fmt(I(1), 2);
+    document.getElementById('mI10').textContent = fmt(I(10), 2);
+    document.getElementById('mI100').textContent = fmt(100 * I(100) / Imax, 0) + '%';
+    // depletion cartoon
+    clear(dzSvg);
+    var t = days * 86400, DeP = 1e-8, DeCa = 1e-6;
+    var LP = 2 * Math.sqrt(DeP * t), LCa = 2 * Math.sqrt(DeCa * t); // cm
+    document.getElementById('mDzP').textContent = fmt(LP * 10 * 2, 1);
+    document.getElementById('mDzCa').textContent = fmt(LCa * 10 * 2, 0);
+    var W = 640, H = 250, mT = 28, mB = 40, ph = H - mT - mB, gap = 30, mL = 56, panelW = (W - mL - 20 - gap) / 2;
+    var xmaxP = 5, xmaxCa = 50; // mm
+    function panel(x0, xmax, title, fn, lbl, col) {
+      function sx(x) { return x0 + x / xmax * panelW; } function sy(y) { return mT + (2 - y) / 2 * ph; }
+      [0, 0.5, 1, 1.5, 2].forEach(function (v) { dzSvg.appendChild(el('line', { 'class': 'gridline', x1: x0, x2: x0 + panelW, y1: sy(v), y2: sy(v) })); if (x0 === mL) dzSvg.appendChild(el('text', { 'class': 'tick', x: x0 - 8, y: sy(v) + 4, 'text-anchor': 'end' }, v)); });
+      for (var k = 0; k <= 5; k++) { var xv = xmax * k / 5; dzSvg.appendChild(el('text', { 'class': 'tick', x: sx(xv), y: mT + ph + 16, 'text-anchor': 'middle' }, xv)); }
+      dzSvg.appendChild(el('line', { 'class': 'ax', x1: x0, x2: x0 + panelW, y1: mT + ph, y2: mT + ph }));
+      dzSvg.appendChild(el('line', { 'class': 'ax', x1: x0, x2: x0, y1: mT, y2: mT + ph }));
+      dzSvg.appendChild(el('rect', { 'class': 'root', x: x0 - 14, y: mT, width: 14, height: ph }));
+      dzSvg.appendChild(el('text', { 'class': 'note', transform: 'translate(' + (x0 - 4) + ',' + (mT + ph / 2) + ') rotate(-90)', 'text-anchor': 'middle' }, 'root'));
+      dzSvg.appendChild(el('line', { 'class': 'gridline', x1: x0, x2: x0 + panelW, y1: sy(1), y2: sy(1), stroke: 'var(--muted)', 'stroke-dasharray': '3 4' }));
+      var d = ''; for (var i = 0; i <= 120; i++) { var x = xmax * i / 120; d += (i === 0 ? 'M' : 'L') + sx(x).toFixed(1) + ',' + sy(clamp(fn(x), 0, 2)).toFixed(1); }
+      dzSvg.appendChild(el('path', { 'class': 'ser', d: d, stroke: col, 'stroke-width': 2.4 }));
+      dzSvg.appendChild(el('text', { 'class': 'dl', x: x0 + panelW / 2, y: mT - 10, 'text-anchor': 'middle' }, title));
+      dzSvg.appendChild(el('text', { 'class': 'note', x: x0 + panelW - 4, y: sy(1) - 5, 'text-anchor': 'end' }, 'bulk soil'));
+      dzSvg.appendChild(el('text', { 'class': 'axlbl', x: x0 + panelW / 2, y: H - 6, 'text-anchor': 'middle' }, lbl));
+    }
+    var sP = 0.3 - 0.2 * Math.min(1, days / 15); // root-surface P falls from 0.3 to 0.1 of bulk as uptake proceeds
+    var sCa = 1 + 0.9 * Math.min(1, days / 30); // Ca accumulates at the surface
+    panel(mL, xmaxP, 'P: diffusion-limited depletion', function (xmm) { return 1 - (1 - sP) * erfc((xmm / 10) / LP); }, 'Distance from root surface (mm)', 'var(--series-1)');
+    panel(mL + panelW + gap, xmaxCa, 'Ca: mass flow exceeds uptake', function (xmm) { return 1 + (sCa - 1) * erfc((xmm / 10) / LCa); }, 'Distance from root surface (mm)', 'var(--series-2)');
+    dzSvg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, 'C / C(bulk)'));
+    // table
+    var html = '<thead><tr><th class="num">C (µM)</th><th class="num">I (pmol cm⁻² s⁻¹)</th><th class="num">% Imax</th></tr></thead><tbody>';
+    [0.5, 1, 2, 5, 10, 20, 50, 100, 500].forEach(function (cc) { html += '<tr><td class="num">' + cc + '</td><td class="num">' + fmt(I(cc), 2) + '</td><td class="num">' + fmt(100 * I(cc) / Imax, 0) + '</td></tr>'; });
+    document.getElementById('mmTable').innerHTML = html + '</tbody>';
+  }
+  mIds.forEach(function (id) { mIn[id].addEventListener('input', drawMM); }); drawMM();
+
+  /* ---------- Lab B: Mitscherlich response & NUE ---------- */
+  var nIds = ['nYmax', 'nC', 'nN0', 'nLoss', 'nR', 'nF'], nIn = {}; nIds.forEach(function (id) { nIn[id] = document.getElementById(id); });
+  var nSvg = document.getElementById('nSvg'), nTip = document.getElementById('nTip');
+  var kN = 22; // kg N taken up per t grain (whole plant)
+  function drawN() {
+    var Ymax = +nIn.nYmax.value, cc = +nIn.nC.value, N0 = +nIn.nN0.value, L = +nIn.nLoss.value, r = +nIn.nR.value, F = +nIn.nF.value;
+    document.getElementById('nYmaxO').textContent = fmt(Ymax, 1); document.getElementById('nCO').textContent = fmt(cc, 3); document.getElementById('nN0O').textContent = N0; document.getElementById('nLossO').textContent = fmt(L, 2); document.getElementById('nRO').textContent = fmt(r, 1); document.getElementById('nFO').textContent = F;
+    var e = 1 - L;
+    function Y(f) { return Ymax * (1 - Math.exp(-cc * (N0 + e * f))); }
+    function dY(f) { return Ymax * cc * e * Math.exp(-cc * (N0 + e * f)); } // t/ha per kg N
+    var Y0 = Y(0), YF = Y(F);
+    var rt = r / 1000; // t grain per kg N
+    var Nopt = null;
+    if (dY(0) > rt) { Nopt = (-Math.log(rt / (Ymax * cc * e)) / cc - N0) / e; Nopt = clamp(Nopt, 0, 300); } else Nopt = 0;
+    clear(nSvg);
+    var ymaxAx = Math.ceil(Ymax * 1.15 / 2) * 2; var yt = []; for (var v = 0; v <= ymaxAx; v += ymaxAx / 4) yt.push(+v.toFixed(1));
+    var c = chart(nSvg, { W: 640, H: 360, mL: 56, mR: 24, mT: 16, mB: 44, xmin: 0, xmax: 300, ymin: 0, ymax: ymaxAx, xticks: [0, 50, 100, 150, 200, 250, 300], yticks: yt, xlabel: 'Fertiliser N applied (kg ha⁻¹)', ylabel: 'Grain yield (t ha⁻¹)' });
+    nSvg.appendChild(el('line', { 'class': 'gridline', x1: c.sx(0), x2: c.sx(300), y1: c.sy(Ymax), y2: c.sy(Ymax), 'stroke-dasharray': '4 4', stroke: 'var(--muted)' }));
+    nSvg.appendChild(el('text', { 'class': 'note', x: c.sx(298), y: c.sy(Ymax) - 4, 'text-anchor': 'end' }, 'Ymax'));
+    nSvg.appendChild(el('path', { 'class': 'ser net', d: linePath(c, Y, 0, 300, 300, 0, ymaxAx) }));
+    // tangent at optimum
+    var Yo = Y(Nopt);
+    var xa = Math.max(0, Nopt - 60), xb = Math.min(300, Nopt + 60);
+    nSvg.appendChild(el('line', { 'class': 'tan', x1: c.sx(xa), y1: c.sy(clamp(Yo + rt * (xa - Nopt), 0, ymaxAx)), x2: c.sx(xb), y2: c.sy(clamp(Yo + rt * (xb - Nopt), 0, ymaxAx)) }));
+    nSvg.appendChild(el('line', { 'class': 'marker', x1: c.sx(Nopt), x2: c.sx(Nopt), y1: c.sy(0), y2: c.sy(Yo) }));
+    nSvg.appendChild(el('circle', { 'class': 'opt', cx: c.sx(Nopt), cy: c.sy(Yo), r: 5 }));
+    nSvg.appendChild(el('text', { 'class': 'dl', x: c.sx(Nopt) + (Nopt > 240 ? -8 : 8), y: c.sy(Yo) - 10, 'text-anchor': Nopt > 240 ? 'end' : 'start', fill: 'var(--accent-2)' }, 'N* = ' + fmt(Nopt, 0)));
+    // chosen rate
+    nSvg.appendChild(el('line', { 'class': 'xh', x1: c.sx(F), x2: c.sx(F), y1: c.sy(0), y2: c.sy(YF), stroke: 'var(--series-1)', 'stroke-dasharray': '2 3' }));
+    nSvg.appendChild(el('circle', { cx: c.sx(F), cy: c.sy(YF), r: 5, fill: 'var(--series-1)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+    nSvg.appendChild(el('text', { 'class': 'dl', x: c.sx(F) + (F > 240 ? -8 : 8), y: c.sy(YF) + 16, 'text-anchor': F > 240 ? 'end' : 'start', fill: 'var(--series-1)' }, 'chosen ' + F));
+    // Y0 marker
+    nSvg.appendChild(el('text', { 'class': 'note', x: c.sx(2), y: c.sy(Y0) - 6 }, 'Y₀ (soil N only)'));
+    hover(nSvg, nTip, c, 0, 300, 0, ymaxAx, function (xv) { var y = Y(xv); return 'N <b>' + fmt(xv, 0) + '</b> kg ha⁻¹<br>Y <b>' + fmt(y, 2) + '</b> t ha⁻¹ · marginal <b>' + fmt(dY(xv) * 1000, 1) + '</b> kg grain kg⁻¹ N' + (xv > 0 ? '<br>AE <b>' + fmt((y - Y0) * 1000 / xv, 1) + '</b> · PFP <b>' + fmt(y * 1000 / xv, 1) + '</b> · RE <b>' + fmt(kN * (y - Y0) / xv, 2) + '</b>' : ''); });
+    // readouts
+    var AE = F > 0 ? (YF - Y0) * 1000 / F : NaN, PFP = F > 0 ? YF * 1000 / F : NaN, RE = F > 0 ? kN * (YF - Y0) / F : NaN, PE = (YF - Y0) > 1e-6 ? (YF - Y0) * 1000 / (kN * (YF - Y0)) : NaN;
+    document.getElementById('oY').textContent = fmt(YF, 2);
+    document.getElementById('oY0').textContent = fmt(Y0, 2);
+    document.getElementById('oPFP').textContent = isNaN(PFP) ? '—' : fmt(PFP, 1);
+    document.getElementById('oAE').textContent = isNaN(AE) ? '—' : fmt(AE, 1);
+    document.getElementById('oRE').textContent = isNaN(RE) ? '—' : fmt(RE * 100, 0) + '%';
+    document.getElementById('oPE').textContent = isNaN(PE) ? '—' : fmt(PE, 1);
+    document.getElementById('oNopt').textContent = fmt(Nopt, 0);
+    document.getElementById('oYopt').textContent = fmt(Yo, 2);
+    var surplus = F - kN * (YF - Y0);
+    document.getElementById('oSur').textContent = fmt(surplus, 0);
+    var html = '<thead><tr><th class="num">N (kg ha⁻¹)</th><th class="num">Y (t ha⁻¹)</th><th class="num">AE</th><th class="num">PFP</th><th class="num">RE (%)</th><th class="num">dY/dN</th></tr></thead><tbody>';
+    for (var f = 0; f <= 300; f += 25) { var y = Y(f); html += '<tr><td class="num">' + f + '</td><td class="num">' + fmt(y, 2) + '</td><td class="num">' + (f ? fmt((y - Y0) * 1000 / f, 1) : '—') + '</td><td class="num">' + (f ? fmt(y * 1000 / f, 1) : '—') + '</td><td class="num">' + (f ? fmt(100 * kN * (y - Y0) / f, 0) : '—') + '</td><td class="num">' + fmt(dY(f) * 1000, 1) + '</td></tr>'; }
+    document.getElementById('nTable').innerHTML = html + '</tbody>';
+  }
+  nIds.forEach(function (id) { nIn[id].addEventListener('input', drawN); }); drawN();
+})();
+</script>
+</body>
+</html>

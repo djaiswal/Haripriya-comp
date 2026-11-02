@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Principal Component Analysis</title>
+<meta name="description" content="Principal component analysis at comprehensive-exam depth: the variance-maximising derivation via Lagrange multipliers, Eckart–Young reconstruction, eigen-decomposition versus SVD, choosing components (scree, Kaiser, broken stick, parallel analysis), scaling, biplots, rotation, PLS, the horseshoe effect, kernel PCA, t-SNE/UMAP, and PCA in ecosystem science from the leaf economics spectrum to EOF analysis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .pc text { font-family: var(--font-display); fill: var(--fg); }
+  .pc .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .pc .axlbl { font-size: 12px; fill: var(--muted); }
+  .pc .gridline { stroke: var(--grid); stroke-width: 1; }
+  .pc .ax { stroke: var(--line); }
+  .pc .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .pc .dl { font-size: 11.5px; font-weight: 600; }
+  .pc .xh { stroke: var(--muted); stroke-width: 1; }
+  .pc .pt { stroke: var(--surface); stroke-width: 0.8; fill: var(--series-1); }
+  .pc .ttl { font-size: 12.5px; font-weight: 600; }
+  .pc .bar { fill: var(--series-1); }
+  .pc .proj { stroke: var(--muted); stroke-width: 0.8; opacity: 0.6; }
+  .pc .arrow { stroke: var(--accent-2); stroke-width: 2; fill: none; }
+  .pc .arrowlbl { font-size: 11.5px; font-weight: 600; fill: var(--accent-2); }
+  .chartbox { position: relative; }
+  .ctrl select { width: 100%; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-family: var(--font-display); font-size: 0.85rem; }
+  .ctrl.chk label { justify-content: flex-start; align-items: center; gap: 0.5rem; cursor: pointer; }
+  .ctrl.chk input { accent-color: var(--accent); }
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 760px) { .twocol { grid-template-columns: 1fr; } }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Principal component analysis</div>
+    <div class="eyebrow">Topic 11 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Principal Component Analysis</h1>
+    <p class="lead">Rotate a cloud of correlated measurements so that the new axes are uncorrelated and ordered by variance, then keep the first few. One theorem (eigenvectors of the covariance matrix) delivers dimension reduction, decorrelation, denoising and the biplot, and it underlies the leaf economics spectrum, EOF analysis and half of the preprocessing in ecosystem data science.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Given \(n\) observations of \(p\) variables, centre each variable and form the \(p\times p\) covariance matrix \(S\). The <strong>first principal component</strong> is the unit vector \(w_1\) along which the projected data have the largest variance; a Lagrange-multiplier argument shows it is the eigenvector of \(S\) with the largest eigenvalue \(\lambda_1\), and that \(\lambda_1\) <em>is</em> that variance. Subsequent components are the remaining eigenvectors in decreasing order of eigenvalue, mutually orthogonal and uncorrelated. Equivalently (Eckart–Young), the first \(k\) components span the \(k\)-dimensional subspace that reconstructs the data with the smallest squared error, and the error equals the sum of the discarded eigenvalues. Computationally PCA is the singular value decomposition of the centred data matrix: \(\tilde X=U\Sigma V^\top\), with loadings \(V\), scores \(U\Sigma\) and eigenvalues \(\sigma_j^2/(n-1)\). Everything else is practice: standardise when units differ (otherwise the variable with the largest numbers wins), choose how many components with a scree plot, parallel analysis or cross-validation, read the biplot with the right scaling, remember that signs are arbitrary and that PCA sees only linear, variance-shaped structure. In ecosystem science PCA defines the leaf economics spectrum and the global spectrum of plant form and function, summarises climate space, decomposes spatiotemporal fields into EOFs, decorrelates drivers before regression and reduces model ensembles for emulation.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Be ready to (i) derive the first PC with a Lagrange multiplier and say what the eigenvalue means; (ii) explain the SVD connection and why you never form \(S\) for a 2000-band spectrum; (iii) argue when to use the correlation rather than the covariance matrix; (iv) interpret a biplot of leaf traits (LMA and lifespan opposite N and A<sub>mass</sub>); and (v) state the assumptions (linearity, variance = information, sensitivity to outliers and to the horseshoe effect) and name the alternatives.</p></div>
+  </section>
+
+  <section id="derivation">
+    <h2>Setup and the variance-maximising derivation</h2>
+    <p>Let \(X\) be the \(n\times p\) data matrix (rows = sites, species or pixels; columns = variables). <strong>Centring</strong> subtracts each column mean: \(\tilde X=X-\mathbf 1\bar x^\top\). PCA is about variances and covariances, which are defined around the mean, so centring is not optional: uncentred "PCA" finds the direction of the mean, not of the variance. The sample covariance matrix is</p>
+    <div class="eq">$$S=\frac{1}{n-1}\tilde X^\top\tilde X,\qquad S_{jl}=\frac{1}{n-1}\sum_{i=1}^n\tilde x_{ij}\tilde x_{il},$$</div>
+    <p>symmetric and positive semi-definite. Consider a linear combination (a projection) \(t=\tilde Xw\) with \(w\in\mathbb R^p\). Its sample variance is \(\frac{1}{n-1}t^\top t=w^\top Sw\). This grows without bound if \(w\) is lengthened, so we constrain \(\lVert w\rVert=1\) and ask for the direction of maximum variance:</p>
+    <div class="eq">$$\max_w\ w^\top Sw\quad\text{subject to}\quad w^\top w=1 .$$</div>
+    <h3>Lagrange multipliers</h3>
+    <p>Form \(\mathcal L(w,\lambda)=w^\top Sw-\lambda(w^\top w-1)\). Using \(\partial(w^\top Sw)/\partial w=2Sw\) (because \(S\) is symmetric) and \(\partial(w^\top w)/\partial w=2w\),</p>
+    <div class="eq">$$\frac{\partial\mathcal L}{\partial w}=2Sw-2\lambda w=0\;\Longrightarrow\;Sw=\lambda w .$$</div>
+    <p>So any stationary \(w\) is an eigenvector of \(S\) and \(\lambda\) its eigenvalue. Which one? Left-multiplying by \(w^\top\): \(w^\top Sw=\lambda w^\top w=\lambda\). The variance we are maximising <em>equals the eigenvalue</em>, so the maximum is attained at the eigenvector \(v_1\) with the largest eigenvalue \(\lambda_1\). That is the first principal component (loading vector); the projected values \(t_1=\tilde Xv_1\) are the first PC scores, with variance \(\lambda_1\).</p>
+    <p>For the second component add the constraint \(w^\top v_1=0\) (uncorrelated with, equivalently orthogonal to, the first). The Lagrangian gains a term \(-\phi\,w^\top v_1\); multiplying the stationarity condition \(2Sw-2\lambda w-\phi v_1=0\) by \(v_1^\top\) and using \(v_1^\top S=\lambda_1v_1^\top\) and \(v_1^\top w=0\) gives \(\phi=0\), so again \(Sw=\lambda w\), and the best remaining choice is the eigenvector with the second-largest eigenvalue. By induction the \(k\)-th PC is the \(k\)-th eigenvector. Because \(S\) is symmetric, the spectral theorem guarantees \(p\) real eigenvalues \(\lambda_1\ge\dots\ge\lambda_p\ge0\) and an orthonormal set of eigenvectors \(V=[v_1\dots v_p]\), \(V^\top V=I\), with \(S=V\Lambda V^\top\). The scores \(T=\tilde XV\) have covariance \(V^\top SV=\Lambda\): diagonal, so the PCs are uncorrelated, and the total variance is conserved, \(\sum_j\lambda_j=\mathrm{tr}(S)=\sum_j\mathrm{Var}(x_j)\).</p>
+    <h3>The same answer from reconstruction error (Eckart–Young)</h3>
+    <p>Instead of maximising variance, ask for the \(k\)-dimensional linear subspace that approximates the data best. Project each centred row onto an orthonormal basis \(W\) (\(p\times k\), \(W^\top W=I_k\)) and back: \(\hat{\tilde x}_i=WW^\top\tilde x_i\). The total squared reconstruction error is</p>
+    <div class="eq">$$E(W)=\sum_i\lVert\tilde x_i-WW^\top\tilde x_i\rVert^2=\sum_i\lVert\tilde x_i\rVert^2-\sum_i\lVert W^\top\tilde x_i\rVert^2=(n-1)\Big[\mathrm{tr}(S)-\mathrm{tr}(W^\top SW)\Big],$$</div>
+    <p>using Pythagoras (the residual is orthogonal to the projection). Minimising \(E\) is maximising \(\mathrm{tr}(W^\top SW)\), the variance captured by the subspace, whose maximum over orthonormal \(W\) is \(\lambda_1+\dots+\lambda_k\) at \(W=V_k\) (Ky Fan's inequality). Hence the minimum error is \((n-1)\sum_{j&gt;k}\lambda_j\): <strong>the discarded eigenvalues are exactly the reconstruction error</strong>. Eckart &amp; Young (1936) proved the matrix version: the best rank-\(k\) approximation of \(\tilde X\) in Frobenius norm is its truncated SVD. Variance-maximisation and error-minimisation are two descriptions of one subspace, which is why PCA serves both for "finding structure" and for compression.</p>
+    <h3>Eigen-decomposition versus SVD</h3>
+    <p>The thin SVD of the centred matrix is \(\tilde X=U\Sigma V^\top\) with \(U\) (\(n\times r\)) and \(V\) (\(p\times r\)) orthonormal and \(\Sigma=\mathrm{diag}(\sigma_1\ge\dots\ge\sigma_r)\), \(r=\min(n-1,p)\). Then</p>
+    <div class="eq">$$S=\frac{1}{n-1}V\Sigma U^\top U\Sigma V^\top=V\,\frac{\Sigma^2}{n-1}\,V^\top ,$$</div>
+    <div class="eq">$$\lambda_j=\frac{\sigma_j^2}{n-1},\qquad\text{loadings}=V,\qquad\text{scores}=\tilde XV=U\Sigma .$$</div>
+    <p>So the right singular vectors are the loadings, the left singular vectors scaled by the singular values are the scores, and the squared singular values divided by \(n-1\) are the eigenvalues. Numerically the SVD is preferred: it never forms \(\tilde X^\top\tilde X\) (which squares the condition number), and when \(p\gg n\) (2000 spectral bands, 60 leaves) it works with the \(n\times n\) Gram matrix implicitly, giving at most \(n-1\) non-zero components. The labs on this page use the Jacobi eigenvalue algorithm on \(S\) because the matrices are small (6×6 and 50×50) and the code is transparent; for anything large use a library SVD (LAPACK, <code>prcomp</code> in R, <code>sklearn.decomposition.PCA</code>).</p>
+    <h3>Variance explained and scores</h3>
+    <p>The <strong>proportion of variance explained</strong> by component \(j\) is \(\lambda_j/\sum_l\lambda_l\); the cumulative proportion up to \(k\) is the fraction of total variance (and of squared Frobenius norm) retained. Scores \(t_{ij}=\tilde x_i^\top v_j\) are the coordinates of observation \(i\) on the new axes; loadings \(v_{lj}\) are the weights of original variable \(l\) in component \(j\), and \(v_{lj}\sqrt{\lambda_j}\) is the covariance (correlation, for standardised data) between variable \(l\) and component \(j\). The <strong>sign</strong> of each \(v_j\) is arbitrary (\(-v_j\) is an equally good eigenvector), so a "negative loading of LMA on PC1" is meaningful only relative to the other loadings on that axis; software picks a sign by convention and two runs can differ.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · Two-dimensional PCA explorer</h3><span class="small muted">Covariance ellipse, PC axes scaled by √λ, projections onto PC1</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap"><svg class="pc" id="exSvg" viewBox="0 0 640 460" role="img" aria-label="Correlated point cloud with its covariance ellipse, principal axes and projections onto the first principal component"></svg></div>
+          <div class="legend"><span style="--c:var(--series-1)">data (n = 200)</span><span style="--c:var(--accent)">PC1 axis, length 2√λ₁</span><span style="--c:var(--accent-2)">PC2 axis, length 2√λ₂</span><span style="--c:var(--muted)">2σ covariance ellipse and projections onto PC1</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="exRho"><span>Correlation ρ (before rotation)</span><output id="exRhoO">0.80</output></label><input type="range" id="exRho" min="-0.95" max="0.95" step="0.05" value="0.8"></div>
+          <div class="ctrl"><label for="exSx"><span>SD of variable 1</span><output id="exSxO">2.0</output></label><input type="range" id="exSx" min="0.3" max="3" step="0.1" value="2"></div>
+          <div class="ctrl"><label for="exSy"><span>SD of variable 2</span><output id="exSyO">1.0</output></label><input type="range" id="exSy" min="0.3" max="3" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="exRot"><span>Rotation of the cloud (°)</span><output id="exRotO">0</output></label><input type="range" id="exRot" min="-90" max="90" step="5" value="0"></div>
+          <div class="ctrl chk"><label for="exStd"><input type="checkbox" id="exStd"><span>Standardise both variables (correlation PCA)</span></label></div>
+          <div class="ctrl chk"><label for="exProj"><input type="checkbox" id="exProj" checked><span>Show projections onto PC1</span></label></div>
+          <dl class="readout">
+            <dt>Sample covariance S</dt><dd id="exS">–</dd>
+            <dt>Eigenvalues λ₁, λ₂</dt><dd id="exL">–</dd>
+            <dt>Variance explained by PC1</dt><dd id="exPve">–</dd>
+            <dt>Loadings v₁ (v₂ ⟂)</dt><dd id="exV">–</dd>
+            <dt>Angle of PC1 (°)</dt><dd id="exAng">–</dd>
+            <dt>Reconstruction MSE with 1 PC (= λ₂)</dt><dd id="exRec">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: set ρ = 0 with unequal SDs and note that PC1 is simply the larger-variance variable; now standardise and watch the eigenvalues become 1 ± ρ with PC1 at exactly 45° (for ρ &gt; 0) whatever the SDs. Rotate the cloud: the eigenvalues are invariant to rotation, the loadings rotate with it. Push ρ to 0.95: PC1 captures nearly everything and the projections barely move the points. Set ρ = −0.8: PC1 is the anti-diagonal; its sign could equally be flipped.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="choosing">
+    <h2>How many components, and on which matrix?</h2>
+    <h3>Covariance or correlation</h3>
+    <p>PCA on \(S\) weights variables by their variance, so the result depends on units: leaf mass per area in g m⁻² (values 30–300) swamps leaf phosphorus in mg g⁻¹ (0.5–3), and merely re-expressing LMA in kg m⁻² changes the components. Standardising each column to unit variance (PCA on the correlation matrix \(R\)) removes the dependence on units and gives every variable the same prior weight; the total variance is then \(p\) and \(\lambda_j&gt;1\) means "more than one variable's worth". Use the correlation matrix whenever variables are in different units or of very different magnitude, which is nearly always for trait or environmental data; use the covariance matrix when the variables share a unit and their relative variance is meaningful, as for the bands of a reflectance spectrum or the grid cells of an NDVI field (where standardising would amplify noisy, low-variance pixels). Log-transform positively skewed variables (most traits, precipitation) <em>before</em> either choice, since PCA is a linear, second-moment method and a few extreme values otherwise define the first axis.</p>
+    <h3>Stopping rules</h3>
+    <p>The <strong>scree plot</strong> shows \(\lambda_j\) against \(j\); keep components before the curve flattens into the "scree" of noise eigenvalues. Formal rules for correlation PCA:</p>
+    <ul>
+      <li><strong>Kaiser–Guttman</strong>: keep \(\lambda_j&gt;1\). Simple, widely used, and known to over-retain for large \(p\) and under-retain for small (Jackson 1993).</li>
+      <li><strong>Broken stick</strong>: compare \(\lambda_j/\sum\lambda\) with the expected length of the \(j\)-th longest piece of a unit stick broken at random into \(p\) pieces, \(b_j=\frac1p\sum_{i=j}^{p}\frac1i\); keep components exceeding it. Performs well in Jackson's ecological simulations.</li>
+      <li><strong>Parallel analysis</strong> (Horn 1965): generate many random datasets of the same \(n\times p\) (independent normals), compute their eigenvalues, and keep observed \(\lambda_j\) that exceed the 95th percentile of the random \(\lambda_j\). This corrects Kaiser's rule for the fact that even noise produces a first eigenvalue above 1 by sampling variation. It is the recommended default (Lab D).</li>
+      <li><strong>Cross-validation</strong>: leave out rows (or cells, in the eigenvector cross-validation of Wold), reconstruct them from \(k\) components fitted to the rest, and choose the \(k\) minimising prediction error (PRESS). This is the only rule that measures what reconstruction or prediction actually needs, and the one used in chemometrics/PLS.</li>
+      <li><strong>Proportion thresholds</strong> ("keep 90% of variance") depend on noise level and \(p\); they are conventions, not inference.</li>
+    </ul>
+    <p>For EOF analysis North et al. (1982) add a sampling-error rule: eigenvalues closer than \(\delta\lambda_j\approx\lambda_j\sqrt{2/N^*}\) (\(N^*\) effective independent samples) are degenerate and their eigenvectors are arbitrary mixtures, so only well-separated leading modes are interpretable.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Leaf-economics traits of 40 synthetic species: scree plot and biplot</h3></div>
+      <div class="twocol">
+        <div class="chartbox figwrap"><svg class="pc" id="scrSvg" viewBox="0 0 420 300" role="img" aria-label="Scree plot of eigenvalues with cumulative variance explained"></svg><div class="chart-tip" id="scrTip" hidden></div></div>
+        <div class="figwrap"><svg class="pc" id="biSvg" viewBox="0 0 420 300" role="img" aria-label="Biplot of species scores and trait loading arrows on the first two principal components"></svg></div>
+      </div>
+      <div class="lab-grid" style="margin-top:0.75rem">
+        <div>
+          <dl class="readout" style="border-top:0;padding-top:0;grid-template-columns:1fr auto 1fr auto">
+            <dt>λ₁ · λ₂ (of total <span id="biTot"></span>)</dt><dd id="biL">–</dd><dt>PVE, PC1 · PC2 · cumulative</dt><dd id="biP">–</dd>
+            <dt>Angle LMA–A<sub>mass</sub> loadings</dt><dd id="biAng">–</dd><dt>r(LMA, lifespan) · r(LMA, N)</dt><dd id="biR">–</dd>
+          </dl>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (loadings and eigenvalues)</summary><div class="tablewrap"><table id="biTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="biMat"><span>Matrix analysed</span></label><select id="biMat"><option value="corr">correlation (standardised traits)</option><option value="cov">covariance (raw units)</option></select></div>
+          <div class="ctrl chk"><label for="biLog"><input type="checkbox" id="biLog" checked><span>log₁₀-transform traits first</span></label></div>
+          <div class="ctrl"><label for="biScale"><span>Biplot scaling</span></label><select id="biScale"><option value="dist">distance biplot (α = 1): scores UΣ, loadings V</option><option value="corr">correlation biplot (α = 0): scores U, loadings VΣ</option></select></div>
+          <div class="ctrl"><label for="biNoise"><span>Trait noise SD (log₁₀ units)</span><output id="biNoiseO">0.12</output></label><input type="range" id="biNoise" min="0.02" max="0.4" step="0.02" value="0.12"></div>
+          <div class="ctrl"><label for="biSeed"><span>Random seed</span><output id="biSeedO">11</output></label><input type="range" id="biSeed" min="1" max="30" step="1" value="11"></div>
+          <p class="small muted" style="margin:0">Traits: LMA (g m⁻²), leaf N (mg g⁻¹), A<sub>mass</sub> (nmol g⁻¹ s⁻¹), leaf lifespan (months), R<sub>d</sub> (nmol g⁻¹ s⁻¹), P (mg g⁻¹), generated from a two-factor latent model (a fast–slow economics axis and a nutrient axis) with seeded noise. Suggested experiments: switch to covariance on raw units and watch A<sub>mass</sub> (largest numbers) take over PC1; turn off the log transform and see outliers stretch the cloud; raise the noise until the second eigenvalue falls into the scree. In every setting LMA and lifespan point opposite N and A<sub>mass</sub>: the leaf economics spectrum.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · Stopping rules on the trait data: scree versus random (parallel analysis), broken stick and Kaiser</h3><span class="small muted">Correlation matrix of the Lab B traits</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="pc" id="paSvg" viewBox="0 0 640 320" role="img" aria-label="Observed eigenvalues compared with the mean and 95th percentile of eigenvalues from random data, the broken-stick expectation and the Kaiser line"></svg><div class="chart-tip" id="paTip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--fg)">observed λ</span><span style="--c:var(--series-2)">random data, 95th percentile</span><span style="--c:var(--series-1)">random data, mean</span><span style="--c:var(--series-3)">broken stick (× p)</span><span style="--c:var(--muted)">Kaiser λ = 1</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="paTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="paB"><span>Random datasets, B</span><output id="paBO">200</output></label><input type="range" id="paB" min="50" max="500" step="50" value="200"></div>
+          <dl class="readout">
+            <dt>Components kept: parallel analysis</dt><dd id="paK">–</dd>
+            <dt>Broken stick</dt><dd id="paBS">–</dd>
+            <dt>Kaiser (λ &gt; 1)</dt><dd id="paKa">–</dd>
+            <dt>Cumulative PVE at that k</dt><dd id="paC">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0">Random eigenvalues are from \(B\) datasets of 40 × 6 independent standard normals (seeded). Suggested experiments: in Lab B raise the trait noise and watch the second observed eigenvalue sink below the 95th-percentile line while Kaiser may still retain it; lower the noise and see the broken stick become conservative.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="practice">
+    <h2>Reading and using the results</h2>
+    <h3>Biplots and their scalings (Gabriel 1971)</h3>
+    <p>A biplot draws observations and variables on the same pair of axes using the rank-2 factorisation \(\tilde X\approx GH^\top\) with \(G=U_2\Sigma_2^{\alpha}\) (rows) and \(H=V_2\Sigma_2^{1-\alpha}\) (columns). Two conventions matter:</p>
+    <ul>
+      <li><strong>Distance biplot</strong> (\(\alpha=1\); R's <code>prcomp</code> default, Legendre's "scaling 1"): rows are the PC scores \(U\Sigma\), so distances between points approximate Euclidean distances between observations; variable arrows are the unit loadings \(V\). Arrow length shows how much of a variable lies in the plane; angles between arrows are <em>not</em> correlations.</li>
+      <li><strong>Correlation biplot</strong> (\(\alpha=0\); "scaling 2"): columns are \(V\Sigma\) (for standardised data, the correlations of variables with the components), so the cosine of the angle between two arrows approximates their correlation and arrow length their standard deviation in the plane; row points are \(U\), and distances between them are no longer Euclidean. Use this one to read the trait structure (LMA against N), and the distance biplot to compare sites or species.</li>
+    </ul>
+    <p>In either, the projection of a point onto an arrow approximates that observation's (centred) value of the variable, and a sign flip of a PC flips both the points and the arrows along that axis, leaving the picture mirror-imaged but unchanged in meaning.</p>
+    <h3>Rotation, and PCA versus factor analysis</h3>
+    <p>Any orthogonal rotation of the retained loadings, \(V_kR\), spans the same subspace and reconstructs equally well; PCA's choice (maximal variance per axis, in order) is one convention. <strong>Varimax</strong> chooses \(R\) to maximise the variance of the squared loadings in each column, driving each variable's loading toward 0 or ±1 so that components become "simple" (each variable loads mainly on one axis). The rotated axes are no longer ordered by variance and no longer uncorrelated in the original sense, which trades mathematical optimality for interpretability. <strong>Factor analysis</strong> is a different model: \(x=\mu+\Lambda f+\varepsilon\) with latent factors \(f\) and variable-specific noise \(\varepsilon\sim\mathcal N(0,\Psi)\), \(\Psi\) diagonal, so it explains <em>covariances</em> between variables (common factors) and treats each variable's unique variance separately, estimated by maximum likelihood. PCA explains total variance and has no error model; it is a descriptive rotation, not a latent-variable model. <strong>Probabilistic PCA</strong> (Tipping &amp; Bishop 1999) sits between: \(x=Wz+\mu+\varepsilon\) with isotropic noise \(\varepsilon\sim\mathcal N(0,\sigma^2I)\), whose maximum-likelihood \(W\) is \(V_k(\Lambda_k-\sigma^2I)^{1/2}R\) and \(\sigma^2\) is the mean of the discarded eigenvalues. It gives PCA a likelihood (so BIC, missing values via EM, and mixtures of PCAs) and shows that ordinary PCA is its \(\sigma^2\to0\) limit.</p>
+    <h3>Outliers and robust PCA</h3>
+    <p>Variance is a second moment, so one extreme site can become PC1 by itself (turn off the log transform in Lab B). Remedies: transform, inspect score and orthogonal-distance plots (the diagnostic plot of Hubert et al.), and if needed use a robust covariance (minimum covariance determinant), projection-pursuit PCA, or the "robust PCA" decomposition of the data into low-rank plus sparse parts (Candès et al.), which is also how gross errors in remote-sensing time series are separated from the smooth seasonal signal.</p>
+    <h3>Compression and denoising</h3>
+    <p>Keeping \(k\) components stores \(nk+pk\) numbers instead of \(np\), and the reconstruction \(\hat X=\bar x+T_kV_k^\top\) discards the low-variance directions, where isotropic noise lives. For a hyperspectral cube this is the minimum-noise-fraction idea; for an ensemble of model outputs it is the basis of emulation. Lab C shows reconstruction of reflectance spectra: three latent shapes plus noise are recovered by three components, after which further components only chase noise.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Reconstructing reflectance spectra from k principal components</h3><span class="small muted">30 spectra × 50 bands built from three basis shapes plus noise</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="pc" id="spSvg" viewBox="0 0 640 300" role="img" aria-label="One reflectance spectrum with its reconstruction from k components"></svg><div class="chart-tip" id="spTip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--fg)">measured spectrum</span><span style="--c:var(--series-2)">reconstruction with k PCs</span><span style="--c:var(--muted)">mean spectrum</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.5rem"><svg class="pc" id="rmSvg" viewBox="0 0 640 200" role="img" aria-label="Root mean square reconstruction error versus number of components"></svg><div class="chart-tip" id="rmTip" hidden></div></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (RMSE and variance explained by k)</summary><div class="tablewrap"><table id="spTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="spK"><span>Components kept, k</span><output id="spKO">3</output></label><input type="range" id="spK" min="0" max="10" step="1" value="3"></div>
+          <div class="ctrl"><label for="spI"><span>Spectrum shown</span><output id="spIO">7</output></label><input type="range" id="spI" min="1" max="30" step="1" value="7"></div>
+          <div class="ctrl"><label for="spNoise"><span>Noise SD (reflectance units)</span><output id="spNoiseO">0.010</output></label><input type="range" id="spNoise" min="0" max="0.04" step="0.002" value="0.01"></div>
+          <div class="ctrl"><label for="spSeed"><span>Random seed</span><output id="spSeedO">3</output></label><input type="range" id="spSeed" min="1" max="30" step="1" value="3"></div>
+          <dl class="readout">
+            <dt>RMSE of this spectrum</dt><dd id="spR1">–</dd>
+            <dt>RMSE over all spectra</dt><dd id="spRall">–</dd>
+            <dt>Variance explained by k PCs</dt><dd id="spPve">–</dd>
+            <dt>Scores of this spectrum, t₁…t₃</dt><dd id="spT">–</dd>
+          </dl>
+          <p class="small muted" style="margin:0">Covariance PCA across the 50 bands (shared units, so no standardisation). Suggested experiments: step k from 0 (the mean spectrum) to 3 and watch the green peak, red edge and brightness appear one at a time; beyond 3 the RMSE flattens at the noise level you set. Raise the noise and see where the elbow moves and how the "true" rank of 3 becomes harder to see in RMSE alone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="extensions">
+    <h2>Regression on components, ordination, and nonlinear relatives</h2>
+    <h3>Principal component regression and PLS</h3>
+    <p>When predictors are many and collinear (2000 reflectance bands predicting leaf nitrogen from 100 leaves), ordinary least squares is undefined or wildly unstable. <strong>Principal component regression</strong> (PCR) regresses \(y\) on the first \(k\) PC scores of \(X\); it stabilises the fit but chooses directions by the variance of \(X\) alone, which may be irrelevant to \(y\). <strong>Partial least squares</strong> (PLS; Wold, Sjöström &amp; Eriksson 2001) instead finds directions that maximise the <em>covariance</em> between \(Xw\) and \(y\),</p>
+    <div class="eq">$$w_1=\arg\max_{\lVert w\rVert=1}\ \mathrm{Cov}(\tilde Xw,\ y)=\arg\max\ w^\top\tilde X^\top y\;\Longrightarrow\;w_1\propto\tilde X^\top y ,$$</div>
+    <p>then deflates \(X\) and repeats, with \(k\) chosen by cross-validation. PLS is the standard for spectroscopic trait prediction: Serbin et al. (2014) predicted V<sub>cmax</sub>, J<sub>max</sub>, LMA and N from leaf reflectance with PLS regression, and the same approach now feeds trait maps into land models. PCA/PCR, PLS and ridge regression are all shrinkage methods that differ in which directions of \(X\) they trust.</p>
+    <h3>The horseshoe effect and why ecological ordination has other methods</h3>
+    <p>Species abundances along an environmental gradient respond <em>unimodally</em>: each species peaks somewhere and is absent far away. Sites far apart on the gradient share no species, so their dissimilarity saturates, and PCA, which models linear responses and Euclidean distance, bends a one-dimensional gradient into an arch or <strong>horseshoe</strong> in the PC1–PC2 plane, with the ends curling inward so that the most dissimilar sites appear closer than intermediate ones. Correspondence analysis (CA) assumes unimodal responses and reduces but does not remove the arch; detrended CA (DCA) flattens it by brute force (ter Braak &amp; Prentice 1988); non-metric multidimensional scaling (NMDS) on an ecological dissimilarity such as Bray–Curtis only preserves rank order of distances and is the usual choice for community data (Legendre &amp; Legendre 2012). PCA remains right for environmental and trait variables, which respond roughly linearly to one another, and is wrong for abundance matrices with long gradients.</p>
+    <h3>Assumptions of PCA</h3>
+    <ul>
+      <li><strong>Linearity</strong>: structure is captured by linear combinations; curved manifolds are spread across many components.</li>
+      <li><strong>Variance equals information</strong>: the interesting directions are the high-variance ones. Untrue when a small-variance variable is the one that matters, or when variance is dominated by measurement noise in one instrument.</li>
+      <li><strong>Second moments suffice</strong> (Gaussian-like data): PCA uses only the covariance matrix, so it is blind to higher-order structure and is the maximum-likelihood answer only for Gaussian data (PPCA). Independent component analysis uses higher moments instead.</li>
+      <li><strong>Orthogonality and sensitivity</strong>: components must be orthogonal even when the generating processes are not, and loadings are unstable when eigenvalues are close (North's rule).</li>
+      <li>Rows are exchangeable and <strong>outlier-free</strong>, and variables have been <strong>scaled</strong> in a way that reflects their intended weight.</li>
+    </ul>
+    <h3>Kernel PCA, t-SNE and UMAP</h3>
+    <p><strong>Kernel PCA</strong> (Schölkopf, Smola &amp; Müller 1998) performs linear PCA in an implicit feature space defined by a kernel \(k(x,x')\): centre the \(n\times n\) kernel matrix and take its eigenvectors; projections of new points are kernel sums. With a Gaussian kernel it finds curved structure (rings, moons) that linear PCA misses, at the cost of no explicit loadings and a bandwidth to choose. <strong>t-SNE</strong> (van der Maaten &amp; Hinton 2008) and <strong>UMAP</strong> (McInnes, Healy &amp; Melville 2018) are nonlinear embeddings for visualisation that preserve neighbourhoods rather than variance or distances: they are excellent for seeing clusters in high-dimensional data (pixels, spectra, sequencing) but their axes have no meaning, distances between clusters and cluster sizes are not interpretable, results depend on perplexity/neighbour settings and random seeds, and they can manufacture apparent clusters from continua. Use them to look, PCA to measure, and report PCA (or a model) for any quantitative claim; running PCA first to 20–50 dimensions is also the standard preprocessing for both.</p>
+  </section>
+
+  <section id="ecoscience">
+    <h2>PCA in ecosystem science</h2>
+    <p><strong>The leaf economics spectrum.</strong> Wright et al. (2004) assembled six traits for 2548 species (LMA, leaf lifespan, N<sub>mass</sub>, P<sub>mass</sub>, A<sub>mass</sub>, R<sub>mass</sub>); after log-transformation, PCA of the correlation matrix put 74% of the variance on a single axis running from "fast" leaves (low LMA, short lifespan, high N, A<sub>mass</sub>, R<sub>mass</sub>) to "slow" leaves (the opposite). That one axis is the LES, and its existence is why land models can parameterise photosynthetic capacity from LMA or leaf N. Díaz et al. (2016) extended this to six whole-plant traits (plant height, stem specific density, leaf area, LMA, leaf N, seed mass) across 46,085 species: two PCs explain 74%, a size axis (height, seed mass, leaf area) and the LES axis, and most of the trait hypervolume is empty, which constrains the functional diversity that models need to represent.</p>
+    <p><strong>Climate space.</strong> Bioclimatic variables (the 19 WorldClim variables, radiation, aridity) are heavily redundant; PCA to 2–4 components yields orthogonal climate axes (energy, water, seasonality) used to define ecoregions, to stratify sampling networks (Metzger et al.'s global stratification clusters PC scores), and to quantify how representative flux-tower networks are of the climate space a model must cover.</p>
+    <p><strong>EOF analysis of spatiotemporal fields.</strong> Arrange a field (NDVI, soil moisture, GPP) as a matrix with time in rows and grid cells in columns and run covariance PCA: the loadings \(v_j\) are spatial patterns, the <em>empirical orthogonal functions</em>, and the scores \(t_j\) are their time series (principal components). The first EOF of NDVI is usually the seasonal cycle unless it is removed first; the next ones capture ENSO-like or drought anomalies. Hannachi, Jolliffe &amp; Stephenson (2007) review the method with its pitfalls: EOFs are orthogonal by construction and need not be physical modes, nearby eigenvalues give unstable patterns, area weighting (multiply by \(\sqrt{\cos\phi}\)) is needed on a latitude–longitude grid, and rotated EOFs (varimax) are often more interpretable regionally.</p>
+    <p><strong>Decorrelating drivers.</strong> Flux-tower analyses regress NEE or GPP on radiation, temperature, VPD and soil moisture, which are strongly collinear (VPD rises with temperature). PCA of the drivers gives uncorrelated composite predictors so that variance can be attributed without inflation, at the cost of interpreting mixtures; PLS or ridge are alternatives when prediction matters more than attribution.</p>
+    <p><strong>Emulation and sensitivity analysis.</strong> A land model run over an ensemble of parameter sets produces outputs of thousands of time steps or grid cells each; PCA of the output ensemble (rows = runs) gives a few score vectors per run, each of which can be emulated with a Gaussian process as a function of the parameters. Global sensitivity analysis is then done on the emulated scores, and reconstruction through the loadings returns full fields. The same reduced-order idea underlies PCA-based sampling of initial conditions and the compression of observations in data assimilation.</p>
+    <p><strong>Whitening before clustering.</strong> Dividing PC scores by \(\sqrt{\lambda_j}\) gives unit-variance, uncorrelated coordinates in which Euclidean distance equals Mahalanobis distance, so <a href="k-means.html">k-means</a> and <a href="gaussian-mixture-models.html">GMMs</a> treat all directions equally and converge faster; it also removes the duplication that redundant variables would otherwise contribute to the distance.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Trait-based parameterisation.</strong> Because the LES is one axis, models (and trait databases such as TRY) can predict V<sub>cmax</sub> from leaf N or LMA, and trait-based land models can represent a continuum of strategies as positions on one or two PC axes rather than as discrete PFTs.</li>
+      <li><strong>Reduced-order model analysis.</strong> PCA/EOF of model output is how ensembles of CLM, JULES or ORCHIDEE runs are compared with each other and with observations (e.g. comparing leading EOFs of simulated and observed soil moisture or NDVI) and how emulators for calibration and sensitivity analysis are built.</li>
+      <li><strong>Data assimilation.</strong> Ensemble covariances are rank-deficient; their leading eigenvectors (a PCA of the ensemble perturbations) are the directions in which observations can update the state, and truncating them is a form of localisation/regularisation. Observation operators for hyperspectral data compress radiances onto leading PCs before assimilation.</li>
+      <li><strong>Remote-sensing inputs.</strong> Trait maps that drive models come from PLS on reflectance; land-cover and phenology products use PCA of multi-date imagery as a preprocessing step before classification.</li>
+      <li><strong>Diagnosing model behaviour.</strong> PCA of a model's parameter posterior (from MCMC) shows which parameter combinations are constrained (large eigenvalues of the precision matrix) and which lie along unidentifiable ridges (equifinality), guiding which parameters to fix.</li>
+      <li><strong>Honest caveats.</strong> PCA axes are statistical, not mechanistic; a leading EOF is not necessarily a process, a PC of drivers mixes causes, and reduced-order emulators can only reproduce variability that was in the training ensemble.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Item</th><th class="num">Form</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Covariance matrix</td><td class="num">\(S=\tilde X^\top\tilde X/(n-1)\)</td><td>Centre first; symmetric PSD</td></tr>
+        <tr><td>First PC</td><td class="num">\(Sv_1=\lambda_1v_1\), \(\max_{\lVert w\rVert=1}w^\top Sw=\lambda_1\)</td><td>Lagrange multiplier = eigenvalue = variance of scores</td></tr>
+        <tr><td>SVD link</td><td class="num">\(\tilde X=U\Sigma V^\top\), \(\lambda_j=\sigma_j^2/(n-1)\)</td><td>Loadings V; scores UΣ; at most min(n−1, p) components</td></tr>
+        <tr><td>Reconstruction error</td><td class="num">\((n-1)\sum_{j&gt;k}\lambda_j\)</td><td>Eckart–Young; discarded eigenvalues</td></tr>
+        <tr><td>Proportion explained</td><td class="num">\(\lambda_j/\sum_l\lambda_l\)</td><td>Total = tr(S) = p for correlation PCA</td></tr>
+        <tr><td>Kaiser rule</td><td class="num">\(\lambda_j&gt;1\)</td><td>Correlation matrix only; tends to over-retain</td></tr>
+        <tr><td>Broken stick</td><td class="num">\(b_j=\frac1p\sum_{i=j}^p 1/i\)</td><td>Compare with \(\lambda_j/\sum\lambda\)</td></tr>
+        <tr><td>Parallel analysis</td><td class="num">\(\lambda_j&gt;\lambda_j^{\text{rand},95\%}\)</td><td>Horn 1965; recommended default</td></tr>
+        <tr><td>North's rule</td><td class="num">\(\delta\lambda\approx\lambda\sqrt{2/N^*}\)</td><td>Overlapping eigenvalues ⇒ mixed, unstable EOFs</td></tr>
+        <tr><td>Biplot</td><td class="num">\(G=U\Sigma^{\alpha}\), \(H=V\Sigma^{1-\alpha}\)</td><td>α = 1 distance (scaling 1); α = 0 correlation (scaling 2)</td></tr>
+        <tr><td>PPCA</td><td class="num">\(W_{ML}=V_k(\Lambda_k-\sigma^2I)^{1/2}R\), \(\sigma^2=\frac{1}{p-k}\sum_{j&gt;k}\lambda_j\)</td><td>Tipping &amp; Bishop 1999; PCA as σ² → 0</td></tr>
+        <tr><td>PLS direction</td><td class="num">\(w_1\propto\tilde X^\top y\)</td><td>Maximises covariance with y, not variance of X</td></tr>
+        <tr><td>Leaf economics spectrum</td><td class="num">PC1 ≈ 74% of 6 log-traits</td><td>Wright et al. 2004, 2548 species</td></tr>
+        <tr><td>Global spectrum of form and function</td><td class="num">2 PCs ≈ 74% of 6 traits</td><td>Díaz et al. 2016, 46,085 species; size axis + LES axis</td></tr>
+        <tr><td>Whitening</td><td class="num">\(Z=\tilde XV\Lambda^{-1/2}\)</td><td>Euclidean = Mahalanobis; before k-means/GMM</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Derive the first principal component as the solution of a constrained maximisation and interpret the Lagrange multiplier.</span></summary><div class="a"><p>Centre the data and let \(S=\tilde X^\top\tilde X/(n-1)\). The projection \(t=\tilde Xw\) has variance \(w^\top Sw\). Maximise it subject to \(w^\top w=1\) with \(\mathcal L=w^\top Sw-\lambda(w^\top w-1)\). Because \(S\) is symmetric, \(\partial(w^\top Sw)/\partial w=2Sw\); so \(\partial\mathcal L/\partial w=2Sw-2\lambda w=0\Rightarrow Sw=\lambda w\): \(w\) must be an eigenvector and \(\lambda\) the corresponding eigenvalue. Pre-multiplying by \(w^\top\) gives \(w^\top Sw=\lambda\), i.e. the Lagrange multiplier is the variance of the projected data, so the constrained maximum is the eigenvector with the largest eigenvalue, \(v_1\), and the maximal variance is \(\lambda_1\). Geometrically the constraint surface is the unit sphere; the gradient of the objective (\(2Sw\)) must be parallel to the gradient of the constraint (\(2w\)) at the optimum, which is exactly the eigenvector condition. Subsequent components add orthogonality constraints whose multipliers vanish, giving the remaining eigenvectors in order; the total variance \(\mathrm{tr}(S)=\sum\lambda_j\) is conserved and the scores are uncorrelated because \(V^\top SV=\Lambda\).</p></div></details>
+    <details class="q"><summary><span>2. Show that the subspace minimising reconstruction error coincides with the variance-maximising subspace, and give the value of the minimum error.</span></summary><div class="a"><p>Let \(W\) be \(p\times k\) with orthonormal columns and project \(\tilde x_i\mapsto WW^\top\tilde x_i\). The residual \(\tilde x_i-WW^\top\tilde x_i\) is orthogonal to the column space of \(W\), so by Pythagoras \(\lVert\tilde x_i\rVert^2=\lVert W^\top\tilde x_i\rVert^2+\lVert\tilde x_i-WW^\top\tilde x_i\rVert^2\). Summing over \(i\): \(E(W)=\sum_i\lVert\tilde x_i\rVert^2-\sum_i\lVert W^\top\tilde x_i\rVert^2=(n-1)[\mathrm{tr}(S)-\mathrm{tr}(W^\top SW)]\). The first term is fixed, so minimising \(E\) is maximising \(\mathrm{tr}(W^\top SW)=\sum_{j=1}^k w_j^\top Sw_j\), the total variance captured by the \(k\) directions. For orthonormal \(w_j\) this is at most \(\lambda_1+\dots+\lambda_k\) (Ky Fan: each \(w_j^\top Sw_j\) is a convex combination of eigenvalues, and orthonormality prevents all \(k\) from using \(\lambda_1\)), with equality at \(W=V_k\). Hence \(E_{\min}=(n-1)\sum_{j&gt;k}\lambda_j\): the reconstruction error is the sum of the discarded eigenvalues (times \(n-1\)), and the mean squared error per entry is \(\sum_{j&gt;k}\lambda_j\cdot(n-1)/(np)\). In matrix form this is Eckart–Young: the truncated SVD \(U_k\Sigma_kV_k^\top\) is the best rank-\(k\) approximation in Frobenius norm, with squared error \(\sum_{j&gt;k}\sigma_j^2\).</p></div></details>
+    <details class="q"><summary><span>3. Explain the relationship between PCA and the SVD. Why would you use the SVD rather than the eigen-decomposition of the covariance matrix for a dataset of 80 leaves × 2100 reflectance bands?</span></summary><div class="a"><p>With \(\tilde X=U\Sigma V^\top\) (thin SVD, \(U^\top U=V^\top V=I\)), \(S=\tilde X^\top\tilde X/(n-1)=V\Sigma^2V^\top/(n-1)\), which is the eigen-decomposition of \(S\): eigenvectors (loadings) are the right singular vectors \(V\), eigenvalues are \(\lambda_j=\sigma_j^2/(n-1)\), and scores \(\tilde XV=U\Sigma\) are the left singular vectors scaled by the singular values. For 80 × 2100 data, \(S\) would be 2100 × 2100 (4.4 million entries) but of rank at most 79, so forming and diagonalising it is wasteful and ill-conditioned (squaring the condition number). The SVD works directly on the 80 × 2100 matrix, or equivalently on the 80 × 80 Gram matrix \(\tilde X\tilde X^\top=U\Sigma^2U^\top\), returning the 79 non-zero components at a cost of order \(n^2p\) rather than \(p^3\); loadings are then recovered as \(V=\tilde X^\top U\Sigma^{-1}\). This "kernel trick" for PCA (eigenvectors of \(\tilde X\tilde X^\top\)) is also the starting point of kernel PCA. Numerically stable SVD routines (Golub–Kahan) avoid cancellation in \(\tilde X^\top\tilde X\) and are what <code>prcomp</code> and scikit-learn use; <code>princomp</code> in R diagonalises the covariance matrix and fails when \(p&gt;n\).</p></div></details>
+    <details class="q"><summary><span>4. You have LMA (g m⁻²), leaf N (mg g⁻¹), A<sub>mass</sub> (nmol g⁻¹ s⁻¹), leaf lifespan (months), R<sub>d</sub> and P for 300 species. Describe how you would run and interpret a PCA, and what you expect to find.</span></summary><div class="a"><p>Log-transform all six (they are right-skewed and vary over one to two orders of magnitude, and the LES relationships are log-linear), check for outliers and missing values (impute or use PPCA/EM), then run PCA on the <em>correlation</em> matrix because the units differ. Examine the scree plot with parallel analysis and the broken stick; expect one dominant eigenvalue (around 4 of 6, ~70% of variance) and perhaps a second near the noise. Inspect the loadings of PC1: LMA and lifespan with one sign, N, A<sub>mass</sub>, R<sub>d</sub> and P with the opposite sign (the sign itself is arbitrary); this is the fast–slow leaf economics axis. Draw a correlation biplot (loadings VΣ, so arrow angles approximate correlations): LMA and lifespan arrows should be nearly parallel and opposite to A<sub>mass</sub> and N; P may deviate (loading on a second, nutrient axis, as in Wright et al. 2004 where P varied partly independently with soil P). Report eigenvalues, PVE, loadings with bootstrapped stability, and the PC1 score per species as its position on the spectrum. Caveats to state: PCA describes correlations across species, not within-species plasticity; phylogenetic non-independence inflates apparent sample size; the axis is a statistical summary of a trade-off (construction cost vs return time), and model use (predicting V<sub>cmax</sub> from LMA) is an application of the correlation, not a causal mechanism.</p></div></details>
+    <details class="q"><summary><span>5. Compare the Kaiser rule, the broken-stick model, parallel analysis and cross-validation for choosing the number of components. Which would you recommend for a 40 × 6 trait matrix and why?</span></summary><div class="a"><p>Kaiser (\(\lambda&gt;1\) on the correlation matrix) says "keep components explaining more than one variable's worth"; it ignores sampling variability, so with small \(n\) and many variables the first noise eigenvalue easily exceeds 1 and it over-retains, while with few variables it can under-retain. Broken stick compares each \(\lambda_j/\sum\lambda\) with the expected size of the \(j\)-th largest random fragment; it has no sampling-distribution basis either but is conservative and did well in Jackson's (1993) simulations. Parallel analysis simulates the actual null (independent variables, same \(n\) and \(p\)) and keeps components whose eigenvalue beats the 95th percentile of the simulated \(\lambda_j\); it adapts to \(n\) and \(p\) and is the best general-purpose rule. Cross-validation (leave out rows or cells, reconstruct from \(k\) components, minimise PRESS) answers a different question, how many components predict held-out data, which is the right criterion when PCA is a preprocessing step for regression or compression; it can be noisy for small \(n\). For 40 × 6 trait data: parallel analysis as the primary rule (small \(n\) makes sampling variation large, exactly what it corrects), broken stick as a check, and interpretability as the final arbiter (a component with a coherent loading pattern such as the LES is kept; one that loads on a single variable is probably noise). Kaiser alone would be the weakest choice here.</p></div></details>
+    <details class="q"><summary><span>6. What is the horseshoe (arch) effect, why does PCA produce it for community data, and what should be used instead?</span></summary><div class="a"><p>Along a long environmental gradient each species has a unimodal response: present and abundant near its optimum, absent far away. Sites at opposite ends of the gradient therefore share no species, and their Euclidean distance (or 1 − correlation) is the same as that between a site and any other site beyond the species turnover distance: dissimilarity saturates. PCA assumes linear responses and preserves Euclidean distances, so it cannot place the sites along a line; the only way to keep the saturated distances approximately correct in two dimensions is to bend the gradient into an arch, with PC2 a quadratic function of PC1 and, when turnover is complete, the ends curling inward (the horseshoe), so that the most different sites look similar. Correspondence analysis uses chi-square distance and a unimodal model, which reduces the arch but leaves one (the "arch effect"); detrended CA removes it by segment-wise detrending and rescaling (ter Braak &amp; Prentice 1988), at the cost of ad hoc steps. Non-metric multidimensional scaling on Bray–Curtis or Jaccard dissimilarities (which are bounded and ecologically meaningful) preserves only the rank order of dissimilarities and recovers the gradient without the artefact; it is the usual recommendation (Legendre &amp; Legendre). Constrained methods (RDA for linear, CCA for unimodal responses) relate the ordination to measured environmental variables. PCA stays appropriate for environmental and trait matrices, where responses between variables are approximately linear and Euclidean distance is sensible.</p></div></details>
+    <details class="q"><summary><span>7. Explain EOF analysis of a soil-moisture field (10 years of monthly maps on 500 grid cells) as a PCA, including the preprocessing and the interpretation pitfalls.</span></summary><div class="a"><p>Build the matrix with time (120 months) as rows and grid cells (500) as columns. Preprocess: remove the climatological seasonal cycle per cell (otherwise EOF1 is the annual cycle), optionally detrend, and weight columns by \(\sqrt{\cos\phi}\) for equal-area contributions on a lat–lon grid; use the covariance (not correlation) matrix if the field's units are shared and you want wet, variable regions to dominate, or the correlation matrix to emphasise pattern over amplitude. Compute the SVD of the 120 × 500 centred matrix (never the 500 × 500 covariance when \(n=120\)): right singular vectors are the EOFs (spatial patterns, one value per cell), left singular vectors times singular values are the PC time series, \(\sigma_j^2/(n-1)\) the explained variance. Interpret leading EOFs by their patterns (a dipole between regions, a monopole) and their PCs by correlating with climate indices or driver fields. Pitfalls: EOFs are mutually orthogonal and PCs uncorrelated by construction, so they need not correspond to physical modes (mixing of modes, domain-shape dependence: Buell patterns); eigenvalues separated by less than North's sampling error \(\lambda\sqrt{2/N^*}\) (with \(N^*\) the number of effectively independent months, far fewer than 120 given autocorrelation) are degenerate and their patterns arbitrary; rotated EOFs can localise patterns; and the sign of each EOF/PC pair is arbitrary. Report the fraction of variance, the North error bars, and compare observed and simulated leading EOFs to evaluate a model's variability, not just its mean.</p></div></details>
+    <details class="q"><summary><span>8. A colleague proposes t-SNE to "find the plant functional types" in a trait database with 20 traits and 5000 species. Advise.</span></summary><div class="a"><p>t-SNE is a visualisation tool, not an analysis: it optimises a neighbourhood-preserving embedding in which axes have no meaning, inter-cluster distances and cluster sizes are not interpretable, the layout depends on perplexity and the random seed, and continua are routinely broken into apparent clusters by the method itself. Finding "functional types" with it risks discovering artefacts. Recommended workflow: log-transform and standardise the traits; run PCA (correlation matrix) and examine the scree with parallel analysis; expect a few interpretable axes (size, leaf economics, hydraulics) explaining most of the variance, as in Díaz et al. (2016). Test for discrete structure with methods that have a model and a selection criterion: Gaussian mixtures with BIC/ICL on the leading PC scores (ICL will say whether well-separated clusters exist or whether the data form a continuum), k-means with gap statistic and bootstrap stability, or hierarchical clustering with a dendrogram. If t-SNE or UMAP is used, run it on the first 10–20 PCs, several seeds and perplexities, colour points by the PCA-based cluster labels and by key traits, and treat it as a picture of local neighbourhoods only. The honest conclusion for most trait data is a continuum with soft modes, which argues for trait-based (continuous) parameterisation in land models rather than new discrete PFTs.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Pearson K (1901). On lines and planes of closest fit to systems of points in space. <em>Philosophical Magazine</em> 2: 559–572. <a href="https://doi.org/10.1080/14786440109462720">doi:10.1080/14786440109462720</a><span class="why">PCA as the best-fitting line/plane (the reconstruction-error view), decades before the name.</span></li>
+      <li>Hotelling H (1933). Analysis of a complex of statistical variables into principal components. <em>Journal of Educational Psychology</em> 24: 417–441. <a href="https://doi.org/10.1037/h0071325">doi:10.1037/h0071325</a><span class="why">The variance-maximisation view and the name "principal components".</span></li>
+      <li>Jolliffe IT (2002). <em>Principal Component Analysis</em>, 2nd ed. Springer, New York. <span class="why">The reference monograph: derivations, choosing components, rotation, outliers, PCR, relations to factor analysis.</span></li>
+      <li>Jolliffe IT, Cadima J (2016). Principal component analysis: a review and recent developments. <em>Philosophical Transactions of the Royal Society A</em> 374: 20150202. <a href="https://doi.org/10.1098/rsta.2015.0202">doi:10.1098/rsta.2015.0202</a><span class="why">Concise modern review: SVD, biplots, robust and sparse PCA, functional PCA.</span></li>
+      <li>Eckart C, Young G (1936). The approximation of one matrix by another of lower rank. <em>Psychometrika</em> 1: 211–218. <a href="https://doi.org/10.1007/BF02288367">doi:10.1007/BF02288367</a><span class="why">The truncated SVD is the best low-rank approximation; the basis of the reconstruction-error derivation.</span></li>
+      <li>Gabriel KR (1971). The biplot graphic display of matrices with application to principal component analysis. <em>Biometrika</em> 58: 453–467. <a href="https://doi.org/10.1093/biomet/58.3.453">doi:10.1093/biomet/58.3.453</a><span class="why">Origin of the biplot and of the α-scaling family (distance vs correlation biplots).</span></li>
+      <li>Horn JL (1965). A rationale and test for the number of factors in factor analysis. <em>Psychometrika</em> 30: 179–185. <a href="https://doi.org/10.1007/BF02289447">doi:10.1007/BF02289447</a><span class="why">Parallel analysis.</span></li>
+      <li>Jackson DA (1993). Stopping rules in principal components analysis: a comparison of heuristical and statistical approaches. <em>Ecology</em> 74: 2204–2214. <a href="https://doi.org/10.2307/1939574">doi:10.2307/1939574</a><span class="why">Simulation comparison of Kaiser, scree, broken stick, parallel analysis and bootstrap rules for ecological data.</span></li>
+      <li>North GR, Bell TL, Cahalan RF, Moeng FJ (1982). Sampling errors in the estimation of empirical orthogonal functions. <em>Monthly Weather Review</em> 110: 699–706. <span class="why">North's rule of thumb for degenerate eigenvalues and unstable EOF patterns.</span></li>
+      <li>Legendre P, Legendre L (2012). <em>Numerical Ecology</em>, 3rd English ed. Elsevier, Amsterdam. Chapter 9 (Ordination in reduced space). <span class="why">PCA, CA, PCoA and NMDS for ecologists; scaling 1 vs scaling 2 biplots; when PCA is inappropriate for community data.</span></li>
+      <li>ter Braak CJF, Prentice IC (1988). A theory of gradient analysis. <em>Advances in Ecological Research</em> 18: 271–317. <a href="https://doi.org/10.1016/S0065-2504(08)60183-X">doi:10.1016/S0065-2504(08)60183-X</a><span class="why">Linear vs unimodal response models, the arch effect, and the family of ordination methods built on each.</span></li>
+      <li>Wright IJ, Reich PB, Westoby M, et al. (2004). The worldwide leaf economics spectrum. <em>Nature</em> 428: 821–827. <a href="https://doi.org/10.1038/nature02403">doi:10.1038/nature02403</a><span class="why">PCA of six log-traits across 2548 species; 74% on one axis.</span></li>
+      <li>Díaz S, Kattge J, Cornelissen JHC, et al. (2016). The global spectrum of plant form and function. <em>Nature</em> 529: 167–171. <a href="https://doi.org/10.1038/nature16489">doi:10.1038/nature16489</a><span class="why">Two-axis PCA of whole-plant traits across 46,085 species; the occupied trait hypervolume.</span></li>
+      <li>Serbin SP, Singh A, McNeil BE, Kingdon CC, Townsend PA (2014). Spectroscopic determination of leaf morphological and biochemical traits for northern temperate and boreal tree species. <em>Ecological Applications</em> 24: 1651–1669. <a href="https://doi.org/10.1890/13-2110.1">doi:10.1890/13-2110.1</a><span class="why">PLS regression from leaf reflectance to LMA, N, and photosynthetic traits; the route to trait maps for models.</span></li>
+      <li>Wold S, Sjöström M, Eriksson L (2001). PLS-regression: a basic tool of chemometrics. <em>Chemometrics and Intelligent Laboratory Systems</em> 58: 109–130. <a href="https://doi.org/10.1016/S0169-7439(01)00155-1">doi:10.1016/S0169-7439(01)00155-1</a><span class="why">PLS algorithm, cross-validated choice of components, and the contrast with PCR.</span></li>
+      <li>Hannachi A, Jolliffe IT, Stephenson DB (2007). Empirical orthogonal functions and related techniques in atmospheric science: a review. <em>International Journal of Climatology</em> 27: 1119–1152. <a href="https://doi.org/10.1002/joc.1499">doi:10.1002/joc.1499</a><span class="why">EOF analysis as PCA on space–time matrices, rotated EOFs, and the interpretation pitfalls.</span></li>
+      <li>Schölkopf B, Smola A, Müller K-R (1998). Nonlinear component analysis as a kernel eigenvalue problem. <em>Neural Computation</em> 10: 1299–1319. <a href="https://doi.org/10.1162/089976698300017467">doi:10.1162/089976698300017467</a><span class="why">Kernel PCA.</span></li>
+      <li>van der Maaten L, Hinton G (2008). Visualizing data using t-SNE. <em>Journal of Machine Learning Research</em> 9: 2579–2605. <span class="why">t-SNE; read alongside the cautions about interpreting its layouts.</span></li>
+      <li>McInnes L, Healy J, Melville J (2018). UMAP: uniform manifold approximation and projection for dimension reduction. arXiv:1802.03426. <span class="why">UMAP; faster than t-SNE and preserves somewhat more global structure, with the same interpretive cautions.</span></li>
+      <li>Tipping ME, Bishop CM (1999). Probabilistic principal component analysis. <em>Journal of the Royal Statistical Society B</em> 61: 611–622. <a href="https://doi.org/10.1111/1467-9868.00196">doi:10.1111/1467-9868.00196</a><span class="why">PCA as the limit of a latent Gaussian model; EM for PCA, missing data, mixtures of PCAs. Bishop (2006) PRML ch. 12 gives the textbook treatment.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer. Chapter 14; Bishop CM (2006). <em>Pattern Recognition and Machine Learning</em>. Springer. Chapter 12. <span class="why">PCA, SVD, kernel PCA, PCR/PLS (ESL ch. 3) and probabilistic PCA in textbook form.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="gaussian-mixture-models.html">← Previous: Gaussian Mixture Models</a><a href="../index.html">Back to all topics →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#derivation">Derivation &amp; SVD</a></li>
+      <li><a href="#choosing">Scaling &amp; how many components</a></li>
+      <li><a href="#practice">Biplots, rotation, outliers</a></li>
+      <li><a href="#extensions">PLS, ordination, nonlinear</a></li>
+      <li><a href="#ecoscience">PCA in ecosystem science</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas &amp; numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use seeded synthetic data (mulberry32 with Box–Muller normals). Eigen-decompositions are computed in the browser with the cyclic Jacobi method on the covariance or correlation matrix; signs of components are fixed so that the largest-magnitude loading is positive.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(SVGNS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function mulberry32(seed) { var a = seed >>> 0; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(rng) { var u = 0, v = 0; while (u === 0) u = rng(); v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+
+  /* ---------- linear algebra: Jacobi eigen-decomposition of a symmetric matrix ---------- */
+  function jacobiEig(A) {
+    var p = A.length, a = A.map(function (r) { return r.slice(); }), V = [], i, j, k;
+    for (i = 0; i < p; i++) { V.push(new Array(p).fill(0)); V[i][i] = 1; }
+    for (var sweep = 0; sweep < 100; sweep++) {
+      var off = 0; for (i = 0; i < p; i++) for (j = i + 1; j < p; j++) off += a[i][j] * a[i][j];
+      if (off < 1e-22) break;
+      for (i = 0; i < p; i++) for (j = i + 1; j < p; j++) {
+        if (Math.abs(a[i][j]) < 1e-300) continue;
+        var theta = (a[j][j] - a[i][i]) / (2 * a[i][j]);
+        var t = (theta >= 0 ? 1 : -1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+        var c = 1 / Math.sqrt(t * t + 1), s = t * c;
+        for (k = 0; k < p; k++) { var aik = a[i][k], ajk = a[j][k]; a[i][k] = c * aik - s * ajk; a[j][k] = s * aik + c * ajk; }
+        for (k = 0; k < p; k++) { var aki = a[k][i], akj = a[k][j]; a[k][i] = c * aki - s * akj; a[k][j] = s * aki + c * akj; }
+        for (k = 0; k < p; k++) { var vki = V[k][i], vkj = V[k][j]; V[k][i] = c * vki - s * vkj; V[k][j] = s * vki + c * vkj; }
+      }
+    }
+    var idx = []; for (i = 0; i < p; i++) idx.push(i); idx.sort(function (x, y) { return a[y][y] - a[x][x]; });
+    var values = idx.map(function (q) { return a[q][q]; });
+    var vectors = idx.map(function (q) { var v = []; for (k = 0; k < p; k++) v.push(V[k][q]); var mx = 0, mi = 0; for (k = 0; k < p; k++) if (Math.abs(v[k]) > mx) { mx = Math.abs(v[k]); mi = k; } if (v[mi] < 0) v = v.map(function (x) { return -x; }); return v; });
+    return { values: values, vectors: vectors }; // vectors[j] is the j-th eigenvector (array of length p)
+  }
+  function pca(X, scale) { // X: n×p array of arrays; returns {mean, sd, S, values, vectors, scores, pve}
+    var n = X.length, p = X[0].length, mu = [], sd = [], j, i;
+    for (j = 0; j < p; j++) { var col = X.map(function (r) { return r[j]; }); var m = mean(col); mu.push(m); sd.push(Math.sqrt(col.reduce(function (s, v) { return s + (v - m) * (v - m); }, 0) / (n - 1)) || 1); }
+    var Z = X.map(function (r) { return r.map(function (v, jj) { return scale ? (v - mu[jj]) / sd[jj] : v - mu[jj]; }); });
+    var S = []; for (i = 0; i < p; i++) { S.push(new Array(p).fill(0)); } for (i = 0; i < p; i++) for (j = i; j < p; j++) { var s = 0; for (var r = 0; r < n; r++) s += Z[r][i] * Z[r][j]; S[i][j] = s / (n - 1); S[j][i] = S[i][j]; }
+    var E = jacobiEig(S); var tot = E.values.reduce(function (a, b) { return a + b; }, 0);
+    var scores = Z.map(function (z) { return E.vectors.map(function (v) { var s = 0; for (var q = 0; q < p; q++) s += z[q] * v[q]; return s; }); });
+    return { mean: mu, sd: sd, S: S, Z: Z, values: E.values, vectors: E.vectors, scores: scores, pve: E.values.map(function (v) { return v / tot; }), total: tot };
+  }
+
+  /* ---------- chart helpers ---------- */
+  function frame(svg, o) { var W = o.W, H = o.H, mL = o.mL, mR = o.mR, mT = o.mT, mB = o.mB, pw = W - mL - mR, ph = H - mT - mB; function sx(x) { return mL + (x - o.xmin) / (o.xmax - o.xmin) * pw; } function sy(y) { return mT + (o.ymax - y) / (o.ymax - o.ymin) * ph; } (o.yticks || []).forEach(function (v) { if (o.grid !== false) svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 7, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); }); (o.xticks || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 16, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); }); svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph })); svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph })); if (o.xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 6, 'text-anchor': 'middle' }, o.xlab)); if (o.ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(13,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylab)); if (o.title) svg.appendChild(el('text', { 'class': 'ttl', x: mL, y: mT - 6 }, o.title)); return { sx: sx, sy: sy, pw: pw, ph: ph, mL: mL, mT: mT }; }
+  function hoverTip(svg, tip, fr, xs, series, xfmt) { var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: fr.mT, y2: fr.mT + fr.ph, visibility: 'hidden' }); svg.appendChild(xh); var hit = el('rect', { x: fr.mL, y: fr.mT, width: fr.pw, height: fr.ph, fill: 'transparent' }); svg.appendChild(hit); function move(evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; var p = pt.matrixTransform(svg.getScreenCTM().inverse()); var best = 0, bd = Infinity; xs.forEach(function (x, i) { var d = Math.abs(fr.sx(x) - p.x); if (d < bd) { bd = d; best = i; } }); xh.setAttribute('x1', fr.sx(xs[best])); xh.setAttribute('x2', fr.sx(xs[best])); xh.setAttribute('visibility', 'visible'); var html = xfmt ? xfmt(xs[best]) : xs[best]; series.forEach(function (s) { var v = s.y[best]; html += '<br>' + s.name + ' <b>' + (v === null || v === undefined || isNaN(v) ? '–' : fmt(v, s.d === undefined ? 2 : s.d)) + '</b>'; }); tip.innerHTML = html; tip.hidden = false; var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; } function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; } hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave); hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave); }
+
+  /* ---------- Lab A: 2-D explorer ---------- */
+  var exSvg = document.getElementById('exSvg'), exIds = ['exRho', 'exSx', 'exSy', 'exRot'], exIn = {}; exIds.forEach(function (id) { exIn[id] = document.getElementById(id); });
+  var exStd = document.getElementById('exStd'), exProj = document.getElementById('exProj');
+  var exBase = null;
+  function exGen() { var rng = mulberry32(2024), Z = []; for (var i = 0; i < 200; i++) Z.push([gauss(rng), gauss(rng)]); exBase = Z; }
+  function drawEx() {
+    var rho = +exIn.exRho.value, sx0 = +exIn.exSx.value, sy0 = +exIn.exSy.value, rot = +exIn.exRot.value * Math.PI / 180;
+    document.getElementById('exRhoO').textContent = fmt(rho, 2); document.getElementById('exSxO').textContent = fmt(sx0, 1); document.getElementById('exSyO').textContent = fmt(sy0, 1); document.getElementById('exRotO').textContent = exIn.exRot.value;
+    var c = Math.cos(rot), s = Math.sin(rot);
+    var X = exBase.map(function (z) { var x = sx0 * z[0], y = sy0 * (rho * z[0] + Math.sqrt(1 - rho * rho) * z[1]); return [x * c - y * s, x * s + y * c]; });
+    var P = pca(X, exStd.checked), Z = P.Z, v1 = P.vectors[0], v2 = P.vectors[1], l1 = P.values[0], l2 = P.values[1];
+    clear(exSvg); var L = exStd.checked ? 3.5 : 7.5;
+    var fr = frame(exSvg, { W: 640, H: 460, mL: 48, mR: 14, mT: 16, mB: 40, xmin: -L, xmax: L, ymin: -L, ymax: L, xticks: exStd.checked ? [-3, -2, -1, 0, 1, 2, 3] : [-6, -4, -2, 0, 2, 4, 6], yticks: exStd.checked ? [-3, -2, -1, 0, 1, 2, 3] : [-6, -4, -2, 0, 2, 4, 6], xlab: exStd.checked ? 'variable 1 (standardised)' : 'variable 1 (centred)', ylab: exStd.checked ? 'variable 2 (standardised)' : 'variable 2 (centred)' });
+    var k = fr.pw / (2 * L); // px per unit (square plot assumed: ph≈pw)
+    var ky = fr.ph / (2 * L);
+    // ellipse 2σ
+    var ang = Math.atan2(v1[1], v1[0]);
+    exSvg.appendChild(el('ellipse', { cx: fr.sx(0), cy: fr.sy(0), rx: 2 * Math.sqrt(Math.max(l1, 0)) * k, ry: 2 * Math.sqrt(Math.max(l2, 0)) * ky, transform: 'rotate(' + (-ang * 180 / Math.PI) + ' ' + fr.sx(0) + ' ' + fr.sy(0) + ')', fill: 'none', stroke: 'var(--muted)', 'stroke-dasharray': '4 3' }));
+    if (exProj.checked) Z.forEach(function (z) { var t = z[0] * v1[0] + z[1] * v1[1]; exSvg.appendChild(el('line', { 'class': 'proj', x1: fr.sx(z[0]), y1: fr.sy(z[1]), x2: fr.sx(t * v1[0]), y2: fr.sy(t * v1[1]) })); });
+    Z.forEach(function (z) { exSvg.appendChild(el('circle', { 'class': 'pt', cx: fr.sx(Math.max(-L, Math.min(L, z[0]))), cy: fr.sy(Math.max(-L, Math.min(L, z[1]))), r: 3.2 })); });
+    [[v1, l1, 'var(--accent)', 'PC1'], [v2, l2, 'var(--accent-2)', 'PC2']].forEach(function (a) { var r = 2 * Math.sqrt(Math.max(a[1], 0)); exSvg.appendChild(el('line', { x1: fr.sx(-r * a[0][0]), y1: fr.sy(-r * a[0][1]), x2: fr.sx(r * a[0][0]), y2: fr.sy(r * a[0][1]), stroke: a[2], 'stroke-width': 3 })); exSvg.appendChild(el('text', { 'class': 'dl', x: fr.sx(r * a[0][0]) + 6, y: fr.sy(r * a[0][1]) + 4, fill: a[2] }, a[3])); });
+    document.getElementById('exS').textContent = '[' + fmt(P.S[0][0], 2) + ' ' + fmt(P.S[0][1], 2) + '; ' + fmt(P.S[0][1], 2) + ' ' + fmt(P.S[1][1], 2) + ']';
+    document.getElementById('exL').textContent = fmt(l1, 3) + ', ' + fmt(l2, 3);
+    document.getElementById('exPve').textContent = fmt(100 * P.pve[0], 1) + '%';
+    document.getElementById('exV').textContent = '(' + fmt(v1[0], 3) + ', ' + fmt(v1[1], 3) + ')';
+    document.getElementById('exAng').textContent = fmt(ang * 180 / Math.PI, 1);
+    document.getElementById('exRec').textContent = fmt(l2, 3);
+  }
+  exIds.forEach(function (id) { exIn[id].addEventListener('input', drawEx); }); exStd.addEventListener('change', drawEx); exProj.addEventListener('change', drawEx);
+
+  /* ---------- Lab B: trait PCA ---------- */
+  var traits = ['LMA', 'leaf N', 'Amass', 'lifespan', 'Rd', 'P'];
+  var biMat = document.getElementById('biMat'), biLog = document.getElementById('biLog'), biScale = document.getElementById('biScale'), biNoise = document.getElementById('biNoise'), biSeed = document.getElementById('biSeed');
+  var biData = null, biP = null;
+  function biGen() {
+    var rng = mulberry32(+biSeed.value * 2311 + 5), sdN = +biNoise.value, X = [];
+    var load = [[0.9, 0.1], [-0.8, 0.3], [-0.85, 0.2], [0.8, -0.15], [-0.7, 0.1], [-0.5, 0.75]]; // log10 loadings on f1 (slow-fast) and f2 (nutrient)
+    var centre = [Math.log10(90), Math.log10(18), Math.log10(100), Math.log10(9), Math.log10(9), Math.log10(1.2)], spread = [0.3, 0.2, 0.33, 0.33, 0.27, 0.22];
+    for (var i = 0; i < 40; i++) { var f1 = gauss(rng), f2 = gauss(rng); var row = []; for (var j = 0; j < 6; j++) { var lg = centre[j] + spread[j] * (load[j][0] * f1 + load[j][1] * f2) + sdN * gauss(rng); row.push(lg); } X.push(row); }
+    biData = X; // in log10 units
+  }
+  function biMatrix() { return biLog.checked ? biData : biData.map(function (r) { return r.map(function (v) { return Math.pow(10, v); }); }); }
+  function drawBi() {
+    document.getElementById('biNoiseO').textContent = fmt(biNoise.value, 2); document.getElementById('biSeedO').textContent = biSeed.value;
+    var X = biMatrix(), P = pca(X, biMat.value === 'corr'); biP = P;
+    var n = X.length, p = 6;
+    // scree
+    var scr = document.getElementById('scrSvg'), tip = document.getElementById('scrTip'); clear(scr);
+    var ks = [1, 2, 3, 4, 5, 6], cum = [], acc = 0; P.pve.forEach(function (v) { acc += v; cum.push(acc); });
+    var fr = frame(scr, { W: 420, H: 300, mL: 50, mR: 16, mT: 26, mB: 40, xmin: 0.5, xmax: 6.5, ymin: 0, ymax: 1, xticks: ks, yticks: [0, 0.25, 0.5, 0.75, 1], yfmt: function (v) { return fmt(100 * v, 0) + '%'; }, xlab: 'component', ylab: 'proportion of variance', title: 'Scree: PVE per component (bars) and cumulative (line)' });
+    var bw = (fr.sx(2) - fr.sx(1)) * 0.6; P.pve.forEach(function (v, i) { scr.appendChild(el('rect', { 'class': 'bar', x: fr.sx(i + 1) - bw / 2, y: fr.sy(v), width: bw, height: fr.sy(0) - fr.sy(v) })); scr.appendChild(el('text', { 'class': 'tick', x: fr.sx(i + 1), y: fr.sy(v) - 4, 'text-anchor': 'middle' }, fmt(100 * v, 0) + '%')); });
+    var d = ''; cum.forEach(function (v, i) { d += (i ? 'L' : 'M') + fr.sx(i + 1).toFixed(1) + ',' + fr.sy(v).toFixed(1); }); scr.appendChild(el('path', { 'class': 'ser', d: d, stroke: 'var(--fg)' })); cum.forEach(function (v, i) { scr.appendChild(el('circle', { cx: fr.sx(i + 1), cy: fr.sy(v), r: 3, fill: 'var(--fg)' })); });
+    hoverTip(scr, tip, fr, ks, [{ name: 'λ', y: P.values, d: 3 }, { name: 'PVE', y: P.pve.map(function (v) { return 100 * v; }), d: 1 }, { name: 'cumulative %', y: cum.map(function (v) { return 100 * v; }), d: 1 }], function (k) { return 'PC' + k; });
+    // biplot
+    var bi = document.getElementById('biSvg'); clear(bi);
+    var alpha = biScale.value === 'dist' ? 1 : 0, s1 = Math.sqrt(P.values[0] * (n - 1)), s2 = Math.sqrt(P.values[1] * (n - 1));
+    var G = P.scores.map(function (t) { return [t[0] / Math.pow(s1, 1 - alpha), t[1] / Math.pow(s2, 1 - alpha)]; });
+    var H = traits.map(function (nm, j) { return [P.vectors[0][j] * Math.pow(s1, 1 - alpha), P.vectors[1][j] * Math.pow(s2, 1 - alpha)]; });
+    var gmax = 0; G.forEach(function (g) { gmax = Math.max(gmax, Math.abs(g[0]), Math.abs(g[1])); }); var hmax = 0; H.forEach(function (h) { hmax = Math.max(hmax, Math.abs(h[0]), Math.abs(h[1])); });
+    var scaleH = gmax / hmax * 0.9; // draw arrows on a secondary scale so both fill the plot
+    var Lb = gmax * 1.15;
+    var fr2 = frame(bi, { W: 420, H: 300, mL: 50, mR: 16, mT: 26, mB: 40, xmin: -Lb, xmax: Lb, ymin: -Lb, ymax: Lb, xticks: [], yticks: [], xlab: 'PC1 (' + fmt(100 * P.pve[0], 0) + '%)', ylab: 'PC2 (' + fmt(100 * P.pve[1], 0) + '%)', title: (alpha === 1 ? 'Distance biplot' : 'Correlation biplot') + ' · arrows on their own scale', grid: false });
+    bi.appendChild(el('line', { 'class': 'gridline', x1: fr2.sx(-Lb), x2: fr2.sx(Lb), y1: fr2.sy(0), y2: fr2.sy(0) })); bi.appendChild(el('line', { 'class': 'gridline', x1: fr2.sx(0), x2: fr2.sx(0), y1: fr2.sy(-Lb), y2: fr2.sy(Lb) }));
+    G.forEach(function (g) { bi.appendChild(el('circle', { 'class': 'pt', cx: fr2.sx(g[0]), cy: fr2.sy(g[1]), r: 3.4 })); });
+    H.forEach(function (h, j) { var x = h[0] * scaleH, y = h[1] * scaleH; bi.appendChild(el('line', { 'class': 'arrow', x1: fr2.sx(0), y1: fr2.sy(0), x2: fr2.sx(x), y2: fr2.sy(y) })); var ang = Math.atan2(fr2.sy(y) - fr2.sy(0), fr2.sx(x) - fr2.sx(0)); var ex = fr2.sx(x), ey = fr2.sy(y); bi.appendChild(el('path', { d: 'M' + ex + ',' + ey + 'L' + (ex - 8 * Math.cos(ang - 0.4)) + ',' + (ey - 8 * Math.sin(ang - 0.4)) + 'L' + (ex - 8 * Math.cos(ang + 0.4)) + ',' + (ey - 8 * Math.sin(ang + 0.4)) + 'Z', fill: 'var(--accent-2)' })); var lx = fr2.sx(x * 1.08), ly = fr2.sy(y * 1.08); bi.appendChild(el('text', { 'class': 'arrowlbl', x: Math.max(fr2.mL + 4, Math.min(fr2.mL + fr2.pw - 4, lx)), y: Math.max(fr2.mT + 10, Math.min(fr2.mT + fr2.ph - 2, ly + 4)), 'text-anchor': x >= 0 ? 'start' : 'end' }, traits[j])); });
+    // readouts
+    document.getElementById('biTot').textContent = fmt(P.total, 2); document.getElementById('biL').textContent = fmt(P.values[0], 3) + ' · ' + fmt(P.values[1], 3);
+    document.getElementById('biP').textContent = fmt(100 * P.pve[0], 1) + '% · ' + fmt(100 * P.pve[1], 1) + '% · ' + fmt(100 * cum[1], 1) + '%';
+    var a = [P.vectors[0][0], P.vectors[1][0]], b = [P.vectors[0][2], P.vectors[1][2]]; var cosang = (a[0] * b[0] + a[1] * b[1]) / Math.sqrt((a[0] * a[0] + a[1] * a[1]) * (b[0] * b[0] + b[1] * b[1])); document.getElementById('biAng').textContent = fmt(Math.acos(Math.max(-1, Math.min(1, cosang))) * 180 / Math.PI, 0) + '° (in PC1–PC2 plane)';
+    function corr(i, j) { var Xi = X.map(function (r) { return r[i]; }), Xj = X.map(function (r) { return r[j]; }); var mi = mean(Xi), mj = mean(Xj), sxy = 0, sxx = 0, syy = 0; for (var q = 0; q < n; q++) { sxy += (Xi[q] - mi) * (Xj[q] - mj); sxx += (Xi[q] - mi) * (Xi[q] - mi); syy += (Xj[q] - mj) * (Xj[q] - mj); } return sxy / Math.sqrt(sxx * syy); }
+    document.getElementById('biR').textContent = fmt(corr(0, 3), 2) + ' · ' + fmt(corr(0, 1), 2);
+    var html = '<thead><tr><th>Trait</th>' + ks.map(function (k) { return '<th class="num">PC' + k + '</th>'; }).join('') + '</tr></thead><tbody>'; traits.forEach(function (nm, j) { html += '<tr><td>' + nm + '</td>' + ks.map(function (k) { return '<td class="num">' + fmt(P.vectors[k - 1][j], 3) + '</td>'; }).join('') + '</tr>'; }); html += '<tr><td>eigenvalue λ</td>' + ks.map(function (k) { return '<td class="num">' + fmt(P.values[k - 1], 3) + '</td>'; }).join('') + '</tr><tr><td>PVE</td>' + ks.map(function (k) { return '<td class="num">' + fmt(100 * P.pve[k - 1], 1) + '%</td>'; }).join('') + '</tr></tbody>'; document.getElementById('biTable').innerHTML = html;
+    drawPa();
+  }
+  [biMat, biScale].forEach(function (i) { i.addEventListener('change', drawBi); }); biLog.addEventListener('change', drawBi); [biNoise, biSeed].forEach(function (i) { i.addEventListener('input', function () { biGen(); drawBi(); }); });
+
+  /* ---------- Lab D: parallel analysis ---------- */
+  var paB = document.getElementById('paB');
+  function drawPa() {
+    var B = +paB.value; document.getElementById('paBO').textContent = B;
+    var X = biMatrix(), P = pca(X, true), n = X.length, p = 6, obs = P.values;
+    var rng = mulberry32(777), sims = []; for (var b = 0; b < B; b++) { var R = []; for (var i = 0; i < n; i++) { var row = []; for (var j = 0; j < p; j++) row.push(gauss(rng)); R.push(row); } sims.push(pca(R, true).values); }
+    var mn = [], q95 = []; for (var k = 0; k < p; k++) { var col = sims.map(function (s) { return s[k]; }).sort(function (a, b2) { return a - b2; }); mn.push(mean(col)); q95.push(col[Math.min(col.length - 1, Math.floor(0.95 * col.length))]); }
+    var bs = []; for (var k2 = 1; k2 <= p; k2++) { var s = 0; for (var i2 = k2; i2 <= p; i2++) s += 1 / i2; bs.push(s / p * p); } // ×p so comparable with eigenvalues of R (total = p)
+    var kPA = 0; while (kPA < p && obs[kPA] > q95[kPA]) kPA++; var kBS = 0; while (kBS < p && obs[kBS] > bs[kBS]) kBS++; var kKa = obs.filter(function (v) { return v > 1; }).length;
+    var cum = 0; for (var q = 0; q < kPA; q++) cum += P.pve[q];
+    document.getElementById('paK').textContent = kPA; document.getElementById('paBS').textContent = kBS; document.getElementById('paKa').textContent = kKa; document.getElementById('paC').textContent = kPA ? fmt(100 * cum, 1) + '% (k = ' + kPA + ')' : '–';
+    var svg = document.getElementById('paSvg'), tip = document.getElementById('paTip'); clear(svg); var ymax = Math.max(obs[0], bs[0], q95[0]) * 1.1;
+    var fr = frame(svg, { W: 640, H: 320, mL: 50, mR: 16, mT: 26, mB: 40, xmin: 0.5, xmax: 6.5, ymin: 0, ymax: ymax, xticks: [1, 2, 3, 4, 5, 6], yticks: [0, 1, 2, 3, 4].filter(function (v) { return v <= ymax; }), xlab: 'component', ylab: 'eigenvalue (correlation matrix)', title: 'Observed eigenvalues vs null expectations' });
+    svg.appendChild(el('line', { x1: fr.sx(0.5), x2: fr.sx(6.5), y1: fr.sy(1), y2: fr.sy(1), stroke: 'var(--muted)', 'stroke-dasharray': '3 3' }));
+    [[mn, 'var(--series-1)'], [q95, 'var(--series-2)'], [bs, 'var(--series-3)'], [obs, 'var(--fg)']].forEach(function (s) { var d = ''; s[0].forEach(function (v, i) { d += (i ? 'L' : 'M') + fr.sx(i + 1).toFixed(1) + ',' + fr.sy(Math.min(v, ymax)).toFixed(1); }); svg.appendChild(el('path', { 'class': 'ser', d: d, stroke: s[1], 'stroke-width': s[1] === 'var(--fg)' ? 2.6 : 1.8 })); s[0].forEach(function (v, i) { svg.appendChild(el('circle', { cx: fr.sx(i + 1), cy: fr.sy(Math.min(v, ymax)), r: 3.2, fill: s[1] })); }); });
+    svg.appendChild(el('text', { 'class': 'dl', x: fr.sx(6) - 6, y: fr.sy(obs[5]) + 14, 'text-anchor': 'end' }, 'observed')); svg.appendChild(el('text', { 'class': 'dl', x: fr.sx(6) - 6, y: fr.sy(q95[5]) - 8, 'text-anchor': 'end', fill: 'var(--series-2)' }, 'random 95%'));
+    if (kPA > 0) { svg.appendChild(el('line', { x1: fr.sx(kPA + 0.5), x2: fr.sx(kPA + 0.5), y1: fr.mT, y2: fr.mT + fr.ph, stroke: 'var(--accent)', 'stroke-dasharray': '4 4' })); svg.appendChild(el('text', { 'class': 'dl', x: fr.sx(kPA + 0.5) + 5, y: fr.mT + 14, fill: 'var(--accent)' }, 'parallel analysis keeps ' + kPA)); }
+    hoverTip(svg, tip, fr, [1, 2, 3, 4, 5, 6], [{ name: 'observed', y: obs, d: 3 }, { name: 'random mean', y: mn, d: 3 }, { name: 'random 95%', y: q95, d: 3 }, { name: 'broken stick', y: bs, d: 3 }], function (k) { return 'PC' + k; });
+    var html = '<thead><tr><th class="num">PC</th><th class="num">observed λ</th><th class="num">random mean</th><th class="num">random 95%</th><th class="num">broken stick</th><th class="num">PVE</th></tr></thead><tbody>'; for (var r = 0; r < p; r++) html += '<tr><td class="num">' + (r + 1) + '</td><td class="num">' + fmt(obs[r], 3) + '</td><td class="num">' + fmt(mn[r], 3) + '</td><td class="num">' + fmt(q95[r], 3) + '</td><td class="num">' + fmt(bs[r], 3) + '</td><td class="num">' + fmt(100 * P.pve[r], 1) + '%</td></tr>'; document.getElementById('paTable').innerHTML = html + '</tbody>';
+  }
+  paB.addEventListener('input', drawPa);
+
+  /* ---------- Lab C: spectra reconstruction ---------- */
+  var spK = document.getElementById('spK'), spI = document.getElementById('spI'), spNoise = document.getElementById('spNoise'), spSeed = document.getElementById('spSeed');
+  var sp = null;
+  function spGen() {
+    var rng = mulberry32(+spSeed.value * 1033 + 9), nb = 50, ns = 30, noise = +spNoise.value, X = [];
+    function b1(i) { return Math.exp(-Math.pow((i - 14) / 4, 2)); } function b2(i) { return 1 / (1 + Math.exp(-(i - 30) / 2.5)); } function b3(i) { return i / nb; }
+    for (var s = 0; s < ns; s++) { var a1 = 0.08 * Math.exp(0.5 * gauss(rng)), a2 = 0.35 * Math.exp(0.35 * gauss(rng)), a3 = 0.1 * gauss(rng); var row = []; for (var i = 0; i < nb; i++) row.push(Math.max(0, 0.04 + a1 * b1(i) + a2 * b2(i) + a3 * b3(i) + noise * gauss(rng))); X.push(row); }
+    var P = pca(X, false); sp = { X: X, P: P, nb: nb, ns: ns };
+  }
+  function drawSp() {
+    var k = +spK.value, si = +spI.value - 1; document.getElementById('spKO').textContent = k; document.getElementById('spIO').textContent = spI.value; document.getElementById('spNoiseO').textContent = fmt(spNoise.value, 3); document.getElementById('spSeedO').textContent = spSeed.value;
+    var P = sp.P, X = sp.X, nb = sp.nb, ns = sp.ns;
+    function recon(s, kk) { var out = P.mean.slice(); for (var j = 0; j < kk; j++) { var t = P.scores[s][j]; for (var i = 0; i < nb; i++) out[i] += t * P.vectors[j][i]; } return out; }
+    var xs = []; for (var i = 0; i < nb; i++) xs.push(i + 1);
+    var rec = recon(si, k), orig = X[si];
+    var svg = document.getElementById('spSvg'), tip = document.getElementById('spTip'); clear(svg);
+    var ymax = 0; X.forEach(function (r) { r.forEach(function (v) { ymax = Math.max(ymax, v); }); }); ymax *= 1.1;
+    var fr = frame(svg, { W: 640, H: 300, mL: 54, mR: 16, mT: 26, mB: 40, xmin: 1, xmax: nb, ymin: 0, ymax: ymax, xticks: [1, 10, 20, 30, 40, 50], yticks: [0, 0.2, 0.4, 0.6].filter(function (v) { return v <= ymax; }), yfmt: function (v) { return fmt(v, 1); }, xlab: 'band index (visible → near-infrared)', ylab: 'reflectance', title: 'Spectrum ' + (si + 1) + ': measured vs reconstruction with k = ' + k });
+    [[P.mean, 'var(--muted)', 1.4, '3 3'], [orig, 'var(--fg)', 2.4, ''], [rec, 'var(--series-2)', 2, '']].forEach(function (s) { var d = ''; s[0].forEach(function (v, i) { d += (i ? 'L' : 'M') + fr.sx(i + 1).toFixed(1) + ',' + fr.sy(Math.max(0, Math.min(ymax, v))).toFixed(1); }); svg.appendChild(el('path', { 'class': 'ser', d: d, stroke: s[1], 'stroke-width': s[2], 'stroke-dasharray': s[3] })); });
+    hoverTip(svg, tip, fr, xs, [{ name: 'measured', y: orig, d: 3 }, { name: 'reconstructed', y: rec, d: 3 }, { name: 'mean', y: P.mean, d: 3 }], function (b) { return 'band ' + b; });
+    // RMSE vs k
+    var ks = [], rm = [], pv = [], tot = P.total; for (var kk = 0; kk <= 10; kk++) { ks.push(kk); var e = 0; for (var j = kk; j < P.values.length; j++) e += P.values[j]; rm.push(Math.sqrt(e * (ns - 1) / (ns * nb))); var c = 0; for (var q = 0; q < kk; q++) c += P.pve[q]; pv.push(c); }
+    var e1 = 0; for (var i2 = 0; i2 < nb; i2++) e1 += (orig[i2] - rec[i2]) * (orig[i2] - rec[i2]);
+    document.getElementById('spR1').textContent = fmt(Math.sqrt(e1 / nb), 4); document.getElementById('spRall').textContent = fmt(rm[k], 4); document.getElementById('spPve').textContent = fmt(100 * pv[k], 2) + '%'; document.getElementById('spT').textContent = fmt(P.scores[si][0], 3) + ', ' + fmt(P.scores[si][1], 3) + ', ' + fmt(P.scores[si][2], 3);
+    var rs = document.getElementById('rmSvg'), rtip = document.getElementById('rmTip'); clear(rs); var rmax = rm[0] * 1.1;
+    var fr2 = frame(rs, { W: 640, H: 200, mL: 54, mR: 16, mT: 24, mB: 36, xmin: 0, xmax: 10, ymin: 0, ymax: rmax, xticks: ks, yticks: [0, rmax / 2, rmax].map(function (v) { return Math.round(v * 1000) / 1000; }), yfmt: function (v) { return fmt(v, 3); }, xlab: 'components kept, k', ylab: 'RMSE', title: 'Root-mean-square reconstruction error over all 30 spectra' });
+    var d2 = ''; rm.forEach(function (v, i) { d2 += (i ? 'L' : 'M') + fr2.sx(i).toFixed(1) + ',' + fr2.sy(v).toFixed(1); }); rs.appendChild(el('path', { 'class': 'ser', d: d2, stroke: 'var(--fg)' })); rm.forEach(function (v, i) { rs.appendChild(el('circle', { cx: fr2.sx(i), cy: fr2.sy(v), r: 3.2, fill: i === k ? 'var(--series-2)' : 'var(--fg)' })); });
+    var nz = +spNoise.value; if (nz > 0) { rs.appendChild(el('line', { x1: fr2.sx(0), x2: fr2.sx(10), y1: fr2.sy(Math.min(nz, rmax)), y2: fr2.sy(Math.min(nz, rmax)), stroke: 'var(--series-3)', 'stroke-dasharray': '4 3' })); rs.appendChild(el('text', { 'class': 'tick', x: fr2.sx(10) - 4, y: fr2.sy(Math.min(nz, rmax)) - 4, 'text-anchor': 'end', fill: 'var(--series-3)' }, 'noise SD')); }
+    hoverTip(rs, rtip, fr2, ks, [{ name: 'RMSE', y: rm, d: 4 }, { name: 'cumulative PVE %', y: pv.map(function (v) { return 100 * v; }), d: 2 }], function (k2) { return 'k = ' + k2; });
+    var html = '<thead><tr><th class="num">k</th><th class="num">λ_k</th><th class="num">cumulative PVE</th><th class="num">RMSE</th></tr></thead><tbody>'; ks.forEach(function (k3) { html += '<tr><td class="num">' + k3 + '</td><td class="num">' + (k3 ? P.values[k3 - 1].toExponential(2) : '–') + '</td><td class="num">' + fmt(100 * pv[k3], 2) + '%</td><td class="num">' + fmt(rm[k3], 4) + '</td></tr>'; }); document.getElementById('spTable').innerHTML = html + '</tbody>';
+  }
+  [spK, spI].forEach(function (i) { i.addEventListener('input', drawSp); }); [spNoise, spSeed].forEach(function (i) { i.addEventListener('input', function () { spGen(); drawSp(); }); });
+
+  /* ---------- boot ---------- */
+  exGen(); drawEx(); biGen(); drawBi(); spGen(); drawSp();
+})();
+</script>
+</body>
+</html>

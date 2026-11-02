@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Carbon Cycle</title>
+<meta name="description" content="The global carbon cycle for ecosystem modellers: pools and fluxes from the Global Carbon Budget, the GPP to NBP hierarchy, turnover times and the matrix form of carbon models, the Keeling curve and isotopic constraints, carbon-concentration and carbon-climate feedbacks, TCRE and the remaining budget, and how land models and benchmarks represent the land sink.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .chart text, .budget text { font-family: var(--font-display); fill: var(--fg); }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dash { stroke-dasharray: 5 4; }
+  .chart .thin { stroke-width: 1.3; opacity: 0.7; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .band { fill: var(--accent-soft); opacity: 0.5; }
+  .chart .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .chart .pt2 { fill: var(--accent-2); stroke: var(--surface); stroke-width: 2; }
+  .chart .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .budget .box { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; }
+  .budget .box.atm { fill: var(--accent-soft); stroke: var(--accent); }
+  .budget .ttl { font-size: 14px; font-weight: 700; }
+  .budget .sub { font-size: 11px; fill: var(--muted); }
+  .budget .fl { font-size: 11.5px; font-weight: 600; }
+  .budget .arrow { fill: none; stroke-linecap: round; }
+  .budget .gross { stroke: var(--muted); opacity: 0.45; }
+  .verdict { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .btnrow .btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .budctl { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem 1.5rem; }
+  .hier td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › The carbon cycle</div>
+    <div class="eyebrow">Topic 7 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">The Carbon Cycle</h1>
+    <p class="lead">Where the carbon is, how fast it moves, what the Keeling curve and isotopes tell us, how the land and ocean sinks respond to CO₂ and warming, and how a leaf-level photosynthesis model ends up setting the size of the global land sink in an Earth system model.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Carbon sits in four big reservoirs: the atmosphere (~880 Pg C at 420 ppm), the land biosphere (vegetation ~450–650 Pg, soils ~1500–2400 Pg to 1–2 m plus ~1300–1700 Pg in permafrost), the ocean (~38,000 Pg, mostly dissolved inorganic carbon), and the lithosphere (fossil fuels ~1000–2000 Pg extractable; carbonate and organic rocks ~10⁸ Pg). The fast cycle exchanges ~120 Pg C yr⁻¹ between atmosphere and land (GPP) and ~80 Pg each way with the ocean; these gross fluxes are nearly balanced, so the atmospheric trend is set by the small residual. Humans add ~10 Pg C yr⁻¹ from fossil fuels and ~1–1.5 Pg from land-use change; about 44% stays in the atmosphere (the airborne fraction), ~30% is taken up by land and ~26% by the ocean (Global Carbon Budget, Friedlingstein et al. [1]). Both sinks exist because CO₂ is higher than before (the <strong>carbon–concentration feedback</strong>, β) and both are weakened by warming (the <strong>carbon–climate feedback</strong>, γ). The size of a carbon stock is input times residence time (X = u τ), so projections depend on how photosynthesis responds to CO₂ (β) and how turnover responds to temperature (γ), and the land models that carry this in CMIP6 disagree by a factor of two or more. Because warming is close to proportional to cumulative emissions (TCRE ≈ 1.65 °C per 1000 Pg C), the whole problem can be expressed as a remaining carbon budget.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>You will be asked to reproduce the global budget to within round numbers and to explain the concepts behind them: the GPP → NPP → NEP → NBP hierarchy, turnover time, β and γ, the airborne fraction, TCRE, and the matrix form of a pool model. The connecting question is always "how does a parameter you measure at the leaf or in a soil core change the global sink in a model?".</p></div>
+  </section>
+
+  <section id="pools">
+    <h2>Pools and fluxes: the global carbon budget</h2>
+    <p>The Global Carbon Project publishes an annual budget that balances fossil emissions (E<sub>FOS</sub>) and land-use change emissions (E<sub>LUC</sub>) against atmospheric growth (G<sub>ATM</sub>), the ocean sink (S<sub>OCEAN</sub>) and the land sink (S<sub>LAND</sub>), with a budget imbalance that measures what we do not understand:</p>
+    <div class="eq">$$E_{FOS} + E_{LUC} = G_{ATM} + S_{OCEAN} + S_{LAND} + B_{IM}.$$</div>
+    <p>For 2013–2022 the decadal means were E<sub>FOS</sub> 9.6 ± 0.5, E<sub>LUC</sub> 1.3 ± 0.7, G<sub>ATM</sub> 5.2 ± 0.02, S<sub>OCEAN</sub> 2.8 ± 0.4, S<sub>LAND</sub> 3.3 ± 0.8 Pg C yr⁻¹ (Friedlingstein et al. [1]). The atmospheric growth is measured directly (1 ppm = 2.124 Pg C), the fossil emissions from energy statistics, the ocean sink from observation-based products and models, the land sink from dynamic global vegetation models (the TRENDY ensemble, Sitch et al. [17]) checked against atmospheric inversions. E<sub>LUC</sub> and S<sub>LAND</sub> are the least certain. Gross fluxes dwarf these: GPP is 120–130 Pg C yr⁻¹ (Beer et al. [9] estimated 123 ± 8 from flux-tower upscaling), terrestrial NPP ~60, heterotrophic respiration ~60, fire ~2, and ocean–atmosphere exchange ~80 each way. The sinks are therefore small differences between large numbers, which is why inverting them from atmospheric data works and why bottom-up models struggle.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Pool or flux</th><th class="num">Magnitude</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Atmosphere</td><td class="num">≈ 880–900 Pg C (≈ 420 ppm, 2023)</td><td>590 Pg pre-industrial (278 ppm); 2.124 Pg C per ppm</td></tr>
+        <tr><td>Vegetation</td><td class="num">450–650 Pg C</td><td>Half in tropical forests; large uncertainty in biomass maps</td></tr>
+        <tr><td>Soils (0–1 m / 0–2 m)</td><td class="num">1500 / 2400 Pg C</td><td>Plus ~1300–1700 Pg in the permafrost region (Hugelius et al. 2014)</td></tr>
+        <tr><td>Ocean (DIC + DOC + biota)</td><td class="num">≈ 38,000 Pg C</td><td>Surface mixed layer only ~900 Pg; deep ocean exchange takes centuries</td></tr>
+        <tr><td>Fossil fuel reserves</td><td class="num">≈ 1000–2000 Pg C</td><td>Resources far larger; cumulative emissions 1850–2022 ≈ 700 Pg C</td></tr>
+        <tr><td>Sedimentary rocks</td><td class="num">≈ 10⁸ Pg C</td><td>Carbonates and kerogen; the slow cycle</td></tr>
+        <tr><td>GPP / NPP / R<sub>h</sub></td><td class="num">≈ 120–130 / 60 / 60 Pg C yr⁻¹</td><td>NPP:GPP (CUE) ≈ 0.4–0.5</td></tr>
+        <tr><td>Ocean–atmosphere gross exchange</td><td class="num">≈ 80 Pg C yr⁻¹ each way</td><td>Net uptake 2.5–2.9</td></tr>
+        <tr><td>Fossil / land-use emissions</td><td class="num">≈ 9.5–10 / 1–1.5 Pg C yr⁻¹</td><td>Fossil 9.9 in 2022 including cement</td></tr>
+        <tr><td>Land / ocean sink</td><td class="num">≈ 3 / 2.5–2.9 Pg C yr⁻¹</td><td>Each ~25–30% of emissions</td></tr>
+        <tr><td>Airborne fraction</td><td class="num">≈ 44% (0.40–0.48)</td><td>Roughly constant since 1960 despite rising emissions</td></tr>
+      </tbody></table></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · The global carbon budget: arrows scale with flux</h3></div>
+      <div class="lab-grid" style="grid-template-columns:minmax(0,1fr)">
+        <div class="figwrap">
+          <svg class="budget" id="budSvg" viewBox="0 0 760 400" role="img" aria-label="Box diagram of atmosphere, land, ocean and fossil reservoirs with arrows whose widths scale with fossil emissions, land-use change, land sink and ocean sink"></svg>
+        </div>
+        <div class="controls budctl">
+          <div class="ctrl"><label for="bFos"><span>Fossil emissions (Pg C yr⁻¹)</span><output id="bFosO">9.9</output></label><input type="range" id="bFos" min="0" max="16" step="0.1" value="9.9"></div>
+          <div class="ctrl"><label for="bLuc"><span>Land-use change (Pg C yr⁻¹)</span><output id="bLucO">1.2</output></label><input type="range" id="bLuc" min="0" max="3" step="0.1" value="1.2"></div>
+          <div class="ctrl"><label for="bCO2"><span>Atmospheric CO₂ (ppm)</span><output id="bCO2O">420</output></label><input type="range" id="bCO2" min="280" max="700" step="1" value="420"></div>
+          <div class="ctrl"><label for="bBeta"><span>Sink strength (% of 2020s β)</span><output id="bBetaO">100</output></label><input type="range" id="bBeta" min="0" max="200" step="5" value="100"></div>
+          <dl class="readout" style="grid-column:1/-1">
+            <dt>Atmospheric stock</dt><dd id="bStock"></dd>
+            <dt>Land sink (Pg C yr⁻¹)</dt><dd id="bLand"></dd>
+            <dt>Ocean sink (Pg C yr⁻¹)</dt><dd id="bOcean"></dd>
+            <dt>Atmospheric growth</dt><dd id="bGrow"></dd>
+            <dt>Airborne fraction</dt><dd id="bAF"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Sinks are modelled as proportional to the CO₂ excess over 278 ppm: land 0.0237 and ocean 0.0205 Pg C yr⁻¹ per ppm, calibrated to the 2013–2022 budget. Gross fluxes (grey) are fixed at GPP 120, ecosystem respiration and fire 117, ocean exchange 80. Suggested experiments: set fossil emissions to zero and note the sinks keep drawing CO₂ down (atmospheric growth goes negative); double emissions and see the airborne fraction rise because the sinks lag; raise CO₂ to 560 ppm at today's emissions to see how a doubled excess strengthens the sinks under this (unrealistically linear) assumption.</p>
+    </div>
+  </section>
+
+  <section id="hierarchy">
+    <h2>From GPP to NBP: the carbon-flux hierarchy</h2>
+    <p>Chapin et al. [4] standardised the vocabulary. <strong>GPP</strong> is gross photosynthesis. Subtracting autotrophic respiration R<sub>a</sub> (growth plus maintenance) gives <strong>NPP</strong>; the ratio NPP/GPP, the <strong>carbon-use efficiency</strong>, is 0.4–0.5 in most forests and lower in old or hot ones. Subtracting heterotrophic respiration R<sub>h</sub> (decomposers, herbivores) gives <strong>NEP</strong> = NPP − R<sub>h</sub> = GPP − R<sub>eco</sub>, the quantity an eddy-covariance tower measures as −NEE. Subtracting non-respiratory losses, fire, harvest, herbivore removal, erosion and leaching of DOC and DIC, volatile organic carbon, gives <strong>NBP</strong> (net biome productivity), the change in carbon storage of a region over years to decades; it is NBP, not NEP, that the global budget calls the land sink. The distinction matters because a forest with NEP of +2 t C ha⁻¹ yr⁻¹ can have NBP near zero once disturbance is averaged over the landscape.</p>
+    <div class="tablewrap"><table class="hier">
+      <thead><tr><th>Term</th><th>Definition</th><th class="num">Typical temperate forest (t C ha⁻¹ yr⁻¹)</th><th>Measured by</th></tr></thead>
+      <tbody>
+        <tr><td>GPP</td><td>Gross photosynthetic C uptake</td><td class="num">15–20</td><td>Flux partitioning, chamber scaling, remote sensing (LUE, SIF)</td></tr>
+        <tr><td>NPP = GPP − R<sub>a</sub></td><td>Biomass production</td><td class="num">6–10</td><td>Biometric: litterfall, increment, root turnover</td></tr>
+        <tr><td>NEP = NPP − R<sub>h</sub></td><td>Net ecosystem C gain</td><td class="num">0–4</td><td>Eddy covariance (−NEE), repeated inventories</td></tr>
+        <tr><td>NBP = NEP − (fire + harvest + lateral export)</td><td>Net biome C gain</td><td class="num">−5 to +2</td><td>Inventories, inversions, DGVMs</td></tr>
+      </tbody></table></div>
+    <p><strong>Eddy covariance</strong> measures NEE as the covariance of vertical wind speed and CO₂ concentration fluctuations plus a storage term, half-hourly, over a footprint of hundreds of metres. Partitioning NEE into GPP and R<sub>eco</sub> uses either the <strong>night-time method</strong> (Reichstein et al. [7]: fit a temperature response to night-time NEE, when GPP = 0, in short moving windows, extrapolate to daytime, GPP = R<sub>eco</sub> − NEE) or the <strong>daytime method</strong> (Lasslop et al. [8]: fit a light-response hyperbola with a VPD-dependent saturation and a temperature-dependent respiration term to daytime data). The two differ systematically, by up to 10% in GPP, because respiration under light may be lower than the night-time extrapolation (Kok effect) and because night-time data are filtered for low turbulence (u* threshold). FLUXNET syntheses of these partitioned fluxes are the basis of GPP upscaling (Beer et al. [9]) and of model benchmarking.</p>
+  </section>
+
+  <section id="turnover">
+    <h2>Turnover times and the matrix form of carbon models</h2>
+    <p>At steady state a pool's size equals its input times its mean residence time, X = u τ, and τ = X/F for any pool with stock X and throughput F. Vegetation carbon (~550 Pg) with NPP of 60 gives τ ≈ 9–10 years; soil carbon (~1500–2400 Pg) with ~60 Pg input gives 25–40 years as a bulk average. But bulk averages hide enormous heterogeneity: fine roots and leaves turn over in months, wood in decades to centuries, and soil carbon ranges from days (microbial biomass) to millennia (mineral-associated, deep, permafrost). Carvalhais et al. [6] combined global biomass and soil maps with GPP to estimate whole-ecosystem turnover of 23 (+7, −4) years, ranging from ~15 years in the tropics to &gt; 250 years in cold northern soils, with a temperature sensitivity across biomes weaker than most models assume; the models disagreed with the data mainly on turnover, not on GPP. This is the origin of the "models get the fluxes right for the wrong reasons" criticism.</p>
+    <p>Luo et al. [14, 15] showed that virtually all land carbon models, from Century to CLM to JULES, can be written in a common <strong>matrix form</strong>:</p>
+    <div class="eq">$$\frac{d\mathbf{X}}{dt} = \mathbf{B}\,u(t) - \mathbf{A}\,\boldsymbol{\xi}(t)\,\mathbf{K}\,\mathbf{X}(t),$$</div>
+    <p>where <strong>X</strong> is the vector of pool sizes (leaves, wood, roots, litter, soil pools), u(t) is the carbon input (GPP or NPP), <strong>B</strong> the allocation vector, <strong>K</strong> a diagonal matrix of baseline turnover rates, <strong>ξ</strong>(t) a diagonal matrix of environmental scalars (temperature, moisture, texture, nutrient modifiers), and <strong>A</strong> the transfer matrix with −1 on the diagonal and the fractions transferred between pools below it (the rest is respired). Writing a model this way exposes its properties: the steady state is <strong>X*</strong> = (<strong>A</strong>ξ<strong>K</strong>)⁻¹<strong>B</strong>u, i.e. input times a matrix of residence times; the transient response is a sum of exponentials with time constants from the eigenvalues of <strong>A</strong>ξ<strong>K</strong>; and the carbon storage at any time can be decomposed into carbon storage capacity (X*) and carbon storage potential (the disequilibrium). Xia et al. [16] built the <strong>traceability framework</strong> on this: differences in simulated carbon storage between models trace to differences in NPP, in baseline residence time (<strong>A</strong>, <strong>K</strong>, <strong>B</strong>), and in environmental scalars, which turns model intercomparison from "which is right" into "which component differs". The matrix form also allows semi-analytic spin-up, cutting the thousands of years of spin-up a soil model needs to reach steady state.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Turnover time: steady state and the lag in response</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="tauSvg" viewBox="0 0 640 380" role="img" aria-label="Vegetation and soil carbon stocks over 200 years after a step change in NPP, showing the lagged approach to new steady states"></svg>
+            <div class="chart-tip" id="tauTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">vegetation C</span><span style="--c:var(--series-3)">soil C</span><span style="--c:var(--fg)">total</span><span style="--c:var(--muted)">new steady states (dashed)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="tauTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="tNPP"><span>Initial NPP (Pg C yr⁻¹)</span><output id="tNPPO">60</output></label><input type="range" id="tNPP" min="30" max="90" step="1" value="60"></div>
+          <div class="ctrl"><label for="tTv"><span>Vegetation turnover τ<sub>v</sub> (yr)</span><output id="tTvO">10</output></label><input type="range" id="tTv" min="3" max="40" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="tTs"><span>Soil turnover τ<sub>s</sub> (yr)</span><output id="tTsO">25</output></label><input type="range" id="tTs" min="5" max="100" step="1" value="25"></div>
+          <div class="ctrl"><label for="tStep"><span>Step change in NPP at t = 0 (%)</span><output id="tStepO">15</output></label><input type="range" id="tStep" min="-40" max="40" step="1" value="15"></div>
+          <dl class="readout">
+            <dt>Steady-state veg C = NPP τ<sub>v</sub></dt><dd id="tV0"></dd>
+            <dt>Steady-state soil C = NPP τ<sub>s</sub></dt><dd id="tS0"></dd>
+            <dt>New steady states (veg / soil)</dt><dd id="tNew"></dd>
+            <dt>Total change at equilibrium</dt><dd id="tDelta"></dd>
+            <dt>Years to 50% / 95% of total change</dt><dd id="tT95"></dd>
+            <dt>Peak land sink (Pg C yr⁻¹)</dt><dd id="tPeak"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Two pools in series: dV/dt = NPP − V/τ<sub>v</sub>, dS/dt = V/τ<sub>v</sub> − S/τ<sub>s</sub>; the soil receives all vegetation turnover. Suggested experiments: a +15% NPP step (roughly today's CO₂ fertilisation) eventually stores 15% more carbon, but the soil takes ~3τ<sub>s</sub> to get there, so the sink persists long after NPP stops rising. Lengthen τ<sub>s</sub> to 100 yr and the same step stores far more carbon but takes centuries; this is why turnover, not NPP, dominates differences in projected storage (Carvalhais et al. [6]). A negative step shows the symmetric loss.</p>
+    </div>
+  </section>
+
+  <section id="signals">
+    <h2>Fast and slow cycles, the ocean, and the atmospheric record</h2>
+    <p><strong>The slow cycle.</strong> Over 10⁵–10⁶ years CO₂ is removed by silicate weathering (CaSiO₃ + 2 CO₂ + H₂O → Ca²⁺ + 2 HCO₃⁻ + SiO₂), the bicarbonate is precipitated as marine carbonate, and CO₂ returns through volcanism and metamorphism; carbonate weathering is CO₂-neutral on these timescales. Because weathering accelerates with temperature and runoff, this forms a negative feedback that stabilises climate on million-year timescales but is far too slow to matter for anthropogenic CO₂, roughly 20–30% of which remains in the atmosphere after 1000 years.</p>
+    <p><strong>The ocean.</strong> CO₂ dissolves and reacts: CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻ ⇌ 2 H⁺ + CO₃²⁻; at seawater pH ~8.1 about 90% is bicarbonate, 9% carbonate and 1% dissolved CO₂. The <strong>Revelle factor</strong> (∂ln pCO₂/∂ln DIC ≈ 10) expresses that a 10% rise in pCO₂ raises DIC by only 1%, because added CO₂ consumes carbonate ion; it rises as the ocean acidifies, weakening the sink. The <strong>solubility pump</strong> (cold, dense water carrying CO₂ down at high latitudes) and the <strong>biological pump</strong> (sinking organic matter and calcium carbonate shells) keep deep-ocean DIC above surface values; the ocean sink's rate is limited by mixing of surface water into the deep ocean (centuries), not by chemistry.</p>
+    <p><strong>The Keeling curve.</strong> Charles Keeling began continuous measurements at Mauna Loa in 1958 at 315 ppm (Keeling et al. [13]); the record passed 420 ppm in 2023 and now rises ~2.4 ppm yr⁻¹. The seasonal cycle, ~6–7 ppm peak-to-peak at Mauna Loa and ~15–16 ppm at Barrow, is the breathing of Northern Hemisphere vegetation: CO₂ falls from May to September as GPP exceeds respiration and rises through winter. Graven et al. [10] showed from aircraft data that the amplitude above 45° N increased by ~50% between 1958–61 and 2009–11, more than models reproduce, implying a large increase in the seasonal exchange of northern ecosystems (longer growing seasons, CO₂ fertilisation, agricultural intensification).</p>
+    <p><strong>Isotopic and O₂ constraints.</strong> Fossil carbon is ¹⁴C-free and depleted in ¹³C (δ¹³C ≈ −28‰), so burning it lowers atmospheric δ¹³C (the <strong>Suess effect</strong>, from −6.5‰ pre-industrial to below −8.5‰ now) and diluted ¹⁴C before bomb testing doubled it in the 1960s; the subsequent decline of <strong>bomb ¹⁴C</strong> as it mixed into the ocean and biosphere is a tracer of exchange timescales and of soil carbon turnover. Fossil combustion consumes O₂ at a stoichiometric ratio of ~1.4 O₂ per CO₂, while ocean uptake of CO₂ does not consume O₂ and land uptake releases it (ratio ~1.1); Keeling's atmospheric <strong>O₂/N₂</strong> record therefore separates the land and ocean sinks independently of models, confirming each at ~2–3 Pg C yr⁻¹. Together with the fact that the ¹³C signature of the land sink differs from the ocean's (photosynthetic discrimination of ~18‰ vs ~2‰), these constrain the global budget partition.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · A synthetic Keeling curve</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="keelSvg" viewBox="0 0 640 380" role="img" aria-label="Synthetic monthly CO2 concentration over ten years with a linear trend plus seasonal cycle"></svg>
+            <div class="chart-tip" id="keelTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">monthly CO₂</span><span style="--c:var(--series-2)">deseasonalised trend</span><span style="--c:var(--series-1)">May maximum, September minimum</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="kG"><span>Growth rate (ppm yr⁻¹)</span><output id="kGO">2.4</output></label><input type="range" id="kG" min="-2" max="5" step="0.1" value="2.4"></div>
+          <div class="ctrl"><label for="kA"><span>Seasonal amplitude, peak to trough (ppm)</span><output id="kAO">6.5</output></label><input type="range" id="kA" min="0" max="20" step="0.5" value="6.5"></div>
+          <div class="ctrl"><label for="kE"><span>Total emissions (Pg C yr⁻¹)</span><output id="kEO">11.1</output></label><input type="range" id="kE" min="0" max="20" step="0.1" value="11.1"></div>
+          <dl class="readout">
+            <dt>Annual increment</dt><dd id="kInc"></dd>
+            <dt>Atmospheric growth (Pg C yr⁻¹)</dt><dd id="kPg"></dd>
+            <dt>Airborne fraction</dt><dd id="kAF"></dd>
+            <dt>Implied sinks (Pg C yr⁻¹)</dt><dd id="kSink"></dd>
+            <dt>CO₂ after 10 yr</dt><dd id="kEnd"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">CO₂(t) = 420 + g t + (A/2) sin 2π(t − 0.12), so the maximum falls in May and the minimum in September, as at Mauna Loa. Suggested experiments: set amplitude to 16 ppm for Barrow, Alaska, or 1 ppm for the South Pole; set the growth rate to 1.3 ppm (1990s) and emissions to 7.5 to see the airborne fraction stay near 0.4; set emissions to zero with a growth rate of −1 to see what a net-negative world looks like.</p>
+    </div>
+  </section>
+
+  <section id="feedbacks">
+    <h2>Feedbacks, TCRE and the remaining budget</h2>
+    <p>Friedlingstein et al. [5] (C4MIP) defined the two feedback parameters that organise the problem. The <strong>carbon–concentration feedback</strong> β (Pg C per ppm) is the change in land (or ocean) carbon storage per unit rise in CO₂ at fixed climate: CO₂ fertilisation of photosynthesis, water-use-efficiency gains, and for the ocean simple solubility. The <strong>carbon–climate feedback</strong> γ (Pg C per °C) is the change in storage per degree of warming at fixed CO₂: for land, faster decomposition and respiration, drought, fire and permafrost thaw against longer growing seasons; for the ocean, lower solubility and stronger stratification. β is positive and γ negative in every model. C4MIP (2006) gave land β 0.2–2.8 (mean 1.4) and γ −20 to −177 (mean −79); Arora et al. [2] for CMIP6 found land β 0.97 ± 0.40 Pg C ppm⁻¹ and γ<sub>L</sub> −45 ± 50 Pg C °C⁻¹, ocean β 0.91 ± 0.09 and γ −17 ± 5: the spread is dominated by the land, and within land by the representation of nutrient limitation (models with N cycles have lower β) and of soil carbon turnover (γ). The feedbacks are defined by three runs: fully coupled, biogeochemically coupled only (BGC: the carbon cycle sees rising CO₂ but the climate does not), and radiatively coupled only (RAD); β = ΔC<sub>BGC</sub>/ΔCO₂ and γ = (ΔC<sub>COU</sub> − ΔC<sub>BGC</sub>)/ΔT.</p>
+    <p>Other feedbacks and sinks: the <strong>permafrost carbon feedback</strong> (Schuur et al. [11]): ~1300–1700 Pg C in frozen soils, of which 5–15% (~130–160 Pg by 2100 under high emissions) is expected to be released gradually as CO₂ and some CH₄, a feedback outside most CMIP6 models; <strong>fire</strong> (~2 Pg C yr⁻¹, mostly re-sequestered, but net loss in deforestation and peat fires); the <strong>"missing sink"</strong> of the 1980s–1990s, the gap between emissions and atmospheric growth plus ocean uptake that was eventually attributed to the Northern Hemisphere land sink (forest regrowth, CO₂ and N fertilisation), identified through O₂/N₂ and ¹³C constraints; and the <strong>detection of CO₂ fertilisation</strong> itself: Walker et al. [12] reviewed evidence from FACE experiments, tree rings, inventories, satellite greening, atmospheric inversions and models and concluded that a CO₂-driven increase in GPP and biomass is detectable and probably accounts for a large share of the land sink, but that its persistence depends on nutrient and water constraints and on turnover.</p>
+    <p><strong>TCRE and budgets.</strong> Matthews et al. [19] showed that global warming is nearly proportional to cumulative CO₂ emissions regardless of pathway, the <strong>transient climate response to cumulative emissions</strong>, because the declining airborne fraction (ocean uptake saturates slowly) and the declining radiative efficiency of CO₂ (logarithmic forcing) roughly cancel. AR6 gives TCRE = 1.65 °C per 1000 Pg C (likely 1.0–2.3), i.e. 0.45 °C per 1000 Gt CO₂. A warming target then becomes a budget: for 1.5 °C with 50% likelihood, AR6 estimated ~500 Gt CO₂ remaining from 2020, now below 200 Gt; for 2 °C (67%), ~1150 Gt from 2020. Budgets shrink with non-CO₂ forcing and with Earth-system feedbacks such as permafrost. <strong>Nature-based solutions</strong> (afforestation, soil carbon, restoration) can contribute 1–3 Pg C yr⁻¹ at most, with questions of <strong>permanence</strong> (fire, drought, land-use reversal), saturation (stocks approach a new steady state after decades; X = uτ), additionality and leakage, and the asymmetry that a tonne stored in biomass is at risk while a tonne of fossil carbon left underground is not.</p>
+    <p><strong>Methane briefly.</strong> CH₄ is ~1930 ppb, rising again since 2007; sources ~575 Tg CH₄ yr⁻¹, with natural wetlands ~150–200 Tg (the largest single source and a climate feedback), agriculture (ruminants, rice), fossil fuels and waste; the sink is OH oxidation (lifetime ~9 yr). GWP₁₀₀ is 27–30 (AR6), GWP₂₀ ~80. Wetland CH₄ emission is modelled from NPP or soil carbon, water-table depth, temperature and transport pathway (diffusion, ebullition, aerenchyma), and is a key reason that peatland and permafrost carbon matter beyond their CO₂.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · A two-box land carbon model, 1850–2100: β and γ</h3><div class="btnrow"><button class="btn small on" id="bbView1" type="button">Land sink</button><button class="btn small" id="bbView2" type="button">Stock change</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="bbSvg" viewBox="0 0 640 380" role="img" aria-label="Simulated land carbon sink or stock change from 1850 to 2100 for coupled, biogeochemically coupled and radiatively coupled runs"></svg>
+            <div class="chart-tip" id="bbTip" hidden></div>
+          </div>
+          <div class="legend" id="bbLegend"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="bbTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bbBeta"><span>CO₂ fertilisation β<sub>NPP</sub> (per ln CO₂)</span><output id="bbBetaO">0.35</output></label><input type="range" id="bbBeta" min="0" max="1" step="0.05" value="0.35"></div>
+          <div class="ctrl"><label for="bbQ10"><span>Q₁₀ of soil turnover</span><output id="bbQ10O">1.5</output></label><input type="range" id="bbQ10" min="1" max="3.5" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="bbTv"><span>Vegetation τ<sub>v</sub> (yr)</span><output id="bbTvO">10</output></label><input type="range" id="bbTv" min="4" max="30" step="1" value="10"></div>
+          <div class="ctrl"><label for="bbTs"><span>Soil τ<sub>s</sub> (yr)</span><output id="bbTsO">25</output></label><input type="range" id="bbTs" min="8" max="80" step="1" value="25"></div>
+          <div class="ctrl"><label for="bbR"><span>Emission trend after 2020 (% yr⁻¹)</span><output id="bbRO">-1.0</output></label><input type="range" id="bbR" min="-8" max="2" step="0.5" value="-1"></div>
+          <dl class="readout">
+            <dt>CO₂ in 2020 / 2100 (ppm)</dt><dd id="bbCO2"></dd>
+            <dt>Warming in 2100 (°C)</dt><dd id="bbT"></dd>
+            <dt>Land sink 2013–2022 mean</dt><dd id="bbS20"></dd>
+            <dt>β<sub>L</sub> = ΔC<sub>BGC</sub>/ΔCO₂ (Pg C ppm⁻¹)</dt><dd id="bbBL"></dd>
+            <dt>γ<sub>L</sub> (Pg C °C⁻¹)</dt><dd id="bbGL"></dd>
+            <dt>Cumulative land uptake to 2100</dt><dd id="bbCum"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model: NPP = 60 (1 + β ln(CO₂/278)) Pg C yr⁻¹; vegetation and soil boxes as in Lab C; soil turnover scaled by Q₁₀<sup>ΔT/10</sup>; ΔT = 1.8 °C × log₂(CO₂/278) (a transient response); ocean sink 0.0205 (CO₂ − 278) Pg C yr⁻¹; fossil emissions 10 e<sup>0.024(t − 2020)</sup> then changing at the chosen trend, plus land-use emissions declining from 1.3 to 0.3. BGC and RAD runs use the coupled CO₂ and ΔT trajectories; β<sub>L</sub> = ΔC<sub>BGC</sub>/ΔCO₂ and γ<sub>L</sub> = (ΔC<sub>COU</sub> − ΔC<sub>BGC</sub>)/ΔT, evaluated in 2100. Suggested experiments: set β to 0 and the land becomes a source as warming speeds decomposition; set Q₁₀ to 1 and γ vanishes; lengthen τ<sub>s</sub> and both β and |γ| grow because more carbon is exposed. Compare your β<sub>L</sub> and γ<sub>L</sub> with Arora et al. [2]: 0.97 ± 0.40 and −45 ± 50. The toy β is larger than the CMIP6 values because it has no nutrient limitation and because CMIP6 diagnoses β in 1% yr⁻¹ runs, where CO₂ rises so fast that storage lags far behind its equilibrium; the dependence of β on the experiment is itself a point worth making.</p>
+    </div>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>From leaf to globe.</strong> The CMIP land components (CLM5 in CESM2, JULES in UKESM1, ORCHIDEE in IPSL-CM6, JSBACH in MPI-ESM, LPJ-GUESS and others in TRENDY) all begin with FvCB photosynthesis and a stomatal conductance model at the leaf (the <a href="c3-photosynthesis.html">C3 page</a>), scaled through the canopy by sun/shade or multi-layer schemes with LAI and a vertical profile of V<sub>cmax</sub> that follows leaf N. GPP is then split by allocation rules into leaves, wood and roots (fixed fractions, allometric, or resource-dependent), tissues turn over at prescribed rates into litter and soil pools (Century-type cascades in CLM and ORCHIDEE; RothC in JULES; microbial-explicit options such as MIMICS exist), and disturbance (fire models such as SPITFIRE or Li et al., harvest, land-use transitions) removes carbon. The global sink that comes out is therefore a product of: V<sub>cmax</sub> and its response to CO₂ and temperature (sets β of GPP), the CO₂ response of stomatal conductance (water-use efficiency), the fraction of GPP respired (CUE), the allocation to long-lived wood versus short-lived leaves and roots (vegetation τ), the soil turnover and its Q₁₀ and moisture functions (soil τ and γ), nutrient limitation (lowers β), and disturbance (NBP vs NEP). Each of these appears on another page of this site.</p>
+    <p><strong>Benchmarking.</strong> ILAMB (Collier et al. [18]) scores models against dozens of datasets, including biomass, soil carbon, GPP from FLUXNET upscaling, burned area, the seasonal cycle of CO₂ at monitoring stations, and functional relationships (e.g. GPP versus precipitation), producing the familiar coloured scorecard. TRENDY (Sitch et al. [17]) runs ~15–20 DGVMs with common forcing in factorial experiments (CO₂ only; CO₂ + climate; + land use) to attribute the historical land sink and to supply the land-sink term and its uncertainty to the Global Carbon Budget; the ensemble mean matches inversions, but the spread among models (±1 Pg C yr⁻¹) and the disagreement on regional attribution persist. In CMIP6 the land carbon uptake projected for 2100 under SSP5-8.5 ranges over several hundred Pg C across models, most of it traceable to β and γ differences and hence to nutrient cycling and turnover.</p>
+    <p><strong>Matrix models and traceability.</strong> Luo et al. [14, 15] re-wrote CLM, CABLE, ORCHIDEE and others in matrix form, which makes semi-analytic spin-up fast, allows storage to be decomposed into NPP × residence time × environmental modifiers, and makes data assimilation of pool sizes tractable. The practical payoff for an exam answer is simple: if two models disagree on soil carbon, ask whether it is the input (NPP), the baseline residence time (K, A, B) or the environmental scalar (ξ) that differs, and which observation (Carvalhais turnover, ¹⁴C, soil carbon maps) could tell.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>ppm to Pg C</td><td class="num">2.124 Pg C per ppm</td><td>Atmosphere ≈ 880–900 Pg C at ~420 ppm</td></tr>
+        <tr><td>Pre-industrial CO₂ / 2023 CO₂</td><td class="num">278 / ≈ 420 ppm</td><td>315 ppm in 1958 (Keeling)</td></tr>
+        <tr><td>Growth rate</td><td class="num">≈ 2.4 ppm yr⁻¹ (≈ 5 Pg C yr⁻¹)</td><td>2013–2022 mean G<sub>ATM</sub> 5.2</td></tr>
+        <tr><td>Fossil / LUC emissions</td><td class="num">9.6–9.9 / 1.2–1.3 Pg C yr⁻¹</td><td>GCB 2023 [1]</td></tr>
+        <tr><td>Land / ocean sinks</td><td class="num">3.3 / 2.8 Pg C yr⁻¹</td><td>2013–2022; each ~26–30% of emissions</td></tr>
+        <tr><td>Airborne fraction</td><td class="num">≈ 0.44</td><td>Roughly constant 1960–present</td></tr>
+        <tr><td>GPP / NPP / CUE</td><td class="num">≈ 123 / 60 Pg C yr⁻¹ / 0.4–0.5</td><td>Beer et al. 2010 [9]</td></tr>
+        <tr><td>Vegetation / soil / permafrost C</td><td class="num">450–650 / 1500–2400 / 1300–1700 Pg C</td><td>Soils to 1–2 m; permafrost region to 3 m</td></tr>
+        <tr><td>Ocean C / gross exchange</td><td class="num">38,000 Pg C / 80 Pg C yr⁻¹</td><td>Revelle factor ≈ 10</td></tr>
+        <tr><td>Turnover: vegetation / soil / ecosystem</td><td class="num">≈ 10 / 25–40 / 23 (+7, −4) yr</td><td>Carvalhais et al. 2014 [6]</td></tr>
+        <tr><td>Land β / γ (CMIP6)</td><td class="num">0.97 ± 0.40 Pg C ppm⁻¹ / −45 ± 50 Pg C °C⁻¹</td><td>Arora et al. 2020 [2]; ocean 0.91 / −17</td></tr>
+        <tr><td>TCRE</td><td class="num">1.65 °C per 1000 Pg C (0.45 °C per 1000 Gt CO₂)</td><td>AR6; likely 1.0–2.3</td></tr>
+        <tr><td>Remaining 1.5 °C budget (50%)</td><td class="num">≈ 500 Gt CO₂ from 2020; &lt; 200 Gt from 2024</td><td>Canadell et al. 2021 [3]; Forster et al. 2024</td></tr>
+        <tr><td>Seasonal amplitude</td><td class="num">≈ 6–7 ppm Mauna Loa; ≈ 16 ppm Barrow</td><td>+50% north of 45° N since 1960, Graven et al. 2013 [10]</td></tr>
+        <tr><td>δ¹³C of atmosphere</td><td class="num">−6.5‰ → below −8.5‰</td><td>Suess effect; fossil C ≈ −28‰</td></tr>
+        <tr><td>CH₄</td><td class="num">≈ 1930 ppb; GWP₁₀₀ 27–30; lifetime ≈ 9 yr</td><td>Wetlands 150–200 of ~575 Tg CH₄ yr⁻¹</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Write down the global carbon budget equation with current values and explain how each term is estimated and which are least certain.</summary><div class="a"><p>E<sub>FOS</sub> + E<sub>LUC</sub> = G<sub>ATM</sub> + S<sub>OCEAN</sub> + S<sub>LAND</sub> + B<sub>IM</sub>. For 2013–2022: 9.6 + 1.3 = 5.2 + 2.8 + 3.3 (+ imbalance −0.4) Pg C yr⁻¹. E<sub>FOS</sub> comes from energy statistics and cement production (±5%). E<sub>LUC</sub> from bookkeeping models combining land-cover change data with carbon densities and decay curves (±0.7, the most uncertain emission). G<sub>ATM</sub> from the global network of CO₂ stations, converted at 2.124 Pg C per ppm (very precise). S<sub>OCEAN</sub> from global ocean biogeochemistry models and observation-based pCO₂ products (SOCAT), ±0.4. S<sub>LAND</sub> from the TRENDY DGVM ensemble (CO₂ + climate runs minus the land-use effect), checked with atmospheric inversions and O₂/N₂ and ¹³C constraints (±0.8, the most uncertain sink). The budget imbalance (~0.3–0.4) shows the residual mismatch; in individual years it reflects ENSO-driven variability of the land sink that the models capture imperfectly. Over 1850–2022, cumulative emissions ≈ 700 Pg C (fossil ~480, LUC ~210), of which ~40% remains in the atmosphere.</p></div></details>
+    <details class="q"><summary>2. Define GPP, NPP, NEP and NBP, and explain why a tower that measures NEP of +3 t C ha⁻¹ yr⁻¹ may not imply a regional sink of that size.</summary><div class="a"><p>GPP: gross photosynthesis. NPP = GPP − R<sub>a</sub> (autotrophic respiration), the biomass produced. NEP = NPP − R<sub>h</sub> = GPP − R<sub>eco</sub>, the net ecosystem exchange of CO₂ with the atmosphere by metabolism, measured by eddy covariance as −NEE. NBP = NEP minus non-respiratory losses: fire, harvest and removal, herbivory export, erosion, leaching of DOC/DIC, VOC emission; it equals the change in regional carbon storage over years to decades. A tower sees one footprint at one successional stage, typically a maturing stand chosen for fetch, where NEP is positive; the region contains recently disturbed stands (sources), harvested areas and fires, and lateral losses. Averaged over a landscape with a disturbance return interval, NBP is the long-term mean of NEP minus disturbance fluxes and is much smaller, near zero in steady-state mosaics. In addition, towers lose data at night under low turbulence (u* filtering) and partition fluxes with assumptions (night-time vs day-time methods) that bias annual sums by up to tens of g C m⁻². Scaling from NEP to NBP therefore needs inventories, disturbance records and bookkeeping, which is why the global land sink is reported as NBP from models and inversions, not from towers.</p></div></details>
+    <details class="q"><summary>3. Derive the steady-state carbon stock of a two-pool vegetation–soil model and the time constants of its response to a step change in NPP. What does this imply about where model uncertainty lies?</summary><div class="a"><p>Let dV/dt = u − V/τ<sub>v</sub> and dS/dt = V/τ<sub>v</sub> − S/τ<sub>s</sub>. At steady state V* = uτ<sub>v</sub> and S* = (V*/τ<sub>v</sub>)τ<sub>s</sub> = uτ<sub>s</sub>, so total C* = u(τ<sub>v</sub> + τ<sub>s</sub>): stock equals input times residence time. For a step u → u(1 + δ) at t = 0, the vegetation deviation obeys v' = uδ − v/τ<sub>v</sub>, giving v(t) = uδτ<sub>v</sub>(1 − e<sup>−t/τ<sub>v</sub></sup>); the soil receives v/τ<sub>v</sub> and relaxes with τ<sub>s</sub>, giving a two-exponential response with time constants τ<sub>v</sub> and τ<sub>s</sub> (for τ<sub>v</sub> ≠ τ<sub>s</sub>): s(t) = uδτ<sub>s</sub>[1 − (τ<sub>s</sub>e<sup>−t/τ<sub>s</sub></sup> − τ<sub>v</sub>e<sup>−t/τ<sub>v</sub></sup>)/(τ<sub>s</sub> − τ<sub>v</sub>)]. In the matrix form dX/dt = Bu − AξKX these constants are the eigenvalues of AξK, and X* = (AξK)⁻¹Bu. Implications: the equilibrium gain from CO₂ fertilisation is proportional to total residence time, and the time to realise it is ~3τ<sub>s</sub>; thus models with long soil turnover store more carbon but more slowly; and uncertainty in projected storage is dominated by τ (and its climate sensitivity, γ) rather than by NPP, which models agree on better. Carvalhais et al. (2014) found exactly this: models reproduced GPP but disagreed with observed turnover and its temperature dependence.</p></div></details>
+    <details class="q"><summary>4. Explain the carbon–concentration (β) and carbon–climate (γ) feedback parameters, how they are diagnosed from model experiments, and why their land values vary so much between models.</summary><div class="a"><p>β (Pg C ppm⁻¹) is the sensitivity of land or ocean carbon storage to atmospheric CO₂ with climate held fixed: on land, CO₂ fertilisation of photosynthesis and improved water-use efficiency; in the ocean, solubility and carbonate chemistry. γ (Pg C °C⁻¹) is the sensitivity of storage to global temperature at fixed CO₂: on land, faster decomposition and autotrophic respiration, drought and fire, and permafrost thaw, partly offset by longer growing seasons at high latitudes; in the ocean, reduced solubility and stratification. Diagnosis (C4MIP/CMIP6 1% yr⁻¹ CO₂ experiments): a fully coupled run (COU), a biogeochemically coupled run in which only the carbon cycle sees rising CO₂ (BGC), and a radiatively coupled run in which only the radiation code sees it (RAD). β = ΔC<sub>BGC</sub>/ΔCO₂; γ = (ΔC<sub>COU</sub> − ΔC<sub>BGC</sub>)/ΔT (or ΔC<sub>RAD</sub>/ΔT; the two differ by nonlinearity). Arora et al. (2020): land β 0.97 ± 0.40, γ −45 ± 50; ocean 0.91 ± 0.09, −17 ± 5. The land spread arises because (i) models with coupled N (and P) cycles have smaller β, since nutrient limitation caps the CO₂ response; (ii) turnover formulations and their Q₁₀ and moisture functions set γ, and soil carbon stocks differ by a factor of two; (iii) treatment of fire, permafrost and vegetation dynamics differs; (iv) allocation and CUE differ. Because β and γ act on the same stocks, a model with large soil carbon tends to have both large β and large |γ|.</p></div></details>
+    <details class="q"><summary>5. Why is the airborne fraction roughly constant at ~0.44 even though emissions have grown? What would make it change?</summary><div class="a"><p>If sinks scale with the CO₂ excess above pre-industrial (S ≈ k(C − C₀)) and emissions grow exponentially, then for an exponentially growing forcing the atmospheric excess also grows exponentially at the same rate and the ratio of growth to emissions is constant: the sinks keep pace because they are driven by the same excess that the emissions create. Formally, with dC/dt = E − k(C − C₀) and E = E₀e<sup>rt</sup>, the particular solution has C − C₀ ∝ e<sup>rt</sup> and airborne fraction r/(r + k). Thus a constant AF is expected for exponential emissions growth with linear sinks, and does not imply that sinks are not saturating. AF would rise if emissions growth accelerated (sinks lag), if sinks weakened relative to the excess (ocean Revelle factor increasing, warming-driven γ, nutrient limitation of β, land-use loss of sink capacity), or if emissions fell to zero (AF is then undefined, and the sinks draw CO₂ down). Detecting a trend in AF is hard because interannual variability (ENSO, volcanic eruptions) is large relative to the signal; studies find no robust trend over 1959–2020 after accounting for LUC uncertainty.</p></div></details>
+    <details class="q"><summary>6. What is TCRE, why is warming proportional to cumulative emissions, and how does this translate into a remaining carbon budget?</summary><div class="a"><p>TCRE is the transient climate response to cumulative CO₂ emissions: the global mean warming per unit of cumulative CO₂ emitted, ~1.65 °C per 1000 Pg C (AR6 likely range 1.0–2.3), equivalently 0.45 °C per 1000 Gt CO₂. Matthews et al. (2009) and Allen et al. (2009) found it nearly independent of emission pathway and timing. The proportionality arises from two cancelling nonlinearities: as cumulative emissions rise, the airborne fraction tends to increase (ocean uptake per unit emission falls because the carbonate buffer saturates and mixing is slow), which would steepen warming per tonne, while the radiative forcing per ppm falls logarithmically with concentration, which would flatten it; in addition the ocean heat uptake that delays warming declines over time. The remaining budget for a target T is (T − T<sub>already</sub>)/TCRE minus adjustments for non-CO₂ forcing (methane, aerosols), Earth-system feedbacks not in the models (permafrost), and the chosen probability; AR6 gave ~500 Gt CO₂ for a 50% chance of 1.5 °C from 2020, which at ~40 Gt CO₂ yr⁻¹ is consumed in roughly a decade, and ~1150 Gt for a 67% chance of 2 °C. TCRE also implies that net-zero CO₂ emissions roughly stabilise temperature (zero emissions commitment near zero), so that every tonne matters equally whenever it is emitted.</p></div></details>
+    <details class="q"><summary>7. Describe the chain of processes and parameters through which a land model converts leaf-level photosynthesis into a global land sink, and identify three places where the uncertainty is largest.</summary><div class="a"><p>Leaf: FvCB photosynthesis with V<sub>cmax</sub> (from PFT tables, leaf N via LUNA, or optimality), J<sub>max</sub>, temperature functions and acclimation, coupled to a stomatal model (Ball–Berry or Medlyn) which sets C<sub>i</sub> and transpiration. Canopy: integration over LAI with sun/shade or multi-layer radiative transfer and a V<sub>cmax</sub> profile; LAI itself is prognostic from leaf carbon and specific leaf area, and phenology sets its timing. Plant: GPP minus maintenance and growth respiration (CUE) gives NPP, allocated to leaves, wood and roots by fixed or dynamic rules; nutrient limitation may down-regulate growth or impose costs (FUN). Turnover: tissue lifespans move carbon to litter; litter and soil cascades (Century-type or RothC, or microbial-explicit) with temperature and moisture scalars release CO₂; vertical soil discretisation and permafrost matter at high latitudes. Disturbance: fire, mortality, harvest, land-use transitions, vegetation dynamics. Globally, NBP summed over grid cells is the land sink, and in a coupled ESM the resulting CO₂ feeds back on climate and on the photosynthesis at the start of the chain. Largest uncertainties: (1) the CO₂ response of GPP and its nutrient constraint (β), including V<sub>cmax</sub> acclimation and down-regulation; (2) soil and vegetation turnover and their climate sensitivity (γ), including soil carbon stocks that differ twofold among models and the permafrost feedback; (3) disturbance and land use (fire, mortality, LUC emissions), which convert NEP to NBP and are the least constrained flux in the budget. Benchmarking (ILAMB) and traceability analysis locate which link differs between models.</p></div></details>
+    <details class="q"><summary>8. What do the ¹³C, ¹⁴C and O₂/N₂ records each tell us about the carbon cycle that CO₂ concentration alone cannot?</summary><div class="a"><p>CO₂ concentration gives the net atmospheric budget but cannot separate sources and sinks. ¹³C: fossil fuels and biomass are depleted (δ¹³C ≈ −28‰ for C3-derived carbon) relative to the atmosphere (−6.5‰ pre-industrial), so fossil emissions drive the atmosphere lighter (the Suess effect, now below −8.5‰); because exchange with the land involves strong photosynthetic discrimination (~18‰) while ocean exchange involves little (~2‰), the rate of ¹³C decline relative to CO₂ rise partitions the uptake between land and ocean ("double deconvolution"). ¹⁴C: fossil carbon is ¹⁴C-free, so fossil CO₂ dilutes atmospheric Δ¹⁴C (the Suess effect in ¹⁴C), which is used to quantify the fossil fraction of CO₂ regionally; the 1960s bomb spike, which doubled atmospheric ¹⁴C, then decayed as it mixed into the ocean and biosphere, provides exchange timescales (the e-folding of ~16 years) and, in soils and plants, a clock for carbon turnover and the age of respired CO₂ that directly tests model τ. O₂/N₂: fossil combustion consumes O₂ (~1.4 mol O₂ per mol CO₂); ocean CO₂ uptake does not change O₂ (apart from small thermal outgassing), while land uptake releases O₂ (~1.1 per CO₂); the measured decline in O₂/N₂ against the CO₂ rise therefore yields independent estimates of the land and ocean sinks (each ~2–3 Pg C yr⁻¹), the key evidence that resolved the "missing sink". Together these constrain the partition in the global budget and identify the northern land sink.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Friedlingstein P, O'Sullivan M, Jones MW, et al. (2023). Global Carbon Budget 2023. <em>Earth System Science Data</em> 15: 5301–5369. <a href="https://doi.org/10.5194/essd-15-5301-2023">doi:10.5194/essd-15-5301-2023</a><span class="why">The numbers in the pools-and-fluxes table and Lab A; updated annually.</span></li>
+      <li>Arora VK, Katavouta A, Williams RG, et al. (2020). Carbon–concentration and carbon–climate feedbacks in CMIP6 models and their comparison to CMIP5 models. <em>Biogeosciences</em> 17: 4173–4222. <a href="https://doi.org/10.5194/bg-17-4173-2020">doi:10.5194/bg-17-4173-2020</a><span class="why">Current β and γ values and why they differ among models.</span></li>
+      <li>Canadell JG, Monteiro PMS, Costa MH, et al. (2021). Global carbon and other biogeochemical cycles and feedbacks. In <em>Climate Change 2021: The Physical Science Basis</em> (IPCC AR6 WG1), Chapter 5. Cambridge University Press. <span class="why">Authoritative synthesis: budgets, feedbacks, TCRE and remaining budgets.</span></li>
+      <li>Chapin FS III, Woodwell GM, Randerson JT, et al. (2006). Reconciling carbon-cycle concepts, terminology, and methods. <em>Ecosystems</em> 9: 1041–1050. <a href="https://doi.org/10.1007/s10021-005-0105-7">doi:10.1007/s10021-005-0105-7</a><span class="why">The GPP–NPP–NEP–NBP definitions and sign conventions.</span></li>
+      <li>Friedlingstein P, Cox P, Betts R, et al. (2006). Climate–carbon cycle feedback analysis: results from the C4MIP model intercomparison. <em>Journal of Climate</em> 19: 3337–3353. <a href="https://doi.org/10.1175/JCLI3800.1">doi:10.1175/JCLI3800.1</a><span class="why">Defines β and γ and the coupled/uncoupled experiment design.</span></li>
+      <li>Carvalhais N, Forkel M, Khomik M, et al. (2014). Global covariation of carbon turnover times with climate in terrestrial ecosystems. <em>Nature</em> 514: 213–217. <a href="https://doi.org/10.1038/nature13731">doi:10.1038/nature13731</a><span class="why">Observed whole-ecosystem turnover (~23 yr) and the model mismatch.</span></li>
+      <li>Reichstein M, Falge E, Baldocchi D, et al. (2005). On the separation of net ecosystem exchange into assimilation and ecosystem respiration: review and improved algorithm. <em>Global Change Biology</em> 11: 1424–1439. <a href="https://doi.org/10.1111/j.1365-2486.2005.001002.x">doi:10.1111/j.1365-2486.2005.001002.x</a><span class="why">The night-time partitioning method used by FLUXNET.</span></li>
+      <li>Lasslop G, Reichstein M, Papale D, et al. (2010). Separation of net ecosystem exchange into assimilation and respiration using a light response curve approach: critical issues and global evaluation. <em>Global Change Biology</em> 16: 187–208. <a href="https://doi.org/10.1111/j.1365-2486.2009.02041.x">doi:10.1111/j.1365-2486.2009.02041.x</a><span class="why">The day-time partitioning method.</span></li>
+      <li>Beer C, Reichstein M, Tomelleri E, et al. (2010). Terrestrial gross carbon dioxide uptake: global distribution and covariation with climate. <em>Science</em> 329: 834–838. <a href="https://doi.org/10.1126/science.1184984">doi:10.1126/science.1184984</a><span class="why">GPP ≈ 123 Pg C yr⁻¹ from flux-tower upscaling.</span></li>
+      <li>Graven HD, Keeling RF, Piper SC, et al. (2013). Enhanced seasonal exchange of CO₂ by northern ecosystems since 1960. <em>Science</em> 341: 1085–1089. <a href="https://doi.org/10.1126/science.1239207">doi:10.1126/science.1239207</a><span class="why">The 50% increase in seasonal amplitude north of 45° N.</span></li>
+      <li>Schuur EAG, McGuire AD, Schädel C, et al. (2015). Climate change and the permafrost carbon feedback. <em>Nature</em> 520: 171–179. <a href="https://doi.org/10.1038/nature14338">doi:10.1038/nature14338</a><span class="why">Permafrost stocks and the expected gradual release.</span></li>
+      <li>Walker AP, De Kauwe MG, Bastos A, et al. (2021). Integrating the evidence for a terrestrial carbon sink caused by increasing atmospheric CO₂. <em>New Phytologist</em> 229: 2413–2445. <a href="https://doi.org/10.1111/nph.16866">doi:10.1111/nph.16866</a><span class="why">Detection and attribution of CO₂ fertilisation across lines of evidence.</span></li>
+      <li>Keeling CD, Bacastow RB, Bainbridge AE, et al. (1976). Atmospheric carbon dioxide variations at Mauna Loa Observatory, Hawaii. <em>Tellus</em> 28: 538–551. <a href="https://doi.org/10.1111/j.2153-3490.1976.tb00701.x">doi:10.1111/j.2153-3490.1976.tb00701.x</a><span class="why">The Keeling curve paper: trend and seasonal cycle.</span></li>
+      <li>Luo Y, Shi Z, Lu X, et al. (2017). Transient dynamics of terrestrial carbon storage: mathematical foundation and its applications. <em>Biogeosciences</em> 14: 145–161. <a href="https://doi.org/10.5194/bg-14-145-2017">doi:10.5194/bg-14-145-2017</a><span class="why">The matrix form dX/dt = Bu − AξKX and its consequences.</span></li>
+      <li>Luo Y, Huang Y, Sierra CA, et al. (2022). Matrix approach to land carbon cycle modeling. <em>Journal of Advances in Modeling Earth Systems</em> 14: e2022MS003008. <a href="https://doi.org/10.1029/2022MS003008">doi:10.1029/2022MS003008</a><span class="why">Review of matrix implementations in CLM, CABLE, ORCHIDEE and others.</span></li>
+      <li>Xia J, Luo Y, Wang Y-P, Hararuk O (2013). Traceable components of terrestrial carbon storage capacity in biogeochemical models. <em>Global Change Biology</em> 19: 2104–2116. <a href="https://doi.org/10.1111/gcb.12172">doi:10.1111/gcb.12172</a><span class="why">The traceability framework: NPP × residence time × environmental scalars.</span></li>
+      <li>Sitch S, Friedlingstein P, Gruber N, et al. (2015). Recent trends and drivers of regional sources and sinks of carbon dioxide. <em>Biogeosciences</em> 12: 653–679. <a href="https://doi.org/10.5194/bg-12-653-2015">doi:10.5194/bg-12-653-2015</a><span class="why">The TRENDY DGVM ensemble and attribution of the land sink.</span></li>
+      <li>Collier N, Hoffman FM, Lawrence DM, et al. (2018). The International Land Model Benchmarking (ILAMB) system: design, theory, and implementation. <em>Journal of Advances in Modeling Earth Systems</em> 10: 2731–2754. <a href="https://doi.org/10.1029/2018MS001354">doi:10.1029/2018MS001354</a><span class="why">How land models are scored against observations.</span></li>
+      <li>Matthews HD, Gillett NP, Stott PA, Zickfeld K (2009). The proportionality of global warming to cumulative carbon emissions. <em>Nature</em> 459: 829–832. <a href="https://doi.org/10.1038/nature08047">doi:10.1038/nature08047</a><span class="why">TCRE and why warming scales with cumulative emissions.</span></li>
+      <li>Ciais P, Sabine C, Bala G, et al. (2013). Carbon and other biogeochemical cycles. In <em>Climate Change 2013: The Physical Science Basis</em> (IPCC AR5 WG1), Chapter 6. Cambridge University Press. <span class="why">The classic pools-and-fluxes figure (Fig. 6.1) with pre-industrial and anthropogenic fluxes.</span></li>
+      <li>Schlesinger WH, Bernhardt ES (2020). <em>Biogeochemistry: An Analysis of Global Change</em>, 4th ed. Academic Press. Chapter 11. <span class="why">Textbook treatment of the global carbon cycle.</span></li>
+      <li>Bonan G (2019). <em>Climate Change and Terrestrial Ecosystem Modeling</em>. Cambridge University Press. <span class="why">How every link of the leaf-to-globe chain is coded in land models.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="phosphorus-cycling.html">← Previous: Phosphorus Loss and Retention</a><a href="hypothesis-testing-ci.html">Next: Hypothesis Testing and Confidence Intervals →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#pools">Pools and fluxes</a></li>
+      <li><a href="#hierarchy">GPP to NBP</a></li>
+      <li><a href="#turnover">Turnover &amp; matrix form</a></li>
+      <li><a href="#signals">Slow cycle, ocean, Keeling</a></li>
+      <li><a href="#feedbacks">Feedbacks, TCRE, budgets</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use linear sink parameterisations and a two-box land model for intuition; real sinks are nonlinear and the ocean's depends on mixing. Budget numbers follow the Global Carbon Budget 2023.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function ticks(min, max, step) { var a = []; for (var v = min; v <= max + 1e-9; v += step) a.push(+v.toFixed(6)); return a; }
+  function val(id) { return +document.getElementById(id).value; }
+  function txt(id, t) { document.getElementById(id).textContent = t; }
+  function outs(ids) { ids.forEach(function (id) { var o = document.getElementById(id + 'O'), i = document.getElementById(id); if (o && i) o.textContent = i.value; }); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('input', fn); }); }
+  function mkChart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 380, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 18, mB = o.mB || 48;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var xmin = o.xmin, xmax = o.xmax, ymin = o.ymin, ymax = o.ymax;
+    function sx(x) { var f = (x - xmin) / (xmax - xmin); return mL + Math.max(0, Math.min(1, f)) * pw; }
+    function sy(y) { var f = (ymax - y) / (ymax - ymin); return mT + Math.max(0, Math.min(1, f)) * ph; }
+    (o.yt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    (o.xt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (ymin < 0 && ymax > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, o.xl));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    return { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax };
+  }
+  function linePath(c, pts) { var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1); }); return d; }
+  function series(c, pts, cls, stroke) { var p = el('path', { 'class': 'ser ' + (cls || ''), d: linePath(c, pts) }); if (stroke) p.setAttribute('stroke', stroke); c.svg.appendChild(p); return p; }
+  function label(c, x, y, t, col, anchor, cls) { c.svg.appendChild(el('text', { 'class': cls || 'dl', x: x, y: y, fill: col || 'var(--fg)', 'text-anchor': anchor || 'start' }, t)); }
+  function rightLabels(c, labs) { labs.forEach(function (L) { L.y = c.sy(Math.max(c.ymin, Math.min(c.ymax, L.v))); }); labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13; labs.forEach(function (L) { label(c, c.mL + c.pw + 6, L.y + 4, L.t, L.col); }); }
+  function hover(c, tip, fn) {
+    var svg = c.svg;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: c.mT, y2: c.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: c.mL, y: c.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var f = Math.max(0, Math.min(1, (p.x - c.mL) / c.pw)); var x = c.xmin + f * (c.xmax - c.xmin);
+      var r = fn(x);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y === null || r.y === undefined || isNaN(r.y)) dot.setAttribute('visibility', 'hidden'); else { dot.setAttribute('cx', c.sx(x)); dot.setAttribute('cy', c.sy(Math.max(c.ymin, Math.min(c.ymax, r.y)))); dot.setAttribute('visibility', 'visible'); }
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  var PPM = 2.124, BL = 0.0237, BO = 0.0205;
+
+  /* ---------- Lab A: budget diagram ---------- */
+  var bud = document.getElementById('budSvg');
+  function arrow(x1, y1, x2, y2, w, col, cls) {
+    var g = el('g', { 'class': 'arrow ' + (cls || '') });
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy), ux = dx / L, uy = dy / L;
+    var head = Math.max(8, w * 1.6);
+    var bx = x2 - ux * head, by = y2 - uy * head;
+    g.appendChild(el('line', { x1: x1, y1: y1, x2: bx, y2: by, stroke: col, 'stroke-width': w, 'stroke-linecap': 'butt' }));
+    var px = -uy, py = ux, hw = Math.max(5, w * 0.9);
+    g.appendChild(el('polygon', { points: [x2, y2, bx + px * hw, by + py * hw, bx - px * hw, by - py * hw].join(','), fill: col }));
+    bud.appendChild(g); return g;
+  }
+  function box(x, y, w, h, cls, title, sub1, sub2) {
+    bud.appendChild(el('rect', { 'class': 'box ' + (cls || ''), x: x, y: y, width: w, height: h, rx: 10 }));
+    bud.appendChild(el('text', { 'class': 'ttl', x: x + w / 2, y: y + 22, 'text-anchor': 'middle' }, title));
+    if (sub1) bud.appendChild(el('text', { 'class': 'sub', x: x + w / 2, y: y + 40, 'text-anchor': 'middle' }, sub1));
+    if (sub2) bud.appendChild(el('text', { 'class': 'sub', x: x + w / 2, y: y + 55, 'text-anchor': 'middle' }, sub2));
+  }
+  function drawBudget() {
+    outs(['bFos', 'bLuc', 'bCO2', 'bBeta']);
+    var E = val('bFos'), L = val('bLuc'), C = val('bCO2'), s = val('bBeta') / 100;
+    var land = BL * s * (C - 278), ocean = BO * s * (C - 278);
+    var grow = E + L - land - ocean, AF = (E + L) > 0 ? grow / (E + L) : NaN;
+    clear(bud);
+    var wscale = function (f) { return 1.5 + Math.abs(f) * 1.6; };
+    var yA = 90, yL = 270; // atmosphere bottom, land/ocean top
+    box(140, 20, 480, 70, 'atm', 'Atmosphere', fmt(C * PPM, 0) + ' Pg C at ' + C + ' ppm', 'growth ' + (grow >= 0 ? '+' : '') + fmt(grow, 1) + ' Pg C yr⁻¹ = ' + (grow >= 0 ? '+' : '') + fmt(grow / PPM, 2) + ' ppm yr⁻¹');
+    box(10, 120, 112, 66, '', 'Fossil fuels', 'reserves', '1000–2000 Pg C');
+    box(140, yL, 230, 100, '', 'Land', 'vegetation 450–650 Pg C', 'soils 1500–2400 (+ permafrost 1300–1700)');
+    box(390, yL, 230, 100, '', 'Ocean', '38,000 Pg C (DIC)', 'surface layer ~900; Revelle factor ~10');
+    bud.appendChild(el('text', { 'class': 'sub', x: 140, y: 392 }, 'Rocks: ~10⁸ Pg C (slow cycle, 10⁵–10⁶ yr: weathering, volcanism)'));
+    // gross fluxes (fixed)
+    arrow(175, yL, 175, yA, 6, 'var(--muted)', 'gross'); arrow(205, yA, 205, yL, 6, 'var(--muted)', 'gross');
+    bud.appendChild(el('text', { 'class': 'sub', x: 165, y: 215, 'text-anchor': 'end' }, 'GPP 120 ↑'));
+    bud.appendChild(el('text', { 'class': 'sub', x: 165, y: 231, 'text-anchor': 'end' }, '↓ R + fire 117'));
+    arrow(545, yL, 545, yA, 5, 'var(--muted)', 'gross'); arrow(575, yA, 575, yL, 5, 'var(--muted)', 'gross');
+    bud.appendChild(el('text', { 'class': 'sub', x: 585, y: 185 }, '80 ↑ ↓ 80'));
+    // fossil
+    if (E > 0) { arrow(95, 120, 165, yA + 2, wscale(E), 'var(--accent-2)'); }
+    bud.appendChild(el('text', { 'class': 'fl', x: 10, y: 110, fill: 'var(--accent-2)' }, 'fossil ' + fmt(E, 1)));
+    // land use
+    var wL = wscale(L);
+    if (L > 0) arrow(255, yL, 255, yA, wL, 'var(--accent-2)');
+    bud.appendChild(el('text', { 'class': 'fl', x: 255 + wL / 2 + 6, y: 120, fill: 'var(--accent-2)' }, 'land use ' + fmt(L, 1)));
+    // land sink
+    var lc = land >= 0 ? 'var(--accent)' : 'var(--accent-2)', wS = wscale(land);
+    if (land >= 0) arrow(340, yA, 340, yL, wS, lc); else arrow(340, yL, 340, yA, wS, lc);
+    bud.appendChild(el('text', { 'class': 'fl', x: 340 + wS / 2 + 6, y: 250, fill: lc }, 'land sink ' + fmt(land, 1)));
+    // ocean sink
+    var oc = ocean >= 0 ? 'var(--series-1)' : 'var(--accent-2)', wO = wscale(ocean);
+    if (ocean >= 0) arrow(450, yA, 450, yL, wO, oc); else arrow(450, yL, 450, yA, wO, oc);
+    bud.appendChild(el('text', { 'class': 'fl', x: 450 - wO / 2 - 6, y: 160, fill: oc, 'text-anchor': 'end' }, 'ocean sink ' + fmt(ocean, 1)));
+    bud.appendChild(el('text', { 'class': 'sub', x: 395, y: 205, 'text-anchor': 'middle' }, 'airborne ' + (isNaN(AF) ? '–' : fmt(AF, 2))));
+    txt('bStock', fmt(C * PPM, 0) + ' Pg C');
+    txt('bLand', fmt(land, 2)); txt('bOcean', fmt(ocean, 2));
+    txt('bGrow', fmt(grow, 2) + ' Pg C yr⁻¹ = ' + fmt(grow / PPM, 2) + ' ppm yr⁻¹');
+    txt('bAF', isNaN(AF) ? '–' : fmt(AF, 2));
+  }
+  bind(['bFos', 'bLuc', 'bCO2', 'bBeta'], drawBudget); drawBudget();
+
+  /* ---------- Lab C: turnover ---------- */
+  var tauSvg = document.getElementById('tauSvg'), tauTip = document.getElementById('tauTip');
+  function drawTau() {
+    outs(['tNPP', 'tTv', 'tTs', 'tStep']);
+    var u0 = val('tNPP'), tv = val('tTv'), ts = val('tTs'), d = val('tStep') / 100;
+    var u1 = u0 * (1 + d), V0 = u0 * tv, S0 = u0 * ts, V1 = u1 * tv, S1 = u1 * ts;
+    var dt = 0.05, T = 200, V = V0, S = S0, out = [{ t: 0, V: V, S: S, sink: 0 }];
+    for (var i = 1; i <= T / dt; i++) { var dV = u1 - V / tv, dS = V / tv - S / ts; V += dt * dV; S += dt * dS; if (i % 20 === 0) out.push({ t: i * dt, V: V, S: S, sink: dV + dS }); }
+    var ymax = Math.ceil(Math.max(V0 + S0, V1 + S1) * 1.1 / 500) * 500;
+    var c = mkChart(tauSvg, { W: 640, H: 380, mL: 62, mR: 70, xmin: 0, xmax: T, ymin: 0, ymax: ymax, xt: ticks(0, T, 25), yt: ticks(0, ymax, ymax > 4000 ? 1000 : 500), xl: 'Years after step change in NPP', yl: 'Carbon stock (Pg C)' });
+    [[V1, 'var(--series-1)'], [S1, 'var(--series-3)'], [V1 + S1, 'var(--fg)']].forEach(function (q) { c.svg.appendChild(el('line', { 'class': 'ref', x1: c.mL, x2: c.mL + c.pw, y1: c.sy(q[0]), y2: c.sy(q[0]), stroke: q[1] })); });
+    series(c, out.map(function (p) { return [p.t, p.V]; }), '', 'var(--series-1)');
+    series(c, out.map(function (p) { return [p.t, p.S]; }), '', 'var(--series-3)');
+    series(c, out.map(function (p) { return [p.t, p.V + p.S]; }), 'net');
+    var last = out[out.length - 1];
+    rightLabels(c, [{ t: 'veg', v: last.V, col: 'var(--series-1)' }, { t: 'soil', v: last.S, col: 'var(--series-3)' }, { t: 'total', v: last.V + last.S, col: 'var(--fg)' }]);
+    hover(c, tauTip, function (x) { var p = out[Math.min(out.length - 1, Math.round(x))]; return { y: p.V + p.S, html: 't <b>' + fmt(p.t, 0) + '</b> yr<br>veg <b>' + fmt(p.V, 0) + '</b> · soil <b>' + fmt(p.S, 0) + '</b> · total <b>' + fmt(p.V + p.S, 0) + '</b> Pg C<br>land sink <b>' + fmt(p.sink, 2) + '</b> Pg C yr⁻¹' }; });
+    txt('tV0', fmt(V0, 0) + ' Pg C'); txt('tS0', fmt(S0, 0) + ' Pg C');
+    txt('tNew', fmt(V1, 0) + ' / ' + fmt(S1, 0) + ' Pg C');
+    var dTot = (V1 + S1) - (V0 + S0); txt('tDelta', (dTot >= 0 ? '+' : '') + fmt(dTot, 0) + ' Pg C');
+    function tFrac(fr) { var target = (V0 + S0) + fr * dTot; for (var k = 0; k < out.length; k++) { var tot = out[k].V + out[k].S; if ((dTot >= 0 && tot >= target) || (dTot < 0 && tot <= target)) return out[k].t; } return null; }
+    var t50 = tFrac(0.5), t95 = tFrac(0.95);
+    txt('tT95', Math.abs(d) < 1e-9 ? '–' : (t50 === null ? '> 200' : fmt(t50, 0)) + ' / ' + (t95 === null ? '> 200' : fmt(t95, 0)) + ' yr');
+    var pk = out.reduce(function (a, p) { return Math.abs(p.sink) > Math.abs(a.sink) ? p : a; }, out[1] || out[0]);
+    txt('tPeak', fmt(pk.sink, 2) + ' at t = ' + fmt(pk.t, 0));
+    var html = '<thead><tr><th class="num">t (yr)</th><th class="num">Veg</th><th class="num">Soil</th><th class="num">Total</th><th class="num">Sink (Pg C yr⁻¹)</th></tr></thead><tbody>';
+    [0, 5, 10, 20, 30, 50, 75, 100, 150, 200].forEach(function (tt) { var p = out[Math.min(out.length - 1, tt)]; html += '<tr><td class="num">' + tt + '</td><td class="num">' + fmt(p.V, 0) + '</td><td class="num">' + fmt(p.S, 0) + '</td><td class="num">' + fmt(p.V + p.S, 0) + '</td><td class="num">' + fmt(p.sink, 2) + '</td></tr>'; });
+    document.getElementById('tauTable').innerHTML = html + '</tbody>';
+  }
+  bind(['tNPP', 'tTv', 'tTs', 'tStep'], drawTau); drawTau();
+
+  /* ---------- Lab D: Keeling ---------- */
+  var keelSvg = document.getElementById('keelSvg'), keelTip = document.getElementById('keelTip');
+  function drawKeel() {
+    outs(['kG', 'kA', 'kE']);
+    var g = val('kG'), A = val('kA'), E = val('kE');
+    function co2(t) { return 420 + g * t + (A / 2) * Math.sin(2 * Math.PI * (t - 0.12)); }
+    var pts = []; for (var m = 0; m <= 120; m++) pts.push([m / 12, co2(m / 12)]);
+    var lo = Math.min(co2(0), co2(10)) - A / 2 - 2, hi = Math.max(co2(0), co2(10)) + A / 2 + 2;
+    var ymin = Math.floor(lo / 5) * 5, ymax = Math.ceil(hi / 5) * 5; var step = (ymax - ymin) > 40 ? 10 : 5;
+    var c = mkChart(keelSvg, { W: 640, H: 380, mL: 60, mR: 24, xmin: 0, xmax: 10, ymin: ymin, ymax: ymax, xt: ticks(0, 10, 1), yt: ticks(ymin, ymax, step), xl: 'Years from 2024', yl: 'CO₂ (ppm)' });
+    series(c, [[0, 420], [10, 420 + 10 * g]], 'dash', 'var(--series-2)');
+    series(c, pts, 'net');
+    for (var y = 0; y < 10; y++) { var tmax = y + 0.37, tmin = y + 0.87; c.svg.appendChild(el('circle', { cx: c.sx(tmax), cy: c.sy(co2(tmax)), r: 3, fill: 'var(--series-1)' })); c.svg.appendChild(el('circle', { cx: c.sx(tmin), cy: c.sy(co2(tmin)), r: 3, fill: 'var(--series-1)' })); }
+    label(c, c.sx(0.37) + 6, c.sy(co2(0.37)) - 6, 'May', 'var(--series-1)', 'start', 'note'); label(c, c.sx(0.87) + 6, c.sy(co2(0.87)) + 12, 'Sep', 'var(--series-1)', 'start', 'note');
+    hover(c, keelTip, function (x) { var v = co2(x); var mo = Math.floor((x % 1) * 12); var names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return { y: v, html: names[mo] + ' ' + (2024 + Math.floor(x)) + '<br>CO₂ <b>' + fmt(v, 1) + '</b> ppm · trend <b>' + fmt(420 + g * x, 1) + '</b>' }; });
+    txt('kInc', fmt(g, 2) + ' ppm yr⁻¹'); txt('kPg', fmt(g * PPM, 2));
+    txt('kAF', E > 0 ? fmt(g * PPM / E, 2) : '–'); txt('kSink', fmt(E - g * PPM, 2)); txt('kEnd', fmt(420 + 10 * g, 1) + ' ppm');
+  }
+  bind(['kG', 'kA', 'kE'], drawKeel); drawKeel();
+
+  /* ---------- Lab B: two-box land model 1850-2100 ---------- */
+  var bbSvg = document.getElementById('bbSvg'), bbTip = document.getElementById('bbTip');
+  var bbView = 1;
+  function bbRun() {
+    var beta = val('bbBeta'), Q10 = val('bbQ10'), tv = val('bbTv'), ts = val('bbTs'), r = val('bbR') / 100;
+    var dt = 0.25, NPP0 = 60;
+    var runs = { cou: { V: NPP0 * tv, S: NPP0 * ts }, bgc: { V: NPP0 * tv, S: NPP0 * ts }, rad: { V: NPP0 * tv, S: NPP0 * ts } };
+    var Ca = 278, out = [], cumLand = 0;
+    function Eff(t) { var e2020 = 10; return t <= 2020 ? e2020 * Math.exp(0.024 * (t - 2020)) : e2020 * Math.pow(1 + r, t - 2020); }
+    function Eluc(t) { return t <= 2020 ? 1.3 : Math.max(0.3, 1.3 - (t - 2020) / 80); }
+    for (var t = 1850; t <= 2100 + 1e-9; t += dt) {
+      var dT = 1.8 * Math.log(Ca / 278) / Math.LN2;
+      var fCO2 = 1 + beta * Math.log(Ca / 278), fT = Math.pow(Q10, dT / 10);
+      function step(R, fc, ft) { var npp = NPP0 * fc; var dV = npp - R.V / tv, dS = R.V / tv - R.S / ts * ft; R.V += dt * dV; R.S += dt * dS; return dV + dS; }
+      var sCou = step(runs.cou, fCO2, fT), sBgc = step(runs.bgc, fCO2, 1), sRad = step(runs.rad, 1, fT);
+      var ocean = BO * (Ca - 278);
+      var E = Eff(t) + Eluc(t);
+      if (Math.abs(t - Math.round(t)) < 1e-6) out.push({ t: t, Ca: Ca, dT: dT, sCou: sCou, sBgc: sBgc, sRad: sRad, dCou: runs.cou.V + runs.cou.S - NPP0 * (tv + ts), dBgc: runs.bgc.V + runs.bgc.S - NPP0 * (tv + ts), dRad: runs.rad.V + runs.rad.S - NPP0 * (tv + ts), dV: runs.cou.V - NPP0 * tv, dS: runs.cou.S - NPP0 * ts, E: E, ocean: ocean });
+      Ca += dt * (E - sCou - ocean) / PPM; if (Ca < 100) Ca = 100;
+      cumLand += dt * sCou;
+    }
+    return { out: out, cum: cumLand };
+  }
+  function drawBB() {
+    outs(['bbBeta', 'bbQ10', 'bbTv', 'bbTs', 'bbR']);
+    var R = bbRun(), out = R.out;
+    var at = function (y) { return out[y - 1850]; };
+    var y20 = at(2020), y21 = at(2100);
+    var c, leg = document.getElementById('bbLegend');
+    if (bbView === 1) {
+      var mx = 0, mn = 0; out.forEach(function (p) { mx = Math.max(mx, p.sCou, p.sBgc, p.sRad); mn = Math.min(mn, p.sCou, p.sBgc, p.sRad); });
+      var ymax = Math.ceil(mx * 1.1), ymin = Math.floor(mn * 1.1); if (ymax - ymin < 4) ymax = ymin + 4;
+      c = mkChart(bbSvg, { W: 640, H: 380, mL: 56, mR: 60, xmin: 1850, xmax: 2100, ymin: ymin, ymax: ymax, xt: ticks(1850, 2100, 50), yt: ticks(ymin, ymax, (ymax - ymin) > 12 ? 2 : 1), xl: 'Year', yl: 'Land carbon sink (Pg C yr⁻¹)' });
+      series(c, out.map(function (p) { return [p.t, p.sBgc]; }), 'dash', 'var(--series-1)');
+      series(c, out.map(function (p) { return [p.t, p.sRad]; }), 'dash', 'var(--series-2)');
+      series(c, out.map(function (p) { return [p.t, p.sCou]; }), 'net');
+      rightLabels(c, [{ t: 'BGC', v: y21.sBgc, col: 'var(--series-1)' }, { t: 'RAD', v: y21.sRad, col: 'var(--series-2)' }, { t: 'coupled', v: y21.sCou, col: 'var(--fg)' }]);
+      c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(2020), x2: c.sx(2020), y1: c.mT, y2: c.mT + c.ph })); label(c, c.sx(2020) + 4, c.mT + 12, '2020', 'var(--muted)', 'start', 'note');
+      leg.innerHTML = '<span style="--c:var(--fg)">coupled (CO₂ + warming)</span><span style="--c:var(--series-1)">BGC: CO₂ only (dashed)</span><span style="--c:var(--series-2)">RAD: warming only (dashed)</span>';
+      hover(c, bbTip, function (x) { var p = at(Math.round(x)); return { y: p.sCou, html: '<b>' + p.t + '</b> · CO₂ ' + fmt(p.Ca, 0) + ' ppm · ΔT ' + fmt(p.dT, 2) + ' °C<br>sink coupled <b>' + fmt(p.sCou, 2) + '</b> · BGC ' + fmt(p.sBgc, 2) + ' · RAD ' + fmt(p.sRad, 2) + ' Pg C yr⁻¹<br>emissions ' + fmt(p.E, 1) + ' · ocean sink ' + fmt(p.ocean, 2) }; });
+    } else {
+      var mx2 = 0, mn2 = 0; out.forEach(function (p) { mx2 = Math.max(mx2, p.dCou, p.dBgc, p.dRad, p.dV, p.dS); mn2 = Math.min(mn2, p.dCou, p.dBgc, p.dRad, p.dV, p.dS); });
+      var ymax2 = Math.ceil(mx2 * 1.1 / 50) * 50, ymin2 = Math.floor(mn2 * 1.1 / 50) * 50; if (ymax2 - ymin2 < 100) ymax2 = ymin2 + 100;
+      c = mkChart(bbSvg, { W: 640, H: 380, mL: 60, mR: 60, xmin: 1850, xmax: 2100, ymin: ymin2, ymax: ymax2, xt: ticks(1850, 2100, 50), yt: ticks(ymin2, ymax2, (ymax2 - ymin2) > 600 ? 200 : (ymax2 - ymin2) > 300 ? 100 : 50), xl: 'Year', yl: 'Change in land carbon since 1850 (Pg C)' });
+      series(c, out.map(function (p) { return [p.t, p.dV]; }), '', 'var(--series-1)');
+      series(c, out.map(function (p) { return [p.t, p.dS]; }), '', 'var(--series-3)');
+      series(c, out.map(function (p) { return [p.t, p.dBgc]; }), 'dash thin', 'var(--muted)');
+      series(c, out.map(function (p) { return [p.t, p.dCou]; }), 'net');
+      rightLabels(c, [{ t: 'veg', v: y21.dV, col: 'var(--series-1)' }, { t: 'soil', v: y21.dS, col: 'var(--series-3)' }, { t: 'total', v: y21.dCou, col: 'var(--fg)' }, { t: 'BGC total', v: y21.dBgc, col: 'var(--muted)' }]);
+      c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(2020), x2: c.sx(2020), y1: c.mT, y2: c.mT + c.ph })); label(c, c.sx(2020) + 4, c.mT + 12, '2020', 'var(--muted)', 'start', 'note');
+      leg.innerHTML = '<span style="--c:var(--series-1)">vegetation (coupled)</span><span style="--c:var(--series-3)">soil (coupled)</span><span style="--c:var(--fg)">total (coupled)</span><span style="--c:var(--muted)">total, BGC run (dashed)</span>';
+      hover(c, bbTip, function (x) { var p = at(Math.round(x)); return { y: p.dCou, html: '<b>' + p.t + '</b> · CO₂ ' + fmt(p.Ca, 0) + ' ppm · ΔT ' + fmt(p.dT, 2) + ' °C<br>Δveg <b>' + fmt(p.dV, 0) + '</b> · Δsoil <b>' + fmt(p.dS, 0) + '</b> · total <b>' + fmt(p.dCou, 0) + '</b> Pg C<br>BGC total ' + fmt(p.dBgc, 0) + ' · RAD total ' + fmt(p.dRad, 0) }; });
+    }
+    txt('bbCO2', fmt(y20.Ca, 0) + ' / ' + fmt(y21.Ca, 0));
+    txt('bbT', fmt(y21.dT, 2));
+    var s = 0; for (var y = 2013; y <= 2022; y++) s += at(y).sCou; txt('bbS20', fmt(s / 10, 2) + ' Pg C yr⁻¹');
+    var dCO2 = y21.Ca - 278;
+    txt('bbBL', dCO2 > 1 ? fmt(y21.dBgc / dCO2, 2) : '–');
+    txt('bbGL', y21.dT > 0.05 ? fmt((y21.dCou - y21.dBgc) / y21.dT, 0) : '–');
+    txt('bbCum', fmt(R.cum, 0) + ' Pg C');
+    var html = '<thead><tr><th class="num">Year</th><th class="num">CO₂ (ppm)</th><th class="num">ΔT (°C)</th><th class="num">Sink coupled</th><th class="num">Sink BGC</th><th class="num">Sink RAD</th><th class="num">ΔC coupled (Pg)</th></tr></thead><tbody>';
+    [1850, 1900, 1950, 1980, 2000, 2020, 2040, 2060, 2080, 2100].forEach(function (yy) { var p = at(yy); html += '<tr><td class="num">' + yy + '</td><td class="num">' + fmt(p.Ca, 0) + '</td><td class="num">' + fmt(p.dT, 2) + '</td><td class="num">' + fmt(p.sCou, 2) + '</td><td class="num">' + fmt(p.sBgc, 2) + '</td><td class="num">' + fmt(p.sRad, 2) + '</td><td class="num">' + fmt(p.dCou, 0) + '</td></tr>'; });
+    document.getElementById('bbTable').innerHTML = html + '</tbody>';
+  }
+  bind(['bbBeta', 'bbQ10', 'bbTv', 'bbTs', 'bbR'], drawBB);
+  document.getElementById('bbView1').addEventListener('click', function () { bbView = 1; this.classList.add('on'); document.getElementById('bbView2').classList.remove('on'); drawBB(); });
+  document.getElementById('bbView2').addEventListener('click', function () { bbView = 2; this.classList.add('on'); document.getElementById('bbView1').classList.remove('on'); drawBB(); });
+  drawBB();
+})();
+</script>
+</body>
+</html>

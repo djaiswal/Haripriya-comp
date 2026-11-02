@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hypothesis Testing and Confidence Intervals</title>
+<meta name="description" content="Hypothesis testing and confidence intervals at comprehensive-exam depth: sampling distributions and the CLT, p-values and errors, t, F, ANOVA, χ² and nonparametric tests, multiple testing, confidence-interval construction, bootstrap and profile-likelihood intervals, and the pitfalls of ecological data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .thin { stroke-width: 1.4; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ann { font-size: 11px; fill: var(--muted); }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .bar { fill: var(--series-1); fill-opacity: 0.55; stroke: var(--surface); stroke-width: 0.6; }
+  .ch .area { stroke: none; }
+  .chartbox { position: relative; }
+  .ctrl select { width: 100%; font: inherit; font-size: 0.85rem; padding: 0.25rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .twocharts { display: grid; gap: 0.5rem; }
+  .ok { color: var(--accent); font-weight: 600; } .bad { color: var(--accent-2); font-weight: 600; }
+  .misuse li { margin-bottom: 0.45rem; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Hypothesis testing and confidence intervals</div>
+    <div class="eyebrow">Topic 1 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Hypothesis Testing and Confidence Intervals</h1>
+    <p class="lead">How a handful of leaves, soil cores or flux half-hours becomes a statement about a population: the sampling distribution that makes inference possible, the tests that exploit it, and the intervals that report what the data can and cannot tell you.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Every statistic you compute from a sample (a mean V<sub>cmax</sub>, a difference in soil respiration between treatments, a fitted slope) is a random variable: repeat the experiment and you get a different number. Its distribution across hypothetical repeats is the <strong>sampling distribution</strong>, and its standard deviation is the <strong>standard error</strong>. Frequentist inference is the art of saying something about the sampling distribution from one realisation of it. A <strong>hypothesis test</strong> asks whether the observed statistic would be unusual if a specific null hypothesis were true, summarised by a p-value; a <strong>confidence interval</strong> inverts the test to report every parameter value that the data do not reject. Both rest on assumptions (independence above all) that ecological data routinely violate, and both are misread more often than they are read correctly. The practical message for a modeller: report effect sizes with intervals, choose the test by the data-generating process rather than by habit, and treat p = 0.04 and p = 0.06 as the same evidence.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to be asked for exact definitions (p-value, confidence level, power), for a derivation (ANOVA sums of squares, the t-interval from a pivotal quantity), and for judgement: why a t-test on half-hourly flux data is wrong, why five leaves in one growth chamber are not five replicates, and how you would put an uncertainty on a V<sub>cmax</sub> fitted from an A–C<sub>i</sub> curve. Every section below works an ecosystem example.</p></div>
+  </section>
+
+  <section id="foundations">
+    <h2>Populations, samples and the sampling distribution</h2>
+    <p>A <strong>population</strong> is the set of units you want to speak about (all soil cores in a field, all possible half-hours of NEE from a stand under given conditions). A <strong>parameter</strong> θ is a fixed but unknown property of it (its mean μ, variance σ², a regression slope). A <strong>sample</strong> X<sub>1</sub>, …, X<sub>n</sub> is a set of observations modelled as random draws, and an <strong>estimator</strong> is a rule \(\hat\theta = T(X_1,\dots,X_n)\) that converts a sample into a guess. Good estimators are unbiased (\(E[\hat\theta] = \theta\)), consistent (\(\hat\theta \to \theta\) as \(n\to\infty\)) and efficient (smallest variance among competitors). The sample mean \(\bar X\) is unbiased for μ with</p>
+    <div class="eq">$$\operatorname{Var}(\bar X) = \frac{\sigma^2}{n}, \qquad \mathrm{SE}(\bar X) = \frac{\sigma}{\sqrt n} \;\approx\; \frac{s}{\sqrt n},$$</div>
+    <p>where \(s^2 = \frac{1}{n-1}\sum (X_i - \bar X)^2\) is the unbiased sample variance (the n − 1 corrects for having estimated μ; the bias of the n version is −σ²/n, derived on the bias–variance page). The standard error shrinks as \(1/\sqrt n\): halving it costs four times the sampling effort, a fact that governs every field campaign budget.</p>
+    <p>The <strong>central limit theorem</strong> (CLT) is what makes the normal distribution ubiquitous. If X<sub>i</sub> are independent with finite mean μ and variance σ², then</p>
+    <div class="eq">$$\frac{\bar X - \mu}{\sigma/\sqrt n} \;\xrightarrow{d}\; N(0,1) \quad \text{as } n \to \infty,$$</div>
+    <p>whatever the shape of the population. The convergence is fast for symmetric populations and slow for skewed ones: the Berry–Esseen bound puts the error at order \(\rho/(\sigma^3\sqrt n)\), where ρ is the third absolute central moment, so skewness is exactly what delays normality. Soil respiration, root biomass and hydraulic conductivity are typically lognormal with CV above 50%, and the lab below shows that the sampling distribution of their mean is still visibly skewed at n = 5 and only comfortably normal by n ≈ 30. The CLT applies to sums and means; it says nothing about the sampling distribution of a variance, a maximum, or a ratio at small n, which is one reason the bootstrap exists.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Sampling-distribution simulator: means of lognormal soil respiration</h3><div class="btnrow"><button class="btn small" id="saBtn" type="button">Resample</button><span class="small muted">Hover for values</span></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="saSvg" viewBox="0 0 640 360" role="img" aria-label="Histogram of 2000 sample means from a lognormal population with the normal approximation and the population density overlaid"></svg>
+            <div class="chart-tip" id="saTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">histogram of 2000 sample means</span><span style="--c:var(--fg)">normal N(μ, σ²/n) predicted by the CLT</span><span style="--c:var(--muted)">population density (dashed)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="saTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="saN"><span>Sample size n</span><output id="saNO">5</output></label><input type="range" id="saN" min="1" max="100" step="1" value="5"></div>
+          <div class="ctrl"><label for="saS"><span>Population skew: σ of log R<sub>s</sub></span><output id="saSO">0.70</output></label><input type="range" id="saS" min="0.05" max="1.2" step="0.05" value="0.7"></div>
+          <dl class="readout">
+            <dt>Population mean μ (µmol m⁻² s⁻¹)</dt><dd id="saMu"></dd>
+            <dt>Population SD σ · CV</dt><dd id="saSd"></dd>
+            <dt>Population skewness</dt><dd id="saSk"></dd>
+            <dt>Theoretical SE σ/√n</dt><dd id="saSe"></dd>
+            <dt>Empirical SD of the 2000 means</dt><dd id="saEs"></dd>
+            <dt>Skewness of the means</dt><dd id="saMs"></dd>
+            <dt>Means within μ ± 1.96 SE</dt><dd id="saCov"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Population: lognormal with median 3 µmol m⁻² s⁻¹. Suggested experiments: n = 1 (the histogram is the population), then 5, 10, 30, 100; watch the normal curve fit and the SE shrink by half each time n quadruples. Raise σ<sub>log</sub> to 1.2 and see how much larger n must be before the ±1.96 SE fraction reaches 95%.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="logic">
+    <h2>The logic of a test</h2>
+    <p>A test begins with a <strong>null hypothesis</strong> H<sub>0</sub>, a precise statement about parameters (μ<sub>elevated</sub> − μ<sub>ambient</sub> = 0), and an <strong>alternative</strong> H<sub>1</sub> (≠ 0, or &gt; 0 for a one-sided test). You choose a <strong>test statistic</strong> T whose sampling distribution is known <em>if H<sub>0</sub> and the model assumptions hold</em>, compute its observed value t<sub>obs</sub>, and report</p>
+    <div class="eq">$$p = P\big(T \text{ at least as extreme as } t_{obs} \;\big|\; H_0 \text{ and assumptions true}\big).$$</div>
+    <p>That is the whole definition. Small p means the data would be surprising under H<sub>0</sub>; it is a measure of <em>incompatibility</em> between data and a model, nothing more. Greenland et al. [13] list 25 common misreadings; the four that matter most are:</p>
+    <ul class="misuse">
+      <li>p is <strong>not</strong> P(H<sub>0</sub> | data). It conditions on H<sub>0</sub>, not on the data; reversing the conditioning needs a prior (Bayes).</li>
+      <li>p is <strong>not</strong> the probability that the result "arose by chance". Under H<sub>0</sub> every result arises by chance; p is the probability of a result this extreme, given that.</li>
+      <li>1 − p is <strong>not</strong> the probability that H<sub>1</sub> is true, and p &gt; 0.05 is <strong>not</strong> evidence of no effect. Absence of evidence is not evidence of absence; a non-significant result with a wide CI is uninformative.</li>
+      <li>p says nothing about the <strong>size</strong> or importance of an effect. With n = 10⁴ flux half-hours a 0.1 µmol m⁻² s⁻¹ difference is "highly significant" and biologically trivial.</li>
+    </ul>
+    <p>In the Neyman–Pearson framing you fix a <strong>significance level α</strong> in advance and reject H<sub>0</sub> when p ≤ α. Two errors are then possible. A <strong>Type I error</strong> rejects a true H<sub>0</sub>; its probability is α by construction. A <strong>Type II error</strong> fails to reject a false H<sub>0</sub>; its probability β depends on the true effect, the noise and n, and <strong>power</strong> = 1 − β is the probability of detecting an effect that is really there. Power rises with the <strong>effect size</strong>, which should be stated in meaningful units (a 15% reduction in V<sub>cmax</sub>) and may be standardised as Cohen's d = (μ<sub>1</sub> − μ<sub>2</sub>)/σ (0.2 small, 0.5 medium, 0.8 large by convention [12]). A <strong>one-sided</strong> test puts all of α in one tail and is legitimate only when the direction was fixed before the data were seen and the opposite direction would be treated as "no effect"; defaulting to two-sided is the safe habit.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Two-sample Welch t-test visualiser: V<sub>cmax</sub> under ambient vs elevated CO₂</h3><span class="small muted">Set the sample statistics; the test and its power follow</span></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="tbSvg1" viewBox="0 0 640 230" role="img" aria-label="Population and sampling distributions of the two group means"></svg>
+            <div class="chart-tip" id="tbTip1" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="tbSvg2" viewBox="0 0 640 260" role="img" aria-label="Null t distribution with rejection regions, the observed t statistic, and the alternative distribution with the power shaded"></svg>
+            <div class="chart-tip" id="tbTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">ambient (group 1)</span><span style="--c:var(--series-2)">elevated (group 2)</span><span style="--c:var(--fg)">t<sub>ν</sub> under H<sub>0</sub></span><span style="--c:var(--accent-2)">rejection region (α)</span><span style="--c:var(--accent)">observed t</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="tbM1"><span>Mean 1, ambient (µmol m⁻² s⁻¹)</span><output id="tbM1O">60</output></label><input type="range" id="tbM1" min="30" max="100" step="1" value="60"></div>
+          <div class="ctrl"><label for="tbM2"><span>Mean 2, elevated</span><output id="tbM2O">52</output></label><input type="range" id="tbM2" min="30" max="100" step="1" value="52"></div>
+          <div class="ctrl"><label for="tbS1"><span>SD 1</span><output id="tbS1O">10</output></label><input type="range" id="tbS1" min="2" max="30" step="1" value="10"></div>
+          <div class="ctrl"><label for="tbS2"><span>SD 2</span><output id="tbS2O">10</output></label><input type="range" id="tbS2" min="2" max="30" step="1" value="10"></div>
+          <div class="ctrl"><label for="tbN1"><span>n<sub>1</sub></span><output id="tbN1O">8</output></label><input type="range" id="tbN1" min="2" max="60" step="1" value="8"></div>
+          <div class="ctrl"><label for="tbN2"><span>n<sub>2</sub></span><output id="tbN2O">8</output></label><input type="range" id="tbN2" min="2" max="60" step="1" value="8"></div>
+          <div class="ctrl"><label for="tbA"><span>α</span></label><select id="tbA"><option value="0.1">0.10</option><option value="0.05" selected>0.05</option><option value="0.01">0.01</option></select></div>
+          <div class="ctrl"><label for="tbSide"><span>Alternative</span></label><select id="tbSide"><option value="two" selected>two-sided (μ₁ ≠ μ₂)</option><option value="one">one-sided (μ₁ &gt; μ₂)</option></select></div>
+          <dl class="readout">
+            <dt>SE of the difference</dt><dd id="tbSe"></dd>
+            <dt>t statistic</dt><dd id="tbT"></dd>
+            <dt>Welch df ν</dt><dd id="tbNu"></dd>
+            <dt>Critical |t|</dt><dd id="tbCrit"></dd>
+            <dt>p-value</dt><dd id="tbP"></dd>
+            <dt>Decision at α</dt><dd id="tbDec"></dd>
+            <dt>Cohen's d</dt><dd id="tbD"></dd>
+            <dt>Power if these were the true values</dt><dd id="tbPow"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Power uses the shifted-t approximation to the noncentral t. Suggested experiments: keep the 8 µmol m⁻² s⁻¹ difference and raise n to 25 per group (p crosses 0.05, power passes 0.8); set SD<sub>2</sub> = 25 with n<sub>2</sub> = 4 and watch ν collapse toward n<sub>2</sub> − 1; compare one- and two-sided p for the same data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tests">
+    <h2>The standard tests and where they come from</h2>
+    <h3>z and t: one mean, two means, paired differences</h3>
+    <p>If σ is known, \(z = (\bar X - \mu_0)/(\sigma/\sqrt n) \sim N(0,1)\) under H<sub>0</sub>. In practice σ is estimated, and replacing it by s adds variability that the normal ignores. Student (1908) showed that for normal data</p>
+    <div class="eq">$$t = \frac{\bar X - \mu_0}{s/\sqrt n} \sim t_{n-1}, \qquad f(t) = \frac{\Gamma\!\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu\pi}\,\Gamma\!\left(\frac{\nu}{2}\right)}\left(1 + \frac{t^2}{\nu}\right)^{-\frac{\nu+1}{2}},$$</div>
+    <p>a bell with heavier tails indexed by its <strong>degrees of freedom</strong> ν = n − 1 (the number of independent deviations from the mean once the mean itself has been used). The result follows from \(\bar X\) and \(s^2\) being independent for normal data, with \((n-1)s^2/\sigma^2 \sim \chi^2_{n-1}\); t is a standard normal divided by \(\sqrt{\chi^2_\nu/\nu}\). As ν → ∞ the t distribution becomes normal; t<sub>0.975</sub> is 2.57 at ν = 5, 2.23 at 10 and 2.04 at 30, against z = 1.96.</p>
+    <p>For <strong>paired</strong> designs (the same leaf before and after a drought cycle; the same plot in two years) take differences d<sub>i</sub> and apply the one-sample test to them, \(t = \bar d/(s_d/\sqrt n)\), ν = n − 1. Pairing removes between-unit variance from the denominator and is the simplest form of blocking. For two <strong>independent</strong> samples the classical pooled test assumes equal variances,</p>
+    <div class="eq">$$t = \frac{\bar X_1 - \bar X_2}{s_p\sqrt{1/n_1 + 1/n_2}}, \qquad s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}, \qquad \nu = n_1+n_2-2,$$</div>
+    <p>while <strong>Welch's</strong> test [10] drops that assumption:</p>
+    <div class="eq">$$t = \frac{\bar X_1 - \bar X_2}{\sqrt{s_1^2/n_1 + s_2^2/n_2}}, \qquad \nu \approx \frac{\left(s_1^2/n_1 + s_2^2/n_2\right)^2}{\dfrac{(s_1^2/n_1)^2}{n_1-1} + \dfrac{(s_2^2/n_2)^2}{n_2-1}}.$$</div>
+    <p>The Welch–Satterthwaite ν comes from matching the variance of the estimated denominator to that of a scaled χ²; it lies between min(n<sub>1</sub>, n<sub>2</sub>) − 1 and n<sub>1</sub> + n<sub>2</sub> − 2. Welch loses almost nothing when variances are equal and protects you when they are not, especially with unequal n, so it should be the default (R's <code>t.test</code> already makes it so). Do not "test for equal variances first": the two-stage procedure has worse properties than simply using Welch.</p>
+
+    <h3>F and one-way ANOVA</h3>
+    <p>To compare k group means at once (V<sub>cmax</sub> across four nitrogen levels), decompose the total variation about the grand mean \(\bar X\) into between-group and within-group parts. With n<sub>j</sub> observations in group j, N = Σn<sub>j</sub>, and group means \(\bar X_j\):</p>
+    <div class="eq">$$\underbrace{\sum_j\sum_i (X_{ij}-\bar X)^2}_{SS_T} \;=\; \underbrace{\sum_j n_j(\bar X_j - \bar X)^2}_{SS_B} \;+\; \underbrace{\sum_j\sum_i (X_{ij}-\bar X_j)^2}_{SS_W},$$</div>
+    <p>because the cross term \(\sum_j (\bar X_j-\bar X)\sum_i(X_{ij}-\bar X_j)\) vanishes (the inner sum is zero by definition of the group mean). Divide by degrees of freedom to get mean squares and form</p>
+    <div class="eq">$$F = \frac{MS_B}{MS_W} = \frac{SS_B/(k-1)}{SS_W/(N-k)} \;\sim\; F_{k-1,\,N-k} \text{ under } H_0: \mu_1 = \dots = \mu_k.$$</div>
+    <p>The logic is that \(E[MS_W] = \sigma^2\) always, while \(E[MS_B] = \sigma^2 + \sum_j n_j\tau_j^2/(k-1)\) with τ<sub>j</sub> = μ<sub>j</sub> − μ: group differences inflate the numerator only. For k = 2 the one-way F equals the pooled t² exactly. The F distribution is the ratio of two independent χ² variables each divided by its df; the same F test, with s<sub>1</sub>²/s<sub>2</sub>² ~ F<sub>n₁−1, n₂−1</sub>, compares two variances, but it is so sensitive to non-normality that Levene's or the Brown–Forsythe test is preferred for that job.</p>
+    <p>A significant F says only that not all means are equal. <strong>Post-hoc</strong> comparisons then ask which pairs differ: Tukey's HSD (studentised range, all pairs), Dunnett's (each treatment vs control), or pairwise t-tests with a multiplicity correction (next section). Planned contrasts specified in advance (linear trend across N levels) are more powerful than unplanned pairwise fishing.</p>
+
+    <h3>χ² tests for counts</h3>
+    <p>For categorical data (presence/absence of mycorrhizal colonisation across soil types; counts of seedlings per quadrat class) compare observed counts O<sub>i</sub> with expected E<sub>i</sub>:</p>
+    <div class="eq">$$X^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \;\stackrel{\text{approx}}{\sim}\; \chi^2_{\text{df}}.$$</div>
+    <p>In a <strong>goodness-of-fit</strong> test against a fully specified distribution df = k − 1, minus one more for each parameter estimated from the data (fitting a Poisson to quadrat counts costs one df for λ̂). In an r × c <strong>test of independence</strong>, E<sub>ij</sub> = (row total × column total)/N and df = (r − 1)(c − 1). The approximation needs expected counts of about 5 or more; otherwise use Fisher's exact test or a permutation test. χ² is also the asymptotic distribution of the likelihood-ratio statistic, which is why it reappears in nonlinear-model inference below.</p>
+
+    <h3>Nonparametric and permutation alternatives</h3>
+    <p>Rank tests replace the data by their ranks and need no distributional form. The <strong>Mann–Whitney U</strong> (Wilcoxon rank-sum) test compares two independent groups; its null is that the two distributions are identical, and it is best read as a test of P(X &gt; Y) = ½, not strictly of medians. The <strong>Wilcoxon signed-rank</strong> test is the paired analogue, and <strong>Kruskal–Wallis</strong> is a rank ANOVA whose statistic H is approximately χ²<sub>k−1</sub>. They sacrifice a little power for normal data (asymptotic efficiency 3/π ≈ 0.95) and gain a lot for heavy-tailed data, but they do not fix non-independence and they can be sensitive to unequal variances. A <strong>permutation test</strong> is more general: compute your statistic (a difference in means, a correlation, an F) for the data, then for many random relabellings of the group memberships, and report the fraction of relabellings at least as extreme. It is exact under <em>exchangeability</em> of units under H<sub>0</sub>, works for any statistic, and is the natural route for odd quantities such as a difference in fitted Γ* between two species. For time series, exchangeability fails and one must permute blocks or whole seasons.</p>
+
+    <h3>Assumptions and diagnostics</h3>
+    <p>Three assumptions underlie almost everything above. <strong>Independence</strong> is the most important and the least checkable from the data: it must come from the design. <strong>Normality</strong> matters for the sampling distribution of the statistic, not the raw data; the CLT rescues tests on means at moderate n but not tests on variances or small-sample tests with skewed data. <strong>Homoscedasticity</strong> (equal variance across groups or along a regression) matters for pooled tests and for the SE of regression slopes. Diagnose with residual plots (residuals vs fitted; QQ plot of residuals), not with formal tests of the assumptions, which are underpowered at small n and over-sensitive at large n. Ives [16] shows that, for the usual goal of testing a mean or slope, log-transforming skewed count or biomass data and running a linear model often performs as well as or better than a GLM on the raw scale; what you must not do is let the choice follow the p-value.</p>
+  </section>
+
+  <section id="multiple">
+    <h2>Multiple testing</h2>
+    <p>Run m independent tests of true nulls at α = 0.05 and the probability of at least one false rejection, the <strong>family-wise error rate</strong> (FWER), is 1 − (1 − α)<sup>m</sup>: 0.40 for m = 10, 0.64 for m = 20, 0.99 for m = 100. A screen of 50 soil variables against a treatment is <em>expected</em> to produce 2.5 "significant" results from noise alone. Three corrections are standard.</p>
+    <ul>
+      <li><strong>Bonferroni</strong>: reject when p<sub>i</sub> ≤ α/m. Controls FWER ≤ α for any dependence structure (Boole's inequality), but is conservative, with power collapsing as m grows.</li>
+      <li><strong>Holm</strong> (step-down): sort p<sub>(1)</sub> ≤ … ≤ p<sub>(m)</sub>; reject p<sub>(i)</sub> while p<sub>(i)</sub> ≤ α/(m − i + 1); stop at the first failure. Uniformly more powerful than Bonferroni, still controls FWER, no extra assumptions. There is no reason to prefer Bonferroni over Holm.</li>
+      <li><strong>Benjamini–Hochberg</strong> (BH) [7]: find the largest i with p<sub>(i)</sub> ≤ iα/m and reject all hypotheses up to it. This controls the <strong>false discovery rate</strong>, FDR = E[false rejections / total rejections], at π<sub>0</sub>α ≤ α, where π<sub>0</sub> is the fraction of true nulls. It accepts a few false discoveries in exchange for far more true ones, the right trade-off in exploratory screens (which genes, which soil properties, which pixels) where follow-up will happen.</li>
+    </ul>
+    <p>The choice between FWER and FDR is scientific, not statistical: controlling FWER is for confirmatory claims where a single false positive is costly; FDR is for generating a shortlist. Either way, the family must be defined honestly, which means counting the tests you ran and did not report.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Multiple-testing simulator: m tests, some true nulls, three decision rules</h3><div class="btnrow"><button class="btn small" id="mtBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="mtSvg" viewBox="0 0 640 360" role="img" aria-label="Sorted p-values against rank with the raw alpha, Bonferroni and Benjamini–Hochberg thresholds"></svg>
+            <div class="chart-tip" id="mtTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--muted)">true null (no effect)</span><span style="--c:var(--series-2)">real effect</span><span style="--c:var(--accent)">raw α</span><span style="--c:var(--accent-2)">Bonferroni α/m</span><span style="--c:var(--series-3)">BH line iα/m</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="mtTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mtM"><span>Number of tests m</span><output id="mtMO">100</output></label><input type="range" id="mtM" min="10" max="400" step="10" value="100"></div>
+          <div class="ctrl"><label for="mtPi"><span>Fraction of true nulls π<sub>0</sub></span><output id="mtPiO">0.80</output></label><input type="range" id="mtPi" min="0" max="1" step="0.05" value="0.8"></div>
+          <div class="ctrl"><label for="mtD"><span>Effect size d for real effects</span><output id="mtDO">1.0</output></label><input type="range" id="mtD" min="0" max="2.5" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="mtN"><span>n per group</span><output id="mtNO">10</output></label><input type="range" id="mtN" min="3" max="60" step="1" value="10"></div>
+          <div class="ctrl"><label for="mtA"><span>α</span><output id="mtAO">0.05</output></label><input type="range" id="mtA" min="0.01" max="0.2" step="0.01" value="0.05"></div>
+          <dl class="readout">
+            <dt>Expected false positives at raw α</dt><dd id="mtExp"></dd>
+            <dt>Raw α: rejected (false)</dt><dd id="mtRaw"></dd>
+            <dt>Bonferroni: rejected (false)</dt><dd id="mtBon"></dd>
+            <dt>Holm: rejected (false)</dt><dd id="mtHolm"></dd>
+            <dt>BH: rejected (false)</dt><dd id="mtBH"></dd>
+            <dt>Empirical FDR, raw · BH</dt><dd id="mtFdr"></dd>
+            <dt>FWER bound 1 − (1 − α)<sup>m</sup></dt><dd id="mtFwer"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Each test is a two-sample z-test with n per group; real effects have standardised difference d. Suggested experiments: set π<sub>0</sub> = 1 (all nulls) and count how many raw rejections appear; then π<sub>0</sub> = 0.5 with d = 0.5 and compare how many real effects Bonferroni and BH recover; raise n and watch the two rules converge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ci">
+    <h2>Confidence intervals</h2>
+    <p>A <strong>confidence procedure</strong> at level 1 − α is a pair of statistics L(X), U(X) such that</p>
+    <div class="eq">$$P_\theta\big(L(X) \le \theta \le U(X)\big) \;\ge\; 1-\alpha \quad \text{for every } \theta.$$</div>
+    <p>The probability is over repeated samples; θ is fixed. A realised interval [52.1, 61.3] either contains θ or does not, and the 95% belongs to the <em>procedure</em>: in the long run 95% of the intervals it produces cover the truth (Neyman 1937 [9]). "There is a 95% probability that V<sub>cmax</sub> lies in [52.1, 61.3]" is a Bayesian statement about a <em>credible</em> interval and needs a prior; for flat priors and large n the two intervals coincide numerically, which is why the misreading is so common and so rarely harmful. The lab below makes the frequentist definition concrete by drawing 100 intervals and counting.</p>
+    <h3>Construction via pivotal quantities</h3>
+    <p>The standard recipe is to find a <strong>pivot</strong>: a function of the data and θ whose distribution does not depend on θ. For a normal mean with unknown σ,</p>
+    <div class="eq">$$\frac{\bar X - \mu}{s/\sqrt n} \sim t_{n-1} \;\Longrightarrow\; P\!\left(-t_{n-1,1-\alpha/2} \le \frac{\bar X - \mu}{s/\sqrt n} \le t_{n-1,1-\alpha/2}\right) = 1-\alpha,$$</div>
+    <p>and solving the inequality for μ gives the familiar interval \(\bar X \pm t_{n-1,1-\alpha/2}\, s/\sqrt n\). The same recipe gives the other standard intervals:</p>
+    <ul>
+      <li><strong>Difference in means</strong> (Welch): \((\bar X_1 - \bar X_2) \pm t_{\nu,1-\alpha/2}\sqrt{s_1^2/n_1 + s_2^2/n_2}\).</li>
+      <li><strong>Variance</strong>: from \((n-1)s^2/\sigma^2 \sim \chi^2_{n-1}\), \(\sigma^2 \in \left[\dfrac{(n-1)s^2}{\chi^2_{n-1,1-\alpha/2}},\; \dfrac{(n-1)s^2}{\chi^2_{n-1,\alpha/2}}\right]\), which is asymmetric about s² and very wide at small n (n = 10 gives roughly [0.47 s², 3.3 s²]).</li>
+      <li><strong>Proportion</strong>: the <strong>Wald</strong> interval \(\hat p \pm z\sqrt{\hat p(1-\hat p)/n}\) uses the estimated SE and has poor coverage, often far below nominal, when p is near 0 or 1 or n is small (and it collapses to zero width at p̂ = 0). The <strong>Wilson</strong> interval inverts the score test using the null SE, \(\sqrt{p_0(1-p_0)/n}\), and solving \(|\hat p - p_0| = z\sqrt{p_0(1-p_0)/n}\) for p<sub>0</sub> gives
+      <div class="eq">$$\frac{\hat p + \frac{z^2}{2n} \;\pm\; z\sqrt{\frac{\hat p(1-\hat p)}{n} + \frac{z^2}{4n^2}}}{1 + z^2/n},$$</div>
+      which has close to nominal coverage for all p and n ≥ 5. Use Wilson (or Agresti–Coull) for survival fractions and germination rates; never Wald.</li>
+    </ul>
+    <h3>Duality with tests</h3>
+    <p>The 1 − α confidence set is exactly the set of parameter values θ<sub>0</sub> that a level-α test would <em>not</em> reject: \(\theta_0 \in CI \iff p(\theta_0) &gt; \alpha\). So a 95% CI for a difference that excludes zero is equivalent to p &lt; 0.05, but the interval says much more: its location gives the effect size and its width gives the precision. Two studies with p = 0.03 may have intervals [0.2, 14] and [6.1, 7.9]; only the second is informative. This is why the ASA statement [6] and most journals now ask for estimates with intervals rather than bare p-values. Interval width scales with SE, so with 1/√n: a 95% interval roughly ±2 SE, a 99% interval ±2.6 SE.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Coverage simulation: 100 confidence intervals for a mean</h3><div class="btnrow"><button class="btn small" id="ciBtn" type="button">Resample 100</button><button class="btn small" id="ciBtn10" type="button">Run 1000 more</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="ciSvg" viewBox="0 0 640 400" role="img" aria-label="One hundred t-based confidence intervals drawn as horizontal segments, with intervals that miss the true mean highlighted"></svg>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">interval covers μ</span><span style="--c:var(--accent-2)">interval misses μ</span><span style="--c:var(--fg)">true mean μ</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="ciC"><span>Confidence level (%)</span><output id="ciCO">95</output></label><input type="range" id="ciC" min="50" max="99" step="1" value="95"></div>
+          <div class="ctrl"><label for="ciN"><span>Sample size n</span><output id="ciNO">10</output></label><input type="range" id="ciN" min="3" max="100" step="1" value="10"></div>
+          <div class="ctrl"><label for="ciPop"><span>Population</span></label><select id="ciPop"><option value="normal" selected>normal (leaf N, μ = 2.0, σ = 0.4)</option><option value="lognormal">lognormal, skewed (soil R<sub>s</sub>, σ<sub>log</sub> = 0.9)</option></select></div>
+          <dl class="readout">
+            <dt>Interval</dt><dd id="ciForm"></dd>
+            <dt>t multiplier</dt><dd id="ciTq"></dd>
+            <dt>Coverage in these 100</dt><dd id="ciHit"></dd>
+            <dt>Expected misses per 100</dt><dd id="ciExp"></dd>
+            <dt>Mean half-width</dt><dd id="ciW"></dd>
+            <dt>Cumulative coverage</dt><dd id="ciCum"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: press "Run 1000 more" several times at 95% and watch the cumulative coverage settle near 0.95; drop to 50% to see half the intervals miss; switch to the skewed population at n = 5 and note the coverage deficit and the asymmetry of the misses (most intervals that miss lie below μ), then raise n until the CLT repairs it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bootstrap">
+    <h2>Bootstrap intervals</h2>
+    <p>Many quantities you actually care about have no textbook pivot: a ratio such as J<sub>max</sub>/V<sub>cmax</sub>, a median, an optimum temperature read off a fitted curve, the output of a soil-carbon model run at the fitted parameters. Efron's <strong>bootstrap</strong> [8] replaces the unknown sampling distribution by the distribution of the statistic across resamples drawn <em>with replacement</em> from the data. Draw B resamples of size n, compute \(\hat\theta^*_b\) for each, and:</p>
+    <ul>
+      <li><strong>Bootstrap SE</strong> = SD of the \(\hat\theta^*_b\); normal interval \(\hat\theta \pm z\,\mathrm{SE}^*\).</li>
+      <li><strong>Percentile interval</strong>: the α/2 and 1 − α/2 quantiles of the \(\hat\theta^*_b\). Simple, transformation-respecting, but biased when the bootstrap distribution is shifted or skewed relative to the truth.</li>
+      <li><strong>BCa</strong> (bias-corrected and accelerated): adjust the percentiles using a bias term \(z_0 = \Phi^{-1}\big(\#\{\hat\theta^*_b &lt; \hat\theta\}/B\big)\) and an acceleration \(a\) estimated by the jackknife, \(a = \sum_i(\bar\theta_{(\cdot)} - \hat\theta_{(i)})^3 \big/ 6\big[\sum_i(\bar\theta_{(\cdot)} - \hat\theta_{(i)})^2\big]^{3/2}\), where \(\hat\theta_{(i)}\) omits observation i. The endpoints are the bootstrap quantiles at
+      <div class="eq">$$\alpha_1 = \Phi\!\left(z_0 + \frac{z_0 + z_{\alpha/2}}{1 - a(z_0 + z_{\alpha/2})}\right), \qquad \alpha_2 = \Phi\!\left(z_0 + \frac{z_0 + z_{1-\alpha/2}}{1 - a(z_0 + z_{1-\alpha/2})}\right).$$</div>
+      BCa is second-order accurate (coverage error O(1/n) rather than O(1/√n)) and is the default recommendation when B ≥ 2000.</li>
+    </ul>
+    <p>The bootstrap assumes the sample is a fair picture of the population: it fails for very small n (n = 4 has only 35 distinct resamples), for extremes (the maximum), and for dependent data, where you must resample blocks (block bootstrap for flux time series) or whole clusters (resample plots, not leaves within plots). For regression and nonlinear models you can resample cases or resample residuals; the latter keeps the design fixed and is the usual choice for A–C<sub>i</sub> curves where the C<sub>i</sub> levels are set by the experimenter.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Bootstrap CI for J<sub>max</sub>/V<sub>cmax</sub> from a small leaf sample</h3><div class="btnrow"><button class="btn small" id="bsBtn" type="button">New leaf sample</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="bsSvg" viewBox="0 0 640 340" role="img" aria-label="Histogram of 2000 bootstrap replicates of the ratio of mean Jmax to mean Vcmax, with percentile, BCa and normal intervals marked"></svg>
+            <div class="chart-tip" id="bsTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">bootstrap replicates</span><span style="--c:var(--fg)">point estimate</span><span style="--c:var(--series-1)">percentile CI</span><span style="--c:var(--series-2)">BCa CI</span><span style="--c:var(--series-3)">normal (SE*) CI</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (the leaf sample)</summary><div class="tablewrap"><table id="bsTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bsN"><span>Leaves sampled n</span><output id="bsNO">8</output></label><input type="range" id="bsN" min="4" max="40" step="1" value="8"></div>
+          <div class="ctrl"><label for="bsC"><span>Confidence level (%)</span><output id="bsCO">95</output></label><input type="range" id="bsC" min="80" max="99" step="1" value="95"></div>
+          <dl class="readout">
+            <dt>Estimate \(\bar J_{max}/\bar V_{cmax}\)</dt><dd id="bsTh"></dd>
+            <dt>Bootstrap SE</dt><dd id="bsSe"></dd>
+            <dt>Bootstrap bias (mean θ* − θ̂)</dt><dd id="bsBias"></dd>
+            <dt>z<sub>0</sub> · acceleration a</dt><dd id="bsZa"></dd>
+            <dt>Percentile CI</dt><dd id="bsPct"></dd>
+            <dt>BCa CI</dt><dd id="bsBca"></dd>
+            <dt>Normal CI</dt><dd id="bsNrm"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Leaves are simulated with V<sub>cmax</sub> ~ N(60, 10²) and J<sub>max</sub> = 1.7 V<sub>cmax</sub> + N(0, 8²); the true ratio is 1.70. B = 2000. Suggested experiments: at n = 4–6 compare the three intervals and the skew of the histogram; press "New leaf sample" repeatedly to see how often each interval misses 1.70; at n = 40 all three agree.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="nonlinear">
+    <h2>Intervals for nonlinear model parameters: V<sub>cmax</sub> ± what?</h2>
+    <p>When you fit the FvCB model to an A–C<sub>i</sub> curve by nonlinear least squares and report V<sub>cmax</sub> = 62 ± 4 µmol m⁻² s⁻¹, the ± is almost always a <strong>Wald standard error</strong>. With residual variance \(\hat\sigma^2 = RSS/(n-p)\) and the n × p Jacobian \(J_{ik} = \partial f(x_i;\hat\theta)/\partial\theta_k\) of the model at the fitted parameters,</p>
+    <div class="eq">$$\widehat{\operatorname{Var}}(\hat\theta) \approx \hat\sigma^2\,(J^\top J)^{-1}, \qquad \mathrm{SE}_k = \sqrt{[\hat\sigma^2 (J^\top J)^{-1}]_{kk}}, \qquad \hat\theta_k \pm t_{n-p,\,1-\alpha/2}\,\mathrm{SE}_k.$$</div>
+    <p>\(J^\top J/\hat\sigma^2\) is the Gauss–Newton approximation to the Hessian of the negative log-likelihood, i.e. the observed Fisher information (see the maximum-likelihood page). The interval is symmetric and assumes the model is locally linear in θ near the optimum. That fails in exactly the cases that matter: when C<sub>i</sub> levels barely sample the Rubisco-limited region, when V<sub>cmax</sub> and mesophyll conductance g<sub>m</sub> trade off along a curved valley, or when T<sub>p</sub> is weakly identified. Then the Wald SE can be absurdly small or large, and off-diagonal elements of the covariance matrix show correlations near ±1.</p>
+    <p>The <strong>profile-likelihood interval</strong> is the robust alternative. For each fixed value of the parameter of interest, re-optimise all other parameters and record the profile log-likelihood \(\ell_p(\theta_k)\). The interval is the set</p>
+    <div class="eq">$$\left\{\theta_k : 2\big[\ell(\hat\theta) - \ell_p(\theta_k)\big] \le \chi^2_{1,\,1-\alpha}\right\}, \qquad \chi^2_{1,0.95} = 3.84 \;\Rightarrow\; \text{drop of } 1.92 \text{ log-likelihood units}.$$</div>
+    <p>It is asymmetric when the likelihood is, invariant to reparametrisation (the interval for log V<sub>cmax</sub> is the log of the interval for V<sub>cmax</sub>), and reduces to the Wald interval when the likelihood is quadratic. The underlying result is the <strong>likelihood-ratio test</strong> (Wilks): for nested models, \(\Lambda = 2[\ell_{full} - \ell_{reduced}] \sim \chi^2_{q}\) with q the number of constrained parameters, so "does adding a TPU limitation improve this A–C<sub>i</sub> fit?" is answered by whether 2Δℓ exceeds 3.84. The same statistic compares a one-pool with a two-pool soil-carbon decay model, and model comparison without nesting uses AIC instead.</p>
+    <p>A <strong>Bayesian credible interval</strong> answers the question people want answered, P(θ ∈ I | data) = 0.95, by combining the likelihood with a prior and reading off the posterior quantiles (equal-tailed) or the highest-density region. For well-identified parameters and weak priors it is numerically close to the profile interval; it differs, and helps, when the prior carries real information (V<sub>cmax</sub> cannot be negative; the Rubisco kinetic constants are known from other data), which is exactly the situation in ecosystem-model calibration. The frequentist and Bayesian intervals are answers to different questions; neither is "the" uncertainty.</p>
+  </section>
+
+  <section id="regression">
+    <h2>Regression, ANOVA, mixed models and the independence problem</h2>
+    <p>In a linear model y = Xβ + ε with ε ~ N(0, σ²I), each coefficient has \(\widehat{\operatorname{Var}}(\hat\beta) = \hat\sigma^2(X^\top X)^{-1}\) and the t statistic \(\hat\beta_k/\mathrm{SE}_k \sim t_{n-p}\) tests β<sub>k</sub> = 0; the regression t-test and the two-sample t-test are the same test when X is a dummy variable for group. One-way ANOVA is regression on k − 1 dummies, and its F is the nested-model F test</p>
+    <div class="eq">$$F = \frac{(RSS_0 - RSS_1)/(p_1 - p_0)}{RSS_1/(n - p_1)} \sim F_{p_1-p_0,\; n-p_1},$$</div>
+    <p>comparing the model with and without the group factor. Seeing ANOVA, regression and t-tests as one linear model with one F test removes most of the apparent zoo of procedures.</p>
+    <p><strong>Pseudoreplication.</strong> Hurlbert [5] coined the term for the most common design error in ecology: treating subsamples of one experimental unit as independent replicates. Five leaves from a single elevated-CO₂ chamber and five from a single ambient chamber give n = 1 per treatment, not 5, because chamber effects (position, airflow, a faulty sensor) are confounded with treatment and the leaves within a chamber share them. The t-test on 10 leaves has a hugely inflated Type I error because its SE is the within-chamber SE, which is not the SE relevant to the treatment contrast. The remedies are design (replicate chambers, randomise, interleave) and analysis that respects the hierarchy: <strong>mixed models</strong> with random effects for chamber, plot or site, so that the treatment effect is tested against the between-unit variance with the correct degrees of freedom. GLMMs extend this to counts and proportions and are now standard in ecology despite real difficulties with inference (Bolker et al. [15]). Partial pooling across sites is also the right way to estimate site-specific parameters (see the bias–variance page).</p>
+    <p><strong>Autocorrelation.</strong> Flux-tower NEE at half-hourly resolution is strongly autocorrelated: tonight's respiration resembles last night's. Treating N = 17,520 half-hours per year as independent makes the SE of an annual difference tens of times too small. For an AR(1) process with lag-1 correlation ρ the effective sample size for a mean is approximately</p>
+    <div class="eq">$$n_{\text{eff}} \approx n\,\frac{1-\rho}{1+\rho},$$</div>
+    <p>so ρ = 0.8 cuts n by a factor of nine and ρ = 0.95 by a factor of 39. Spatial data (soil cores 1 m apart, remote-sensing pixels) have the same problem in two dimensions. Remedies: aggregate to a scale where dependence is weak (daily or monthly means, then test on those), model the dependence explicitly (GLS with ARMA errors, spatial random fields), use heteroscedasticity-and-autocorrelation-consistent (Newey–West) standard errors, or block-bootstrap. The uncertainty of annual NEE sums is a textbook case: Richardson and co-workers showed that random flux error is better described by a Laplace than a normal distribution and scales with flux magnitude, and that gap-filling and u*-filter choices dominate the total uncertainty; none of this is captured by a naive SE.</p>
+  </section>
+
+  <section id="practice">
+    <h2>Power, sample size, and the replication crisis</h2>
+    <p><strong>Power analysis</strong> is done before the experiment. For a two-sample comparison with common SD σ, detecting a difference δ with two-sided α and power 1 − β requires approximately</p>
+    <div class="eq">$$n \text{ per group} \;\approx\; \frac{2\,(z_{1-\alpha/2} + z_{1-\beta})^2\,\sigma^2}{\delta^2} \;=\; \frac{2\,(z_{1-\alpha/2} + z_{1-\beta})^2}{d^2}.$$</div>
+    <p>With α = 0.05 and power 0.80, \((1.96 + 0.84)^2 = 7.85\), so n ≈ 15.7/d²: 16 per group for d = 1, 63 for d = 0.5, 393 for d = 0.2. The exact t-based calculation adds one or two. The formula comes from requiring the alternative's sampling distribution, centred at δ/SE, to put 1 − β of its mass beyond the critical value: δ/SE = z<sub>1−α/2</sub> + z<sub>1−β</sub> with SE = σ√(2/n). For a FACE study expecting a 15% drop in V<sub>cmax</sub> with a between-plot CV of 20%, d = 0.75 and you need about 29 plots per treatment; most FACE experiments have 3–4, which is why they test leaf-level responses within a design that accepts low power at the ring level. <strong>Post-hoc power</strong> computed from the observed effect is a monotone function of the p-value and adds no information; what helps after the fact is the confidence interval.</p>
+    <p>Low power has a second cost: when an underpowered study does reach significance, the estimated effect is biased upward (the <strong>winner's curse</strong>), because only large noise excursions clear the bar. Combine this with flexibility in analysis (<strong>p-hacking</strong>: trying transformations, covariates, subsets, outlier rules until p &lt; 0.05; the "garden of forking paths" even without intent), publication bias toward positive results, and low prior probability of the hypotheses tested, and Ioannidis's argument [14] follows: a large fraction of published significant findings are false positives, and their effect sizes are inflated. The responses are now standard practice in good labs: <strong>pre-registration</strong> of hypotheses and analysis plans, separation of exploratory from confirmatory analyses, reporting <strong>effect sizes with confidence intervals</strong> for every comparison (not just the significant ones), sharing data and code, and replication. The ASA statement [6] summarises the principles: p-values do not measure the probability that a hypothesis is true, scientific conclusions should not rest on whether p crosses a threshold, and a p-value by itself is not a good measure of evidence. For ecosystem modelling in particular, the analogue of p-hacking is tuning a model to a benchmark and then reporting the agreement as validation.</p>
+    <div class="keybox"><h3>How to report a comparison</h3>
+      <p>"Elevated CO₂ reduced V<sub>cmax,25</sub> from 61.8 (SD 9.4, n = 8 plots) to 53.1 (SD 10.2, n = 8) µmol m⁻² s⁻¹, a difference of 8.7 (95% CI 2.3 to 15.1; Welch t = 1.78, ν = 13.9, p = 0.097; d = 0.89)." Everything an examiner or reader needs is there: direction, size, precision, the test, and the fact that the sample is small. Notice that the interval and p-value here are consistent (p ≈ 0.10 and a CI that excludes zero would be a contradiction—check your output when they disagree). Compare with "V<sub>cmax</sub> was not significantly affected (p &gt; 0.05)", which hides an effect of plausible size.</p></div>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Treatment comparisons that feed parameters.</strong> The down-regulation of V<sub>cmax</sub> under elevated CO₂ (Ainsworth &amp; Long's FACE meta-analysis), the temperature acclimation of J<sub>max</sub>/V<sub>cmax</sub> (Kattge &amp; Knorr), and the CO₂ response of stomatal slope g<sub>1</sub> all enter land-surface models as parameters whose evidence is a collection of t-tests, ANOVAs and meta-analytic CIs. Knowing how wide those intervals were tells you how much to trust the acclimation module in CLM or JULES.</li>
+      <li><strong>Parameter uncertainty from curve fitting.</strong> Wald SEs on V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub> and R<sub>d</sub> from A–C<sub>i</sub> fits (Sharkey et al. 2007), and on turnover times from soil-incubation decay curves, are the inputs to parameter-uncertainty propagation in ecosystem models. Profile-likelihood or bootstrap intervals reveal when a parameter is not identified by the data, which is the first warning of equifinality.</li>
+      <li><strong>Model benchmarking.</strong> "Does the model reproduce observed GPP?" is a hypothesis-testing question with a twist: both the observation (flux partitioning, u* filtering, gap filling) and the model have error, and the observations are autocorrelated. Metrics such as RMSE and bias need their own CIs, obtained by block bootstrap over days or years; a t-test on half-hourly residuals is wrong.</li>
+      <li><strong>Trend detection.</strong> Testing whether NEE, soil respiration or the growing-season length has changed over 20 years of tower data is a regression t-test on the slope with autocorrelated residuals; the Mann–Kendall trend test is the rank-based alternative, and both need pre-whitening or block methods.</li>
+      <li><strong>Remote sensing and spatial data.</strong> Comparing NDVI or SIF between land-cover classes over thousands of pixels gives trivially small p-values; the effective sample size is set by the spatial range of the autocorrelation, and blocked cross-validation (Roberts et al. 2017) is the predictive analogue.</li>
+      <li><strong>Likelihood as the bridge.</strong> Every statistic here is a special case of likelihood-based inference; the cost function minimised in model–data fusion (e.g. Richardson et al. 2010, Keenan et al. 2012) is a negative log-likelihood with an observation-error covariance, and the LRT and profile intervals above are how the "significance" of a parameter or process is judged within it. The Bayesian calibration of DayCent, MIMICS or BioCro replaces the test with a posterior but inherits all the independence assumptions in the likelihood.</li>
+      <li><strong>Experimental design for model testing.</strong> Hurlbert's lesson applies to model experiments too: 10 model runs with different random seeds compared to 10 runs of another configuration are not 10 independent samples of "the world"; structural differences are confounded with the shared forcing. Multi-site, multi-year designs with site as a random effect are the appropriate frame.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers and formulas to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>z<sub>0.95</sub>, z<sub>0.975</sub>, z<sub>0.995</sub></td><td class="num">1.645, 1.960, 2.576</td><td>One-sided 5%, two-sided 5%, two-sided 1%</td></tr>
+        <tr><td>t<sub>0.975,ν</sub> for ν = 3, 5, 10, 30</td><td class="num">3.18, 2.57, 2.23, 2.04</td><td>Approaches 1.96; "±2 SE" is fine for ν ≥ 20</td></tr>
+        <tr><td>χ²<sub>0.95</sub> for df = 1, 2, 3, 5</td><td class="num">3.84, 5.99, 7.81, 11.07</td><td>LRT thresholds; 3.84 = 1.96²</td></tr>
+        <tr><td>Profile-likelihood 95% drop</td><td class="num">1.92 log-lik units</td><td>χ²<sub>1,0.95</sub>/2</td></tr>
+        <tr><td>SE of a mean</td><td class="num">σ/√n</td><td>Quadruple n to halve SE</td></tr>
+        <tr><td>Welch df bounds</td><td class="num">min(n<sub>i</sub>) − 1 ≤ ν ≤ n<sub>1</sub> + n<sub>2</sub> − 2</td><td>Equal variances and n give the upper bound</td></tr>
+        <tr><td>n per group (α 0.05, power 0.8)</td><td class="num">≈ 15.7/d²</td><td>d = 0.2, 0.5, 0.8 → 393, 63, 25</td></tr>
+        <tr><td>Cohen's d conventions</td><td class="num">0.2 / 0.5 / 0.8</td><td>Small / medium / large [12]</td></tr>
+        <tr><td>FWER for 20 independent tests at α = 0.05</td><td class="num">0.64</td><td>1 − 0.95<sup>20</sup></td></tr>
+        <tr><td>Bonferroni, Holm, BH thresholds</td><td class="num">α/m, α/(m−i+1), iα/m</td><td>Applied to sorted p<sub>(i)</sub></td></tr>
+        <tr><td>Wald CI for a proportion</td><td class="num">needs np̂, n(1−p̂) ≳ 10</td><td>Otherwise use Wilson</td></tr>
+        <tr><td>95% CI for σ² at n = 10</td><td class="num">[0.47 s², 3.33 s²]</td><td>Variances need large n</td></tr>
+        <tr><td>Effective n for AR(1) with ρ = 0.8, 0.95</td><td class="num">n/9, n/39</td><td>n(1 − ρ)/(1 + ρ)</td></tr>
+        <tr><td>Bootstrap replicates</td><td class="num">B ≥ 1000 (percentile), ≥ 2000 (BCa)</td><td>Efron &amp; Tibshirani [8]</td></tr>
+        <tr><td>Rank-test efficiency vs t for normal data</td><td class="num">3/π ≈ 0.955</td><td>Little lost, much gained for heavy tails</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Define the p-value precisely. Give three common misinterpretations and explain why p = 0.3 does not show that a treatment has no effect.</span></summary><div class="a"><p>The p-value is the probability, computed under the null hypothesis and the model's assumptions, of obtaining a test statistic at least as extreme as the one observed. It conditions on H<sub>0</sub>; it is a statement about data given a hypothesis. Misinterpretations: (i) p is the probability that H<sub>0</sub> is true (this needs a prior and Bayes' theorem; p is P(data | H<sub>0</sub>), not P(H<sub>0</sub> | data)); (ii) 1 − p is the probability that the alternative is true or that the result will replicate; (iii) p measures the size or importance of the effect (it confounds effect size with n; large n makes trivial effects significant). p = 0.3 means the data are compatible with no effect, but they are also compatible with every effect inside the 95% confidence interval. If the interval for a V<sub>cmax</sub> difference is [−4, 20] µmol m⁻² s⁻¹, a 15 µmol m⁻² s⁻¹ effect is entirely consistent with the data; the study was simply too small. Absence of evidence is not evidence of absence; to claim no effect one needs an equivalence test showing the interval lies inside a pre-specified band of practical irrelevance.</p></div></details>
+    <details class="q"><summary><span>2. Derive the one-way ANOVA decomposition, state the expectations of the mean squares, and show that for two groups F = t².</span></summary><div class="a"><p>Write X<sub>ij</sub> − X̄ = (X<sub>ij</sub> − X̄<sub>j</sub>) + (X̄<sub>j</sub> − X̄). Square and sum over i and j. The cross term is 2Σ<sub>j</sub>(X̄<sub>j</sub> − X̄)Σ<sub>i</sub>(X<sub>ij</sub> − X̄<sub>j</sub>) and the inner sum is zero because deviations from a group mean sum to zero, so SS<sub>T</sub> = SS<sub>W</sub> + SS<sub>B</sub> with SS<sub>B</sub> = Σ<sub>j</sub>n<sub>j</sub>(X̄<sub>j</sub> − X̄)². Degrees of freedom: N − 1 = (N − k) + (k − 1). Within each group E[Σ<sub>i</sub>(X<sub>ij</sub> − X̄<sub>j</sub>)²] = (n<sub>j</sub> − 1)σ², so E[MS<sub>W</sub>] = σ². For the between term, X̄<sub>j</sub> has mean μ + τ<sub>j</sub> and variance σ²/n<sub>j</sub>, and working through E[Σn<sub>j</sub>(X̄<sub>j</sub> − X̄)²] gives (k − 1)σ² + Σn<sub>j</sub>τ<sub>j</sub>², so E[MS<sub>B</sub>] = σ² + Σn<sub>j</sub>τ<sub>j</sub>²/(k − 1), which equals σ² only under H<sub>0</sub>. Under normality and H<sub>0</sub> the two sums of squares are independent scaled χ² variables (Cochran's theorem), so F = MS<sub>B</sub>/MS<sub>W</sub> ~ F<sub>k−1,N−k</sub>. For k = 2 with group sizes n<sub>1</sub>, n<sub>2</sub>: SS<sub>B</sub> = n<sub>1</sub>(X̄<sub>1</sub> − X̄)² + n<sub>2</sub>(X̄<sub>2</sub> − X̄)². Substituting X̄ = (n<sub>1</sub>X̄<sub>1</sub> + n<sub>2</sub>X̄<sub>2</sub>)/N gives SS<sub>B</sub> = (X̄<sub>1</sub> − X̄<sub>2</sub>)²·n<sub>1</sub>n<sub>2</sub>/N = (X̄<sub>1</sub> − X̄<sub>2</sub>)²/(1/n<sub>1</sub> + 1/n<sub>2</sub>), and MS<sub>W</sub> = s<sub>p</sub>², so F = (X̄<sub>1</sub> − X̄<sub>2</sub>)²/[s<sub>p</sub>²(1/n<sub>1</sub> + 1/n<sub>2</sub>)] = t², and F<sub>1,ν</sub> is the distribution of t<sub>ν</sub>².</p></div></details>
+    <details class="q"><summary><span>3. You have V<sub>cmax</sub> from 6 leaves in each of two species with SDs of 6 and 15. Which two-sample test do you use and why? Explain where the Welch degrees of freedom come from.</span></summary><div class="a"><p>Welch's t-test. The pooled test assumes equal variances; here the variance ratio is 6.25, and with unequal variances the pooled t has the wrong null distribution (Type I error inflates when the smaller group has the larger variance and deflates otherwise; with equal n the distortion is mild but the df are still wrong). Welch's statistic divides the difference in means by √(s<sub>1</sub>²/n<sub>1</sub> + s<sub>2</sub>²/n<sub>2</sub>), the correct SE whatever the variances. Its denominator squared is a linear combination of two independent scaled χ² variables, which is not itself χ²; Welch and Satterthwaite approximate it by a single χ²<sub>ν</sub>/ν scaled to have the same mean and variance. Matching variances gives ν = (s<sub>1</sub>²/n<sub>1</sub> + s<sub>2</sub>²/n<sub>2</sub>)²/[(s<sub>1</sub>²/n<sub>1</sub>)²/(n<sub>1</sub> − 1) + (s<sub>2</sub>²/n<sub>2</sub>)²/(n<sub>2</sub> − 1)]. Here (6 + 37.5)²/[36/5 + 1406.25/5] = 1892/288.5 ≈ 6.6, far below the pooled 10, which correctly reflects that most of the uncertainty comes from the noisy species with only 6 leaves. One should also ask whether the heavier variance is a transformation issue (lognormal V<sub>cmax</sub>?) and whether "leaves" are independent replicates or come from fewer plants.</p></div></details>
+    <details class="q"><summary><span>4. Define a 95% confidence interval, derive the t-interval for a mean from a pivotal quantity, and explain the duality with hypothesis tests. What is wrong with saying "there is a 95% probability that μ lies in this interval"?</span></summary><div class="a"><p>A 95% confidence procedure produces random intervals [L(X), U(X)] with P<sub>θ</sub>(L ≤ θ ≤ U) ≥ 0.95 for every θ; the probability refers to repeated sampling, the parameter being fixed. Derivation: for X<sub>i</sub> iid N(μ, σ²), X̄ and s² are independent, (X̄ − μ)/(σ/√n) ~ N(0,1) and (n − 1)s²/σ² ~ χ²<sub>n−1</sub>, so T = (X̄ − μ)/(s/√n) ~ t<sub>n−1</sub>: its distribution does not involve μ or σ, so it is a pivot. P(−t<sub>c</sub> ≤ T ≤ t<sub>c</sub>) = 0.95 with t<sub>c</sub> = t<sub>n−1,0.975</sub>; rearranging the event gives X̄ − t<sub>c</sub>s/√n ≤ μ ≤ X̄ + t<sub>c</sub>s/√n, an event of probability 0.95 whatever μ is. Duality: the 95% CI is the set of μ<sub>0</sub> for which the level-0.05 test of H<sub>0</sub>: μ = μ<sub>0</sub> does not reject, because |X̄ − μ<sub>0</sub>|/(s/√n) ≤ t<sub>c</sub> is the same inequality. A CI therefore carries all the information of the test plus the effect size and precision. The sentence "95% probability that μ lies in [a, b]" treats μ as random given the data; after the data are seen the realised interval either contains μ or not, and the frequentist framework assigns no probability to that. The sentence is correct for a Bayesian credible interval with a stated prior, and for flat priors and large n the two intervals coincide numerically, which is why the misreading usually does no harm but is still a different claim.</p></div></details>
+    <details class="q"><summary><span>5. You fit the FvCB model to an A–C<sub>i</sub> curve and your software reports V<sub>cmax</sub> = 62 ± 4. Explain how that SE was computed, when it is unreliable, two better ways to obtain an interval, and how you would test whether V<sub>cmax</sub> differs between ambient and elevated CO₂ plots.</span></summary><div class="a"><p>The SE is a Wald SE from nonlinear least squares: with residual variance σ̂² = RSS/(n − p) and the Jacobian J of model predictions with respect to the parameters at the optimum, Var(θ̂) ≈ σ̂²(JᵀJ)⁻¹, and the SE is the square root of the diagonal element. JᵀJ/σ̂² approximates the Hessian of the negative log-likelihood (observed Fisher information), so the interval assumes the log-likelihood is quadratic near the optimum and the errors are independent, homoscedastic and roughly normal. It is unreliable when the C<sub>i</sub> range samples the Rubisco-limited region with only two or three points, when V<sub>cmax</sub> trades off with g<sub>m</sub> or with the choice of transition point (a curved likelihood valley, correlations near ±1 in the covariance matrix), and when n − p is small. Better: (i) profile likelihood, fixing V<sub>cmax</sub> at a grid of values, re-optimising the other parameters, and taking the set where 2[ℓ(θ̂) − ℓ<sub>p</sub>] ≤ 3.84, which gives an asymmetric, reparametrisation-invariant interval; (ii) bootstrap, resampling residuals (since the C<sub>i</sub> levels are fixed by design) and refitting B ≥ 1000 times to obtain percentile or BCa intervals. To compare treatments: the unit of replication is the plot (or ring), not the leaf or the curve. Fit one V<sub>cmax</sub> per leaf, average to the plot, and compare plots with Welch's t-test (or a mixed model with plot as a random effect if several leaves per plot are retained), reporting the difference with a CI. Using the per-curve SEs or the leaves as replicates would be pseudoreplication. Alternatively fit a joint model with a treatment effect on V<sub>cmax</sub> and test it by a likelihood-ratio test against the model without it, still with plot-level random effects.</p></div></details>
+    <details class="q"><summary><span>6. A soil survey tests 50 variables for a tillage effect; four have p &lt; 0.05 (p = 0.0004, 0.004, 0.02, 0.04). What would you conclude under Bonferroni, Holm and Benjamini–Hochberg, and which is appropriate?</span></summary><div class="a"><p>Under 50 true nulls one expects 2.5 results below 0.05 by chance, so four is barely more than noise, and the raw list cannot be reported as discoveries. Bonferroni: threshold 0.05/50 = 0.001; only p = 0.0004 survives. Holm: sorted thresholds 0.05/50 = 0.001, 0.05/49 = 0.00102, 0.05/48, …; 0.0004 ≤ 0.001 (reject), 0.004 &gt; 0.00102 (stop); again one rejection, but Holm would have been more generous had the second p been smaller. BH: compare p<sub>(i)</sub> with iα/m = 0.001i: 0.0004 ≤ 0.001 yes; 0.004 ≤ 0.002 no; 0.02 ≤ 0.003 no; 0.04 ≤ 0.004 no. The largest i satisfying the condition is 1, so BH also rejects only the first. All three agree here because the remaining p-values are not small relative to their rank. If this is an exploratory screen to choose variables for a follow-up experiment, FDR control (BH) is the right criterion and one might even relax to q = 0.1; if the paper claims a tillage effect on each variable, FWER control (Holm) is required. In either case the paper should list all 50 tests with effect sizes and intervals, not only the four.</p></div></details>
+    <details class="q"><summary><span>7. A student compares annual NEE between a drought year and a normal year by applying a two-sample t-test to the 17,520 half-hourly values of each year and reports p &lt; 10⁻¹⁵. Critique this and describe a defensible analysis.</span></summary><div class="a"><p>The t-test assumes independent observations. Half-hourly NEE has strong diurnal and seasonal structure and residual autocorrelation (lag-1 ρ typically 0.8–0.95 after removing the diurnal cycle), so the effective sample size is of order n(1 − ρ)/(1 + ρ), tens to hundreds rather than 17,520; the SE is underestimated by a factor of √(n/n<sub>eff</sub>) and the p-value is meaningless. There are further problems: about 30–50% of the half-hours are gap-filled model output, not measurements; the random flux error is heteroscedastic and heavy-tailed (Laplace-like, scaling with flux magnitude); and systematic errors (u* threshold, energy-balance closure, partitioning) dominate the annual uncertainty. Defensible options: (i) aggregate to daily or weekly sums, check the residual autocorrelation at that scale, and compare with a test or model that accounts for what remains (GLS with AR(1) errors, or a paired comparison of the same days of year); (ii) block-bootstrap the annual sums using blocks of weeks to months to obtain a CI for the difference; (iii) propagate measurement uncertainty via the Richardson et al. random-error model and the u*-threshold ensemble, and report the annual NEE difference with a total uncertainty rather than a p-value. With only one year per condition the comparison is also n = 1 per treatment: climate variables other than drought differed between the years, so the design cannot attribute the difference to drought without a model or additional years.</p></div></details>
+    <details class="q"><summary><span>8. Design the sample size for an experiment to detect a 15% reduction in V<sub>cmax</sub> under elevated CO₂, given a between-plot coefficient of variation of 20%, α = 0.05 and power 0.8. What happens to the required n if you can only afford 4 plots per treatment?</span></summary><div class="a"><p>Express the effect in SD units: δ = 0.15 μ, σ = 0.20 μ, so d = 0.75. For a two-sided two-sample test with equal n, n ≈ 2(z<sub>0.975</sub> + z<sub>0.80</sub>)²/d² = 2(1.96 + 0.842)²/0.5625 = 2 × 7.85/0.5625 ≈ 27.9, so about 28–30 plots per treatment (the exact t-based value is slightly larger because t<sub>ν</sub> is wider than z at these df). With only 4 plots per treatment, SE of the difference = σ√(2/4) = 0.707 σ and δ/SE = 0.75/0.707 = 1.06; the critical value for ν = 6 is 2.45, so power ≈ P(T &gt; 2.45 − 1.06) ≈ 0.12 (two-sided; slightly more including the other tail), i.e. an 88% chance of missing a real 15% effect, and any significant result would be a strong overestimate. Remedies: pair the design (measure the same plots before and after, or block by soil type) to remove between-plot variance from σ; accept a larger α for a pilot study; measure more leaves per plot to reduce within-plot noise (helps only the part of the 20% CV that is measurement error, not true between-plot variation); or use a meta-analytic approach across sites. Report the power calculation and the resulting CI, not a bare "not significant".</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Casella G, Berger RL (2002). <em>Statistical Inference</em>, 2nd ed. Duxbury, Pacific Grove. <span class="why">The graduate-level reference for sampling distributions, pivots, the Neyman–Pearson lemma, and the duality of tests and intervals (chapters 5, 8, 9).</span></li>
+      <li>Wasserman L (2004). <em>All of Statistics: A Concise Course in Statistical Inference</em>. Springer, New York. <span class="why">Compact and rigorous; the chapters on the bootstrap, hypothesis testing and multiple testing are the fastest route to the key results.</span></li>
+      <li>Sokal RR, Rohlf FJ (2012). <em>Biometry</em>, 4th ed. W. H. Freeman, New York. <span class="why">The classic biological statistics text: ANOVA, nonparametric tests and transformations with biological examples.</span></li>
+      <li>Zar JH (2010). <em>Biostatistical Analysis</em>, 5th ed. Pearson, Upper Saddle River. <span class="why">Encyclopaedic reference for test procedures, tables and power; useful for the exact form of each test.</span></li>
+      <li>Hurlbert SH (1984). Pseudoreplication and the design of ecological field experiments. <em>Ecological Monographs</em> 54: 187–211. <a href="https://doi.org/10.2307/1942661">doi:10.2307/1942661</a><span class="why">The paper every ecologist is examined on: what counts as a replicate and how often the literature got it wrong.</span></li>
+      <li>Wasserstein RL, Lazar NA (2016). The ASA statement on p-values: context, process, and purpose. <em>The American Statistician</em> 70: 129–133. <a href="https://doi.org/10.1080/00031305.2016.1154108">doi:10.1080/00031305.2016.1154108</a><span class="why">Six principles on what p-values do and do not mean; short enough to memorise.</span></li>
+      <li>Benjamini Y, Hochberg Y (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. <em>Journal of the Royal Statistical Society B</em> 57: 289–300. <a href="https://doi.org/10.1111/j.2517-6161.1995.tb02031.x">doi:10.1111/j.2517-6161.1995.tb02031.x</a><span class="why">Defines FDR and the step-up procedure used in the multiple-testing lab.</span></li>
+      <li>Efron B, Tibshirani RJ (1993). <em>An Introduction to the Bootstrap</em>. Chapman &amp; Hall, New York. <span class="why">Percentile, BCa and bootstrap-t intervals, the jackknife, and when the bootstrap fails; chapters 12–14 for the intervals.</span></li>
+      <li>Neyman J (1937). Outline of a theory of statistical estimation based on the classical theory of probability. <em>Philosophical Transactions of the Royal Society A</em> 236: 333–380. <a href="https://doi.org/10.1098/rsta.1937.0005">doi:10.1098/rsta.1937.0005</a><span class="why">The origin of confidence intervals and of the long-run coverage interpretation.</span></li>
+      <li>Welch BL (1947). The generalization of 'Student's' problem when several different population variances are involved. <em>Biometrika</em> 34: 28–35. <a href="https://doi.org/10.1093/biomet/34.1-2.28">doi:10.1093/biomet/34.1-2.28</a><span class="why">The unequal-variance t-test and its approximate degrees of freedom.</span></li>
+      <li>Gotelli NJ, Ellison AM (2013). <em>A Primer of Ecological Statistics</em>, 2nd ed. Sinauer, Sunderland. <span class="why">Design, hypothesis testing and Bayesian alternatives written for ecologists; good on pseudoreplication and experimental layout.</span></li>
+      <li>Cohen J (1988). <em>Statistical Power Analysis for the Behavioral Sciences</em>, 2nd ed. Lawrence Erlbaum, Hillsdale. <span class="why">Source of the effect-size conventions and power tables.</span></li>
+      <li>Greenland S, Senn SJ, Rothman KJ, Carlin JB, Poole C, Goodman SN, Altman DG (2016). Statistical tests, P values, confidence intervals, and power: a guide to misinterpretations. <em>European Journal of Epidemiology</em> 31: 337–350. <a href="https://doi.org/10.1007/s10654-016-0149-3">doi:10.1007/s10654-016-0149-3</a><span class="why">Twenty-five misinterpretations, each explained; the best single reading for the definitions examiners probe.</span></li>
+      <li>Ioannidis JPA (2005). Why most published research findings are false. <em>PLoS Medicine</em> 2: e124. <a href="https://doi.org/10.1371/journal.pmed.0020124">doi:10.1371/journal.pmed.0020124</a><span class="why">The positive-predictive-value argument linking low power, low priors and analytic flexibility to false positives.</span></li>
+      <li>Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen JR, Stevens MHH, White J-SS (2009). Generalized linear mixed models: a practical guide for ecology and evolution. <em>Trends in Ecology &amp; Evolution</em> 24: 127–135. <a href="https://doi.org/10.1016/j.tree.2008.10.008">doi:10.1016/j.tree.2008.10.008</a><span class="why">How to handle nested, non-normal ecological data and the inferential difficulties of GLMMs.</span></li>
+      <li>Ives AR (2015). For testing the significance of regression coefficients, go ahead and log-transform count data. <em>Methods in Ecology and Evolution</em> 6: 828–835. <a href="https://doi.org/10.1111/2041-210X.12386">doi:10.1111/2041-210X.12386</a><span class="why">Simulation evidence that log-transformed linear models often beat GLMs for Type I error control.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="carbon-cycle-overview.html">← The Carbon Cycle</a><a href="decision-trees-random-forest.html">Decision Trees and Random Forests →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#foundations">Sampling distributions</a></li>
+      <li><a href="#logic">Logic of a test</a></li>
+      <li><a href="#tests">The standard tests</a></li>
+      <li><a href="#multiple">Multiple testing</a></li>
+      <li><a href="#ci">Confidence intervals</a></li>
+      <li><a href="#bootstrap">Bootstrap intervals</a></li>
+      <li><a href="#nonlinear">Nonlinear parameters</a></li>
+      <li><a href="#regression">Regression, mixed models</a></li>
+      <li><a href="#practice">Power &amp; replication</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Simulations use a seeded pseudo-random generator (mulberry32) with Box–Muller normal draws, so each page load shows the same samples; the Resample buttons advance the seed. Distribution functions (t, χ², F, normal) are computed in-page from incomplete beta and gamma functions.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function $(id) { return document.getElementById(id); }
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { if (!isFinite(x)) return '–'; return Number(x).toFixed(d === undefined ? 2 : d); }
+  function fmtP(p) { if (p < 1e-4) return '< 0.0001'; return p.toFixed(4); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- seeded RNG and normal draws ---------- */
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { var u = 0, v = 0; while (u === 0) u = r(); v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  /* ---------- distribution functions ---------- */
+  function lgamma(x) {
+    var c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x);
+    x -= 1; var a = c[0], t = x + 7.5; for (var i = 1; i < 9; i++) a += c[i] / (x + i);
+    return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+  }
+  function betacf(a, b, x) {
+    var FP = 1e-300, qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FP) d = FP; d = 1 / d; var h = d;
+    for (var m = 1; m <= 300; m++) { var m2 = 2 * m, aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; var del = d * c; h *= del; if (Math.abs(del - 1) < 3e-14) break; }
+    return h;
+  }
+  function ibeta(x, a, b) { if (x <= 0) return 0; if (x >= 1) return 1; var bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x)); if (x < (a + 1) / (a + b + 2)) return bt * betacf(a, b, x) / a; return 1 - bt * betacf(b, a, 1 - x) / b; }
+  function tcdf(t, df) { var p = 0.5 * ibeta(df / (df + t * t), df / 2, 0.5); return t > 0 ? 1 - p : p; }
+  function tpdf(t, df) { return Math.exp(lgamma((df + 1) / 2) - lgamma(df / 2)) / Math.sqrt(df * Math.PI) * Math.pow(1 + t * t / df, -(df + 1) / 2); }
+  function ncdf(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)); var d = 0.3989422804014327 * Math.exp(-z * z / 2); var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+  function npdf(z) { return 0.3989422804014327 * Math.exp(-z * z / 2); }
+  function qt(p, df) { var lo = -60, hi = 60; for (var i = 0; i < 90; i++) { var m = (lo + hi) / 2; if (tcdf(m, df) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function qn(p) { var lo = -12, hi = 12; for (var i = 0; i < 80; i++) { var m = (lo + hi) / 2; if (ncdf(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+  function sd(a) { var m = mean(a), s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+  function skew(a) { var m = mean(a), s2 = 0, s3 = 0; for (var i = 0; i < a.length; i++) { var d = a[i] - m; s2 += d * d; s3 += d * d * d; } s2 /= a.length; s3 /= a.length; return s3 / Math.pow(s2, 1.5); }
+  function quant(sorted, q) { var pos = q * (sorted.length - 1), lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo); }
+
+  /* ---------- chart helper ---------- */
+  function ticks(a, b, n) { var span = b - a; if (span <= 0) return [a]; var step = Math.pow(10, Math.floor(Math.log(span / n) / Math.LN10)); var e = span / n / step; if (e >= 5) step *= 5; else if (e >= 2) step *= 2; var out = []; for (var v = Math.ceil(a / step - 1e-9) * step; v <= b + 1e-9; v += step) out.push(+v.toFixed(10)); return out; }
+  function chart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 360, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 16, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB, x0 = o.x0, x1 = o.x1, y0 = o.y0, y1 = o.y1;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    function sx(x) { return mL + (x - x0) / (x1 - x0) * pw; }
+    function sy(y) { return mT + (y1 - y) / (y1 - y0) * ph; }
+    (o.yt || ticks(y0, y1, 5)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < y0 - 1e-9 || v > y1 + 1e-9) return; var y = sy(v); svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: y, y2: y })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: y + 4, 'text-anchor': 'end' }, l)); });
+    (o.xt || ticks(x0, x1, 7)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < x0 - 1e-9 || v > x1 + 1e-9) return; var x = sx(v); svg.appendChild(el('line', { 'class': 'ax', x1: x, x2: x, y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: x, y: mT + ph + 18, 'text-anchor': 'middle' }, l)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xl) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xl));
+    if (o.yl) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    var ch = { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, x0: x0, x1: x1, y0: y0, y1: y1 };
+    ch.cy = function (y) { return sy(Math.max(y0, Math.min(y1, y))); };
+    ch.cx = function (x) { return sx(Math.max(x0, Math.min(x1, x))); };
+    ch.path = function (fn, cls, stroke, N) { N = N || 240; var d = ''; for (var i = 0; i <= N; i++) { var x = x0 + (x1 - x0) * i / N, y = fn(x); if (!isFinite(y)) continue; d += (d === '' ? 'M' : 'L') + sx(x).toFixed(1) + ',' + ch.cy(y).toFixed(1); } var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); svg.appendChild(p); return p; };
+    ch.area = function (fn, a, b, fill, op, N) { N = N || 120; a = Math.max(a, x0); b = Math.min(b, x1); if (b <= a) return null; var d = 'M' + sx(a).toFixed(1) + ',' + sy(y0).toFixed(1); for (var i = 0; i <= N; i++) { var x = a + (b - a) * i / N; d += 'L' + sx(x).toFixed(1) + ',' + ch.cy(fn(x)).toFixed(1); } d += 'L' + sx(b).toFixed(1) + ',' + sy(y0).toFixed(1) + 'Z'; var p = el('path', { 'class': 'area', d: d, fill: fill, 'fill-opacity': op === undefined ? 0.25 : op }); svg.appendChild(p); return p; };
+    ch.vline = function (x, stroke, dash, w) { if (x < x0 || x > x1) return null; var l = el('line', { x1: sx(x), x2: sx(x), y1: mT, y2: mT + ph, stroke: stroke, 'stroke-width': w || 1.5 }); if (dash) l.setAttribute('stroke-dasharray', dash); svg.appendChild(l); return l; };
+    ch.label = function (x, y, t, attrs) { var a = { 'class': 'dl', x: x, y: y }; for (var k in attrs) a[k] = attrs[k]; var e = el('text', a, t); svg.appendChild(e); return e; };
+    return ch;
+  }
+  function hover(ch, tip, fn) {
+    var svg = ch.svg;
+    var xh = el('line', { 'class': 'xh', y1: ch.mT, y2: ch.mT + ch.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: ch.mL, y: ch.mT, width: ch.pw, height: ch.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = ch.x0 + (p.x - ch.mL) / ch.pw * (ch.x1 - ch.x0); x = Math.max(ch.x0, Math.min(ch.x1, x));
+      var r = fn(x); if (!r) { leave(); return; }
+      xh.setAttribute('x1', ch.sx(x)); xh.setAttribute('x2', ch.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y !== undefined && isFinite(r.y)) { dot.setAttribute('cx', ch.sx(x)); dot.setAttribute('cy', ch.cy(r.y)); dot.setAttribute('visibility', 'visible'); } else dot.setAttribute('visibility', 'hidden');
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function histogram(data, lo, hi, nb) { var w = (hi - lo) / nb, c = []; for (var i = 0; i < nb; i++) c.push(0); for (var j = 0; j < data.length; j++) { var k = Math.floor((data[j] - lo) / w); if (k >= 0 && k < nb) c[k]++; } return { counts: c, w: w, lo: lo, dens: c.map(function (v) { return v / (data.length * w); }) }; }
+  function drawHist(ch, h, cls) { for (var i = 0; i < h.counts.length; i++) { if (!h.counts[i]) continue; var xa = ch.sx(h.lo + i * h.w), xb = ch.sx(h.lo + (i + 1) * h.w), y = ch.cy(h.dens[i]); ch.svg.appendChild(el('rect', { 'class': cls || 'bar', x: xa, y: y, width: Math.max(0.5, xb - xa), height: ch.sy(ch.y0) - y })); } }
+
+  /* ---------- Lab A: sampling distribution ---------- */
+  var seedA = 7;
+  function labA() {
+    var n = +$('saN').value, sl = +$('saS').value;
+    $('saNO').textContent = n; $('saSO').textContent = sl.toFixed(2);
+    var mu = Math.log(3), pmean = Math.exp(mu + sl * sl / 2), psd = Math.sqrt((Math.exp(sl * sl) - 1) * Math.exp(2 * mu + sl * sl));
+    var pskew = (Math.exp(sl * sl) + 2) * Math.sqrt(Math.exp(sl * sl) - 1);
+    var r = mulberry32(seedA), M = 2000, means = new Array(M);
+    for (var i = 0; i < M; i++) { var s = 0; for (var j = 0; j < n; j++) s += Math.exp(mu + sl * gauss(r)); means[i] = s / n; }
+    var se = psd / Math.sqrt(n), es = sd(means), within = 0;
+    for (var k = 0; k < M; k++) if (Math.abs(means[k] - pmean) <= 1.96 * se) within++;
+    $('saMu').textContent = fmt(pmean, 2); $('saSd').textContent = fmt(psd, 2) + ' · ' + fmt(100 * psd / pmean, 0) + '%'; $('saSk').textContent = fmt(pskew, 2);
+    $('saSe').textContent = fmt(se, 3); $('saEs').textContent = fmt(es, 3); $('saMs').textContent = fmt(skew(means), 2); $('saCov').textContent = fmt(100 * within / M, 1) + '%';
+    var xlo = Math.max(0, pmean - 4.5 * se), xhi = pmean + 4.5 * se; if (n <= 2) { xlo = 0; xhi = pmean + 4 * psd; }
+    var h = histogram(means, xlo, xhi, 40);
+    var npk = 1 / (se * Math.sqrt(2 * Math.PI)), ymax = Math.max(npk, Math.max.apply(null, h.dens)) * 1.12;
+    var ch = chart($('saSvg'), { x0: xlo, x1: xhi, y0: 0, y1: ymax, xl: 'Sample mean of soil respiration, R̄s (µmol m⁻² s⁻¹)', yl: 'Probability density', W: 640, H: 360, mR: 24 });
+    drawHist(ch, h);
+    function popd(x) { return x <= 0 ? 0 : Math.exp(-Math.pow(Math.log(x) - mu, 2) / (2 * sl * sl)) / (x * sl * Math.sqrt(2 * Math.PI)); }
+    function nd(x) { return npdf((x - pmean) / se) / se; }
+    ch.path(popd, 'dash thin', 'var(--muted)');
+    ch.path(nd, 'net');
+    ch.vline(pmean, 'var(--muted)', '2 4', 1);
+    ch.label(ch.sx(pmean) + 5, ch.mT + 12, 'μ = ' + fmt(pmean, 2), { 'class': 'ann' });
+    ch.label(ch.sx(pmean + 2 * se) + 4, ch.cy(nd(pmean + 2 * se)) - 6, 'N(μ, σ²/n)', { fill: 'var(--fg)' });
+    hover(ch, $('saTip'), function (x) { var b = Math.floor((x - xlo) / h.w); var dens = (b >= 0 && b < 40) ? h.dens[b] : 0; return { y: nd(x), html: 'x̄ <b>' + fmt(x, 2) + '</b><br>normal density <b>' + fmt(nd(x), 3) + '</b> · histogram <b>' + fmt(dens, 3) + '</b><br>population density <b>' + fmt(popd(x), 3) + '</b>' }; });
+    var html = '<thead><tr><th class="num">Bin from</th><th class="num">to</th><th class="num">Count</th><th class="num">Density</th><th class="num">Normal</th></tr></thead><tbody>';
+    for (var q = 0; q < 40; q += 2) html += '<tr><td class="num">' + fmt(xlo + q * h.w, 2) + '</td><td class="num">' + fmt(xlo + (q + 2) * h.w, 2) + '</td><td class="num">' + (h.counts[q] + h.counts[q + 1]) + '</td><td class="num">' + fmt((h.dens[q] + h.dens[q + 1]) / 2, 3) + '</td><td class="num">' + fmt(nd(xlo + (q + 1) * h.w), 3) + '</td></tr>';
+    $('saTable').innerHTML = html + '</tbody>';
+  }
+  ['saN', 'saS'].forEach(function (id) { $(id).addEventListener('input', labA); });
+  $('saBtn').addEventListener('click', function () { seedA += 1; labA(); });
+  labA();
+
+  /* ---------- Lab B: Welch t-test visualiser ---------- */
+  function labB() {
+    var m1 = +$('tbM1').value, m2 = +$('tbM2').value, s1 = +$('tbS1').value, s2 = +$('tbS2').value, n1 = +$('tbN1').value, n2 = +$('tbN2').value, alpha = +$('tbA').value, two = $('tbSide').value === 'two';
+    ['tbM1', 'tbM2', 'tbS1', 'tbS2', 'tbN1', 'tbN2'].forEach(function (id) { $(id + 'O').textContent = $(id).value; });
+    var v1 = s1 * s1 / n1, v2 = s2 * s2 / n2, se = Math.sqrt(v1 + v2), t = (m1 - m2) / se;
+    var nu = (v1 + v2) * (v1 + v2) / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1));
+    var p = two ? 2 * (1 - tcdf(Math.abs(t), nu)) : 1 - tcdf(t, nu);
+    var tc = two ? qt(1 - alpha / 2, nu) : qt(1 - alpha, nu);
+    var delta = t;
+    var power = two ? (1 - tcdf(tc - delta, nu)) + tcdf(-tc - delta, nu) : 1 - tcdf(tc - delta, nu);
+    var sp = Math.sqrt(((n1 - 1) * s1 * s1 + (n2 - 1) * s2 * s2) / (n1 + n2 - 2)), d = (m1 - m2) / sp;
+    $('tbSe').textContent = fmt(se, 2); $('tbT').textContent = fmt(t, 3); $('tbNu').textContent = fmt(nu, 1); $('tbCrit').textContent = fmt(tc, 3); $('tbP').textContent = fmtP(p);
+    $('tbDec').innerHTML = p <= alpha ? '<span class="bad">reject H₀</span>' : '<span class="ok">do not reject</span>'; $('tbD').textContent = fmt(d, 2); $('tbPow').textContent = fmt(power, 2);
+    // chart 1: populations and sampling distributions
+    var se1 = s1 / Math.sqrt(n1), se2 = s2 / Math.sqrt(n2);
+    var xlo = Math.min(m1 - 3.2 * s1, m2 - 3.2 * s2), xhi = Math.max(m1 + 3.2 * s1, m2 + 3.2 * s2);
+    var ymax = Math.max(npdf(0) / se1, npdf(0) / se2) * 1.15;
+    var c1 = chart($('tbSvg1'), { W: 640, H: 230, x0: xlo, x1: xhi, y0: 0, y1: ymax, xl: 'Vcmax (µmol m⁻² s⁻¹): populations (dashed) and sampling distributions of the means (solid)', yl: 'Density', mB: 44, mR: 24 });
+    function p1(x) { return npdf((x - m1) / s1) / s1; } function p2(x) { return npdf((x - m2) / s2) / s2; }
+    function q1(x) { return npdf((x - m1) / se1) / se1; } function q2(x) { return npdf((x - m2) / se2) / se2; }
+    c1.path(p1, 'dash thin', 'var(--series-1)'); c1.path(p2, 'dash thin', 'var(--series-2)');
+    c1.path(q1, '', 'var(--series-1)'); c1.path(q2, '', 'var(--series-2)');
+    c1.label(c1.cx(m1 + 1.2 * se1) + 4, c1.cy(q1(m1 + 1.2 * se1)), 'x̄₁ ± SE', { fill: 'var(--series-1)' });
+    c1.label(c1.cx(m2 - 1.2 * se2) - 4, c1.cy(q2(m2 - 1.2 * se2)), 'x̄₂ ± SE', { fill: 'var(--series-2)', 'text-anchor': 'end' });
+    hover(c1, $('tbTip1'), function (x) { return { y: Math.max(q1(x), q2(x)), html: 'Vcmax <b>' + fmt(x, 1) + '</b><br>sampling density of x̄₁ <b>' + fmt(q1(x), 3) + '</b> · x̄₂ <b>' + fmt(q2(x), 3) + '</b><br>population density 1 <b>' + fmt(p1(x), 4) + '</b> · 2 <b>' + fmt(p2(x), 4) + '</b>' }; });
+    // chart 2: t scale
+    var tlo = Math.min(-5, delta - 4), thi = Math.max(5, delta + 4);
+    var c2 = chart($('tbSvg2'), { W: 640, H: 260, x0: tlo, x1: thi, y0: 0, y1: Math.max(tpdf(0, nu), 0.4) * 1.15, xl: 't statistic (null distribution tν, alternative shifted by δ = ' + fmt(delta, 2) + ')', yl: 'Density', mB: 44, mR: 24, xt: ticks(tlo, thi, 9) });
+    function f0(x) { return tpdf(x, nu); } function f1(x) { return tpdf(x - delta, nu); }
+    if (two) { c2.area(f0, tlo, -tc, 'var(--accent-2)', 0.35); c2.area(f0, tc, thi, 'var(--accent-2)', 0.35); c2.area(f1, tc, thi, 'var(--series-2)', 0.25); c2.area(f1, tlo, -tc, 'var(--series-2)', 0.25); }
+    else { c2.area(f0, tc, thi, 'var(--accent-2)', 0.35); c2.area(f1, tc, thi, 'var(--series-2)', 0.25); }
+    c2.path(f1, 'dash', 'var(--series-2)'); c2.path(f0, 'net');
+    c2.vline(tc, 'var(--accent-2)', '3 3', 1); if (two) c2.vline(-tc, 'var(--accent-2)', '3 3', 1);
+    c2.vline(t, 'var(--accent)', null, 2);
+    c2.label(c2.sx(t) + 5, c2.mT + 12, 't = ' + fmt(t, 2) + ', p = ' + fmtP(p), { fill: 'var(--accent)' });
+    c2.label(c2.cx(tc) + 4, c2.cy(f0(tc)) - 8, 'tcrit = ' + fmt(tc, 2), { 'class': 'ann' });
+    c2.label(c2.sx(t) + 5, c2.mT + 26, 'alternative (power ' + fmt(power, 2) + ')', { fill: 'var(--series-2)' });
+    hover(c2, $('tbTip2'), function (x) { var tail = two ? 2 * (1 - tcdf(Math.abs(x), nu)) : 1 - tcdf(x, nu); return { y: f0(x), html: 't <b>' + fmt(x, 2) + '</b><br>null density <b>' + fmt(f0(x), 3) + '</b> · alternative <b>' + fmt(f1(x), 3) + '</b><br>p-value if t were this <b>' + fmtP(tail) + '</b>' }; });
+  }
+  ['tbM1', 'tbM2', 'tbS1', 'tbS2', 'tbN1', 'tbN2', 'tbA', 'tbSide'].forEach(function (id) { $(id).addEventListener('input', labB); $(id).addEventListener('change', labB); });
+  labB();
+
+  /* ---------- Lab C: CI coverage ---------- */
+  var seedC = 101, cum = { n: 0, hit: 0 }, lastKey = '';
+  function sampleCI(r, n, pop, tq) {
+    var x = new Array(n), truth;
+    if (pop === 'normal') { truth = 2.0; for (var i = 0; i < n; i++) x[i] = 2.0 + 0.4 * gauss(r); }
+    else { var mu = Math.log(3), sl = 0.9; truth = Math.exp(mu + sl * sl / 2); for (var j = 0; j < n; j++) x[j] = Math.exp(mu + sl * gauss(r)); }
+    var m = mean(x), s = sd(x), h = tq * s / Math.sqrt(n);
+    return { m: m, lo: m - h, hi: m + h, hit: (m - h <= truth && truth <= m + h), truth: truth, h: h };
+  }
+  function labC(silent) {
+    var conf = +$('ciC').value / 100, n = +$('ciN').value, pop = $('ciPop').value;
+    $('ciCO').textContent = $('ciC').value; $('ciNO').textContent = n;
+    var key = conf + '|' + n + '|' + pop; if (key !== lastKey) { cum = { n: 0, hit: 0 }; lastKey = key; }
+    var tq = qt(1 - (1 - conf) / 2, n - 1), r = mulberry32(seedC), out = [], hits = 0, wsum = 0;
+    for (var i = 0; i < 100; i++) { var c = sampleCI(r, n, pop, tq); out.push(c); if (c.hit) hits++; wsum += c.h; }
+    cum.n += 100; cum.hit += hits;
+    if (silent) return;
+    var truth = out[0].truth;
+    var lo = Math.min.apply(null, out.map(function (c) { return c.lo; })), hi = Math.max.apply(null, out.map(function (c) { return c.hi; }));
+    var pad = (hi - lo) * 0.05;
+    var ch = chart($('ciSvg'), { W: 640, H: 400, x0: lo - pad, x1: hi + pad, y0: 0, y1: 101, yt: [{ v: 1, l: '1' }, { v: 25, l: '25' }, { v: 50, l: '50' }, { v: 75, l: '75' }, { v: 100, l: '100' }], xl: (pop === 'normal' ? 'Leaf N (g m⁻²): sample mean and ' : 'Soil respiration (µmol m⁻² s⁻¹): sample mean and ') + $('ciC').value + '% interval', yl: 'Sample number', mB: 44, mR: 24 });
+    ch.vline(truth, 'var(--fg)', '4 3', 1.5);
+    ch.label(ch.sx(truth) + 5, ch.mT + 12, 'μ = ' + fmt(truth, 2), { 'class': 'ann' });
+    out.forEach(function (c, i) { var y = ch.sy(i + 1); var col = c.hit ? 'var(--series-1)' : 'var(--accent-2)'; ch.svg.appendChild(el('line', { x1: ch.cx(c.lo), x2: ch.cx(c.hi), y1: y, y2: y, stroke: col, 'stroke-width': c.hit ? 1.4 : 2.2 })); ch.svg.appendChild(el('circle', { cx: ch.cx(c.m), cy: y, r: 1.6, fill: col })); });
+    $('ciForm').textContent = 'x̄ ± t · s/√' + n; $('ciTq').textContent = fmt(tq, 3);
+    $('ciHit').innerHTML = hits + ' / 100 ' + (hits >= conf * 100 ? '<span class="ok">(' + (100 - hits) + ' miss)</span>' : '<span class="bad">(' + (100 - hits) + ' miss)</span>');
+    $('ciExp').textContent = fmt(100 * (1 - conf), 0); $('ciW').textContent = fmt(wsum / 100, 3);
+    $('ciCum').textContent = fmt(cum.hit / cum.n, 3) + ' over ' + cum.n;
+  }
+  ['ciC', 'ciN', 'ciPop'].forEach(function (id) { $(id).addEventListener('input', function () { labC(); }); $(id).addEventListener('change', function () { labC(); }); });
+  $('ciBtn').addEventListener('click', function () { seedC += 1; labC(); });
+  $('ciBtn10').addEventListener('click', function () { for (var k = 0; k < 9; k++) { seedC += 1; labC(true); } seedC += 1; labC(); });
+  labC();
+
+  /* ---------- Lab D: multiple testing ---------- */
+  var seedD = 55;
+  function labD() {
+    var m = +$('mtM').value, pi0 = +$('mtPi').value, d = +$('mtD').value, n = +$('mtN').value, alpha = +$('mtA').value;
+    $('mtMO').textContent = m; $('mtPiO').textContent = pi0.toFixed(2); $('mtDO').textContent = d.toFixed(1); $('mtNO').textContent = n; $('mtAO').textContent = alpha.toFixed(2);
+    var r = mulberry32(seedD), tests = [], nNull = Math.round(pi0 * m), shift = d * Math.sqrt(n / 2);
+    for (var i = 0; i < m; i++) { var isNull = i < nNull; var z = gauss(r) + (isNull ? 0 : shift); tests.push({ p: 2 * (1 - ncdf(Math.abs(z))), nul: isNull }); }
+    tests.sort(function (a, b) { return a.p - b.p; });
+    var raw = { r: 0, f: 0 }, bon = { r: 0, f: 0 }, holm = { r: 0, f: 0 }, bh = { r: 0, f: 0 };
+    var kBH = 0; for (var j = 0; j < m; j++) if (tests[j].p <= (j + 1) * alpha / m) kBH = j + 1;
+    var holmStop = false;
+    tests.forEach(function (t, j) {
+      if (t.p <= alpha) { raw.r++; if (t.nul) raw.f++; }
+      if (t.p <= alpha / m) { bon.r++; if (t.nul) bon.f++; }
+      if (!holmStop && t.p <= alpha / (m - j)) { holm.r++; if (t.nul) holm.f++; } else holmStop = true;
+      if (j < kBH) { bh.r++; if (t.nul) bh.f++; }
+    });
+    function rf(o) { return o.r + ' (' + o.f + ')'; }
+    $('mtExp').textContent = fmt(nNull * alpha, 1); $('mtRaw').textContent = rf(raw); $('mtBon').textContent = rf(bon); $('mtHolm').textContent = rf(holm); $('mtBH').textContent = rf(bh);
+    $('mtFdr').textContent = (raw.r ? fmt(raw.f / raw.r, 2) : '–') + ' · ' + (bh.r ? fmt(bh.f / bh.r, 2) : '–'); $('mtFwer').textContent = fmt(1 - Math.pow(1 - alpha, m), 3);
+    var ylo = -4, yts = [{ v: 0, l: '1' }, { v: -1, l: '0.1' }, { v: -2, l: '0.01' }, { v: -3, l: '0.001' }, { v: -4, l: '10⁻⁴' }];
+    var ch = chart($('mtSvg'), { W: 640, H: 360, x0: 0, x1: m + 1, y0: ylo, y1: 0.15, yt: yts, xl: 'Rank i of the sorted p-values', yl: 'p-value (log scale)', mR: 24 });
+    var lg = function (p) { return Math.max(ylo, Math.log(p) / Math.LN10); };
+    ch.svg.appendChild(el('line', { x1: ch.sx(0), x2: ch.sx(m + 1), y1: ch.sy(lg(alpha)), y2: ch.sy(lg(alpha)), stroke: 'var(--accent)', 'stroke-width': 1.5 }));
+    ch.svg.appendChild(el('line', { x1: ch.sx(0), x2: ch.sx(m + 1), y1: ch.sy(lg(alpha / m)), y2: ch.sy(lg(alpha / m)), stroke: 'var(--accent-2)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4' }));
+    var dBH = ''; for (var q = 1; q <= m; q++) dBH += (q === 1 ? 'M' : 'L') + ch.sx(q).toFixed(1) + ',' + ch.sy(lg(q * alpha / m)).toFixed(1);
+    ch.svg.appendChild(el('path', { 'class': 'ser', d: dBH, stroke: 'var(--series-3)' }));
+    tests.forEach(function (t, j) { ch.svg.appendChild(el('circle', { cx: ch.sx(j + 1), cy: ch.sy(lg(t.p)), r: m > 200 ? 2 : 3, fill: t.nul ? 'var(--muted)' : 'var(--series-2)', 'fill-opacity': 0.85 })); });
+    ch.label(ch.sx(m + 1) - 4, ch.sy(lg(alpha)) - 5, 'α', { fill: 'var(--accent)', 'text-anchor': 'end' });
+    ch.label(ch.sx(m + 1) - 4, ch.sy(lg(alpha / m)) - 5, 'α/m', { fill: 'var(--accent-2)', 'text-anchor': 'end' });
+    ch.label(ch.sx(m * 0.55), ch.sy(lg(0.55 * alpha)) + 14, 'BH: iα/m', { fill: 'var(--series-3)' });
+    hover(ch, $('mtTip'), function (x) { var i = Math.max(1, Math.min(m, Math.round(x))); var t = tests[i - 1]; return { y: lg(t.p), html: 'rank <b>' + i + '</b> · p = <b>' + fmtP(t.p) + '</b> · ' + (t.nul ? 'true null' : 'real effect') + '<br>BH threshold <b>' + fmtP(i * alpha / m) + '</b> · Holm <b>' + fmtP(alpha / (m - i + 1)) + '</b>' }; });
+    var html = '<thead><tr><th class="num">Rank</th><th class="num">p</th><th>Truth</th><th class="num">Holm thr.</th><th class="num">BH thr.</th></tr></thead><tbody>';
+    for (var k = 0; k < Math.min(m, 25); k++) html += '<tr><td class="num">' + (k + 1) + '</td><td class="num">' + fmtP(tests[k].p) + '</td><td>' + (tests[k].nul ? 'null' : 'effect') + '</td><td class="num">' + fmtP(alpha / (m - k)) + '</td><td class="num">' + fmtP((k + 1) * alpha / m) + '</td></tr>';
+    $('mtTable').innerHTML = html + '</tbody>';
+  }
+  ['mtM', 'mtPi', 'mtD', 'mtN', 'mtA'].forEach(function (id) { $(id).addEventListener('input', labD); });
+  $('mtBtn').addEventListener('click', function () { seedD += 1; labD(); });
+  labD();
+
+  /* ---------- Lab E: bootstrap CI for Jmax/Vcmax ---------- */
+  var seedE = 3;
+  function labE() {
+    var n = +$('bsN').value, conf = +$('bsC').value / 100, alpha = 1 - conf;
+    $('bsNO').textContent = n; $('bsCO').textContent = $('bsC').value;
+    var r = mulberry32(seedE), V = [], J = [];
+    for (var i = 0; i < n; i++) { var v = 60 + 10 * gauss(r); V.push(v); J.push(1.7 * v + 8 * gauss(r)); }
+    function ratio(idx) { var sv = 0, sj = 0; for (var k = 0; k < idx.length; k++) { sv += V[idx[k]]; sj += J[idx[k]]; } return sj / sv; }
+    var all = []; for (var a = 0; a < n; a++) all.push(a);
+    var th = ratio(all), B = 2000, boot = new Array(B);
+    for (var b = 0; b < B; b++) { var idx = new Array(n); for (var k2 = 0; k2 < n; k2++) idx[k2] = Math.floor(r() * n); boot[b] = ratio(idx); }
+    var sorted = boot.slice().sort(function (p, q) { return p - q; });
+    var bse = sd(boot), bias = mean(boot) - th;
+    var pct = [quant(sorted, alpha / 2), quant(sorted, 1 - alpha / 2)];
+    var z = qn(1 - alpha / 2), nrm = [th - z * bse, th + z * bse];
+    var below = 0; for (var c = 0; c < B; c++) if (boot[c] < th) below++;
+    var z0 = qn(Math.min(Math.max(below / B, 1e-4), 1 - 1e-4));
+    var jack = []; for (var jj = 0; jj < n; jj++) { var idj = all.filter(function (x) { return x !== jj; }); jack.push(ratio(idj)); }
+    var jm = mean(jack), s2 = 0, s3 = 0; jack.forEach(function (t) { s2 += (jm - t) * (jm - t); s3 += Math.pow(jm - t, 3); });
+    var acc = s3 / (6 * Math.pow(s2, 1.5));
+    function adj(zq) { return ncdf(z0 + (z0 + zq) / (1 - acc * (z0 + zq))); }
+    var a1 = Math.min(Math.max(adj(qn(alpha / 2)), 1e-4), 1 - 1e-4), a2 = Math.min(Math.max(adj(qn(1 - alpha / 2)), 1e-4), 1 - 1e-4);
+    var bca = [quant(sorted, a1), quant(sorted, a2)];
+    $('bsTh').textContent = fmt(th, 3); $('bsSe').textContent = fmt(bse, 3); $('bsBias').textContent = fmt(bias, 4); $('bsZa').textContent = fmt(z0, 3) + ' · ' + fmt(acc, 3);
+    $('bsPct').textContent = '[' + fmt(pct[0], 3) + ', ' + fmt(pct[1], 3) + ']'; $('bsBca').textContent = '[' + fmt(bca[0], 3) + ', ' + fmt(bca[1], 3) + ']'; $('bsNrm').textContent = '[' + fmt(nrm[0], 3) + ', ' + fmt(nrm[1], 3) + ']';
+    var xlo = Math.min(sorted[0], nrm[0]) - 0.01, xhi = Math.max(sorted[B - 1], nrm[1]) + 0.01;
+    var h = histogram(boot, xlo, xhi, 36), ymax = Math.max.apply(null, h.dens) * 1.55;
+    var ch = chart($('bsSvg'), { W: 640, H: 340, x0: xlo, x1: xhi, y0: 0, y1: ymax, xl: 'Bootstrap replicate of J̄max / V̄cmax', yl: 'Density', mR: 24 });
+    drawHist(ch, h);
+    ch.vline(th, 'var(--fg)', null, 2); ch.vline(1.7, 'var(--muted)', '2 4', 1);
+    ch.label(ch.sx(th) + 5, ch.mT + ch.ph - 22, 'θ̂ = ' + fmt(th, 3), { 'class': 'ann' });
+    ch.label(ch.cx(1.7) - 5, ch.mT + ch.ph - 8, 'truth 1.70', { 'class': 'ann', 'text-anchor': 'end' });
+    var ivs = [{ iv: pct, c: 'var(--series-1)', t: 'percentile' }, { iv: bca, c: 'var(--series-2)', t: 'BCa' }, { iv: nrm, c: 'var(--series-3)', t: 'normal' }];
+    ivs.forEach(function (o, i) { var y = ch.mT + 14 + i * 20; ch.svg.appendChild(el('line', { x1: ch.cx(o.iv[0]), x2: ch.cx(o.iv[1]), y1: y, y2: y, stroke: o.c, 'stroke-width': 2.5 })); [0, 1].forEach(function (k) { ch.svg.appendChild(el('line', { x1: ch.cx(o.iv[k]), x2: ch.cx(o.iv[k]), y1: y - 5, y2: y + 5, stroke: o.c, 'stroke-width': 2 })); }); ch.label(ch.cx(o.iv[1]) + 6, y + 4, o.t, { fill: o.c }); });
+    hover(ch, $('bsTip'), function (x) { var b = Math.floor((x - xlo) / h.w); var dens = (b >= 0 && b < 36) ? h.dens[b] : 0; var cdf = 0; for (var q = 0; q < B; q++) if (sorted[q] <= x) cdf++; return { y: dens, html: 'ratio <b>' + fmt(x, 3) + '</b> · density <b>' + fmt(dens, 2) + '</b><br>bootstrap CDF <b>' + fmt(cdf / B, 3) + '</b>' }; });
+    var html = '<thead><tr><th class="num">Leaf</th><th class="num">Vcmax</th><th class="num">Jmax</th><th class="num">Jmax/Vcmax</th><th class="num">Jackknife θ(i)</th></tr></thead><tbody>';
+    for (var q2 = 0; q2 < n; q2++) html += '<tr><td class="num">' + (q2 + 1) + '</td><td class="num">' + fmt(V[q2], 1) + '</td><td class="num">' + fmt(J[q2], 1) + '</td><td class="num">' + fmt(J[q2] / V[q2], 3) + '</td><td class="num">' + fmt(jack[q2], 3) + '</td></tr>';
+    $('bsTable').innerHTML = html + '</tbody>';
+  }
+  ['bsN', 'bsC'].forEach(function (id) { $(id).addEventListener('input', labE); });
+  $('bsBtn').addEventListener('click', function () { seedE += 1; labE(); });
+  labE();
+})();
+</script>
+</body>
+</html>

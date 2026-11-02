@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drought Response and Leaf Area Index</title>
+<meta name="description" content="Drought response and leaf area index at comprehensive-exam depth: drought definitions, soil water availability metrics, the drying sequence from stomatal closure to leaf shedding and mortality, isohydry, stomatal and non-stomatal limitation, LAI as the coupling state variable, soil moisture stress functions, plant hydraulics and dynamic LAI in ecosystem models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .mark { fill: var(--surface); stroke-width: 2; }
+  .ch .rain { stroke: var(--series-1); stroke-width: 2; opacity: 0.55; }
+  .ch .band { fill: var(--accent-2-soft); opacity: 0.6; }
+  .chartbox { position: relative; }
+  .modebtns { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Drought response and leaf area index</div>
+    <div class="eyebrow">Topic 12 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Drought Response and Leaf Area Index</h1>
+    <p class="lead">What happens to a plant, and to a model of a plant, as the soil dries: the sequence from stomatal closure to leaf shedding and mortality, the soil water metrics that define "dry", and why leaf area index is the state variable through which drought reaches the carbon, water and energy budgets.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Drought is a shortfall of water relative to demand, and it comes in two flavours that models must distinguish: <strong>soil drought</strong> (low soil water potential, low supply to roots) and <strong>atmospheric drought</strong> (high vapour pressure deficit, high demand at the leaf). Plants respond along a well-ordered sequence as water potential falls: leaf expansion slows first, then stomata close, then photosynthetic metabolism is impaired, then leaves are shed and roots gain priority, and finally the xylem embolises (hydraulic failure) or reserves run out (carbon starvation). <strong>Leaf area index</strong> integrates these responses: it sets light interception (fAPAR), canopy conductance, interception loss and albedo, so a drought-driven fall in LAI feeds back on every surface flux and persists after the rain returns. Ecosystem models reduce photosynthesis and conductance with an empirical <strong>soil moisture stress function β(θ)</strong>, whose shape, threshold and point of application (V<sub>cmax</sub>, g<sub>s</sub> or both) differ among models and explain much of the spread in simulated drought impacts; newer schemes replace β with explicit plant hydraulics. The examiner wants you to know the drying sequence, the soil water metrics, the shape and problems of β, and how LAI dynamics are (or are not) represented.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Typical prompts: "define field capacity and wilting point and explain how plant-available water is used in a model"; "sketch β(θ) for two models and say what differs"; "distinguish isohydric and anisohydric behaviour and link each to a mortality mechanism"; "why do models that reduce V<sub>cmax</sub> under drought get WUE wrong?"; "how does LAI enter the water balance?" Have the numbers (−0.033 and −1.5 MPa, REW 0.4, LAI by biome, P50 ranges) ready.</p></div>
+  </section>
+
+  <section id="definitions">
+    <h2>What "drought" means, and how dry is dry</h2>
+    <p>Four operational definitions are in use. <strong>Meteorological drought</strong>: precipitation below the long-term normal for a period (SPI, or SPEI once evaporative demand is included). <strong>Agricultural drought</strong>: soil moisture in the root zone insufficient to meet crop demand, so growth and yield fall; defined relative to plant-available water. <strong>Hydrological drought</strong>: deficits in streamflow, groundwater and reservoir storage, which lag precipitation by weeks to years. <strong>Ecological drought</strong>: a water deficit that pushes ecosystems past thresholds (mortality, fire, regime shift), defined by impact rather than by the water balance. Orthogonal to these is the distinction between <strong>soil drought</strong> (supply) and <strong>atmospheric drought</strong> (demand, high VPD): the two usually co-occur, but a plant with wet soil and 4 kPa VPD closes stomata just as one in dry soil at 1 kPa does, and because VPD rises exponentially with temperature, atmospheric drought intensifies with warming even where precipitation does not change. Models represent soil drought through β(θ) and atmospheric drought through the VPD term of the stomatal model, so their relative sensitivities are separately parameterised and separately wrong.</p>
+    <h3>Soil water availability metrics</h3>
+    <ul>
+      <li><strong>Field capacity</strong> θ<sub>fc</sub>: water content after free drainage has become negligible, conventionally at a matric potential of −33 kPa (−10 kPa for sands). <strong>Wilting point</strong> θ<sub>wp</sub>: water content at −1.5 MPa, below which most crops cannot recover turgor overnight. Both are conventions about a continuous retention curve, not physical thresholds.</li>
+      <li><strong>Plant-available water capacity</strong> AWC = (θ<sub>fc</sub> − θ<sub>wp</sub>) × rooting depth: about 60 mm m⁻¹ in sand, 170 mm m⁻¹ in loam, 130 mm m⁻¹ in clay; a 1 m loam profile holds ~170 mm, roughly a month of summer transpiration.</li>
+      <li><strong>Relative extractable water</strong> REW = (θ − θ<sub>wp</sub>)/(θ<sub>fc</sub> − θ<sub>wp</sub>), from 1 at field capacity to 0 at wilting point. Granier et al. (1999) found transpiration and growth of temperate trees begin to decline below REW ≈ 0.4, a threshold used widely in forest water balance models.</li>
+      <li><strong>Matric potential thresholds</strong>: because stress is a function of potential, not content, models increasingly define β on Ψ<sub>soil</sub> (e.g. CLM: full function at Ψ<sub>o</sub> ≈ −0.07 MPa, closed at Ψ<sub>c</sub> ≈ −2.5 MPa for trees); the retention curve, Ψ(θ) = Ψ<sub>sat</sub>(θ/θ<sub>sat</sub>)<sup>−b</sup> in Clapp–Hornberger form, converts between the two and is where soil texture enters.</li>
+    </ul>
+  </section>
+
+  <section id="sequence">
+    <h2>The drying sequence</h2>
+    <p>Hsiao (1973) ordered plant processes by their sensitivity to falling water potential, and the order has held up. <strong>Cell expansion</strong> is most sensitive: growth is turgor-driven and stops at tissue water potentials of a few tenths of a megapascal below normal, so leaf expansion, and therefore LAI development, falls before anything else. <strong>Stomatal closure</strong> follows, driven by root-sourced abscisic acid (ABA) arriving in the xylem sap before leaf water status changes (the chemical signal; Tardieu &amp; Simonneau 1998 [6]) and by the hydraulic signal of falling leaf water potential and turgor; the two interact, with ABA sensitivity increasing at low leaf water potential. Closure reduces C<sub>i</sub>, lowering A per unit Rubisco and increasing the photorespiratory share (Γ*/C<sub>c</sub> rises), which is the main drought–photorespiration link and a reason heat and drought together are worse than either alone. <strong>Osmotic adjustment</strong>: accumulation of solutes (sugars, proline, K⁺) lowers the osmotic potential so that turgor is maintained at lower water potential, shifting all thresholds downward over days. <strong>Non-stomatal limitation</strong>: mesophyll conductance g<sub>m</sub> declines with drought in parallel with g<sub>s</sub>, and at severe stress (g<sub>s</sub> below ~0.05–0.1 mol m⁻² s⁻¹) Rubisco activity, RuBP regeneration and ATP synthesis are impaired (Flexas &amp; Medrano 2002 [4]; Flexas et al. 2004 [5]); Flexas and co-workers argue that g<sub>s</sub> itself, rather than soil or leaf water potential, is the best general index of drought severity for photosynthesis because it integrates both signals. <strong>Leaf shedding and allocation shift</strong>: older leaves are abscised, reducing transpiring area and LAI; carbon is allocated preferentially to roots, lowering the shoot:root ratio and deepening the root profile. <strong>Mortality</strong>: McDowell et al. (2008) [1] proposed two end points. <em>Hydraulic failure</em>: in intense, short droughts, especially for anisohydric plants, xylem tension exceeds the air-seeding threshold, embolism spreads (percent loss of conductivity, PLC, rising past P50 toward P88) and the hydraulic pathway collapses. <em>Carbon starvation</em>: in long, moderate droughts, isohydric plants that close stomata early run down non-structural carbohydrates (NSC) through continued respiration and defence, eventually failing to maintain metabolism and resistance to biotic agents. Adams et al. (2017) [2] synthesised 26 studies and found that hydraulic failure (PLC typically above 60%) accompanied nearly all mortality events, while NSC depletion was observed in about half, usually alongside hydraulic damage; the two mechanisms are interdependent because phloem transport and embolism repair both need water and carbon.</p>
+    <h3>Isohydric and anisohydric strategies</h3>
+    <p>Isohydric plants regulate stomata so that midday leaf water potential stays nearly constant as soil dries (maize, poplar, many conifers); anisohydric plants let leaf water potential fall with soil water potential while keeping stomata more open (sunflower, many oaks, <em>Eucalyptus</em>). Martínez-Vilalta et al. (2014) [7] formalised this as the slope σ of midday versus pre-dawn water potential: σ ≈ 0 strictly isohydric, σ ≈ 1 strictly anisohydric, and most species fall between, with "partial isohydry" common. The strategy determines the drought exposure: isohydric plants protect their xylem at the cost of carbon gain (risk of starvation), anisohydric plants keep assimilating at the cost of hydraulic risk (failure). Choat et al. (2012) showed that 70% of 226 forest species worldwide operate with hydraulic safety margins below 1 MPa, so hydraulic failure is a near-universal risk rather than an exotic one, and Choat et al. (2018) [8] review how this translates into forest die-off under warming droughts.</p>
+    <h3>Recovery and legacy</h3>
+    <p>After rewatering, stomatal conductance and photosynthesis recover within days if embolism is limited, but recovery is slower than the decline, slower in plants that experienced severe stress, and incomplete where xylem has embolised or leaves were shed. Anderegg et al. (2015) [3] found in tree-ring records across the northern hemisphere that growth remained reduced for 1–4 years after severe drought, a <strong>legacy effect</strong> averaging ~9% below predicted growth in the first year, largest in pines and in dry sites; land models that recover instantaneously when soil water returns miss this carbon loss. Legacies arise from embolism and reduced hydraulic conductivity, lost leaf and root area, depleted reserves, and pest and pathogen damage.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Conceptual: hydraulic failure vs carbon starvation trajectories</h3>
+        <div class="modebtns"><span class="small muted">Strategy:</span><button class="btn small on" id="hIso" type="button">Isohydric</button><button class="btn small" id="hAniso" type="button">Anisohydric</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="hSvg" viewBox="0 0 640 380" role="img" aria-label="Conceptual time courses of stomatal opening, leaf water potential relative to the hydraulic failure threshold, percent loss of conductivity and non-structural carbohydrate reserves during a drought"></svg>
+            <div class="chart-tip" id="hTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Stomatal opening g<sub>s</sub>/g<sub>s,max</sub></span><span style="--c:var(--series-2)">Leaf water potential as fraction of P88</span><span style="--c:var(--series-3)">Loss of xylem conductivity (PLC)</span><span style="--c:var(--fg)">Non-structural carbohydrate reserve NSC/NSC₀</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="hTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="hRate"><span>Drought intensity: soil Ψ decline (MPa per 10 days)</span><output id="hRateO">0.4</output></label><input type="range" id="hRate" min="0.1" max="1.2" step="0.05" value="0.4"></div>
+          <div class="ctrl"><label for="hDur"><span>Drought duration before rain (days)</span><output id="hDurO">70</output></label><input type="range" id="hDur" min="20" max="120" step="5" value="70"></div>
+          <div class="ctrl"><label for="hP50"><span>Xylem P50 (MPa)</span><output id="hP50O">-3</output></label><input type="range" id="hP50" min="-7" max="-1" step="0.25" value="-3"></div>
+          <div class="ctrl"><label for="hRm"><span>Maintenance respiration (% of NSC₀ per day)</span><output id="hRmO">1.2</output></label><input type="range" id="hRm" min="0.3" max="3" step="0.1" value="1.2"></div>
+          <dl class="readout">
+            <dt>Stomatal closure Ψ<sub>50</sub> (MPa)</dt><dd id="hG50"></dd>
+            <dt>Minimum Ψ<sub>leaf</sub> (MPa)</dt><dd id="hMin"></dd>
+            <dt>Maximum PLC</dt><dd id="hPLC"></dd>
+            <dt>Minimum NSC (fraction)</dt><dd id="hNSC"></dd>
+            <dt>Outcome</dt><dd id="hOut"></dd>
+            <dt>Day of first failure</dt><dd id="hDay"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0"><strong>Conceptual model, not a calibrated one.</strong> Soil Ψ falls linearly for the drought duration and then recovers; stomata close sigmoidally around Ψ<sub>50,gs</sub> = −1.2 MPa (isohydric) or −3.0 MPa (anisohydric); Ψ<sub>leaf</sub> = Ψ<sub>soil</sub> − E/K with K declining as a sigmoidal vulnerability curve around P50 (embolism not repaired); NSC gains with assimilation (proportional to g<sub>s</sub>) and loses to maintenance respiration. "Hydraulic failure" is PLC ≥ 88%, "carbon starvation" is NSC = 0. Suggested experiments: with isohydric strategy, lengthen the drought until NSC runs out; switch to anisohydric at the same settings and watch PLC cross 88% instead; move P50 to −6 MPa (a drought-adapted species) and see both risks recede; raise the respiration rate (warm drought) and see starvation arrive sooner.</p>
+    </div>
+  </section>
+
+  <section id="lai">
+    <h2>Leaf area index: the coupling state variable</h2>
+    <p>LAI (m² half-total leaf area per m² ground; Chen &amp; Black 1992 [19]) is the single variable through which canopy structure enters the surface energy, water and carbon balances. Its roles: it sets <strong>fAPAR</strong> ≈ 1 − exp(−k LAI) and hence GPP; <strong>canopy conductance</strong> G<sub>c</sub> = Σ g<sub>s</sub> ΔL and hence transpiration through Penman–Monteith; <strong>interception storage</strong> (≈ 0.1–0.3 mm per unit LAI) and hence the fraction of rainfall evaporated without reaching the soil; <strong>albedo</strong> and roughness, and therefore net radiation and aerodynamic conductance; litterfall and hence soil carbon inputs. Because every one of these saturates with LAI, the sensitivity of fluxes to LAI is high at low LAI (grasslands, crops early in the season, drought-defoliated canopies) and low above LAI ≈ 4.</p>
+    <p><strong>Dynamics.</strong> LAI is the balance of leaf production (allocation of assimilate to leaves, divided by leaf mass per area, LMA, g m⁻², the reciprocal of specific leaf area SLA) and leaf loss (senescence at the end of leaf lifespan, drought and frost shedding, herbivory). Phenology controls when production starts and stops; leaf lifespan ranges from weeks (annuals) to more than ten years (some conifers), and LMA from 30 g m⁻² in shade herbs to 300 g m⁻² in sclerophylls, so the same carbon investment produces ten times more leaf area in a fast-growing herb than in an evergreen shrub. Under drought, LAI declines by three routes: slower expansion (immediate, via turgor), accelerated senescence of older leaves, and reduced allocation to leaves relative to roots. Because the leaf pool turns over slowly in evergreens, the LAI response lags the drought and persists after it, which is one origin of legacy effects.</p>
+    <p><strong>Typical values and measurement.</strong> Asner, Scurlock &amp; Hicke (2003) [16] compiled ~1000 field measurements: global mean about 4.5, with crops 3–6, temperate deciduous broadleaf 4–6, evergreen needleleaf 5–8 (true LAI; optical measurements lower), tropical evergreen 4–6, grasslands 1–3, shrublands and tundra 1–3, deserts below 1. Bréda (2003) [18] reviews ground methods (destructive sampling, litterfall with SLA, allometry, gap-fraction instruments and hemispherical photography, with the clumping corrections discussed on the canopy page). From space, the MODIS LAI/fPAR product (Myneni et al. 2002 [17]; MOD15A2H, 500 m, 8-day) inverts a radiative-transfer model with biome-specific look-up tables, falling back to an NDVI relation when the inversion fails; NDVI itself saturates at LAI ≈ 3–4, so forest LAI from vegetation indices is poorly constrained and drought-driven LAI declines are easier to see in grasslands and crops than in closed forests. Land models therefore use satellite LAI either as a prescribed driver (prognostic LAI switched off) or as a benchmark for their simulated seasonal cycle, and the two uses require different treatments of clumping and understory.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>LAI, fAPAR, canopy conductance and transpiration: diminishing returns</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="lSvg" viewBox="0 0 640 380" role="img" aria-label="fAPAR, relative canopy conductance and relative transpiration versus leaf area index"></svg>
+            <div class="chart-tip" id="lTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">fAPAR = 1 − e<sup>−k·LAI</sup></span><span style="--c:var(--series-2)">Canopy conductance G<sub>c</sub> relative to LAI = 8</span><span style="--c:var(--fg)">Penman–Monteith transpiration relative to LAI = 8</span><span style="--c:var(--series-3)">Decoupling coefficient Ω</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="lTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lK"><span>Extinction coefficient k</span><output id="lKO">0.5</output></label><input type="range" id="lK" min="0.3" max="1" step="0.05" value="0.5"></div>
+          <div class="ctrl"><label for="lGs"><span>Sunlit-leaf g<sub>s</sub> (mol m⁻² s⁻¹)</span><output id="lGsO">0.3</output></label><input type="range" id="lGs" min="0.05" max="0.6" step="0.01" value="0.3"></div>
+          <div class="ctrl"><label for="lGa"><span>Aerodynamic conductance G<sub>a</sub> (m s⁻¹)</span><output id="lGaO">0.02</output></label><input type="range" id="lGa" min="0.005" max="0.15" step="0.005" value="0.02"></div>
+          <div class="ctrl"><label for="lD"><span>VPD (kPa)</span><output id="lDO">1.5</output></label><input type="range" id="lD" min="0.3" max="4" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="lL"><span>LAI for readouts (m² m⁻²)</span><output id="lLO">3</output></label><input type="range" id="lL" min="0.25" max="8" step="0.25" value="3"></div>
+          <dl class="readout">
+            <dt>fAPAR</dt><dd id="lF"></dd>
+            <dt>Sunlit LAI</dt><dd id="lLs"></dd>
+            <dt>G<sub>c</sub> (mol m⁻² s⁻¹)</dt><dd id="lGc"></dd>
+            <dt>G<sub>c</sub> (mm s⁻¹)</dt><dd id="lGcm"></dd>
+            <dt>Decoupling Ω</dt><dd id="lOm"></dd>
+            <dt>Transpiration (W m⁻²)</dt><dd id="lE"></dd>
+            <dt>Transpiration (mm h⁻¹)</dt><dd id="lEm"></dd>
+            <dt>Gain from one more unit LAI</dt><dd id="lM"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">G<sub>c</sub> = g<sub>s</sub>·L<sub>sun</sub> + 0.3 g<sub>s</sub>·L<sub>shade</sub> with L<sub>sun</sub> = (1 − e<sup>−k·LAI</sup>)/k; Penman–Monteith with R<sub>n</sub> = 500 fAPAR W m⁻², Δ/γ = 2.9 (25 °C), ρc<sub>p</sub> = 1200 J m⁻³ K⁻¹; Ω = (Δ/γ + 1)/(Δ/γ + 1 + G<sub>a</sub>/G<sub>c</sub>) after Jarvis &amp; McNaughton (1986). Suggested experiments: compare the marginal gain in transpiration from LAI 1→2 with 5→6; raise G<sub>a</sub> to 0.1 m s⁻¹ (a rough forest in wind) and see transpiration become more sensitive to G<sub>c</sub> (Ω falls); lower g<sub>s</sub> to 0.08 as in drought and note that the LAI at which transpiration saturates rises.</p>
+    </div>
+  </section>
+
+  <section id="modelling">
+    <h2>Modelling drought: β functions, hydraulics and dynamic LAI</h2>
+    <h3>The soil moisture stress function β</h3>
+    <p>Almost every land model multiplies some photosynthetic or stomatal parameter by a factor β between 0 and 1 that depends on root-zone water. The common forms (lab below): a <strong>linear ramp</strong> in θ between the wilting point and a critical content θ<sub>c</sub> (JULES: θ<sub>c</sub> at the field-capacity point by default; many crop models at REW = 0.4–0.5), sometimes with curvature \(\beta = [(\theta - \theta_{wp})/(\theta_c - \theta_{wp})]^q\); the <strong>Feddes</strong> (1978) [20] trapezoid, which adds a decline near saturation for anaerobiosis and is the standard in hydrological models such as HYDRUS and SWAP; and <strong>Ψ-based</strong> forms, linear or sigmoidal in soil matric potential between an onset Ψ<sub>o</sub> and a closure Ψ<sub>c</sub> (CLM4.5 uses a linear ramp in Ψ with PFT-specific endpoints, and weights layers by root fraction). The resulting β is applied to V<sub>cmax</sub> (CLM4.5, JULES, ORCHIDEE), to g<sub>s</sub> or to the slope parameter g<sub>1</sub> of the stomatal model (many others), or to both.</p>
+    <p>Problems, in roughly increasing order of seriousness. (i) Egea, Verhoef &amp; Vidale (2011) [9] showed that <em>where</em> β is applied changes the simulated coupling between carbon and water: reducing V<sub>cmax</sub> alone lowers A and, through the coupled stomatal model, g<sub>s</sub>, but leaves intrinsic WUE unchanged, whereas observations show WUE rising under moderate drought because g<sub>s</sub> falls before A; applying β to g<sub>s</sub> (and g<sub>m</sub>) reproduces this. Verhoef &amp; Egea (2014) [10] review the forms and recommend a non-linear β on stomatal and mesophyll conductance with V<sub>cmax</sub> affected only at severe stress. (ii) De Kauwe et al. (2015) [11] tested the β functions of CMIP5-era models against eddy-covariance data at Mediterranean and semi-arid sites and found that models disagree on the shape, threshold and target of β, that most reduce fluxes too early or too late, and that the same β cannot fit both GPP and transpiration. (iii) Trugman et al. (2018) [12] showed that the sensitivity of modelled GPP to soil moisture is poorly constrained in ESMs and that this sensitivity, not precipitation forcing, dominates the uncertainty in projected drought impacts on the carbon cycle. (iv) β is empirical, so it has no mechanism for plant traits (rooting depth, P50, isohydry), for legacy or mortality, or for the interaction with VPD; it is also a property of the grid-cell soil column, so the choice of soil depth, layering and root distribution matters as much as β itself.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Soil moisture stress functions β(θ)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="bSvg" viewBox="0 0 640 380" role="img" aria-label="Soil moisture stress factor beta versus volumetric water content for linear, Feddes-type and water-potential sigmoid formulations"></svg>
+            <div class="chart-tip" id="bTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Linear/power ramp, θ<sub>wp</sub> to θ<sub>c</sub></span><span style="--c:var(--series-2)">Feddes-type trapezoid (anaerobic cut near saturation)</span><span style="--c:var(--series-3)">Sigmoid in Ψ<sub>soil</sub> around Ψ<sub>50</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="bTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bWp"><span>Wilting point θ<sub>wp</sub> (m³ m⁻³)</span><output id="bWpO">0.12</output></label><input type="range" id="bWp" min="0.03" max="0.25" step="0.01" value="0.12"></div>
+          <div class="ctrl"><label for="bFc"><span>Field capacity θ<sub>fc</sub> (m³ m⁻³)</span><output id="bFcO">0.30</output></label><input type="range" id="bFc" min="0.15" max="0.42" step="0.01" value="0.30"></div>
+          <div class="ctrl"><label for="bP"><span>Critical point θ<sub>c</sub> as fraction of AWC</span><output id="bPO">0.6</output></label><input type="range" id="bP" min="0.2" max="1" step="0.05" value="0.6"></div>
+          <div class="ctrl"><label for="bQ"><span>Curvature exponent q</span><output id="bQO">1</output></label><input type="range" id="bQ" min="0.3" max="3" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="bPsi"><span>Ψ<sub>50</sub> of sigmoid (MPa)</span><output id="bPsiO">-0.5</output></label><input type="range" id="bPsi" min="-2" max="-0.05" step="0.05" value="-0.5"></div>
+          <div class="ctrl"><label for="bTh"><span>Soil water θ for readouts (m³ m⁻³)</span><output id="bThO">0.20</output></label><input type="range" id="bTh" min="0.03" max="0.45" step="0.01" value="0.20"></div>
+          <dl class="readout">
+            <dt>REW at this θ</dt><dd id="bRew"></dd>
+            <dt>Ψ<sub>soil</sub> at this θ (MPa)</dt><dd id="bPs"></dd>
+            <dt>β linear · Feddes · sigmoid</dt><dd id="bB"></dd>
+            <dt>A with β on V<sub>cmax</sub> (A₀ = 20)</dt><dd id="bA"></dd>
+            <dt>g<sub>s</sub> with β on g<sub>s</sub> (g₀ = 0.3)</dt><dd id="bG"></dd>
+            <dt>AWC for 1 m of soil (mm)</dt><dd id="bAwc"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Retention curve Ψ = Ψ<sub>sat</sub>(θ/θ<sub>sat</sub>)<sup>−b</sup> with Ψ<sub>sat</sub> = −3 kPa, b = 5, θ<sub>sat</sub> = 0.45 (loam-like); sigmoid β = 1/[1 + (Ψ/Ψ<sub>50</sub>)<sup>3</sup>]; Feddes form ramps to zero over the top 10% of saturation. Readouts apply the linear β. Suggested experiments: set θ<sub>c</sub> fraction to 1 (JULES default-like) and 0.4 (Granier threshold) and compare the θ at which stress begins; set q = 2 to mimic the convex forms recommended by Verhoef &amp; Egea; move Ψ<sub>50</sub> to −0.1 MPa and see a sigmoid that stresses near field capacity, as several CMIP5 models effectively did.</p>
+    </div>
+
+    <h3>Plant hydraulics schemes</h3>
+    <p>The alternative to β is to compute water potentials along the soil–root–stem–leaf pathway and let them regulate stomata. CLM5's Plant Hydraulic Stress scheme (Kennedy et al. 2019 [13]) solves for root, stem and leaf water potentials from a resistance network with vulnerability curves on each segment, takes up water from soil layers in proportion to the potential gradient (so uptake shifts to wetter layers and hydraulic redistribution emerges), and reduces g<sub>s</sub> and V<sub>cmax</sub> through a β that depends on leaf water potential rather than soil moisture. JULES-SOX (Eller et al. 2018, 2020) uses a stomatal optimisation in which stomata maximise carbon gain weighted by the loss of xylem conductance, so drought response follows from P50 and the hydraulic conductance per unit leaf area. The gains are mechanistic links to measurable traits (P50, K<sub>max</sub>, rooting depth), a natural representation of atmospheric and soil drought in one framework, and emergent isohydry; the costs are new parameters that are poorly known at the PFT level, sensitivity to the simulated soil water profile and root distribution, and no settled treatment of embolism refilling or mortality.</p>
+    <h3>Root water uptake and hydraulic redistribution</h3>
+    <p>Where roots are determines what "root-zone soil moisture" means. Jackson et al. (1996) [15] fitted the cumulative root fraction Y(d) = 1 − β<sup>d</sup> (d in cm; a different β) to 250 profiles: β ≈ 0.91 for tundra and 0.94–0.97 for most forests, grasslands and crops, meaning 50% of roots in the top 10–30 cm and 95% within 1–2 m, with deserts and some tropical forests rooting deepest. Models distribute uptake by this root fraction, sometimes weighted by β(θ) of each layer, which concentrates uptake in surface layers that dry first and can make the model too sensitive to short dry spells; gradient-driven uptake (as in CLM5 PHS) instead moves uptake to deeper, wetter layers. <strong>Hydraulic redistribution</strong>, the passive movement of water through roots from wet to dry soil (downward in the wet season, upward "hydraulic lift" at night in the dry season), is an emergent property of gradient-driven schemes and has been shown to prolong dry-season transpiration in the Amazon by weeks in model experiments.</p>
+    <h3>Dynamic LAI and allocation under drought</h3>
+    <p>Models grow leaves in one of three ways. <strong>Prescribed LAI</strong> from satellite climatologies, with no drought response other than β on fluxes. <strong>Source-driven prognostic LAI</strong>: NPP is allocated to leaves by fixed or stress-dependent fractions and converted to area through SLA, with senescence by phenology and, in some models, a drought-deciduous trigger when soil moisture falls below a threshold (CLM's stress-deciduous phenology; JULES' leaf turnover increasing with water stress). <strong>Crop models and BioCro</strong>: leaf expansion is driven by thermal time (growing degree days) through a canopy development function, with a water-stress factor that reduces expansion and increases senescence, and allocation coefficients that shift toward roots under stress; in BioCro the leaf water-stress function reduces both stomatal conductance and leaf expansion, and partitioning coefficients change by thermal-time stage. Fatichi, Leuzinger &amp; Körner (2014) [14] argue that all source-driven schemes get drought wrong in principle, because growth (sink activity) is more sensitive to water deficit than photosynthesis (source): turgor-limited expansion stops early, so under moderate drought real plants accumulate NSC while models convert the still-positive NPP into leaf and wood. A sink-limited model would reduce LAI growth before reducing GPP, store the surplus, and release it later, which changes both the drought response and the recovery.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Bucket model: a 90-day drought with stress-driven LAI decline</h3>
+        <div class="modebtns"><span class="small muted">Weather seed:</span><button class="btn small" id="wPrev" type="button">‹</button><output id="wSeedO" class="mono">7</output><button class="btn small" id="wNext" type="button">›</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="wSvg" viewBox="0 0 640 380" role="img" aria-label="Ninety-day time series of relative extractable water, soil moisture stress factor, transpiration relative to potential and leaf area index relative to initial, with rain days marked"></svg>
+            <div class="chart-tip" id="wTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Relative extractable water (W/AWC)</span><span style="--c:var(--series-2)">Stress factor β</span><span style="--c:var(--series-3)">Transpiration / PET</span><span style="--c:var(--fg)">LAI / initial LAI</span><span style="--c:var(--series-1)">Ticks at top: rain days</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="wTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="wZ"><span>Rooting depth (m)</span><output id="wZO">1.0</output></label><input type="range" id="wZ" min="0.3" max="2.5" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="wAwc"><span>Available water capacity (mm m⁻¹)</span><output id="wAwcO">150</output></label><input type="range" id="wAwc" min="50" max="220" step="10" value="150"></div>
+          <div class="ctrl"><label for="wLai"><span>Initial LAI (m² m⁻²)</span><output id="wLaiO">4</output></label><input type="range" id="wLai" min="0.5" max="7" step="0.5" value="4"></div>
+          <div class="ctrl"><label for="wPet"><span>Potential ET (mm d⁻¹)</span><output id="wPetO">5</output></label><input type="range" id="wPet" min="1" max="9" step="0.5" value="5"></div>
+          <div class="ctrl"><label for="wRain"><span>Mean rainfall (mm d⁻¹)</span><output id="wRainO">1.5</output></label><input type="range" id="wRain" min="0" max="6" step="0.25" value="1.5"></div>
+          <div class="ctrl"><label for="wCrit"><span>Critical REW for stress onset</span><output id="wCritO">0.4</output></label><input type="range" id="wCrit" min="0.1" max="0.9" step="0.05" value="0.4"></div>
+          <dl class="readout">
+            <dt>AWC of profile (mm)</dt><dd id="wCap"></dd>
+            <dt>Total rain (mm)</dt><dd id="wR"></dd>
+            <dt>Total transpiration (mm)</dt><dd id="wT"></dd>
+            <dt>Days with β &lt; 0.5</dt><dd id="wDs"></dd>
+            <dt>Minimum REW</dt><dd id="wMin"></dd>
+            <dt>Final LAI (m² m⁻²)</dt><dd id="wLf"></dd>
+            <dt>Mean β over 90 days</dt><dd id="wMb"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Daily bucket: W starts at AWC; rain on ~30% of days (exponential amounts, seeded), excess drains; T = PET·fAPAR·β with fAPAR = 1 − e<sup>−0.5·LAI</sup> and β = min(1, REW/REW<sub>crit</sub>); soil evaporation = 0.3·PET·(1 − fAPAR)·min(1, REW/0.2). LAI loses 4% per day times the stress excess once β has been below 0.5 for five consecutive days, and regrows toward its initial value at 1.5% per day when unstressed. Suggested experiments: compare rooting depths of 0.5 and 2 m under the same weather (the deep-rooted plant may never stress); halve PET to represent a cloudy, humid season; set the critical REW to 0.8 to mimic a model whose β starts too early and compare total transpiration; step through seeds to see how much the outcome depends on when the rain falls rather than how much.</p>
+    </div>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Model</th><th>Soil drought</th><th>Applied to</th><th>LAI under drought</th></tr></thead>
+      <tbody>
+        <tr><td>CLM4.5</td><td>β linear in Ψ<sub>soil</sub> between Ψ<sub>o</sub> and Ψ<sub>c</sub> per PFT, root-weighted over layers</td><td>V<sub>cmax</sub> (and g<sub>s</sub> via A; also as minimum g<sub>s</sub> scalar)</td><td>Prognostic; stress-deciduous phenology sheds leaves below a soil water threshold</td></tr>
+        <tr><td>CLM5 (PHS)</td><td>Plant hydraulics: root, stem, leaf Ψ from a resistance network; gradient-driven uptake, hydraulic redistribution</td><td>β(Ψ<sub>leaf</sub>) on g<sub>s</sub> and V<sub>cmax</sub></td><td>As CLM4.5; no hydraulic mortality</td></tr>
+        <tr><td>JULES</td><td>β linear in θ between θ<sub>wilt</sub> and θ<sub>crit</sub>, root-weighted; SOX option uses xylem vulnerability</td><td>V<sub>cmax</sub> (hence A and g<sub>s</sub>) in the Collatz/Jacobs scheme</td><td>Prognostic with TRIFFID; leaf turnover increases with stress in newer versions</td></tr>
+        <tr><td>ORCHIDEE</td><td>Relative root-zone humidity; ORCHIDEE-CAN adds hydraulic architecture</td><td>g<sub>s</sub> and V<sub>cmax</sub></td><td>Prognostic; senescence with stress; drought-deciduous PFTs</td></tr>
+        <tr><td>BioCro</td><td>Soil water in a layered bucket; leaf water-stress function of θ</td><td>g<sub>s</sub> (Ball–Berry slope) and leaf expansion</td><td>Thermal-time canopy development with stress-reduced expansion and stage-dependent partitioning</td></tr>
+        <tr><td>Crop models (APSIM, DSSAT, WOFOST)</td><td>Fraction of available soil water relative to demand (supply/demand ratio)</td><td>Separate stress factors for expansion (most sensitive), photosynthesis, and senescence</td><td>Leaf expansion from thermal time reduced by expansion stress; accelerated senescence</td></tr>
+        <tr><td>DayCent / Century</td><td>Water scalar on production from the ratio of available water to PET</td><td>Production (NPP) directly</td><td>LAI implicit; production allocated to above/below ground with stress-dependent fraction</td></tr>
+      </tbody></table></div>
+    <p>The exam-worthy synthesis: models differ in (i) the soil water variable (θ, Ψ, REW, supply/demand), (ii) the shape and thresholds of β, (iii) its target (V<sub>cmax</sub>, g<sub>s</sub>, both, expansion), (iv) whether LAI responds, and (v) whether hydraulics, legacy and mortality exist at all. De Kauwe et al. (2015) and Trugman et al. (2018) show that these choices, more than the climate forcing, set the spread in projected drought impacts; the trend is toward hydraulics-based schemes (CLM5 PHS, JULES-SOX, ORCHIDEE-CAN, ED2-hydro) constrained by trait databases, with dynamic LAI and sink limitation as the next frontier.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Field capacity matric potential</td><td class="num">−33 kPa (−10 kPa sands)</td><td>Convention</td></tr>
+        <tr><td>Permanent wilting point</td><td class="num">−1.5 MPa</td><td>Convention; many native species extract water below this</td></tr>
+        <tr><td>Available water capacity</td><td class="num">sand ~60 · loam ~170 · clay ~130 mm m⁻¹</td><td>θ<sub>fc</sub> − θ<sub>wp</sub> × depth</td></tr>
+        <tr><td>Critical REW for stress onset</td><td class="num">≈ 0.4</td><td>Granier et al. 1999 [21]; range 0.3–0.6</td></tr>
+        <tr><td>CLM4.5 β endpoints (trees)</td><td class="num">Ψ<sub>o</sub> ≈ −0.07, Ψ<sub>c</sub> ≈ −2.5 MPa</td><td>PFT-specific, linear in Ψ</td></tr>
+        <tr><td>Xylem P50</td><td class="num">−1 to −10 MPa (angiosperms often −2 to −4)</td><td>Choat et al. 2012; safety margins &lt; 1 MPa in 70% of species</td></tr>
+        <tr><td>PLC at mortality</td><td class="num">&gt; 60%, often ≈ 88%</td><td>Adams et al. 2017 [2]</td></tr>
+        <tr><td>Growth legacy after severe drought</td><td class="num">1–4 years, ≈ 9% loss in year 1</td><td>Anderegg et al. 2015 [3]</td></tr>
+        <tr><td>g<sub>s</sub> threshold for metabolic impairment</td><td class="num">≈ 0.05–0.1 mol m⁻² s⁻¹</td><td>Flexas &amp; Medrano 2002 [4]</td></tr>
+        <tr><td>Typical LAI</td><td class="num">crops 3–6 · broadleaf 4–6 · conifer 5–8 · grass 1–3</td><td>Asner et al. 2003 [16]; global mean ≈ 4.5</td></tr>
+        <tr><td>LMA range</td><td class="num">30–300 g m⁻²</td><td>SLA = 1/LMA; 10-fold variation in area per carbon</td></tr>
+        <tr><td>Canopy interception storage</td><td class="num">0.1–0.3 mm per unit LAI</td><td>Rutter / Gash models</td></tr>
+        <tr><td>Root profile β (Jackson)</td><td class="num">0.91 tundra · 0.94–0.97 forests, grasses, crops</td><td>Y = 1 − β<sup>d</sup>, d in cm; 50% of roots in top 10–30 cm [15]</td></tr>
+        <tr><td>MODIS LAI product</td><td class="num">MOD15A2H, 500 m, 8-day</td><td>Myneni et al. 2002 [17]; NDVI saturates at LAI ≈ 3–4</td></tr>
+        <tr><td>Isohydry slope σ</td><td class="num">0 (isohydric) to 1 (anisohydric)</td><td>Martínez-Vilalta et al. 2014 [7]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Define field capacity, wilting point, plant-available water and relative extractable water. Why are these conventions problematic for modelling natural vegetation?</summary><div class="a"><p>Field capacity is the water content remaining after gravitational drainage becomes negligible, conventionally at −33 kPa matric potential (−10 kPa in coarse soils); wilting point is the content at −1.5 MPa, below which mesophytic crops cannot regain turgor overnight. Plant-available water capacity is their difference times rooting depth (e.g. 0.30 − 0.12 = 0.18 m³ m⁻³ over 1 m = 180 mm). Relative extractable water REW = (θ − θ<sub>wp</sub>)/(θ<sub>fc</sub> − θ<sub>wp</sub>) normalises current content onto 0–1, allowing comparison across soils and a common stress threshold (≈ 0.4). Problems: (i) both endpoints are arbitrary points on a continuous retention curve, and drainage in the field continues for days, so "field capacity" depends on when you measure; (ii) −1.5 MPa is a crop convention, whereas many woody species extract water to −3 to −8 MPa, so their effective AWC is larger and their stress thresholds differ; (iii) the rooting depth that defines the bucket is uncertain and dynamic, and roots can access groundwater or rock moisture outside the "soil"; (iv) stress depends on potential and on the plant's hydraulic traits, not on content, so the same REW means different things in sand and clay unless converted through the retention curve; (v) the metrics ignore the vertical distribution of water and roots, so a profile with a dry surface and wet subsoil is misrepresented by a single REW. Models therefore increasingly define stress on soil water potential and root-weighted layer averages, or on plant water potential via hydraulics.</p></div></details>
+    <details class="q"><summary>2. Describe the sequence of plant responses as soil dries, from the most to least sensitive process, and explain the role of ABA and hydraulic signals in stomatal closure.</summary><div class="a"><p>Following Hsiao (1973): (1) cell expansion and leaf growth slow at small reductions in tissue water potential, because expansion requires turgor above a yield threshold, so leaf area development and LAI are the first casualties; (2) cell-wall and protein synthesis decline; (3) stomata begin to close, typically when soil water potential falls below about −0.1 to −0.5 MPa or REW below 0.4, reducing transpiration and C<sub>i</sub>; (4) photosynthesis falls, first by stomatal limitation (lower C<sub>i</sub>, more photorespiration) and later by non-stomatal limitation (lower g<sub>m</sub>, then impaired Rubisco activity, RuBP regeneration and ATP synthesis when g<sub>s</sub> drops below ~0.05–0.1 mol m⁻² s⁻¹); (5) osmotic adjustment accumulates solutes to maintain turgor at lower potential, shifting thresholds; (6) leaves senesce and abscise, allocation shifts to roots; (7) xylem embolism accumulates and, if drought persists, hydraulic failure or carbon starvation leads to mortality. Stomatal closure is controlled by two interacting signals. The chemical signal: drying roots synthesise ABA, which travels in the xylem to guard cells and triggers closure before leaf water status changes (split-root and pressurised-root experiments show closure with unchanged leaf water potential); ABA is also produced in leaves and its effect increases at low leaf water potential (Tardieu &amp; Simonneau's isohydric model). The hydraulic signal: falling leaf water potential and turgor, propagated through the xylem within minutes, closes stomata directly, and rising VPD acts through this route. Isohydric species rely more on the combined ABA–hydraulic feedback to hold leaf water potential constant; anisohydric species have weaker closure and let potential fall.</p></div></details>
+    <details class="q"><summary>3. Explain the hydraulic failure and carbon starvation hypotheses of drought mortality, how they relate to isohydric and anisohydric behaviour, and what the empirical evidence shows.</summary><div class="a"><p>McDowell et al. (2008) proposed that drought kills trees by two routes. Hydraulic failure: as soil and xylem water potentials fall, tension exceeds the air-seeding threshold of pit membranes, embolisms spread through the xylem, percent loss of conductivity rises past P50 toward P88, and the plant can no longer supply water to leaves; desiccation of meristems follows. This is expected in intense droughts and in anisohydric plants, which keep stomata open and let water potential fall to the xylem's limits. Carbon starvation: isohydric plants close stomata early to protect their xylem, so assimilation stops while maintenance respiration, osmotic adjustment, defence and phloem function continue to consume carbohydrates; in long, moderate droughts the non-structural carbohydrate pool is depleted until metabolism and defence against bark beetles and pathogens fail. A third route, biotic agents, exploits either weakened state. The framework predicts a trade-off along the isohydry axis and a dependence on drought intensity versus duration. Evidence: Adams et al. (2017) reviewed 26 lethal-drought studies across 19 species and found loss of hydraulic conductivity in essentially all cases (commonly above 60% PLC), while NSC depletion was found in about half, nearly always alongside hydraulic damage; pure starvation without hydraulic impairment was rare. The mechanisms are interdependent: embolism repair and phloem transport require water and sugars, low NSC reduces osmotic adjustment, and reduced turgor limits the phloem. Modelling consequence: mortality schemes keyed to PLC thresholds (hydraulic) with a carbon-balance condition capture most events, which motivates hydraulics-based land models (CLM5 PHS, ED2-hydro) over β functions.</p></div></details>
+    <details class="q"><summary>4. Sketch a β(θ) soil moisture stress function and discuss three ways in which its formulation affects simulated carbon and water fluxes. Why do De Kauwe et al. (2015) say β is a major source of model spread?</summary><div class="a"><p>Sketch: β on the y-axis from 0 to 1 against volumetric water content; zero at the wilting point, rising (linearly in the simplest form, concave or convex in others) to 1 at a critical content θ<sub>c</sub> at or below field capacity, flat at 1 above; the Feddes form adds a decline toward zero near saturation. Three choices that matter: (i) Threshold: if θ<sub>c</sub> is at field capacity (JULES default), stress starts as soon as the soil drains, reducing fluxes far too early in mesic sites; if at REW 0.4, the plant is unstressed through most of the available water, closer to observations for trees. (ii) Shape: a linear ramp gives a gradual response; convex forms (β = REW<sup>q</sup>, q &gt; 1) or sigmoids in Ψ concentrate the response near wilting, matching the observation that g<sub>s</sub> is insensitive to soil moisture until a threshold and then falls fast; the Ψ-based form also makes the response depend on soil texture through the retention curve. (iii) Target: applying β to V<sub>cmax</sub> lowers A and, through the coupled stomatal model, g<sub>s</sub> proportionally, so C<sub>i</sub>/C<sub>a</sub> and intrinsic WUE do not change; applying it to g<sub>s</sub> or g<sub>1</sub> lowers C<sub>i</sub> and raises WUE, as observed under moderate drought; applying it to both overstates the flux reduction. The target therefore sets the ratio of GPP to transpiration decline, hence the simulated WUE response, soil water depletion rate and drought duration. De Kauwe et al. (2015) evaluated CMIP5-generation models at flux sites and found that β formulations differed in all three respects, that most models could not match both GPP and ET declines with one β, and that the modelled sensitivity of fluxes to soil moisture was often larger than observed, so that β, rather than rainfall forcing, dominated the spread in simulated drought impact. They recommended testing β against soil moisture–flux relationships at sites and moving toward hydraulics.</p></div></details>
+    <details class="q"><summary>5. Explain how leaf area index couples the carbon, water and energy balances of a land surface, and why a drought-induced reduction in LAI has effects that outlast the drought.</summary><div class="a"><p>LAI enters each balance through a saturating function. Carbon: GPP depends on absorbed PAR, fAPAR ≈ 1 − e<sup>−k·LAI</sup>, and on canopy photosynthetic capacity ∝ ∫V<sub>cmax</sub> dL; autotrophic respiration and litterfall scale with leaf mass. Water: canopy conductance G<sub>c</sub> ≈ Σ g<sub>s</sub> ΔL controls transpiration through Penman–Monteith, with diminishing sensitivity as G<sub>c</sub> grows relative to aerodynamic conductance (decoupling); interception storage (~0.1–0.3 mm per unit LAI) sets the fraction of rain evaporated from wet canopies; shading reduces soil evaporation. Energy: LAI lowers albedo over bright soils (and raises it over dark ones), increases roughness and aerodynamic conductance, and partitions net radiation toward latent heat; a high-LAI canopy therefore cools the surface and moistens the boundary layer. Because of these couplings, LAI is a state variable whose change is felt everywhere at once. A drought that reduces LAI by shedding and halted expansion (i) lowers fAPAR and GPP, (ii) lowers transpiration and interception, which conserves soil water and partly compensates, (iii) raises sensible heat flux, surface temperature and VPD in the boundary layer, intensifying atmospheric drought, and (iv) reduces litter input. The effects outlast the drought because leaf area is rebuilt only by new growth: in evergreens leaf lifespan of years means the deficit decays slowly; in deciduous species next year's LAI depends on reserves and buds set during the drought; the carbon not fixed during low-LAI recovery is lost permanently; embolised xylem and dead fine roots limit the water supply to new leaves; and reduced LAI alters the microclimate (hotter, drier soil surface) that regeneration faces. Models with prescribed LAI or instantaneous recovery omit this legacy, which Anderegg et al. (2015) quantify as 1–4 years of reduced growth.</p></div></details>
+    <details class="q"><summary>6. Compare the representation of drought in a β-function model (e.g. CLM4.5) with a plant-hydraulics model (CLM5 PHS or JULES-SOX). What does hydraulics add, and what new uncertainties does it introduce?</summary><div class="a"><p>β-function model: root-zone soil water (θ or Ψ, weighted by root fraction) is mapped through an empirical function to a scalar β that multiplies V<sub>cmax</sub> and/or g<sub>s</sub>; water uptake is distributed by root fraction (sometimes times β per layer); atmospheric drought is handled separately by the VPD term of the stomatal model; there is no plant water status, no memory and no mortality. Hydraulics model: a resistance network from soil layers through roots, stem and leaves, with conductances that decline along vulnerability curves (P50, slope), is solved for water potentials given the transpiration demand; stomatal conductance is reduced as a function of leaf water potential (PHS) or chosen to maximise carbon gain minus the cost of hydraulic conductance loss (SOX); root water uptake follows potential gradients, so uptake shifts to wet layers and hydraulic redistribution emerges; soil and atmospheric drought act through one variable, leaf water potential, so their interaction is explicit. What hydraulics adds: parameters that are traits with databases (P50, K<sub>max</sub>, leaf-specific conductance, rooting depth), emergent isohydric/anisohydric behaviour and the correct ordering of WUE change, depth-dependent uptake that avoids the surface-layer over-sensitivity of root-weighted schemes, a PLC state that can drive mortality and legacy, and a basis for coupling to xylem-trait-based PFTs. New uncertainties: traits are measured on few species and vary within PFTs more than between them; stem capacitance and embolism refilling are poorly understood; the solution is sensitive to the simulated soil water profile, soil hydraulic conductance at the root interface and root distribution, which models get wrong; computational cost and numerical stiffness increase; and the minimum stomatal conductance, cuticular losses and leaf shedding that determine survival are still parameterised. Kennedy et al. (2019) show PHS improves the diurnal and seasonal response of fluxes at drought-affected sites but that results depend strongly on rooting depth.</p></div></details>
+    <details class="q"><summary>7. Fatichi et al. (2014) argue that growth is sink-limited rather than source-limited under drought. Explain the argument and its consequences for how a model should couple photosynthesis, LAI and reserves.</summary><div class="a"><p>Source-driven models compute NPP from photosynthesis minus respiration and allocate it to tissues, so growth follows carbon supply. Fatichi, Leuzinger &amp; Körner point out that in plants the processes that build tissue (cell division and expansion, which require turgor, and protein synthesis, which requires nutrients and temperature above a threshold) are more sensitive to water deficit, low temperature and nutrient shortage than photosynthesis is. Under moderate drought, turgor falls and expansion stops while stomata remain partly open and assimilation continues, so carbon accumulates: NSC concentrations in drought-stressed trees usually rise, tree-ring growth stops before GPP does, and elevated CO₂ often fails to increase growth even when it increases photosynthesis. Hence growth is sink-limited, and photosynthesis adjusts downward through feedback (sugar accumulation, reduced sink demand) rather than the reverse. Consequences for models: (i) growth of leaves, wood and roots should be computed from its own environmental controls (turgor or water potential, temperature, nutrients) independently of current photosynthesis; (ii) a reserve pool must buffer the two, filling when source exceeds sink and funding regrowth, flushing and survival later; (iii) photosynthesis should be down-regulated when reserves saturate; (iv) under drought, LAI expansion should decline at milder stress than GPP, which changes the ratio of transpiration to carbon gain and the recovery trajectory; and (v) the CO₂-fertilisation effect on biomass should be weaker than on GPP, consistent with FACE results. Models with explicit NSC pools and sink controls (e.g. recent versions of LPJ-GUESS, ED2, T&amp;C, and some crop models) are moving in this direction, but most ESMs remain source-driven.</p></div></details>
+    <details class="q"><summary>8. Why are satellite LAI products poorly suited to detecting drought stress in closed forests, and how would you combine them with a model to assess a drought's impact on GPP?</summary><div class="a"><p>Optical LAI products (MODIS MOD15, Copernicus GEOV) invert reflectance through a radiative-transfer model or NDVI relation. In dense canopies the reflectance signal saturates: NDVI is nearly flat above LAI ≈ 3–4 and the radiative-transfer inversion becomes ill-posed, so a change from LAI 6 to 4.5 produces a reflectance change comparable to noise from atmosphere, view geometry, soil background and clumping assumptions. Moreover, early drought responses are stomatal and physiological, not structural: trees reduce transpiration and photosynthesis for weeks before shedding leaves, so a product that sees only structure misses the onset; conversely, LAI declines can appear without GPP change when shaded leaves are shed. Cloud contamination during the growing season and compositing further blur timing. Better approaches: combine LAI with indicators of function (solar-induced fluorescence, which tracks APAR × photosynthetic efficiency; thermal infrared for canopy temperature and evaporative stress; microwave vegetation optical depth for water content) and with soil moisture (SMAP). To assess GPP impact with a model: run the land model with observed meteorology and either prescribe the satellite LAI (to isolate the structural effect) or let LAI be prognostic (to test the model's shedding response), compare GPP against flux towers and SIF, and attribute the GPP anomaly to its components: reduced fAPAR (LAI), reduced light-use efficiency (β, VPD), and reduced growing-season length. Data assimilation of LAI and soil moisture into the model constrains the state, while the model supplies the physiological response the satellites cannot see; the residual between assimilated and free-running GPP quantifies the structural uncertainty in the drought response.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>McDowell N, Pockman WT, Allen CD, et al. (2008). Mechanisms of plant survival and mortality during drought: why do some plants survive while others succumb to drought? <em>New Phytologist</em> 178: 719–739. <a href="https://doi.org/10.1111/j.1469-8137.2008.02436.x">doi:10.1111/j.1469-8137.2008.02436.x</a><span class="why">The hydraulic failure / carbon starvation framework and its link to isohydry.</span></li>
+      <li>Adams HD, Zeppel MJB, Anderegg WRL, et al. (2017). A multi-species synthesis of physiological mechanisms in drought-induced tree mortality. <em>Nature Ecology &amp; Evolution</em> 1: 1285–1291. <a href="https://doi.org/10.1038/s41559-017-0248-x">doi:10.1038/s41559-017-0248-x</a><span class="why">Evidence that hydraulic failure is near-universal in mortality and starvation co-occurs in about half of cases.</span></li>
+      <li>Anderegg WRL, Schwalm C, Biondi F, et al. (2015). Pervasive drought legacies in forest ecosystems and their implications for carbon cycle models. <em>Science</em> 349: 528–532. <a href="https://doi.org/10.1126/science.aab1833">doi:10.1126/science.aab1833</a><span class="why">Tree-ring evidence for 1–4 year growth legacies that models lack.</span></li>
+      <li>Flexas J, Medrano H (2002). Drought-inhibition of photosynthesis in C3 plants: stomatal and non-stomatal limitations revisited. <em>Annals of Botany</em> 89: 183–189. <a href="https://doi.org/10.1093/aob/mcf027">doi:10.1093/aob/mcf027</a><span class="why">g<sub>s</sub> as the index of drought severity; the sequence of stomatal then metabolic limitation.</span></li>
+      <li>Flexas J, Bota J, Loreto F, Cornic G, Sharkey TD (2004). Diffusive and metabolic limitations to photosynthesis under drought and salinity in C3 plants. <em>Plant Biology</em> 6: 269–279. <a href="https://doi.org/10.1055/s-2004-820867">doi:10.1055/s-2004-820867</a><span class="why">Mesophyll conductance decline under drought and how to separate diffusive from metabolic limitation.</span></li>
+      <li>Tardieu F, Simonneau T (1998). Variability among species of stomatal control under fluctuating soil water status and evaporative demand: modelling isohydric and anisohydric behaviours. <em>Journal of Experimental Botany</em> 49: 419–432. <a href="https://doi.org/10.1093/jxb/49.Special_Issue.419">doi:10.1093/jxb/49.Special_Issue.419</a><span class="why">The ABA–hydraulic interaction model that produces isohydric and anisohydric behaviour.</span></li>
+      <li>Martínez-Vilalta J, Poyatos R, Aguadé D, Retana J, Mencuccini M (2014). A new look at water transport regulation in plants. <em>New Phytologist</em> 204: 105–115. <a href="https://doi.org/10.1111/nph.12912">doi:10.1111/nph.12912</a><span class="why">Quantifies isohydry as the slope of midday vs pre-dawn water potential.</span></li>
+      <li>Choat B, Brodribb TJ, Brodersen CR, Duursma RA, López R, Medlyn BE (2018). Triggers of tree mortality under drought. <em>Nature</em> 558: 531–539. <a href="https://doi.org/10.1038/s41586-018-0240-x">doi:10.1038/s41586-018-0240-x</a><span class="why">Review of hydraulic thresholds, safety margins and die-off; with Choat et al. 2012 (<em>Nature</em> 491: 752) on global safety margins.</span></li>
+      <li>Egea G, Verhoef A, Vidale PL (2011). Towards an improved and more flexible representation of water stress in coupled photosynthesis–stomatal conductance models. <em>Agricultural and Forest Meteorology</em> 151: 1370–1384. <a href="https://doi.org/10.1016/j.agrformet.2011.05.019">doi:10.1016/j.agrformet.2011.05.019</a><span class="why">Where β is applied (V<sub>cmax</sub>, g<sub>s</sub>, g<sub>m</sub>) determines the WUE response.</span></li>
+      <li>Verhoef A, Egea G (2014). Modeling plant transpiration under limited soil water: comparison of different plant and soil hydraulic parameterizations and preliminary implications for their use in land surface models. <em>Agricultural and Forest Meteorology</em> 191: 22–32. <a href="https://doi.org/10.1016/j.agrformet.2014.02.009">doi:10.1016/j.agrformet.2014.02.009</a><span class="why">Review of β forms and recommendations for land-surface models.</span></li>
+      <li>De Kauwe MG, Zhou S-X, Medlyn BE, et al. (2015). Do land surface models need to include differential plant species responses to drought? Examining model predictions across a mesic-xeric gradient in Europe. <em>Biogeosciences</em> 12: 7503–7518. <a href="https://doi.org/10.5194/bg-12-7503-2015">doi:10.5194/bg-12-7503-2015</a><span class="why">Tests β functions against flux data and shows they drive model spread.</span></li>
+      <li>Trugman AT, Medvigy D, Mankin JS, Anderegg WRL (2018). Soil moisture stress as a major driver of carbon cycle uncertainty. <em>Geophysical Research Letters</em> 45: 6495–6503. <a href="https://doi.org/10.1029/2018GL078131">doi:10.1029/2018GL078131</a><span class="why">The sensitivity of GPP to soil moisture dominates projected drought impact uncertainty.</span></li>
+      <li>Kennedy D, Swenson S, Oleson KW, et al. (2019). Implementing plant hydraulics in the Community Land Model, version 5. <em>Journal of Advances in Modeling Earth Systems</em> 11: 485–513. <a href="https://doi.org/10.1029/2018MS001500">doi:10.1029/2018MS001500</a><span class="why">CLM5 PHS: resistance network, gradient-driven uptake, β on leaf water potential.</span></li>
+      <li>Fatichi S, Leuzinger S, Körner C (2014). Moving beyond photosynthesis: from carbon source to sink-driven vegetation modeling. <em>New Phytologist</em> 201: 1086–1095. <a href="https://doi.org/10.1111/nph.12614">doi:10.1111/nph.12614</a><span class="why">The sink-limitation argument and its consequences for allocation and LAI under drought.</span></li>
+      <li>Jackson RB, Canadell J, Ehleringer JR, Mooney HA, Sala OE, Schulze E-D (1996). A global analysis of root distributions for terrestrial biomes. <em>Oecologia</em> 108: 389–411. <a href="https://doi.org/10.1007/BF00333714">doi:10.1007/BF00333714</a><span class="why">The Y = 1 − β<sup>d</sup> root profiles used in most land models.</span></li>
+      <li>Asner GP, Scurlock JMO, Hicke JA (2003). Global synthesis of leaf area index observations: implications for ecological and remote sensing studies. <em>Global Ecology and Biogeography</em> 12: 191–205. <a href="https://doi.org/10.1046/j.1466-822X.2003.00026.x">doi:10.1046/j.1466-822X.2003.00026.x</a><span class="why">Biome LAI statistics from ~1000 field measurements.</span></li>
+      <li>Myneni RB, Hoffman S, Knyazikhin Y, et al. (2002). Global products of vegetation leaf area and fraction absorbed PAR from year one of MODIS data. <em>Remote Sensing of Environment</em> 83: 214–231. <a href="https://doi.org/10.1016/S0034-4257(02)00074-3">doi:10.1016/S0034-4257(02)00074-3</a><span class="why">The MODIS LAI/fPAR algorithm and its radiative-transfer inversion.</span></li>
+      <li>Bréda NJJ (2003). Ground-based measurements of leaf area index: a review of methods, instruments and current controversies. <em>Journal of Experimental Botany</em> 54: 2403–2417. <a href="https://doi.org/10.1093/jxb/erg263">doi:10.1093/jxb/erg263</a><span class="why">Practical review of direct and indirect LAI methods.</span></li>
+      <li>Chen JM, Black TA (1992). Defining leaf area index for non-flat leaves. <em>Plant, Cell &amp; Environment</em> 15: 421–429. <a href="https://doi.org/10.1111/j.1365-3040.1992.tb00992.x">doi:10.1111/j.1365-3040.1992.tb00992.x</a><span class="why">The half-total-area definition of LAI.</span></li>
+      <li>Feddes RA, Kowalik PJ, Zaradny H (1978). <em>Simulation of Field Water Use and Crop Yield</em>. Pudoc, Wageningen. <span class="why">The trapezoidal root water uptake stress function used in hydrological models.</span></li>
+      <li>Granier A, Bréda N, Biron P, Villette S (1999). A lumped water balance model to evaluate duration and intensity of drought constraints in forest stands. <em>Ecological Modelling</em> 116: 269–283. <a href="https://doi.org/10.1016/S0304-3800(98)00205-1">doi:10.1016/S0304-3800(98)00205-1</a><span class="why">Source of the REW = 0.4 stress threshold and the forest bucket model the lab imitates.</span></li>
+      <li>Hsiao TC (1973). Plant responses to water stress. <em>Annual Review of Plant Physiology</em> 24: 519–570. <a href="https://doi.org/10.1146/annurev.pp.24.060173.002511">doi:10.1146/annurev.pp.24.060173.002511</a><span class="why">The classic ordering of process sensitivity to water deficit.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="soil-water-dynamics.html">← Previous: Soil water dynamics</a><a href="nutrients.html">Next: Macro- and micronutrients →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#definitions">Drought and soil water</a></li>
+      <li><a href="#sequence">The drying sequence</a></li>
+      <li><a href="#lai">Leaf area index</a></li>
+      <li><a href="#modelling">Modelling drought</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (single-layer bucket, loam-like retention curve, conceptual hydraulic and carbon pools) chosen for intuition, not calibrated predictions.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function $(id) { return document.getElementById(id); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = $(id); if (e) e.addEventListener('input', fn); }); }
+  function outs(ids) { ids.forEach(function (id) { var o = $(id + 'O'), e = $(id); if (o && e) o.textContent = e.value; }); }
+  function ticks(min, max, step) { var t = []; for (var v = min; v <= max + 1e-9; v += step) t.push(Math.round(v * 1000) / 1000); return t; }
+
+  /* ---------- generic line chart ---------- */
+  function makeChart(svg, tip, cfg) {
+    var W = 640, H = 380, mL = 58, mR = cfg.mR == null ? 96 : cfg.mR, mT = 18, mB = 48;
+    var pw = W - mL - mR, ph = H - mT - mB, x = cfg.x, y = cfg.y;
+    function sx(v) { return mL + (v - x.min) / (x.max - x.min) * pw; }
+    function sy(v) { return mT + (y.max - v) / (y.max - y.min) * ph; }
+    function cy(v) { return sy(clamp(v, y.min, y.max)); }
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (cfg.before) cfg.before({ svg: svg, sx: sx, sy: sy, cy: cy, mL: mL, mT: mT, pw: pw, ph: ph });
+    y.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(t), y2: sy(t) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(t) + 4, 'text-anchor': 'end' }, y.fmt ? y.fmt(t) : t)); });
+    x.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(t), x2: sx(t), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(t), y: mT + ph + 18, 'text-anchor': 'middle' }, x.fmt ? x.fmt(t) : t)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    if (y.min < 0 && y.max > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, x.label));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, y.label));
+    (cfg.vlines || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ref', x1: sx(v.x), x2: sx(v.x), y1: mT, y2: mT + ph })); if (v.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(v.x) + 4, y: mT + 12 + (v.dy || 0) }, v.label)); });
+    (cfg.hlines || []).forEach(function (h) { svg.appendChild(el('line', { 'class': 'ref', x1: mL, x2: mL + pw, y1: sy(h.y), y2: sy(h.y) })); if (h.label) svg.appendChild(el('text', { 'class': 'tick', x: mL + 6, y: sy(h.y) - 4 }, h.label)); });
+    var n = cfg.n || 160;
+    function val(s, xv) {
+      if (s.f) return s.f(xv);
+      var p = s.pts; if (xv <= p[0][0]) return p[0][1];
+      for (var i = 1; i < p.length; i++) if (xv <= p[i][0]) { var a = p[i - 1], b = p[i]; return a[1] + (b[1] - a[1]) * (xv - a[0]) / ((b[0] - a[0]) || 1); }
+      return p[p.length - 1][1];
+    }
+    var labs = [];
+    cfg.series.forEach(function (s) {
+      var d = '';
+      if (s.pts) { s.pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + sx(p[0]).toFixed(1) + ',' + cy(p[1]).toFixed(1); }); }
+      else { for (var i = 0; i <= n; i++) { var xv = x.min + (x.max - x.min) * i / n; var yv = s.f(xv); if (!isFinite(yv)) continue; d += (d === '' ? 'M' : 'L') + sx(xv).toFixed(1) + ',' + cy(yv).toFixed(1); } }
+      var attrs = { 'class': 'ser', d: d, stroke: s.color };
+      if (s.dash) attrs['stroke-dasharray'] = s.dash;
+      if (s.width) attrs['stroke-width'] = s.width;
+      svg.appendChild(el('path', attrs));
+      if (s.label) { var last = s.pts ? s.pts[s.pts.length - 1][1] : s.f(x.max); labs.push({ t: s.label, y: cy(last), col: s.color }); }
+    });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    (cfg.marks || []).forEach(function (m) { svg.appendChild(el('circle', { 'class': 'mark', cx: sx(m.x), cy: cy(m.y), r: 4.5, stroke: m.color })); if (m.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(m.x) + 7, y: cy(m.y) - 6 }, m.label)); });
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dots = cfg.series.map(function (s) { var d = el('circle', { r: 4, fill: s.color, visibility: 'hidden' }); svg.appendChild(d); return d; });
+    var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = clamp(x.min + (p.x - mL) / pw * (x.max - x.min), x.min, x.max);
+      if (x.snap) xv = Math.round(xv);
+      xh.setAttribute('x1', sx(xv)); xh.setAttribute('x2', sx(xv)); xh.setAttribute('visibility', 'visible');
+      var html = (x.name || 'x') + ' <b>' + (x.tipfmt ? x.tipfmt(xv) : fmt(xv, 1)) + '</b>';
+      cfg.series.forEach(function (s, i) { var v = val(s, xv); dots[i].setAttribute('cx', sx(xv)); dots[i].setAttribute('cy', cy(v)); dots[i].setAttribute('visibility', 'visible'); html += '<br>' + s.name + ' <b>' + (y.tipfmt ? y.tipfmt(v) : fmt(v, 2)) + '</b>'; });
+      if (cfg.extra) html += cfg.extra(xv);
+      tip.innerHTML = html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function table(tb, head, rows) {
+    var html = '<thead><tr>' + head.map(function (h) { return '<th class="num">' + h + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r) { html += '<tr>' + r.map(function (c) { return '<td class="num">' + c + '</td>'; }).join('') + '</tr>'; });
+    tb.innerHTML = html + '</tbody>';
+  }
+  var frac = { min: 0, max: 1, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], fmt: function (v) { return fmt(v, 1); } };
+
+  /* ---------- Lab D (first on page): hydraulic failure vs carbon starvation ---------- */
+  var hIds = ['hRate', 'hDur', 'hP50', 'hRm'];
+  var hIso = true;
+  function hydro() {
+    var rate = +$('hRate').value / 10, dur = +$('hDur').value, P50 = +$('hP50').value, rm = +$('hRm').value / 100;
+    var g50 = hIso ? -1.2 : -3.0, gslope = 0.35, a = 4;        // vulnerability slope exponent
+    var P88 = P50 * Math.pow(88 / 12, 1 / a);                   // Psi at 88% PLC for the sigmoid form
+    var Kmax = 1.0, Emax = 0.5;                                  // E/K at full opening gives 0.5 MPa drawdown
+    var N = 150, psiL = -0.3, plc = 0, nsc = 1, out = [], evFail = null, evStarve = null;
+    for (var d = 0; d <= N; d++) {
+      var psiS = d < dur ? -0.05 - rate * d : Math.min(-0.05, -0.05 - rate * dur + (d - dur) * 0.1 * (0.05 + rate * dur));
+      var K = Kmax * (1 - plc);
+      for (var it = 0; it < 30; it++) {
+        var g = 1 / (1 + Math.exp(-(psiL - g50) / gslope));
+        var E = Emax * g;
+        var pn = psiS - (K > 0.02 ? E / K : E / 0.02);
+        psiL = 0.5 * psiL + 0.5 * pn;
+      }
+      var plcNow = 1 / (1 + Math.pow(psiL / P50, -a));
+      if (psiL < 0 && plcNow > plc) plc = plcNow;
+      var gs = 1 / (1 + Math.exp(-(psiL - g50) / gslope));
+      nsc = Math.max(0, nsc + 0.02 * gs * (1 - plc) - rm);
+      if (plc >= 0.88 && evFail === null) evFail = d;
+      if (nsc <= 0 && evStarve === null) evStarve = d;
+      out.push({ d: d, psiS: psiS, psiL: psiL, gs: gs, plc: plc, nsc: nsc });
+    }
+    return { out: out, g50: g50, P88: P88, evFail: evFail, evStarve: evStarve };
+  }
+  function drawH() {
+    outs(hIds);
+    var m = hydro(), o = m.out, dur = +$('hDur').value;
+    var pts = function (key, fn) { return o.map(function (r) { return [r.d, fn ? fn(r[key]) : r[key]]; }); };
+    var minPsi = Math.min.apply(null, o.map(function (r) { return r.psiL; }));
+    var maxPlc = Math.max.apply(null, o.map(function (r) { return r.plc; }));
+    var minNsc = Math.min.apply(null, o.map(function (r) { return r.nsc; }));
+    makeChart($('hSvg'), $('hTip'), {
+      x: { min: 0, max: 150, ticks: ticks(0, 150, 25), label: 'Days since drought onset', name: 'day', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 0); }, snap: true },
+      y: { min: 0, max: 1, ticks: frac.ticks, label: 'Fraction (see legend)', fmt: frac.fmt },
+      before: function (c) { c.svg.appendChild(el('rect', { 'class': 'band', x: c.sx(0), y: c.mT, width: c.sx(dur) - c.sx(0), height: c.ph })); c.svg.appendChild(el('text', { 'class': 'tick', x: c.sx(dur / 2), y: c.mT + c.ph - 8, 'text-anchor': 'middle' }, 'no rain for ' + dur + ' d')); },
+      hlines: [{ y: 0.88, label: 'P88 / hydraulic failure' }],
+      marks: [].concat(m.evFail !== null ? [{ x: m.evFail, y: 0.88, color: 'var(--series-3)', label: 'failure d' + m.evFail }] : [], m.evStarve !== null ? [{ x: m.evStarve, y: 0, color: 'var(--fg)', label: 'starvation d' + m.evStarve }] : []),
+      series: [
+        { name: 'gs/gs,max', label: 'gs', color: 'var(--series-1)', pts: pts('gs') },
+        { name: 'Ψleaf / P88', label: 'Ψleaf/P88', color: 'var(--series-2)', pts: pts('psiL', function (v) { return clamp(v / m.P88, 0, 1); }) },
+        { name: 'PLC', label: 'PLC', color: 'var(--series-3)', pts: pts('plc') },
+        { name: 'NSC/NSC₀', label: 'NSC', color: 'var(--fg)', pts: pts('nsc'), width: 2.6 }
+      ],
+      extra: function (xv) { var r = o[Math.round(xv)]; return r ? '<br>Ψsoil <b>' + fmt(r.psiS, 2) + '</b> · Ψleaf <b>' + fmt(r.psiL, 2) + '</b> MPa' : ''; }
+    });
+    $('hG50').textContent = fmt(m.g50, 1);
+    $('hMin').textContent = fmt(minPsi, 2);
+    $('hPLC').textContent = fmt(maxPlc * 100, 0) + '%';
+    $('hNSC').textContent = fmt(minNsc, 2);
+    var outcome = 'survives';
+    if (m.evFail !== null && (m.evStarve === null || m.evFail <= m.evStarve)) outcome = 'hydraulic failure';
+    else if (m.evStarve !== null) outcome = 'carbon starvation';
+    $('hOut').textContent = outcome;
+    $('hDay').textContent = m.evFail !== null || m.evStarve !== null ? Math.min(m.evFail === null ? 1e9 : m.evFail, m.evStarve === null ? 1e9 : m.evStarve) : '–';
+    var rows = []; for (var d = 0; d <= 150; d += 15) { var r = o[d]; rows.push([d, fmt(r.psiS, 2), fmt(r.psiL, 2), fmt(r.gs, 2), fmt(r.plc * 100, 0) + '%', fmt(r.nsc, 2)]); }
+    table($('hTable'), ['day', 'Ψsoil', 'Ψleaf', 'gs', 'PLC', 'NSC'], rows);
+  }
+  bind(hIds, drawH);
+  $('hIso').addEventListener('click', function () { hIso = true; $('hIso').classList.add('on'); $('hAniso').classList.remove('on'); drawH(); });
+  $('hAniso').addEventListener('click', function () { hIso = false; $('hAniso').classList.add('on'); $('hIso').classList.remove('on'); drawH(); });
+  drawH();
+
+  /* ---------- Lab C: LAI, fAPAR, Gc, transpiration ---------- */
+  var lIds = ['lK', 'lGs', 'lGa', 'lD', 'lL'];
+  function canopyFluxes(L, k, gs, Ga, D) {
+    var f = 1 - Math.exp(-k * L), Lsun = f / k, Lsh = Math.max(0, L - Lsun);
+    var Gc = gs * Lsun + 0.3 * gs * Lsh;            // mol m-2 s-1
+    var Gcm = Gc * 0.0245;                           // m s-1
+    var sg = 2.9, rcp = 1200, gam = 66;
+    var E = (sg * 500 * f + rcp * D * 1000 * Ga / gam) / (sg + 1 + (Gcm > 1e-9 ? Ga / Gcm : 1e9));
+    var Om = (sg + 1) / (sg + 1 + (Gcm > 1e-9 ? Ga / Gcm : 1e9));
+    return { f: f, Lsun: Lsun, Gc: Gc, Gcm: Gcm, E: E, Om: Om };
+  }
+  function drawL() {
+    outs(lIds);
+    var k = +$('lK').value, gs = +$('lGs').value, Ga = +$('lGa').value, D = +$('lD').value, L0 = +$('lL').value;
+    var ref = canopyFluxes(8, k, gs, Ga, D);
+    makeChart($('lSvg'), $('lTip'), {
+      x: { min: 0, max: 8, ticks: ticks(0, 8, 1), label: 'Leaf area index (m² m⁻²)', name: 'LAI', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 2); } },
+      y: { min: 0, max: 1, ticks: frac.ticks, label: 'Fraction of value at LAI = 8 (fAPAR, Ω absolute)', fmt: frac.fmt },
+      vlines: [{ x: L0, label: 'LAI = ' + L0 }],
+      series: [
+        { name: 'fAPAR', label: 'fAPAR', color: 'var(--series-1)', f: function (L) { return canopyFluxes(L, k, gs, Ga, D).f; } },
+        { name: 'Gc / Gc(8)', label: 'Gc', color: 'var(--series-2)', f: function (L) { return canopyFluxes(L, k, gs, Ga, D).Gc / ref.Gc; } },
+        { name: 'Ω', label: 'Ω', color: 'var(--series-3)', f: function (L) { return canopyFluxes(L, k, gs, Ga, D).Om; } },
+        { name: 'E / E(8)', label: 'E', color: 'var(--fg)', f: function (L) { return canopyFluxes(L, k, gs, Ga, D).E / ref.E; }, width: 2.6 }
+      ]
+    });
+    var c = canopyFluxes(L0, k, gs, Ga, D), c1 = canopyFluxes(L0 + 1, k, gs, Ga, D);
+    $('lF').textContent = fmt(c.f, 2); $('lLs').textContent = fmt(c.Lsun, 2);
+    $('lGc').textContent = fmt(c.Gc, 2); $('lGcm').textContent = fmt(c.Gcm * 1000, 1);
+    $('lOm').textContent = fmt(c.Om, 2);
+    $('lE').textContent = fmt(c.E, 0); $('lEm').textContent = fmt(c.E / 2.45e6 * 3600, 2);
+    $('lM').textContent = '+' + fmt((c1.E - c.E) / c.E * 100, 0) + '% E, +' + fmt((c1.f - c.f) / c.f * 100, 0) + '% fAPAR';
+    var rows = []; for (var L = 0.5; L <= 8; L += 0.5) { var r = canopyFluxes(L, k, gs, Ga, D); rows.push([L, fmt(r.f, 2), fmt(r.Gc, 2), fmt(r.Om, 2), fmt(r.E, 0), fmt(r.E / 2.45e6 * 3600, 2)]); }
+    table($('lTable'), ['LAI', 'fAPAR', 'Gc (mol)', 'Ω', 'E (W m⁻²)', 'E (mm h⁻¹)'], rows);
+  }
+  bind(lIds, drawL); drawL();
+
+  /* ---------- Lab A: beta functions ---------- */
+  var bIds = ['bWp', 'bFc', 'bP', 'bQ', 'bPsi', 'bTh'];
+  var thS = 0.45, psiSat = -0.003, bCH = 5;
+  function psiOf(th) { return psiSat * Math.pow(Math.max(th, 0.005) / thS, -bCH); }
+  function drawB() {
+    outs(bIds);
+    var wp = +$('bWp').value, fc = Math.max(+$('bFc').value, wp + 0.02), p = +$('bP').value, q = +$('bQ').value, p50 = +$('bPsi').value, th0 = +$('bTh').value;
+    var tc = wp + p * (fc - wp);
+    var fLin = function (th) { return Math.pow(clamp((th - wp) / (tc - wp), 0, 1), q); };
+    var fFed = function (th) { var b = clamp((th - wp) / (tc - wp), 0, 1); var an = th > 0.9 * thS ? clamp((thS - th) / (0.1 * thS), 0, 1) : 1; return b * an; };
+    var fSig = function (th) { var ps = psiOf(th); return 1 / (1 + Math.pow(ps / p50, 3)); };
+    makeChart($('bSvg'), $('bTip'), {
+      x: { min: 0, max: 0.45, ticks: ticks(0, 0.45, 0.05), label: 'Volumetric soil water content θ (m³ m⁻³)', name: 'θ', fmt: function (v) { return fmt(v, 2); }, tipfmt: function (v) { return fmt(v, 3); } },
+      y: { min: 0, max: 1, ticks: frac.ticks, label: 'Stress factor β', fmt: frac.fmt },
+      vlines: [{ x: wp, label: 'θwp' }, { x: fc, label: 'θfc' }, { x: th0, label: 'θ', dy: 14 }],
+      series: [
+        { name: 'Linear/power', label: 'linear', color: 'var(--series-1)', f: fLin },
+        { name: 'Feddes', label: 'Feddes', color: 'var(--series-2)', f: fFed, dash: '5 4' },
+        { name: 'Sigmoid in Ψ', label: 'sigmoid Ψ', color: 'var(--series-3)', f: fSig }
+      ],
+      extra: function (xv) { return '<br>Ψsoil <b>' + fmt(psiOf(xv), 3) + '</b> MPa'; }
+    });
+    $('bRew').textContent = fmt((th0 - wp) / (fc - wp), 2);
+    $('bPs').textContent = fmt(psiOf(th0), 3);
+    $('bB').textContent = fmt(fLin(th0), 2) + ' · ' + fmt(fFed(th0), 2) + ' · ' + fmt(fSig(th0), 2);
+    $('bA').textContent = fmt(20 * fLin(th0), 1) + ' µmol m⁻² s⁻¹';
+    $('bG').textContent = fmt(0.3 * fLin(th0), 3) + ' mol m⁻² s⁻¹';
+    $('bAwc').textContent = fmt((fc - wp) * 1000, 0);
+    var rows = []; for (var th = 0.05; th <= 0.45 + 1e-9; th += 0.05) rows.push([fmt(th, 2), fmt(psiOf(th), 3), fmt(fLin(th), 2), fmt(fFed(th), 2), fmt(fSig(th), 2)]);
+    table($('bTable'), ['θ', 'Ψ (MPa)', 'linear', 'Feddes', 'sigmoid'], rows);
+  }
+  bind(bIds, drawB); drawB();
+
+  /* ---------- Lab B: bucket model ---------- */
+  var wIds = ['wZ', 'wAwc', 'wLai', 'wPet', 'wRain', 'wCrit'];
+  var seed = 7;
+  function rng(s) { var st = (s * 2654435761) % 4294967296 || 1; return function () { st = (st * 1664525 + 1013904223) % 4294967296; return st / 4294967296; }; }
+  function bucket() {
+    var z = +$('wZ').value, awc = +$('wAwc').value, LAI0 = +$('wLai').value, PET = +$('wPet').value, rm = +$('wRain').value, crit = +$('wCrit').value;
+    var cap = z * awc, W = cap, LAI = LAI0, r = rng(seed), pw = 0.3, out = [], stressDays = 0;
+    for (var d = 0; d <= 90; d++) {
+      var rain = 0; var u1 = r(), u2 = r();
+      if (rm > 0 && u1 < pw) rain = -Math.log(1 - u2) * rm / pw;
+      W = Math.min(cap, W + rain);
+      var rew = W / cap, beta = Math.min(1, rew / crit);
+      var f = 1 - Math.exp(-0.5 * LAI);
+      var T = PET * f * beta, Es = 0.3 * PET * (1 - f) * Math.min(1, rew / 0.2);
+      var loss = Math.min(W, T + Es); if (T + Es > 0) { T *= loss / (T + Es); Es *= loss / (T + Es); }
+      W -= loss;
+      if (beta < 0.5) stressDays++; else stressDays = 0;
+      if (stressDays >= 5) LAI -= 0.04 * (0.5 - beta) / 0.5 * LAI; else if (beta > 0.8) LAI = Math.min(LAI0, LAI + 0.015 * LAI0);
+      LAI = Math.max(0.05, LAI);
+      out.push({ d: d, rain: rain, W: W, rew: rew, beta: beta, T: T, tp: PET > 0 ? T / PET : 0, LAI: LAI });
+    }
+    return { out: out, cap: cap, LAI0: LAI0 };
+  }
+  function drawW() {
+    outs(wIds); $('wSeedO').textContent = seed;
+    var m = bucket(), o = m.out;
+    var pts = function (fn) { return o.map(function (r) { return [r.d, fn(r)]; }); };
+    makeChart($('wSvg'), $('wTip'), {
+      x: { min: 0, max: 90, ticks: ticks(0, 90, 10), label: 'Day', name: 'day', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 0); }, snap: true },
+      y: { min: 0, max: 1, ticks: frac.ticks, label: 'Fraction (see legend)', fmt: frac.fmt },
+      before: function (c) { o.forEach(function (r) { if (r.rain > 0.2) c.svg.appendChild(el('line', { 'class': 'rain', x1: c.sx(r.d), x2: c.sx(r.d), y1: c.mT, y2: c.mT + Math.min(40, 3 * r.rain) })); }); },
+      series: [
+        { name: 'REW', label: 'REW', color: 'var(--series-1)', pts: pts(function (r) { return r.rew; }) },
+        { name: 'β', label: 'β', color: 'var(--series-2)', pts: pts(function (r) { return r.beta; }) },
+        { name: 'T/PET', label: 'T/PET', color: 'var(--series-3)', pts: pts(function (r) { return r.tp; }) },
+        { name: 'LAI/LAI₀', label: 'LAI', color: 'var(--fg)', pts: pts(function (r) { return r.LAI / m.LAI0; }), width: 2.6 }
+      ],
+      extra: function (xv) { var r = o[Math.round(xv)]; return r ? '<br>rain <b>' + fmt(r.rain, 1) + '</b> mm · W <b>' + fmt(r.W, 0) + '</b> mm · T <b>' + fmt(r.T, 2) + '</b> mm · LAI <b>' + fmt(r.LAI, 2) + '</b>' : ''; }
+    });
+    var rain = 0, T = 0, ds = 0, minr = 1, sb = 0;
+    o.forEach(function (r) { rain += r.rain; T += r.T; if (r.beta < 0.5) ds++; minr = Math.min(minr, r.rew); sb += r.beta; });
+    $('wCap').textContent = fmt(m.cap, 0); $('wR').textContent = fmt(rain, 0); $('wT').textContent = fmt(T, 0);
+    $('wDs').textContent = ds; $('wMin').textContent = fmt(minr, 2); $('wLf').textContent = fmt(o[o.length - 1].LAI, 2); $('wMb').textContent = fmt(sb / o.length, 2);
+    var rows = []; for (var d = 0; d <= 90; d += 10) { var r = o[d]; rows.push([d, fmt(r.rain, 1), fmt(r.W, 0), fmt(r.rew, 2), fmt(r.beta, 2), fmt(r.T, 2), fmt(r.LAI, 2)]); }
+    table($('wTable'), ['day', 'rain (mm)', 'W (mm)', 'REW', 'β', 'T (mm)', 'LAI'], rows);
+  }
+  bind(wIds, drawW);
+  $('wPrev').addEventListener('click', function () { seed = seed > 1 ? seed - 1 : 20; drawW(); });
+  $('wNext').addEventListener('click', function () { seed = seed < 20 ? seed + 1 : 1; drawW(); });
+  drawW();
+})();
+</script>
+</body>
+</html>

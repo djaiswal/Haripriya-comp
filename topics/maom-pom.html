@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mineral-Associated and Particulate Organic Matter</title>
+<meta name="description" content="MAOM and POM at comprehensive-exam depth: definitions and fractionation, formation pathways, sorption mechanisms and mineral controls, saturation and its critics, temperature sensitivity, management, destabilisation, and how measurable fractions are built into Millennial, MEMS and MIMICS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ev { stroke: var(--muted); stroke-dasharray: 3 4; }
+  .ch .bar { stroke: var(--surface); stroke-width: 1; }
+  .ch .barlbl { font-size: 11.5px; font-weight: 600; }
+  .chartbox { position: relative; }
+  .boxes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .box { background: var(--surface-2); border-radius: 8px; padding: 0.4rem 0.7rem; font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); min-width: 110px; }
+  .box b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ctrl select { width: 100%; font: inherit; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › Mineral-associated and particulate organic matter</div>
+    <div class="eyebrow">Topic 3 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">Mineral-Associated and Particulate Organic Matter</h1>
+    <p class="lead">Why soil carbon is now split into two physical fractions rather than chemical pools, how each forms and persists, what "saturation" of the mineral fraction means and does not mean, and how measurable fractions have been written into the newest generation of soil models.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Once "humus" was abandoned, soil organic matter needed a classification based on how it persists rather than what it is extracted with. Lavallee, Soong &amp; Cotrufo (2020) [1] formalised the two-fraction scheme: <strong>particulate organic matter (POM)</strong> is plant-derived, structurally recognisable, &gt;53 µm or light (&lt;1.6–1.85 g cm⁻³), with C:N of 10–40, protected mainly by occlusion in aggregates, and turning over in years to decades; <strong>mineral-associated organic matter (MAOM)</strong> is &lt;53 µm and heavy, made largely of microbial residues and small plant-derived molecules sorbed to clay and oxide surfaces, with C:N of 8–13, persisting for decades to centuries, and making up 50–90% of SOC in most mineral soils. POM forms by fragmentation and physical transfer of litter; MAOM forms mainly through the dissolved and microbial pathway (soluble litter compounds and necromass sorbing to minerals), with root inputs especially efficient. Sorption is by ligand exchange with Fe and Al oxides, cation bridging through Ca²⁺, and weaker interactions in a layered "onion" of organic coatings. Because mineral surface area is finite, MAOM has a capacity that scales with silt + clay (Hassink 1997; Georgiou 2022 estimate the global deficit below it), so inputs give diminishing returns in fine soils near saturation and little stable storage in sandy soils; whether this is true "saturation" is contested (Begill 2023). POM is the fraction that responds quickly to management and to warming; MAOM responds slowly and can be destabilised by exudates, reductive dissolution and pH change. Millennial, MEMS and MIMICS now use these fractions as state variables, usually with a Langmuir isotherm for MAOM.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to (i) define POM and MAOM with operational criteria and typical properties; (ii) draw the formation pathways (physical transfer, DOM–microbial in vivo and ex vivo, root pathway) and name the sorption mechanisms; (iii) write the Langmuir isotherm and explain capacity, deficit and the Hassink regression; (iv) argue both sides of the saturation debate; (v) say which fraction is sensitive to warming and management and why; (vi) show how a model can use these fractions as pools.</p></div>
+  </section>
+
+  <section id="fractions">
+    <h2>From humification to physical fractions</h2>
+    <p>The humification paradigm classified SOM chemically (humic acids, fulvic acids, humin) and explained persistence by molecular recalcitrance. Both ideas failed (Schmidt 2011; Lehmann &amp; Kleber 2015, previous pages). The replacement classifies by <em>physical location and protection mechanism</em>, because those are what control turnover. The two-fraction scheme is deliberately coarse: it separates material whose persistence depends on being <em>physically inaccessible</em> (POM, occluded in aggregates or simply not yet colonised) from material whose persistence depends on <em>mineral association</em> (MAOM). The fractions are measurable, they have distinct chemistry and turnover, and they respond differently to drivers, which is what a model pool should be.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Property</th><th>POM (particulate)</th><th>MAOM (mineral-associated)</th></tr></thead>
+      <tbody>
+        <tr><td>Operational definition</td><td>&gt; 53 µm by size, or light fraction &lt; 1.6–1.85 g cm⁻³ by density; free (fPOM) or occluded in aggregates (oPOM)</td><td>&lt; 53 µm (silt + clay sized) or heavy fraction &gt; 1.6–1.85 g cm⁻³</td></tr>
+        <tr><td>Origin and chemistry</td><td>Plant-derived fragments with recognisable structure: cellulose, lignin, lipids; some fungal hyphae</td><td>Microbial necromass (amino sugars, proteins, lipids) plus low-molecular-weight plant compounds; more oxidised, N-rich</td></tr>
+        <tr><td>C:N</td><td>10–40 (litter-like)</td><td>8–13 (microbe-like)</td></tr>
+        <tr><td>Share of SOC (mineral soils)</td><td>10–50%; higher in forests, coarse soils, cold soils, surface horizons</td><td>50–90%; higher in grasslands, fine-textured soils, subsoils</td></tr>
+        <tr><td>Protection mechanism</td><td>Aggregate occlusion, spatial separation, cold or wet conditions; some intrinsic chemistry</td><td>Sorption to clay minerals and Fe/Al oxides; co-precipitation; cation bridging</td></tr>
+        <tr><td>Mean residence time</td><td>Years to decades (fPOM &lt; oPOM)</td><td>Decades to centuries; radiocarbon ages of hundreds to thousands of years</td></tr>
+        <tr><td>Response to management</td><td>Fast: cover crops, residue, tillage change it within years</td><td>Slow: decades; capacity-limited</td></tr>
+        <tr><td>Temperature sensitivity</td><td>Higher apparent Q₁₀; decomposition limited by substrate chemistry</td><td>Lower apparent Q₁₀ in most studies; limited by desorption and accessibility</td></tr>
+        <tr><td>Nutrient role</td><td>Source of N through decomposition; immobilises N when C:N is high</td><td>Large N store; released by destabilisation (Jilling 2018)</td></tr>
+      </tbody></table></div>
+    <h3>Fractionation methods and their limits</h3>
+    <p><strong>Size fractionation</strong> disperses the soil (shaking with glass beads or sodium hexametaphosphate, sometimes sonication) and wet-sieves at 53 µm: the coarse fraction is POM (with sand), the fine fraction MAOM. <strong>Density fractionation</strong> floats the light fraction in sodium polytungstate (SPT) at 1.6–1.85 g cm⁻³, with an optional sonication step to release occluded POM from aggregates; the heavy residue is MAOM. <strong>Combined schemes</strong> (Lavallee 2020 recommend size then density) separate fPOM, oPOM, MAOM and sometimes a coarse mineral fraction. Limitations: the cut-offs are conventions, not natural boundaries; fine POM fragments pass the 53 µm sieve into "MAOM"; dissolved carbon is lost or counted in either fraction depending on protocol; sonication energy and SPT density change recoveries by tens of percent (Poeplau et al. 2018 [23] compared 20 methods and found that none matched model pools cleanly); and the heavy fraction is itself heterogeneous, containing young necromass and millennia-old sorbed carbon. The fractions are defensible model pools because they differ in turnover by an order of magnitude, not because they are homogeneous.</p>
+  </section>
+
+  <section id="pathways">
+    <h2>Formation pathways</h2>
+    <p><strong>Physical transfer pathway (to POM).</strong> Litter is fragmented by soil fauna, incorporated by bioturbation and tillage, and becomes free POM; aggregation around roots, hyphae and microbial mucilage then occludes it (oPOM), where decomposition slows because decomposers, enzymes and oxygen reach it less easily. POM formation efficiency is highest for structural, lignin-rich material that resists depolymerisation.</p>
+    <p><strong>Dissolved organic matter–microbial pathway (to MAOM).</strong> Soluble litter compounds and depolymerisation products enter the DOM pool and reach mineral surfaces in two ways. The <em>in vivo</em> (microbial) route: microbes take up DOM, grow with a given CUE, and their necromass (cell-wall fragments, proteins, lipids) sorbs to minerals. The <em>ex vivo</em> (direct) route: plant-derived compounds, including partially transformed products of extracellular enzymes, sorb to minerals without passing through a cell. Sokol et al. (2019) [7] call these the "microbial" and "direct" pathways and show their relative importance depends on substrate chemistry (sugars go through microbes, aromatic acids sorb directly), on mineralogy and on depth. The MEMS framework (Cotrufo 2013, 2015 [2, 3]) emphasises that labile, high-quality litter with a large soluble fraction produces more MAOM per unit input than lignin-rich litter, which inverts the humification intuition; ¹³C tracing showed that labile litter components were preferentially recovered in MAOM.</p>
+    <p><strong>The root pathway.</strong> Sokol &amp; Bradford (2019) [6] showed with isotopically labelled inputs that belowground inputs (rhizodeposits and root litter) form MAOM about five times more efficiently than aboveground inputs, because they are delivered as DOM directly into the mineral matrix at depth, with high CUE substrates, and because the rhizosphere microbial community is close to the surfaces where necromass is retained. This is the mechanistic basis for the "roots build soil carbon" result and for the emphasis on deep-rooted crops in sequestration proposals.</p>
+    <p><strong>What the pathways imply.</strong> MAOM formation is a two-step filter: supply of sorbable compounds (set by litter quality, CUE and root allocation) and availability of surfaces (set by mineralogy and existing loading). POM accumulation depends instead on input quantity, fragmentation and aggregation. A soil's POM:MAOM ratio therefore summarises its inputs, biology and mineralogy: Cotrufo et al. (2019) [4] found across European soils that grasslands with high N availability store carbon predominantly as MAOM, while forests on acid, coarse soils store it as POM, and that MAOM stocks saturate with silt + clay while POM does not.</p>
+  </section>
+
+  <section id="sorption">
+    <h2>Sorption mechanisms and mineral controls</h2>
+    <p>Organic molecules bind to mineral surfaces by several mechanisms of very different strength. <strong>Ligand exchange</strong>: carboxyl and phenolic groups displace hydroxyls on the surfaces of Fe and Al (hydr)oxides (goethite, ferrihydrite, gibbsite) and on the edges of clay minerals, forming inner-sphere complexes that are nearly irreversible at the pH of most soils; this is the dominant mechanism in acid and highly weathered soils, and the reason oxalate- and dithionite-extractable Fe and Al (Fe<sub>o</sub>, Al<sub>o</sub>, Fe<sub>d</sub>) predict SOC so well. <strong>Cation bridging</strong>: polyvalent cations (Ca²⁺, and Al³⁺ or Fe³⁺ where soluble) link negatively charged organic groups to negatively charged clay surfaces; this dominates in neutral and calcareous soils, where Ca-bridged and co-precipitated organo-carbonate associations hold much of the MAOM. <strong>Hydrophobic and van der Waals interactions</strong> and hydrogen bonding attach weakly sorbed outer layers. <strong>Co-precipitation</strong> with freshly formed Fe and Al phases (common in Andisols and redox-active soils) can enclose organic matter three-dimensionally rather than coating it.</p>
+    <p>Kleber, Sollins &amp; Sutton (2007) [8] proposed the <strong>zonal (onion) model</strong>: a contact zone of strongly bound, amphiphilic molecules (proteins, lipids) oriented with their polar groups on the mineral; a hydrophobic zone where further molecules attach by hydrophobic interactions; and an outer kinetic zone of loosely bound, exchangeable material in equilibrium with the solution. This explains why MAOM is both very persistent (inner zone) and partly labile (outer zone), why sorbed proteins and lipids dominate the first layer, and why loading beyond a monolayer gives progressively weaker binding, which is the microscopic basis of saturation behaviour.</p>
+    <p><strong>Mineral controls.</strong> Across soils, MAOM scales with: clay and silt content (surface area), specific surface area measured by N₂-BET or ethylene glycol methods, short-range-order (poorly crystalline) minerals such as ferrihydrite and allophane (Andisols have the highest SOC per unit area of any mineral soil), exchangeable Ca and carbonate in neutral to alkaline soils, and pH (which determines surface charge, Al solubility and whether ligand exchange or Ca bridging dominates). Rasmussen et al. (2018) [9] showed across the continental US that Fe<sub>o</sub> + Al<sub>o</sub> and exchangeable Ca explained more SOC variance than clay content, in acid and alkaline soils respectively, so "clay content" in models is a proxy for the real controls and is a poor one across mineralogies: a 2:1 smectite soil, a 1:1 kaolinite soil and an allophanic soil of the same clay percentage have very different capacities.</p>
+  </section>
+
+  <section id="saturation">
+    <h2>Saturation: capacity, deficit and the debate</h2>
+    <p>Hassink (1997) [10] observed across soils that the carbon in the &lt;20 µm fraction had an upper bound linearly related to the mass of that fraction, and fitted the regression</p>
+    <div class="eq">$$\text{MAOM}_{max}\ (\text{g C kg}^{-1}\text{ soil}) = 4.09 + 0.37\,(\%\,\text{silt} + \text{clay})$$</div>
+    <p>interpreted as a capacity of the fine fraction to protect carbon. Six et al. (2002) [11] generalised this into a <strong>hierarchy of saturating protective capacities</strong>: silt + clay protection (chemical), microaggregate protection (physical), and biochemical protection (recalcitrance), each with an upper limit, so that as a soil fills its capacity, the proportion of new inputs that are stabilised falls and more carbon ends up in the unprotected, fast-cycling POM. Stewart et al. (2007) [12] tested this with long-term input gradients and found the expected diminishing returns: the increment of SOC per unit of extra input decreases as stocks rise, and the soils that responded least were those with high existing MAOM. Mechanistically, saturation is a <strong>Langmuir isotherm</strong>: a finite number of binding sites Q<sub>max</sub> with affinity K and a dissolved concentration C in equilibrium,</p>
+    <div class="eq">$$Q = \frac{Q_{max}\,K\,C}{1 + K\,C}, \qquad K = \frac{k_a}{k_d + k_m}$$</div>
+    <div class="eq">$$\frac{dM}{dt} = k_a\,C\,(Q_{max} - M) - k_d\,M - k_m\,M$$</div>
+    <p>where M is MAOM, k<sub>a</sub> adsorption, k<sub>d</sub> desorption and k<sub>m</sub> mineralisation of sorbed carbon. The free-site term (Q<sub>max</sub> − M) makes each additional unit of input less likely to be stabilised as M approaches Q<sub>max</sub>. Georgiou et al. (2022) [13] used a global compilation of fraction data to estimate the mineralogical capacity (the upper boundary line of MAOM against silt + clay, about 86 g C per kg of silt + clay sized particles, higher than Hassink's older bound) and found that most soils are far below it (global deficit of order 10³ Pg C), that the deficit is largest in cropland and in coarse-to-medium soils, and that the achievable storage is limited by inputs and time rather than capacity in most places.</p>
+    <p><strong>The critique.</strong> Begill, Don &amp; Poeplau (2023) [14] examined German agricultural soils with the highest carbon contents and found no evidence of a plateau: MAOM continued to increase with total SOC, the slope of MAOM against silt + clay varied with land use, and the "boundary line" depends on the sampling. They argue that the observed upper limits are statistical artefacts of the input and climate ranges in the data, that minerals can hold multilayer organic matter (the onion model) so a monolayer-based capacity is not physically mandatory, and that the policy conclusion (fine soils near capacity cannot store more) is unsupported. The two camps agree on diminishing returns and on coarse soils having low MAOM; they disagree about whether a hard ceiling exists and how to estimate it. For the exam: present saturation as an isotherm with finite but uncertain Q<sub>max</sub>, multilayer sorption as the reason Q<sub>max</sub> is soft, and the empirical boundary lines as upper envelopes of a particular dataset.</p>
+    <p><strong>Consequences for sequestration.</strong> Diminishing returns mean the first increments of input in a depleted fine-textured soil are retained efficiently; the same inputs in a soil near its envelope mostly build POM, which is vulnerable to management reversal. Coarse soils do not have "more room": they have low capacity, so added carbon stays as POM and respires. The soils with the greatest stable potential are fine-textured soils with large deficits, typically long-cultivated croplands on loamy and clayey parent material.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (a): Langmuir sorption and saturation of MAOM</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="lSvg" viewBox="0 0 640 360" role="img" aria-label="Steady-state MAOM stock as a function of the supply of sorbable carbon, with the capacity line and the current operating point"></svg>
+            <div class="chart-tip" id="lTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Steady-state MAOM, M*</span><span style="--c:var(--series-2)">Capacity Q<sub>max</sub> (Hassink, 0–20 cm)</span></div>
+          <div class="boxes">
+            <div class="box">Q<sub>max</sub> (g C kg⁻¹ · g C m⁻², 0–20 cm)<b id="lQ"></b></div>
+            <div class="box">M* at current supply<b id="lM"></b></div>
+            <div class="box">Saturation M*/Q<sub>max</sub> · deficit<b id="lSat"></b></div>
+            <div class="box">Gain from +100 g C m⁻² yr⁻¹ more supply<b id="lGain"></b></div>
+            <div class="box">Fraction of supply stabilised at steady state<b id="lEff"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="lTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lSC"><span>Silt + clay (%)</span><output id="lSCO">45</output></label><input type="range" id="lSC" min="5" max="95" step="1" value="45"></div>
+          <div class="ctrl"><label for="lF"><span>Supply of sorbable C (DOM + necromass, g C m⁻² yr⁻¹)</span><output id="lFO">150</output></label><input type="range" id="lF" min="10" max="600" step="5" value="150"></div>
+          <div class="ctrl"><label for="lK"><span>Affinity K (m² g⁻¹ C)</span><output id="lKO">0.10</output></label><input type="range" id="lK" min="0.01" max="1" step="0.01" value="0.1"></div>
+          <div class="ctrl"><label for="lKm"><span>MAOM mineralisation k<sub>m</sub> (yr⁻¹)</span><output id="lKmO">0.010</output></label><input type="range" id="lKm" min="0.002" max="0.05" step="0.001" value="0.01"></div>
+          <div class="ctrl"><label for="lKu"><span>DOM uptake + leaching k<sub>u</sub> (yr⁻¹)</span><output id="lKuO">20</output></label><input type="range" id="lKu" min="2" max="100" step="1" value="20"></div>
+          <p class="small muted" style="margin:0">Capacity from Hassink's regression converted to 0–20 cm with bulk density 1.3 g cm⁻³ (260 kg soil m⁻²). Steady state solves F = k<sub>u</sub>C + k<sub>m</sub>M with M = Q<sub>max</sub>KC/(1 + KC); the x-axis is the supply F, which is a fraction of litter input set by litter quality, CUE and root allocation. Suggested experiments: at 45% silt + clay and 150 g supply the soil is well below capacity and the marginal gain is large; raise supply to 500 and watch the gain per extra 100 g shrink; drop silt + clay to 10% to see why sandy soils stabilise little regardless of inputs; raise k<sub>m</sub> (warming, destabilisation) and note that the curve flattens far below Q<sub>max</sub>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (c): fraction distribution, capacity and deficit for a given soil</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="fSvg" viewBox="0 0 640 300" role="img" aria-label="Bars showing measured POM and MAOM carbon against the Hassink and Georgiou capacity estimates and the resulting deficit"></svg>
+          </div>
+          <div class="boxes">
+            <div class="box">MAOM · POM (g C kg⁻¹)<b id="fMP"></b></div>
+            <div class="box">Capacity: Hassink · Georgiou (g C kg⁻¹)<b id="fCap"></b></div>
+            <div class="box">Deficit: Hassink · Georgiou (g C kg⁻¹)<b id="fDef"></b></div>
+            <div class="box">Saturation: Hassink · Georgiou<b id="fPct"></b></div>
+            <div class="box">Deficit in Mg C ha⁻¹ (0–20 cm)<b id="fHa"></b></div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="fSOC"><span>Total SOC (g C kg⁻¹ soil)</span><output id="fSOCO">20</output></label><input type="range" id="fSOC" min="2" max="80" step="0.5" value="20"></div>
+          <div class="ctrl"><label for="fSC"><span>Silt + clay (%)</span><output id="fSCO">50</output></label><input type="range" id="fSC" min="5" max="95" step="1" value="50"></div>
+          <div class="ctrl"><label for="fShare"><span>MAOM share of SOC (measured or assumed)</span><output id="fShareO">0.70</output></label><input type="range" id="fShare" min="0.2" max="0.95" step="0.01" value="0.7"></div>
+          <div class="ctrl"><label for="fBD"><span>Bulk density (g cm⁻³)</span><output id="fBDO">1.3</output></label><input type="range" id="fBD" min="0.8" max="1.7" step="0.05" value="1.3"></div>
+          <p class="small muted" style="margin:0">Hassink: 4.09 + 0.37 × (silt + clay %). Georgiou-style: 86 g C per kg of silt + clay, i.e. 0.86 × (silt + clay %) g C kg⁻¹ soil, an upper envelope of global data. Suggested experiments: a sandy soil (15%) with 15 g C kg⁻¹ exceeds the Hassink capacity, so its carbon must be mostly POM: lower the MAOM share and see the bar agree; a clay-rich grassland (70%, 40 g C kg⁻¹) still has a large Georgiou deficit; compare the two capacity estimates to see why "deficit" is an uncertain number.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sensitivity">
+    <h2>Climate sensitivity, management and destabilisation</h2>
+    <p><strong>Temperature.</strong> Because POM decomposition is limited by the chemistry of plant polymers while MAOM decomposition is limited by desorption and physical access, the two fractions respond differently to warming. Incubations and field warming generally find POM more temperature-sensitive: Rocci et al. (2021) [15] in a meta-analysis found POM declined under experimental warming while MAOM did not change significantly; Heckman et al. (2022) [16] across US soils found that bulk SOC turnover and its climate sensitivity were dominated by the POM-rich and oxide-poor soils, with MAOM in oxide-rich soils relatively insensitive. The carbon-quality–temperature hypothesis (Davidson &amp; Janssens) would predict the opposite for intrinsic sensitivity (MAOM compounds need more activation energy), but the apparent sensitivity is capped by sorption. This matters for projections: a soil with 80% MAOM should lose less under warming than a single-pool Q₁₀ model predicts, while a POM-dominated boreal forest soil may lose more.</p>
+    <p><strong>Management.</strong> Cover crops, residue retention, perennials and reduced tillage raise POM within a few years (fPOM first, oPOM as aggregates rebuild); MAOM changes over decades and only where capacity and sorbable supply exist. Nitrogen fertilisation increases MAOM in N-limited systems (higher litter quality and CUE, more necromass) but can lower POM by accelerating its decomposition. Conversion of grassland to cropland loses POM fast (tillage breaks aggregates) and MAOM slowly. Sequestration claims should therefore specify the fraction: POM gains are real but reversible; MAOM gains are durable but small and slow. Jilling et al. (2018) [18] turned the nutrient question around: MAOM is the largest reservoir of soil N, and plants and their microbial partners access it by <strong>destabilising</strong> MAOM with root exudates (organic acids such as oxalate that compete for binding sites, and labile carbon that fuels microbial attack), so the mineral-associated pool is a dynamic N source, not a sealed vault.</p>
+    <p><strong>Destabilisation mechanisms.</strong> (i) Root exudate priming: oxalate and citrate release sorbed compounds by ligand competition, and glucose-like exudates fuel priming; Keiluweit et al. (2015) [17] showed oxalic acid liberated carbon from mineral associations and increased its microbial mineralisation, so "protected" carbon is only protected while roots leave it alone. (ii) Reductive dissolution: under anoxia Fe(III) oxides are reduced to soluble Fe(II), releasing the organic matter bound to them; redox fluctuations in wetlands, rice paddies and floodplains therefore cycle MAOM. (iii) pH change and liming alter surface charge and Ca bridging; acidification can mobilise Al and release Ca-bridged carbon; liming can increase Ca bridging. (iv) Warming increases desorption rates modestly. (v) Physical disruption of aggregates exposes occluded POM but does little to MAOM directly.</p>
+    <p><strong>Isotope and radiocarbon evidence.</strong> ¹³C labelling (litter, roots, CO₂) consistently recovers labile inputs preferentially in MAOM within months, supporting the DOM–microbial pathway; natural-abundance ¹³C after C3–C4 shifts shows POM replaced within decades and MAOM over centuries; Δ¹⁴C is systematically lower (older) in heavy fractions than light, and lowest in dense, oxide-rich fractions and at depth; amino-sugar and lipid biomarkers put microbial residues at 50–80% of MAOM. Together these establish the decades-vs-centuries turnover contrast that the model pools rely on.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (d): POM and MAOM under warming with different temperature sensitivities</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="wSvg" viewBox="0 0 640 360" role="img" aria-label="POM, MAOM and total soil carbon over 150 years under a warming scenario with separate Q10 values for each fraction"></svg>
+            <div class="chart-tip" id="wTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Total SOC</span><span style="--c:var(--series-2)">POM</span><span style="--c:var(--series-3)">MAOM</span><span style="--c:var(--muted)">Total, no warming</span></div>
+          <div class="boxes">
+            <div class="box">Initial POM · MAOM (g C m⁻²)<b id="wInit"></b></div>
+            <div class="box">Loss by year 100: POM · MAOM · total<b id="w100"></b></div>
+            <div class="box">Share of total loss from POM<b id="wShare"></b></div>
+            <div class="box">Effective bulk Q₁₀ of the loss at year 100<b id="wEff"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="wTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="wIn"><span>Input (g C m⁻² yr⁻¹)</span><output id="wInO">400</output></label><input type="range" id="wIn" min="100" max="1000" step="10" value="400"></div>
+          <div class="ctrl"><label for="wFp"><span>Fraction of input stabilised to MAOM</span><output id="wFpO">0.15</output></label><input type="range" id="wFp" min="0.02" max="0.5" step="0.01" value="0.15"></div>
+          <div class="ctrl"><label for="wTp"><span>POM turnover time (yr)</span><output id="wTpO">8</output></label><input type="range" id="wTp" min="2" max="40" step="1" value="8"></div>
+          <div class="ctrl"><label for="wTm"><span>MAOM turnover time (yr)</span><output id="wTmO">150</output></label><input type="range" id="wTm" min="30" max="1000" step="10" value="150"></div>
+          <div class="ctrl"><label for="wQp"><span>Q₁₀ of POM decomposition</span><output id="wQpO">2.6</output></label><input type="range" id="wQp" min="1" max="4" step="0.1" value="2.6"></div>
+          <div class="ctrl"><label for="wQm"><span>Q₁₀ of MAOM decomposition</span><output id="wQmO">1.5</output></label><input type="range" id="wQm" min="1" max="4" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="wDT"><span>Warming reached by year 100 (°C)</span><output id="wDTO">3.0</output></label><input type="range" id="wDT" min="0" max="6" step="0.5" value="3"></div>
+          <div class="ctrl"><label for="wInc"><span>Input change by year 100 (%)</span><output id="wIncO">0</output></label><input type="range" id="wInc" min="-30" max="50" step="5" value="0"></div>
+          <p class="small muted" style="margin:0">Two independent first-order pools at steady state in year 0; warming and input change ramp linearly to year 100 and then hold. POM receives (1 − f<sub>p</sub>) of input, MAOM receives f<sub>p</sub> directly (standing in for the DOM–microbial pathway). Suggested experiments: with equal Q₁₀ = 2 the loss is dominated by MAOM because it holds most carbon; with the defaults the POM loss happens in the first decades and MAOM loss accrues slowly for centuries; add +20% inputs (CO₂ fertilisation) and see POM recover while MAOM continues to decline, then stretch the view with a long MAOM turnover.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modelling">
+    <h2>Modelling with measurable pools</h2>
+    <p>Three families of models now use POM and MAOM (or close relatives) as state variables. <strong>Millennial</strong> (Abramoff et al. 2018; version 2, 2022 [20]) has five measurable pools: POM, low-molecular-weight carbon (LMWC, the dissolved pool), aggregate carbon, MAOM and microbial biomass. POM decomposes to LMWC and aggregates; LMWC is taken up by microbes (Michaelis–Menten), sorbs to MAOM with a Langmuir term whose Q<sub>max</sub> scales with clay and pH, and leaches; microbial necromass goes to MAOM and LMWC; aggregates form from POM and MAOM and break down with a rate modified by moisture. Version 2 was calibrated against a global fraction database and reproduces the MAOM–clay relation, the POM:MAOM contrast between land uses, and radiocarbon ages better than Century-type structures. <strong>MEMS 1.0</strong> (Robertson et al. 2019 [22]) implemented the Cotrufo framework for litter and soil: litter is split into hot-water-extractable (soluble), acid-soluble (cellulose-like) and acid-insoluble (lignin-like) fractions measured by proximate analysis; soluble and microbial products enter DOM and sorb to MAOM with a Langmuir term; structural material forms POM; CUE varies with litter quality. <strong>MEMS 2.0</strong> (Zhang et al. 2021 [21]) extends this to a vertically resolved ecosystem model with N, water and DOM transport, with MAOM and POM in each layer. <strong>MIMICS</strong>'s physically protected pool is an implicit MAOM (clay-dependent partitioning of necromass, slow desorption); <strong>COMISSION</strong> (Ahrens et al. 2015 [19]) is a vertically explicit model in which sorption onto a finite mineral surface (Langmuir with Q<sub>max</sub> from Fe and Al oxides) and microbial uptake compete for DOC, and which reproduced the depth profiles of SOC and Δ¹⁴C at a German forest site, showing that sorption and slow desorption, not recalcitrance, explain the old carbon at depth. In all of them, the core new element is the isotherm: the MAOM formation rate contains a (Q<sub>max</sub> − M) term, so model soils saturate, respond to texture and mineralogy, and route labile inputs to the slow pool, which first-order models cannot do.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (b): a two-pathway MEMS-like model (litter → POM, litter → DOM → microbes → MAOM)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="mSvg" viewBox="0 0 640 360" role="img" aria-label="POM, MAOM and total soil carbon over 100 years of recovery from a depleted state, with the POM to MAOM ratio shown in the readouts"></svg>
+            <div class="chart-tip" id="mTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Total SOC</span><span style="--c:var(--series-2)">POM</span><span style="--c:var(--series-3)">MAOM</span><span style="--c:var(--accent-2)">Q<sub>max</sub> (capacity)</span></div>
+          <div class="boxes">
+            <div class="box">Year 100: POM · MAOM · total (g C m⁻²)<b id="mEnd"></b></div>
+            <div class="box">POM:MAOM at year 100 · steady state<b id="mRatio"></b></div>
+            <div class="box">Gain over 100 yr (g C m⁻²; Mg C ha⁻¹)<b id="mGain"></b></div>
+            <div class="box">MAOM saturation at year 100<b id="mSat"></b></div>
+            <div class="box">Share of input retained after 100 yr<b id="mEff"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="mTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mIn"><span>Litter input (g C m⁻² yr⁻¹)</span><output id="mInO">400</output></label><input type="range" id="mIn" min="100" max="1000" step="10" value="400"></div>
+          <div class="ctrl"><label for="mSol"><span>Soluble / labile fraction of litter</span><output id="mSolO">0.30</output></label><input type="range" id="mSol" min="0.05" max="0.7" step="0.01" value="0.3"></div>
+          <div class="ctrl"><label for="mLig"><span>Lignin fraction of litter</span><output id="mLigO">0.20</output></label><input type="range" id="mLig" min="0.05" max="0.45" step="0.01" value="0.2"></div>
+          <div class="ctrl"><label for="mCUE"><span>Microbial CUE on DOM</span><output id="mCUEO">0.40</output></label><input type="range" id="mCUE" min="0.1" max="0.7" step="0.01" value="0.4"></div>
+          <div class="ctrl"><label for="mSC"><span>Silt + clay (%)</span><output id="mSCO">40</output></label><input type="range" id="mSC" min="5" max="95" step="1" value="40"></div>
+          <div class="ctrl"><label for="mInit"><span>Initial MAOM (fraction of capacity)</span><output id="mInitO">0.35</output></label><input type="range" id="mInit" min="0" max="0.95" step="0.05" value="0.35"></div>
+          <p class="small muted" style="margin:0">Monthly steps. POM receives the non-soluble litter and decomposes at 0.4·e<sup>−3·lignin</sup> yr⁻¹, half of its loss to DOM and half respired; DOM receives soluble litter and POM products, is consumed by microbes at 12 yr⁻¹ (a fraction CUE returns as necromass to DOM, the rest respired) and sorbs at k<sub>a</sub>·DOM·(Q<sub>max</sub> − MAOM) with k<sub>a</sub> = 0.002 m² g⁻¹ yr⁻¹; MAOM desorbs at 0.01 and mineralises at 0.008 yr⁻¹; Q<sub>max</sub> from Hassink, 0–20 cm. The run starts from a depleted state (POM = 150 g C m⁻², MAOM at the chosen fraction of capacity). Suggested experiments: compare a legume (soluble 0.5, lignin 0.08) with wood chips (soluble 0.1, lignin 0.35): the legume builds MAOM, the wood builds POM; raise silt + clay to 80% and watch MAOM keep rising for the full century; start at 90% of capacity to see additional input go almost entirely to POM.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Data syntheses and targets</h3>
+    <p>Cotrufo et al. (2019) [4] compiled fractionation data across European forests and grasslands and found that MAOM dominates in grasslands and at high N availability (where microbial processing and necromass production are favoured) while forests, especially on coarse, acidic soils, store more as POM; MAOM increased with silt + clay towards a plateau while POM did not. Global analyses (Georgiou 2022; Lugato et al. 2021) support the same pattern and place the mineralogical capacity far above current stocks in most croplands. The <strong>4 per 1000</strong> initiative (a 0.4% yr⁻¹ increase in global SOC to 0.4 m, about 2.5–3.5 Pg C yr⁻¹, would offset a large share of fossil emissions) is a stock-level aspiration; fraction-level analysis shows that the achievable part is limited by input supply, by the slow kinetics of MAOM formation, by capacity in fine soils, and by the reversibility of POM gains, so realistic estimates are several-fold lower and concentrated in degraded fine-textured croplands and in deep-rooted perennial systems.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem models</h2>
+    <ul>
+      <li><strong>Century, DayCent, RothC, CLM, JULES, ORCHIDEE</strong> have no explicit fractions; their slow and passive pools are often <em>compared</em> with POM and MAOM (Zimmermann 2007 for RothC) but do not have the isotherm behaviour. Their clay dependence of stabilisation (Century's clay → passive transfer, RothC's CO₂/(BIO + HUM) ratio) is the first-order surrogate for mineral capacity, without a ceiling.</li>
+      <li><strong>Millennial v2</strong> is being tested as the soil module in E3SM-style land models and as a stand-alone benchmark against fraction databases; <strong>MEMS 2.0</strong> is used for cropland management scenarios with DOM transport and N; <strong>MIMICS</strong> provides the protected pool in CLM-MIMICS; <strong>COMISSION</strong> informed the vertically resolved sorption in JSM (the Jena Soil Model).</li>
+      <li>In crop and bioenergy models (<strong>BioCro</strong>, DSSAT-Century, APSIM-SoilN) the residue and root inputs feed first-order pools; representing the root pathway's higher MAOM efficiency (Sokol 2019) requires either a fraction-based module or a separate stabilisation efficiency for root versus shoot inputs, which several models now parameterise.</li>
+      <li>For nutrient cycling (next page), MAOM is the dominant N and P reservoir; models that make MAOM a pool can link N release to destabilisation (Jilling 2018) rather than to fixed pool C:N ratios.</li>
+      <li>Fraction data are becoming benchmark targets for land models (e.g. the ISRaD and fraction databases used by Georgiou 2022 and Abramoff 2022); a model's POM:MAOM map and its MAOM–silt + clay relation are now evaluated alongside bulk SOC.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Size cut-off POM / MAOM</td><td class="num">53 µm</td><td>Sometimes 63 µm or 20 µm (Hassink)</td></tr>
+        <tr><td>Density cut-off light / heavy</td><td class="num">1.6–1.85 g cm⁻³</td><td>Sodium polytungstate</td></tr>
+        <tr><td>C:N of POM · MAOM</td><td class="num">10–40 · 8–13</td><td>Lavallee et al. 2020 [1]</td></tr>
+        <tr><td>MAOM share of SOC, mineral soils</td><td class="num">50–90%</td><td>Higher in grassland and fine soils</td></tr>
+        <tr><td>MRT of POM · MAOM</td><td class="num">years–decades · decades–centuries</td><td>¹⁴C and ¹³C shift studies</td></tr>
+        <tr><td>Hassink capacity</td><td class="num">4.09 + 0.37 × (silt + clay %) g C kg⁻¹</td><td>Hassink 1997 [10]; &lt; 20 µm fraction</td></tr>
+        <tr><td>Georgiou mineralogical capacity</td><td class="num">≈ 86 g C per kg silt + clay</td><td>Georgiou et al. 2022 [13], upper envelope</td></tr>
+        <tr><td>Global MAOM deficit</td><td class="num">order 10³ Pg C</td><td>Georgiou et al. 2022 [13]; largest in cropland</td></tr>
+        <tr><td>Root vs shoot MAOM formation efficiency</td><td class="num">≈ 5×</td><td>Sokol &amp; Bradford 2019 [6]</td></tr>
+        <tr><td>Microbial residues in MAOM</td><td class="num">50–80%</td><td>Amino-sugar and lipid biomarkers</td></tr>
+        <tr><td>Langmuir isotherm</td><td class="num">Q = Q<sub>max</sub>KC/(1 + KC)</td><td>Used in MEND, COMISSION, Millennial, MEMS</td></tr>
+        <tr><td>Warming response (meta-analysis)</td><td class="num">POM declines; MAOM n.s.</td><td>Rocci et al. 2021 [15]</td></tr>
+        <tr><td>4 per 1000 target</td><td class="num">0.4% yr⁻¹ of SOC to 0.4 m ≈ 2.5–3.5 Pg C yr⁻¹</td><td>Aspirational; fraction analysis gives several-fold less</td></tr>
+        <tr><td>Soil mass, 0–20 cm at BD 1.3</td><td class="num">260 kg m⁻² = 2600 t ha⁻¹</td><td>1 g C kg⁻¹ = 0.26 kg C m⁻² = 2.6 Mg C ha⁻¹</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Define POM and MAOM operationally and functionally, and explain why this two-fraction scheme replaced humic-substance chemistry as the basis for SOM pools.</summary><div class="a"><p>Operationally: POM is the fraction retained on a 53 µm sieve after dispersion, or floating in sodium polytungstate at 1.6–1.85 g cm⁻³ (free, or occluded and released by sonication); MAOM is the &lt; 53 µm or heavy fraction. Functionally: POM is plant-derived, structurally recognisable, C:N 10–40, protected by occlusion and spatial separation, turning over in years to decades, and responsive to management and warming; MAOM is dominated by microbial residues and small plant-derived molecules sorbed to clay and Fe/Al oxide surfaces, C:N 8–13, persisting for decades to centuries, 50–90% of SOC in mineral soils, and limited by mineral capacity. The humic scheme failed because its fractions were artefacts of alkaline extraction, not components of soil, and because molecular recalcitrance does not predict persistence (lignin turns over faster than bulk SOM; sugars sorbed to minerals can be millennia old). The physical scheme classifies by protection mechanism, which is what controls turnover; its fractions are measurable, differ in turnover by an order of magnitude, differ in chemistry and in response to drivers, and therefore satisfy the criteria for model pools (Elliott's "modelling the measurable"). Its weaknesses are that the cut-offs are conventions, that MAOM is itself heterogeneous, and that recoveries depend on method.</p></div></details>
+    <details class="q"><summary>2. Describe the pathways by which litter carbon becomes MAOM, including the role of CUE and roots, and state the evidence for each.</summary><div class="a"><p>Two routes deliver carbon to mineral surfaces. The dissolved organic matter–microbial pathway: soluble litter compounds and depolymerisation products enter DOM; (a) in vivo, microbes take up DOM and grow with efficiency CUE, and their necromass (proteins, cell-wall fragments, lipids) sorbs to minerals; (b) ex vivo, plant-derived molecules and the products of extracellular enzymes sorb directly. The MEMS framework predicts that high-quality litter (large soluble fraction, low lignin, low C:N) forms more MAOM per unit input because more of it enters DOM and is used with higher CUE; evidence: ¹³C-labelled litter components recovered preferentially in MAOM (Cotrufo 2015), amino-sugar biomarkers showing microbial residues at 50–80% of MAOM (Liang 2019), and the MAOM dominance of N-rich grasslands (Cotrufo 2019). Sokol et al. (2019) showed the balance between microbial and direct routes depends on substrate (sugars via microbes, aromatics directly) and mineralogy. The root pathway: rhizodeposits and root litter form MAOM several-fold more efficiently than shoot litter because they are delivered as DOM into the mineral matrix, at depth, to a rhizosphere community adjacent to surfaces (Sokol &amp; Bradford 2019, isotope tracing showing ~5× efficiency; Rasse 2005 ~2× retention). The physical transfer pathway (fragmentation, occlusion) forms POM, not MAOM, and MAOM can also form from POM decomposition products in aggregates. The implication is that MAOM formation is supply-limited by sorbable carbon and surface-limited by mineralogy, so litter quality, CUE and root allocation matter as much as input quantity.</p></div></details>
+    <details class="q"><summary>3. Write the Langmuir isotherm and a dynamic sorption equation for MAOM, derive the steady state, and explain how it generates saturation behaviour and texture dependence.</summary><div class="a"><p>Equilibrium: Q = Q<sub>max</sub>KC/(1 + KC), where Q is sorbed carbon per unit soil, Q<sub>max</sub> the number of sites (proportional to reactive surface area: silt + clay, Fe<sub>o</sub> + Al<sub>o</sub>, exchangeable Ca), K the affinity and C the dissolved concentration. Dynamic: dM/dt = k<sub>a</sub>C(Q<sub>max</sub> − M) − (k<sub>d</sub> + k<sub>m</sub>)M, with adsorption proportional to free sites and desorption/mineralisation first order; setting dM/dt = 0 gives M* = Q<sub>max</sub>K'C/(1 + K'C) with K' = k<sub>a</sub>/(k<sub>d</sub> + k<sub>m</sub>), the Langmuir form with an effective affinity reduced by mineralisation. Coupled with a DOM balance F = k<sub>u</sub>C + k<sub>m</sub>M (supply equals uptake/leaching plus mineralisation of sorbed carbon), M* is an increasing, concave function of supply F that approaches Q<sub>max</sub> asymptotically. Saturation: the marginal stabilisation dM*/dF declines as M approaches Q<sub>max</sub> because fewer free sites remain, so added inputs increasingly go to POM or respiration. Texture: Q<sub>max</sub> scales with silt + clay (Hassink: 4.09 + 0.37 × %) or better with oxides and Ca, so sandy soils have low capacity and small M* at any supply, while fine soils have high capacity and, if depleted, high marginal gains. Multilayer sorption (onion model) makes Q<sub>max</sub> soft: outer layers bind weakly, so the ceiling is not sharp, which is part of the Begill 2023 critique.</p></div></details>
+    <details class="q"><summary>4. Summarise the evidence for and against soil carbon saturation and state what each side implies for sequestration policy.</summary><div class="a"><p>For: Hassink (1997) found a linear upper bound of fine-fraction carbon against fine-fraction mass across soils; Six et al. (2002) framed a hierarchy of saturating protective capacities (silt + clay, microaggregates, biochemical); Stewart et al. (2007) showed in long-term input gradients that SOC increments per unit input decrease as stocks rise, consistent with finite protection; Langmuir sorption theory predicts finite sites; Georgiou et al. (2022) mapped a global boundary line (~86 g C per kg silt + clay) and large deficits; and fraction data show MAOM plateauing with silt + clay while POM does not (Cotrufo 2019). Against: Begill, Don &amp; Poeplau (2023) found that in the most carbon-rich agricultural soils MAOM kept increasing with SOC with no plateau, that boundary lines depend on the dataset and land use, and that multilayer sorption and co-precipitation allow loading beyond a monolayer; the "capacity" may be an envelope of climates and inputs sampled rather than a physical ceiling. Policy implications: if saturation is real, sequestration potential is concentrated in fine-textured, depleted soils and is capped; sandy soils and near-saturated soils offer mainly reversible POM gains; the Georgiou deficit identifies where to invest. If saturation is soft, potential is limited by inputs and time rather than capacity, and the boundary line should not be used to cap crediting. Both agree that returns diminish, that coarse soils stabilise little, and that MAOM accrues slowly, so any policy should distinguish durable MAOM from reversible POM and expect decades-long timescales.</p></div></details>
+    <details class="q"><summary>5. Compare the expected responses of POM and MAOM to 3 °C of warming and explain what this means for the soil carbon–climate feedback in a MAOM-dominated grassland versus a POM-rich boreal forest.</summary><div class="a"><p>POM decomposition is limited by the chemistry of plant polymers and by access within aggregates; its apparent Q₁₀ is high (2–3) and it responds within years. MAOM decomposition requires desorption or microbial access to sorbed molecules; sorption constrains the apparent sensitivity (Q₁₀ nearer 1.3–1.8 in most incubations), even though the intrinsic activation energy of the compounds may be higher (carbon-quality–temperature hypothesis), and it responds over decades to centuries. Meta-analysis (Rocci 2021) finds POM declines under warming while MAOM does not change significantly; Heckman (2022) finds climate sensitivity of bulk SOC concentrated in POM-rich, oxide-poor soils. For a grassland with 80% MAOM, 3 °C warming is expected to cause a modest, slow loss (a few percent over decades) with the POM fraction responding first and recovering if inputs rise; a single-pool Q₁₀ = 2 model would overestimate the loss. For a boreal forest soil with thick organic horizons and 50% or more POM on coarse, oxide-poor mineral soil, the loss can be large and fast, and deeper thaw adds more; here a single-pool model may underestimate the early loss. The feedback strength therefore depends on the fraction distribution, which argues for fraction-explicit land models and for benchmarking them against POM:MAOM maps rather than bulk SOC alone. The caveat is destabilisation: warming also increases root exudation and redox fluctuations, which can mobilise MAOM, so the MAOM insensitivity is conditional on the mineral matrix staying intact.</p></div></details>
+    <details class="q"><summary>6. A farmer wants to raise SOC by 0.4% per year (the 4 per 1000 target) on a loam with 20 g C kg⁻¹ and 50% silt + clay. Using fraction concepts, assess feasibility and say what measurements you would make.</summary><div class="a"><p>Stock: 20 g C kg⁻¹ × 260 kg m⁻² (0–20 cm, BD 1.3) = 5.2 kg C m⁻² = 52 Mg C ha⁻¹; 0.4% yr⁻¹ = 0.21 Mg C ha⁻¹ yr⁻¹ = 21 g C m⁻² yr⁻¹. Capacity: Hassink 4.09 + 0.37 × 50 = 22.6 g C kg⁻¹, so if 70% of current SOC is MAOM (14 g C kg⁻¹) the Hassink deficit is ~8.6 g C kg⁻¹ (22 Mg C ha⁻¹); the Georgiou envelope (0.86 × 50 = 43 g C kg⁻¹) gives a far larger deficit. Feasibility: a MAOM-formation efficiency of 10–20% of extra inputs would need 100–200 g C m⁻² yr⁻¹ of additional input (cover crops, residues, deep-rooted perennials) to deliver 21 g C m⁻² yr⁻¹ of durable gain; this is achievable in a well-managed rotation, but the Hassink deficit would be reached within 20–30 years, after which further gains are POM and reversible, and the rate declines as the (Q<sub>max</sub> − M) term shrinks. POM gains will appear within 2–5 years and are easily lost with tillage or residue removal. Measurements: SOC on an equivalent-soil-mass basis with bulk density; size or density fractionation into POM and MAOM at baseline and every 5 years; texture, Fe<sub>o</sub>/Al<sub>o</sub>, exchangeable Ca and pH to estimate capacity; litter input and root biomass; optionally ¹³C if a C3/C4 switch is involved. Report the gain by fraction and distinguish durable (MAOM) from reversible (POM) storage.</p></div></details>
+    <details class="q"><summary>7. Explain three mechanisms by which "stable" MAOM can be destabilised, and give an example of each with an ecosystem where it matters.</summary><div class="a"><p>(i) Ligand competition and priming by root exudates: low-molecular-weight organic acids (oxalate, citrate, malate) compete with sorbed organic matter for binding sites on Fe/Al oxides and clay edges, releasing it to solution, while labile exudates fuel microbial growth and enzyme production that mineralise it (Keiluweit 2015). Matters in rhizospheres of all ecosystems and is the mechanism by which plants mine MAOM for N (Jilling 2018); it means MAOM protection is conditional on root activity and that increased belowground allocation under elevated CO₂ can prime MAOM loss (Sulman 2014 CORPSE). (ii) Reductive dissolution of Fe(III) oxides under anoxia: when O₂ is depleted, Fe(III) is reduced to soluble Fe(II) and the organic matter bound to the oxide is released; matters in rice paddies, floodplains, wetlands, thawing permafrost and any soil with fluctuating water tables, where redox cycling converts MAOM to DOC and CO₂/CH₄ and also forms new oxides on re-oxidation. (iii) pH change: acidification mobilises Al and changes surface charge; liming increases Ca bridging in acid soils but can release organic matter bound by Al in others; land-use change and fertiliser (ammonium-driven acidification) alter the balance between ligand exchange and cation bridging. Additional mechanisms: warming increases desorption rates; freeze–thaw and aggregate disruption expose occluded POM (less effect on MAOM); and sodicity disperses clays and releases sorbed carbon. The common thread is that persistence is a property of the organo-mineral environment, so changing the environment changes persistence.</p></div></details>
+    <details class="q"><summary>8. Sketch (in words) the structure of the Millennial model and explain what it can represent that Century cannot, and at what cost.</summary><div class="a"><p>Millennial has five measurable pools. Particulate organic matter (POM) receives structural litter and decomposes by Michaelis–Menten kinetics into low-molecular-weight carbon (LMWC) and into aggregate carbon. LMWC (dissolved) receives soluble litter and POM products, is taken up by microbial biomass with a CUE, leaches, and sorbs to form mineral-associated organic matter (MAOM) through a Langmuir term k<sub>a</sub>·LMWC·(Q<sub>max</sub> − MAOM), with Q<sub>max</sub> a function of clay (and pH in version 2). Microbial biomass turns over to LMWC and MAOM (necromass). Aggregate carbon forms from POM and MAOM and breaks down to them at rates modified by moisture and disturbance; MAOM desorbs and is mineralised slowly. Temperature and moisture modify all rates. What it represents that Century cannot: a capacity for the stable pool (texture and mineralogy as a ceiling rather than a rate modifier), preferential routing of labile inputs to the stable pool via microbes, aggregate protection as an explicit state, pools that can be initialised and validated from fractionation data and radiocarbon, and destabilisation (desorption) as a process. Costs: more parameters (sorption rates, Q<sub>max</sub> relations, aggregation rates) that are partly unidentifiable, dependence on fractionation method for the pool definitions, some microbial-model stability issues, and the need for fraction data for evaluation that are still sparse globally. Version 2 was calibrated against a global fraction database and reproduces MAOM–clay relations and the POM:MAOM contrast across land uses better than Century-type models, which is the argument for adopting it in land models.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Lavallee JM, Soong JL, Cotrufo MF (2020). Conceptualizing soil organic matter into particulate and mineral-associated forms to address global change in the 21st century. <em>Global Change Biology</em> 26: 261–273. <a href="https://doi.org/10.1111/gcb.14859">doi:10.1111/gcb.14859</a><span class="why">The framework paper: definitions, properties, formation and vulnerability of POM and MAOM.</span></li>
+      <li>Cotrufo MF, Wallenstein MD, Boot CM, Denef K, Paul E (2013). The Microbial Efficiency-Matrix Stabilization (MEMS) framework integrates plant litter decomposition with soil organic matter stabilization. <em>Global Change Biology</em> 19: 988–995. <a href="https://doi.org/10.1111/gcb.12113">doi:10.1111/gcb.12113</a><span class="why">Labile litter → high CUE → necromass → MAOM; the inversion of the humification view.</span></li>
+      <li>Cotrufo MF, Soong JL, Horton AJ, et al. (2015). Formation of soil organic matter via biochemical and physical pathways of litter mass loss. <em>Nature Geoscience</em> 8: 776–779. <a href="https://doi.org/10.1038/ngeo2520">doi:10.1038/ngeo2520</a><span class="why">¹³C evidence for the DOM pathway to MAOM and the physical transfer pathway to POM.</span></li>
+      <li>Cotrufo MF, Ranalli MG, Haddix ML, Six J, Lugato E (2019). Soil carbon storage informed by particulate and mineral-associated organic matter. <em>Nature Geoscience</em> 12: 989–994. <a href="https://doi.org/10.1038/s41561-019-0484-6">doi:10.1038/s41561-019-0484-6</a><span class="why">European synthesis: MAOM in N-rich grasslands, POM in forests; MAOM saturates with silt + clay.</span></li>
+      <li>Sokol NW, Sanderman J, Bradford MA (2019). Pathways of mineral-associated soil organic matter formation: integrating the role of plant carbon source, chemistry, and point of entry. <em>Global Change Biology</em> 25: 12–24. <a href="https://doi.org/10.1111/gcb.14482">doi:10.1111/gcb.14482</a><span class="why">The "direct" versus "microbial" pathways and their dependence on substrate and point of entry.</span></li>
+      <li>Sokol NW, Bradford MA (2019). Microbial formation of stable soil carbon is more efficient from belowground than aboveground input. <em>Nature Geoscience</em> 12: 46–53. <a href="https://doi.org/10.1038/s41561-018-0258-6">doi:10.1038/s41561-018-0258-6</a><span class="why">Isotope evidence that root inputs form MAOM several-fold more efficiently.</span></li>
+      <li>Kleber M, Eusterhues K, Keiluweit M, Mikutta C, Mikutta R, Nico PS (2015). Mineral–organic associations: formation, properties, and relevance in soil environments. <em>Advances in Agronomy</em> 130: 1–140. <a href="https://doi.org/10.1016/bs.agron.2014.10.005">doi:10.1016/bs.agron.2014.10.005</a><span class="why">Comprehensive review of sorption mechanisms, mineral types and the persistence of organo-mineral associations.</span></li>
+      <li>Kleber M, Sollins P, Sutton R (2007). A conceptual model of organo-mineral interactions in soils: self-assembly of organic molecular fragments into zonal structures on mineral surfaces. <em>Biogeochemistry</em> 85: 9–24. <a href="https://doi.org/10.1007/s10533-007-9103-5">doi:10.1007/s10533-007-9103-5</a><span class="why">The zonal (onion) model: contact, hydrophobic and kinetic zones.</span></li>
+      <li>Rasmussen C, Heckman K, Wieder WR, et al. (2018). Beyond clay: towards an improved set of variables for predicting soil organic matter content. <em>Biogeochemistry</em> 137: 297–306. <a href="https://doi.org/10.1007/s10533-018-0424-3">doi:10.1007/s10533-018-0424-3</a><span class="why">Oxalate-extractable Fe + Al and exchangeable Ca outperform clay as predictors of SOC.</span></li>
+      <li>Hassink J (1997). The capacity of soils to preserve organic C and N by their association with clay and silt particles. <em>Plant and Soil</em> 191: 77–87. <a href="https://doi.org/10.1023/A:1004213929699">doi:10.1023/A:1004213929699</a><span class="why">The original capacity regression against silt + clay.</span></li>
+      <li>Six J, Conant RT, Paul EA, Paustian K (2002). Stabilization mechanisms of soil organic matter: implications for C-saturation of soils. <em>Plant and Soil</em> 241: 155–176. <a href="https://doi.org/10.1023/A:1016125726789">doi:10.1023/A:1016125726789</a><span class="why">Hierarchy of saturating protective capacities.</span></li>
+      <li>Stewart CE, Paustian K, Conant RT, Plante AF, Six J (2007). Soil carbon saturation: concept, evidence and evaluation. <em>Biogeochemistry</em> 86: 19–31. <a href="https://doi.org/10.1007/s10533-007-9140-0">doi:10.1007/s10533-007-9140-0</a><span class="why">Tests of saturation with long-term input gradients; diminishing returns.</span></li>
+      <li>Georgiou K, Jackson RB, Vindušková O, et al. (2022). Global stocks and capacity of mineral-associated soil organic carbon. <em>Nature Communications</em> 13: 3797. <a href="https://doi.org/10.1038/s41467-022-31540-9">doi:10.1038/s41467-022-31540-9</a><span class="why">Global MAOM stocks, mineralogical capacity (~86 g C per kg silt + clay) and the deficit map.</span></li>
+      <li>Begill N, Don A, Poeplau C (2023). No detectable upper limit of mineral-associated organic carbon in temperate agricultural soils. <em>Global Change Biology</em> 29: 4662–4669. <a href="https://doi.org/10.1111/gcb.16804">doi:10.1111/gcb.16804</a><span class="why">The critique of the saturation concept from carbon-rich German soils.</span></li>
+      <li>Rocci KS, Lavallee JM, Stewart CE, Cotrufo MF (2021). Soil organic carbon response to global environmental change depends on its distribution between mineral-associated and particulate organic matter: a meta-analysis. <em>Science of the Total Environment</em> 793: 148569. <a href="https://doi.org/10.1016/j.scitotenv.2021.148569">doi:10.1016/j.scitotenv.2021.148569</a><span class="why">POM responds to warming and N addition; MAOM largely does not. (The assignment cited SBB 157:108235 with a query; the STOTEN citation is the one I am confident of.)</span></li>
+      <li>Heckman K, Hicks Pries CE, Lawrence CR, et al. (2022). Beyond bulk: density fractions explain heterogeneity in global soil carbon abundance and persistence. <em>Global Change Biology</em> 28: 1178–1196. <a href="https://doi.org/10.1111/gcb.16023">doi:10.1111/gcb.16023</a><span class="why">Global fraction and radiocarbon synthesis: persistence and climate sensitivity by fraction and mineralogy.</span></li>
+      <li>Keiluweit M, Bougoure JJ, Nico PS, Pett-Ridge J, Weber PK, Kleber M (2015). Mineral protection of soil carbon counteracted by root exudates. <em>Nature Climate Change</em> 5: 588–595. <a href="https://doi.org/10.1038/nclimate2580">doi:10.1038/nclimate2580</a><span class="why">Oxalic acid destabilises mineral-associated carbon and increases its mineralisation.</span></li>
+      <li>Jilling A, Keiluweit M, Contosta AR, et al. (2018). Minerals in the rhizosphere: overlooked mediators of soil nitrogen availability to plants and microbes. <em>Biogeochemistry</em> 139: 103–122. <a href="https://doi.org/10.1007/s10533-018-0459-5">doi:10.1007/s10533-018-0459-5</a><span class="why">MAOM as a dynamic N source accessed through destabilisation.</span></li>
+      <li>Ahrens B, Braakhekke MC, Guggenberger G, Schrumpf M, Reichstein M (2015). Contribution of sorption, DOC transport and microbial interactions to the ¹⁴C age of a soil organic carbon profile: insights from a calibrated process model. <em>Soil Biology and Biochemistry</em> 88: 390–402. <a href="https://doi.org/10.1016/j.soilbio.2015.06.008">doi:10.1016/j.soilbio.2015.06.008</a><span class="why">COMISSION: sorption with finite surfaces explains depth profiles of SOC and ¹⁴C.</span></li>
+      <li>Abramoff RZ, Guenet B, Poeplau C, et al. (2022). Improved global-scale predictions of soil carbon stocks with Millennial version 2. <em>Soil Biology and Biochemistry</em> 164: 108466. <a href="https://doi.org/10.1016/j.soilbio.2021.108466">doi:10.1016/j.soilbio.2021.108466</a><span class="why">Measurable-pool model calibrated against global fraction data.</span></li>
+      <li>Zhang Y, Lavallee JM, Robertson AD, et al. (2021). Simulating measurable ecosystem carbon and nitrogen dynamics with the mechanistically defined MEMS 2.0 model. <em>Biogeosciences</em> 18: 3147–3171. <a href="https://doi.org/10.5194/bg-18-3147-2021">doi:10.5194/bg-18-3147-2021</a><span class="why">MEMS 2.0: vertically resolved POM/MAOM with N and DOM transport. (The assignment cited GMD 14:3147; I believe the paper is in Biogeosciences with the same page numbers; please check.)</span></li>
+      <li>Robertson AD, Paustian K, Ogle S, Wallenstein MD, Lugato E, Cotrufo MF (2019). Unifying soil organic matter formation and persistence frameworks: the MEMS model. <em>Biogeosciences</em> 16: 1225–1248. <a href="https://doi.org/10.5194/bg-16-1225-2019">doi:10.5194/bg-16-1225-2019</a><span class="why">MEMS 1.0: litter chemistry fractions, DOM, Langmuir MAOM.</span></li>
+      <li>Poeplau C, Don A, Six J, et al. (2018). Isolating organic carbon fractions with varying turnover rates in temperate agricultural soils – a comprehensive method comparison. <em>Soil Biology and Biochemistry</em> 125: 10–26. <a href="https://doi.org/10.1016/j.soilbio.2018.06.025">doi:10.1016/j.soilbio.2018.06.025</a><span class="why">Twenty fractionation methods compared; why fractions and pools match imperfectly.</span></li>
+      <li>Angst G, Mueller KE, Nierop KGJ, Simpson MJ (2021). Plant- or microbial-derived? A review on the molecular composition of stabilized soil organic matter. <em>Soil Biology and Biochemistry</em> 156: 108189. <a href="https://doi.org/10.1016/j.soilbio.2021.108189">doi:10.1016/j.soilbio.2021.108189</a><span class="why">Balanced review of how much MAOM is microbial versus plant-derived, and why biomarkers disagree.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="microbial-explicit-models.html">← Previous: Microbial-explicit models</a><a href="stoichiometry-cnp.html">Next: C:N:P stoichiometry →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#fractions">Physical fractions</a></li>
+      <li><a href="#pathways">Formation pathways</a></li>
+      <li><a href="#sorption">Sorption and minerals</a></li>
+      <li><a href="#saturation">Saturation</a></li>
+      <li><a href="#sensitivity">Sensitivity and management</a></li>
+      <li><a href="#modelling">Measurable-pool models</a></li>
+      <li><a href="#connections">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (Hassink capacity converted to 0–20 cm, Langmuir sorption with first-order mineralisation, two independent fractions under warming) chosen for intuition. Constants follow Hassink 1997, Georgiou et al. 2022 and Robertson et al. 2019.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function $(id) { return document.getElementById(id); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function bindOut(ids, fn) { ids.forEach(function (id) { var e = $(id); if (!e) return; e.addEventListener(e.tagName === 'SELECT' ? 'change' : 'input', fn); }); }
+  function showOuts(ids, d) { ids.forEach(function (id) { var o = $(id + 'O'), i = $(id); if (o && i) o.textContent = (d && d[id] !== undefined) ? fmt(i.value, d[id]) : i.value; }); }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(10)); return t; }
+  function frame(svg, o) {
+    var W = o.W, H = o.H, mL = o.mL || 58, mR = o.mR || 90, mT = o.mT || 18, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var sx = function (x) { return mL + (x - o.x0) / (o.x1 - o.x0) * pw; };
+    var sy = function (y) { return mT + (o.y1 - y) / (o.y1 - o.y0) * ph; };
+    var yt = o.yTicks || niceTicks(o.y0, o.y1, 6);
+    yt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    var xt = o.xTicks || niceTicks(o.x0, o.x1, 6);
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xlab));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylab));
+    return { sx: sx, sy: sy, mL: mL, mR: mR, mT: mT, mB: mB, pw: pw, ph: ph, W: W, H: H, y0: o.y0, y1: o.y1, x0: o.x0, x1: o.x1 };
+  }
+  function pathFrom(f, xs, fn) { var d = '', pen = false; for (var i = 0; i < xs.length; i++) { var y = fn(xs[i]); if (!isFinite(y)) { pen = false; continue; } y = Math.max(f.y0, Math.min(f.y1, y)); d += (pen ? 'L' : 'M') + f.sx(xs[i]).toFixed(1) + ',' + f.sy(y).toFixed(1); pen = true; } return d; }
+  function series(svg, f, xs, fn, col, cls) { svg.appendChild(el('path', { 'class': 'ser ' + (cls || ''), d: pathFrom(f, xs, fn), stroke: col })); }
+  function rightLabels(svg, f, labs) {
+    labs.forEach(function (L) { L.y = f.sy(Math.max(f.y0, Math.min(f.y1, L.v))); });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: f.mL + f.pw + 6, y: L.y + 4, fill: L.col }, L.t)); });
+  }
+  function hover(svg, f, tip, info) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: f.mT, y2: f.mT + f.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: f.mL, y: f.mT, width: f.pw, height: f.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = f.x0 + Math.max(0, Math.min(1, (p.x - f.mL) / f.pw)) * (f.x1 - f.x0);
+      xh.setAttribute('x1', f.sx(x)); xh.setAttribute('x2', f.sx(x)); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = info(x); tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  var SOILMASS = 260; // kg soil m-2 in 0-20 cm at BD 1.3
+  function hassink(sc) { return 4.09 + 0.37 * sc; } // g C kg-1
+
+  /* ---------- Lab (a): Langmuir / saturation ---------- */
+  (function () {
+    var ids = ['lSC', 'lF', 'lK', 'lKm', 'lKu'];
+    var svg = $('lSvg'), tip = $('lTip');
+    function mstar(F, Q, K, km, ku) { // solve F = ku C + km M, M = Q K C/(1+KC)
+      var lo = 0, hi = F / ku + 1; for (var i = 0; i < 80; i++) { var C = (lo + hi) / 2; var M = Q * K * C / (1 + K * C); if (ku * C + km * M < F) lo = C; else hi = C; }
+      var C2 = (lo + hi) / 2; return { C: C2, M: Q * K * C2 / (1 + K * C2) };
+    }
+    function run() {
+      showOuts(ids, { lSC: 0, lF: 0, lK: 2, lKm: 3, lKu: 0 });
+      var sc = +$('lSC').value, F = +$('lF').value, K = +$('lK').value, km = +$('lKm').value, ku = +$('lKu').value;
+      var Qkg = hassink(sc), Q = Qkg * SOILMASS;
+      var xs = []; for (var f = 0; f <= 600; f += 5) xs.push(f);
+      var ymax = Math.ceil(Q * 1.15 / 1000) * 1000;
+      clear(svg);
+      var fr = frame(svg, { W: 640, H: 360, x0: 0, x1: 600, y0: 0, y1: ymax, xlab: 'Supply of sorbable C, F (g C m⁻² yr⁻¹)', ylab: 'Steady-state MAOM (g C m⁻², 0–20 cm)', mR: 100 });
+      series(svg, fr, xs, function () { return Q; }, 'var(--series-2)', 'pot');
+      series(svg, fr, xs, function (f) { return mstar(f, Q, K, km, ku).M; }, 'var(--fg)', 'net');
+      var cur = mstar(F, Q, K, km, ku), nxt = mstar(F + 100, Q, K, km, ku);
+      svg.appendChild(el('line', { 'class': 'ev', x1: fr.sx(F), x2: fr.sx(F), y1: fr.mT, y2: fr.mT + fr.ph }));
+      svg.appendChild(el('circle', { cx: fr.sx(F), cy: fr.sy(cur.M), r: 5, fill: 'var(--fg)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: fr.sx(F) + 6, y: fr.sy(cur.M) - 10 }, 'current supply'));
+      rightLabels(svg, fr, [{ t: 'M*', v: mstar(600, Q, K, km, ku).M, col: 'var(--fg)' }, { t: 'Qmax', v: Q, col: 'var(--series-2)' }]);
+      hover(svg, fr, tip, function (x) { var m = mstar(x, Q, K, km, ku); var m2 = mstar(x + 10, Q, K, km, ku); return 'F <b>' + fmt(x, 0) + '</b> g C m⁻² yr⁻¹<br>M* <b>' + fmt(m.M, 0) + '</b> g C m⁻² (' + fmt(m.M / Q * 100, 0) + '% of Qmax)<br>dM*/dF <b>' + fmt((m2.M - m.M) / 10, 2) + '</b> yr · DOM <b>' + fmt(m.C, 2) + '</b> g C m⁻²'; });
+      $('lQ').textContent = fmt(Qkg, 1) + ' · ' + fmt(Q, 0);
+      $('lM').textContent = fmt(cur.M, 0) + ' g C m⁻²';
+      $('lSat').textContent = fmt(cur.M / Q * 100, 0) + '% · ' + fmt(Q - cur.M, 0) + ' g C m⁻²';
+      $('lGain').textContent = '+' + fmt(nxt.M - cur.M, 0) + ' g C m⁻²';
+      $('lEff').textContent = fmt(km * cur.M / F * 100, 0) + '% (= k_m M*/F)';
+      var html = '<thead><tr><th class="num">F</th><th class="num">M*</th><th class="num">% of Qmax</th><th class="num">DOM C</th><th class="num">dM*/dF</th></tr></thead><tbody>';
+      [25, 50, 100, 150, 200, 300, 400, 500, 600].forEach(function (f) { var m = mstar(f, Q, K, km, ku), m2 = mstar(f + 10, Q, K, km, ku); html += '<tr><td class="num">' + f + '</td><td class="num">' + fmt(m.M, 0) + '</td><td class="num">' + fmt(m.M / Q * 100, 0) + '</td><td class="num">' + fmt(m.C, 2) + '</td><td class="num">' + fmt((m2.M - m.M) / 10, 2) + '</td></tr>'; });
+      $('lTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (c): fraction distribution bars ---------- */
+  (function () {
+    var ids = ['fSOC', 'fSC', 'fShare', 'fBD'];
+    var svg = $('fSvg');
+    function run() {
+      showOuts(ids, { fSOC: 1, fSC: 0, fShare: 2, fBD: 2 });
+      var soc = +$('fSOC').value, sc = +$('fSC').value, sh = +$('fShare').value, bd = +$('fBD').value;
+      var maom = soc * sh, pom = soc - maom, capH = hassink(sc), capG = 0.86 * sc;
+      var xmax = Math.ceil(Math.max(soc, capG, capH) * 1.1 / 10) * 10;
+      clear(svg);
+      var W = 640, H = 300, mL = 150, mR = 30, mT = 24, mB = 40, pw = W - mL - mR;
+      function sx(v) { return mL + v / xmax * pw; }
+      niceTicks(0, xmax, 6).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: sx(v), x2: sx(v), y1: mT, y2: H - mB })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: H - mB + 16, 'text-anchor': 'middle' }, v)); });
+      svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 6, 'text-anchor': 'middle' }, 'Carbon (g C kg⁻¹ soil)'));
+      var rows = [
+        { lbl: 'Measured SOC', segs: [{ v: maom, c: 'var(--series-3)', t: 'MAOM' }, { v: pom, c: 'var(--series-2)', t: 'POM' }] },
+        { lbl: 'Hassink capacity', segs: [{ v: Math.min(maom, capH), c: 'var(--series-3)', t: 'MAOM' }, { v: Math.max(0, capH - maom), c: 'var(--accent-soft)', t: 'deficit', stroke: 'var(--accent)' }] },
+        { lbl: 'Georgiou capacity', segs: [{ v: Math.min(maom, capG), c: 'var(--series-3)', t: 'MAOM' }, { v: Math.max(0, capG - maom), c: 'var(--accent-soft)', t: 'deficit', stroke: 'var(--accent)' }] }
+      ];
+      var bh = 52, gap = 22;
+      rows.forEach(function (r, i) {
+        var y = mT + i * (bh + gap), x = 0;
+        svg.appendChild(el('text', { 'class': 'tick', x: mL - 10, y: y + bh / 2 + 4, 'text-anchor': 'end', fill: 'var(--fg)' }, r.lbl));
+        r.segs.forEach(function (s) {
+          if (s.v <= 0) return;
+          svg.appendChild(el('rect', { 'class': 'bar', x: sx(x), y: y, width: Math.max(0, sx(x + s.v) - sx(x)), height: bh, fill: s.c, stroke: s.stroke || 'var(--surface)', rx: 4 }));
+          if (sx(x + s.v) - sx(x) > 46) svg.appendChild(el('text', { 'class': 'barlbl', x: (sx(x) + sx(x + s.v)) / 2, y: y + bh / 2 + 4, 'text-anchor': 'middle', fill: s.t === 'deficit' ? 'var(--fg)' : '#fff' }, s.t + ' ' + fmt(s.v, 1)));
+          x += s.v;
+        });
+        if (i > 0 && maom > (i === 1 ? capH : capG)) svg.appendChild(el('text', { 'class': 'tick', x: sx(x) + 6, y: y + bh / 2 + 4 }, 'MAOM exceeds this estimate'));
+      });
+      var mk = function (v, t, col) { svg.appendChild(el('line', { 'class': 'ev', x1: sx(v), x2: sx(v), y1: mT - 6, y2: H - mB, stroke: col })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT - 10, 'text-anchor': 'middle' }, t)); };
+      mk(capH, 'Hassink ' + fmt(capH, 1), 'var(--accent)'); mk(capG, 'Georgiou ' + fmt(capG, 1), 'var(--accent-2)');
+      $('fMP').textContent = fmt(maom, 1) + ' · ' + fmt(pom, 1);
+      $('fCap').textContent = fmt(capH, 1) + ' · ' + fmt(capG, 1);
+      $('fDef').textContent = fmt(capH - maom, 1) + ' · ' + fmt(capG - maom, 1);
+      $('fPct').textContent = fmt(maom / capH * 100, 0) + '% · ' + fmt(maom / capG * 100, 0) + '%';
+      var mass = bd * 1000 * 0.2 * 10; // t soil ha-1 in 0-20 cm
+      $('fHa').textContent = fmt(Math.max(0, capH - maom) * mass / 1000, 1) + ' · ' + fmt(Math.max(0, capG - maom) * mass / 1000, 1);
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (d): warming with two fractions ---------- */
+  (function () {
+    var ids = ['wIn', 'wFp', 'wTp', 'wTm', 'wQp', 'wQm', 'wDT', 'wInc'];
+    var svg = $('wSvg'), tip = $('wTip');
+    function run() {
+      showOuts(ids, { wIn: 0, wFp: 2, wTp: 0, wTm: 0, wQp: 1, wQm: 1, wDT: 1, wInc: 0 });
+      var I = +$('wIn').value, fp = +$('wFp').value, tp = +$('wTp').value, tm = +$('wTm').value, Qp = +$('wQp').value, Qm = +$('wQm').value, dT = +$('wDT').value, inc = +$('wInc').value / 100;
+      var P0 = I * (1 - fp) * tp, M0 = I * fp * tm;
+      function sim(warm) {
+        var P = P0, M = M0, out = [], dt = 0.1;
+        for (var i = 0; i <= 1500; i++) {
+          var t = i * dt, r = Math.min(1, t / 100);
+          var T = warm ? dT * r : 0, It = I * (1 + inc * r);
+          if (i % 10 === 0) out.push({ t: t, P: P, M: M });
+          var kp = Math.pow(Qp, T / 10) / tp, km = Math.pow(Qm, T / 10) / tm;
+          P += (It * (1 - fp) - kp * P) * dt; M += (It * fp - km * M) * dt;
+        }
+        return out;
+      }
+      var w = sim(true), c = sim(false);
+      var ymax = 0; w.concat(c).forEach(function (r) { ymax = Math.max(ymax, r.P + r.M); }); ymax = Math.ceil(ymax * 1.08 / 1000) * 1000;
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 360, x0: 0, x1: 150, y0: 0, y1: ymax, xlab: 'Years', ylab: 'Carbon stock (g C m⁻²)', mR: 100 });
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(100), x2: f.sx(100), y1: f.mT, y2: f.mT + f.ph }));
+      svg.appendChild(el('text', { 'class': 'tick', x: f.sx(100) + 4, y: f.mT + 12 }, 'ramp ends'));
+      var idx = []; for (var i = 0; i < w.length; i++) idx.push(i);
+      var fi = { sx: function (i) { return f.sx(w[i].t); }, sy: f.sy, y0: f.y0, y1: f.y1 };
+      series(svg, fi, idx, function (i) { return c[i].P + c[i].M; }, 'var(--muted)', 'pot');
+      series(svg, fi, idx, function (i) { return w[i].P; }, 'var(--series-2)'); series(svg, fi, idx, function (i) { return w[i].M; }, 'var(--series-3)'); series(svg, fi, idx, function (i) { return w[i].P + w[i].M; }, 'var(--fg)', 'net');
+      var L = w.length - 1;
+      rightLabels(svg, f, [{ t: 'Total', v: w[L].P + w[L].M, col: 'var(--fg)' }, { t: 'no warming', v: c[L].P + c[L].M, col: 'var(--muted)' }, { t: 'POM', v: w[L].P, col: 'var(--series-2)' }, { t: 'MAOM', v: w[L].M, col: 'var(--series-3)' }]);
+      hover(svg, f, tip, function (x) { var i = Math.min(L, Math.round(x)); return 'Year <b>' + i + '</b><br>POM <b>' + fmt(w[i].P, 0) + '</b> · MAOM <b>' + fmt(w[i].M, 0) + '</b> · total <b>' + fmt(w[i].P + w[i].M, 0) + '</b><br>no-warming total <b>' + fmt(c[i].P + c[i].M, 0) + '</b> g C m⁻²'; });
+      var dP = c[100].P - w[100].P, dM = c[100].M - w[100].M;
+      $('wInit').textContent = fmt(P0, 0) + ' · ' + fmt(M0, 0);
+      $('w100').textContent = fmt(dP, 0) + ' · ' + fmt(dM, 0) + ' · ' + fmt(dP + dM, 0) + ' g C m⁻²';
+      $('wShare').textContent = (dP + dM) !== 0 ? fmt(dP / (dP + dM) * 100, 0) + '%' : 'n/a';
+      var tot0 = c[100].P + c[100].M, tot1 = w[100].P + w[100].M;
+      $('wEff').textContent = dT > 0 ? fmt(Math.pow(tot0 / tot1, 10 / dT), 2) + ' (stock-equivalent)' : 'n/a';
+      var html = '<thead><tr><th class="num">Year</th><th class="num">POM</th><th class="num">MAOM</th><th class="num">Total</th><th class="num">No-warming total</th></tr></thead><tbody>';
+      [0, 10, 20, 30, 50, 75, 100, 125, 150].forEach(function (y) { html += '<tr><td class="num">' + y + '</td><td class="num">' + fmt(w[y].P, 0) + '</td><td class="num">' + fmt(w[y].M, 0) + '</td><td class="num">' + fmt(w[y].P + w[y].M, 0) + '</td><td class="num">' + fmt(c[y].P + c[y].M, 0) + '</td></tr>'; });
+      $('wTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (b): two-pathway MEMS-like model ---------- */
+  (function () {
+    var ids = ['mIn', 'mSol', 'mLig', 'mCUE', 'mSC', 'mInit'];
+    var svg = $('mSvg'), tip = $('mTip');
+    function run() {
+      showOuts(ids, { mIn: 0, mSol: 2, mLig: 2, mCUE: 2, mSC: 0, mInit: 2 });
+      var I = +$('mIn').value, sol = +$('mSol').value, lig = +$('mLig').value, cue = +$('mCUE').value, sc = +$('mSC').value, init = +$('mInit').value;
+      var Q = hassink(sc) * SOILMASS, kP = 0.4 * Math.exp(-3 * lig), fdp = 0.5, ku = 12, ka = 0.002, kd = 0.01, km = 0.008;
+      function step(s, dt) {
+        var P = s[0], D = s[1], M = s[2];
+        var decP = kP * P, upt = ku * D, sorb = ka * D * Math.max(0, Q - M);
+        var dP = I * (1 - sol) - decP;
+        var dD = I * sol + fdp * decP + cue * upt - upt - sorb + kd * M;
+        var dM = sorb - kd * M - km * M;
+        var dn = (D + (I * sol + fdp * decP + kd * M) * dt) / (1 + dt * (ku * (1 - cue) + ka * Math.max(0, Q - M)));
+        return [P + dP * dt, dn, M + dM * dt];
+      }
+      var s = [150, 2, init * Q], dt = 1 / 12, out = [], resp = 0;
+      for (var y = 0; y <= 100; y++) { out.push({ t: y, P: s[0], D: s[1], M: s[2] }); if (y < 100) for (var m = 0; m < 12; m++) s = step(s, dt); }
+      var ss = s.slice(); for (var k = 0; k < 2000 * 12; k++) ss = step(ss, dt);
+      var ymax = Math.ceil(Math.max(Q, out[100].P + out[100].M, ss[0] + ss[2]) * 1.1 / 1000) * 1000;
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 360, x0: 0, x1: 100, y0: 0, y1: ymax, xlab: 'Years', ylab: 'Carbon stock (g C m⁻², 0–20 cm)', mR: 100 });
+      var xs = out.map(function (r) { return r.t; });
+      series(svg, f, xs, function () { return Q; }, 'var(--accent-2)', 'pot');
+      series(svg, f, xs, function (t) { return out[Math.round(t)].P; }, 'var(--series-2)'); series(svg, f, xs, function (t) { return out[Math.round(t)].M; }, 'var(--series-3)'); series(svg, f, xs, function (t) { var r = out[Math.round(t)]; return r.P + r.M; }, 'var(--fg)', 'net');
+      var e = out[100];
+      rightLabels(svg, f, [{ t: 'Total', v: e.P + e.M, col: 'var(--fg)' }, { t: 'POM', v: e.P, col: 'var(--series-2)' }, { t: 'MAOM', v: e.M, col: 'var(--series-3)' }, { t: 'Qmax', v: Q, col: 'var(--accent-2)' }]);
+      hover(svg, f, tip, function (x) { var r = out[Math.round(x)]; return 'Year <b>' + r.t + '</b><br>POM <b>' + fmt(r.P, 0) + '</b> · MAOM <b>' + fmt(r.M, 0) + '</b> · total <b>' + fmt(r.P + r.M, 0) + '</b> g C m⁻²<br>POM:MAOM <b>' + fmt(r.P / Math.max(1, r.M), 2) + '</b> · MAOM <b>' + fmt(r.M / Q * 100, 0) + '%</b> of Qmax'; });
+      $('mEnd').textContent = fmt(e.P, 0) + ' · ' + fmt(e.M, 0) + ' · ' + fmt(e.P + e.M, 0);
+      $('mRatio').textContent = fmt(e.P / Math.max(1, e.M), 2) + ' · ' + fmt(ss[0] / Math.max(1, ss[2]), 2);
+      var gain = (e.P + e.M) - (out[0].P + out[0].M);
+      $('mGain').textContent = fmt(gain, 0) + '; ' + fmt(gain / 100, 1);
+      $('mSat').textContent = fmt(e.M / Q * 100, 0) + '%';
+      $('mEff').textContent = fmt(gain / (I * 100) * 100, 0) + '%';
+      var html = '<thead><tr><th class="num">Year</th><th class="num">POM</th><th class="num">DOM</th><th class="num">MAOM</th><th class="num">Total</th><th class="num">POM:MAOM</th></tr></thead><tbody>';
+      [0, 5, 10, 20, 30, 50, 75, 100].forEach(function (y) { var r = out[y]; html += '<tr><td class="num">' + y + '</td><td class="num">' + fmt(r.P, 0) + '</td><td class="num">' + fmt(r.D, 1) + '</td><td class="num">' + fmt(r.M, 0) + '</td><td class="num">' + fmt(r.P + r.M, 0) + '</td><td class="num">' + fmt(r.P / Math.max(1, r.M), 2) + '</td></tr>'; });
+      html += '<tr><td class="num">steady state</td><td class="num">' + fmt(ss[0], 0) + '</td><td class="num">' + fmt(ss[1], 1) + '</td><td class="num">' + fmt(ss[2], 0) + '</td><td class="num">' + fmt(ss[0] + ss[2], 0) + '</td><td class="num">' + fmt(ss[0] / Math.max(1, ss[2]), 2) + '</td></tr>';
+      $('mTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+})();
+</script>
+</body>
+</html>

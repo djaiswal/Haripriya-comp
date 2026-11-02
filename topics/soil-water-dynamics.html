@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soil Water Dynamics</title>
+<meta name="description" content="Soil water dynamics at comprehensive-exam depth: water content and potential, the van Genuchten retention curve, Darcy–Buckingham flow, Richards' equation and its numerical solution, infiltration theory, root uptake, and how land-surface models treat soil water.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .ref { stroke-dasharray: 5 4; opacity: 0.6; stroke-width: 1.6; }
+  .ch .main { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .trail { stroke: var(--accent); stroke-width: 1.4; opacity: 0.45; }
+  .ch .init { stroke: var(--muted); stroke-dasharray: 4 4; stroke-width: 1.5; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .mark { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .band { fill: var(--accent); opacity: 0.14; }
+  .ch .rainbar { fill: var(--series-1); opacity: 0.8; }
+  .ch .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .stack { display: grid; gap: 0.75rem; }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .status { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; min-height: 1.2em; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .units { font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Soil water dynamics</div>
+    <div class="eyebrow">Topic 11 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Soil Water Dynamics</h1>
+    <p class="lead">How water is held and moves in soil: the retention curve and conductivity function that describe a soil, Darcy's law and Richards' equation that move water through it, and why land-surface models either solve that equation in 4–20 layers or avoid it with a bucket.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Soil is a porous medium whose pores hold water at <strong>negative pressure</strong>: capillarity and adsorption pull water into small pores, so the drier the soil the more negative its matric potential and the smaller the pores that still hold water. The <strong>water retention curve</strong> θ(h) says how much water is held at a given pressure head; the <strong>hydraulic conductivity function</strong> K(h) says how easily it moves, and it falls by four to six orders of magnitude between saturation and the wilting point because the large pores empty first. <strong>Darcy's law</strong>, extended by Buckingham to unsaturated soil, gives flux as conductivity times the gradient of hydraulic head (pressure plus gravity). Combining it with mass conservation yields <strong>Richards' equation</strong>, a strongly nonlinear diffusion-type equation whose boundary conditions are rainfall, evaporation and drainage and whose sink term is root water uptake. Infiltration (Green–Ampt), redistribution, drainage, soil evaporation and plant stress are all special cases of that one equation. Land-surface models such as CLM5 and JULES solve it on a vertical grid using pedotransfer functions to get hydraulic parameters from texture; many ecosystem and crop models still use tipping-bucket water balances because the parameters are so uncertain that the extra physics is hard to justify.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Four things are asked again and again: derive Richards' equation from a mass balance and Darcy–Buckingham (and name the three forms); sketch θ(h) and K(h) for sand versus clay and explain the shapes; explain why Richards' equation is numerically awkward and what a mass-conservative scheme fixes; and say concretely how a land-surface model differs from a bucket, and what that difference does to simulated drought stress and evapotranspiration.</p></div>
+  </section>
+
+  <section id="phases">
+    <h2>Soil as a three-phase system</h2>
+    <p>A soil volume V<sub>t</sub> contains solids (V<sub>s</sub>, mass M<sub>s</sub>), water (V<sub>w</sub>, M<sub>w</sub>) and air (V<sub>a</sub>). The definitions that follow from these six quantities are the vocabulary of everything on this page:</p>
+    <div class="eq">$$\rho_b = \frac{M_s}{V_t}, \qquad \phi = \frac{V_w + V_a}{V_t} = 1 - \frac{\rho_b}{\rho_s}, \qquad \theta = \frac{V_w}{V_t}, \qquad w = \frac{M_w}{M_s}, \qquad \theta = w\,\frac{\rho_b}{\rho_w}, \qquad S_e^{\,0} = \frac{\theta}{\phi}$$</div>
+    <p><strong>Bulk density</strong> ρ<sub>b</sub> is the dry mass per total volume, typically 1.1–1.6 g cm⁻³ for mineral soils (lower in organic and well-aggregated topsoils, above 1.7 g cm⁻³ when compacted enough to restrict roots). The <strong>particle density</strong> ρ<sub>s</sub> of mineral soil is close to 2.65 g cm⁻³ (quartz), so a bulk density of 1.3 g cm⁻³ implies a <strong>porosity</strong> φ = 1 − 1.3/2.65 ≈ 0.51. Porosity therefore ranges from about 0.35 in packed sands to 0.55 or more in clays and aggregated loams; counter-intuitively, clays have more total pore space than sands, just in much smaller pores.</p>
+    <p><strong>Volumetric water content</strong> θ (cm³ water per cm³ soil, dimensionless, often written m³ m⁻³) is what models and TDR probes report and what flux equations need. <strong>Gravimetric water content</strong> w (g water per g dry soil) is what you measure by oven drying at 105 °C; convert with θ = w ρ<sub>b</sub>/ρ<sub>w</sub>. The <strong>degree of saturation</strong> θ/φ runs from 0 to 1; the complementary <strong>air-filled porosity</strong> φ − θ matters for O₂ supply to roots and microbes and falls below the ~0.10 threshold for aeration problems in wet clays. A depth of water is θ times a depth of soil: a 1 m profile at θ = 0.25 holds 250 mm of water, which is how soil moisture enters a water balance in the same units as rainfall and evapotranspiration.</p>
+  </section>
+
+  <section id="potential">
+    <h2>Soil water potential and its units</h2>
+    <p>Water in soil moves in response to differences in <strong>total water potential</strong>, the energy per unit quantity of water relative to free, pure water at the same elevation and atmospheric pressure. The components are additive:</p>
+    <div class="eq">$$\psi_t = \psi_m + \psi_g + \psi_o + \psi_p$$</div>
+    <ul>
+      <li><strong>Matric potential</strong> ψ<sub>m</sub> (≤ 0): capillary and adsorptive binding to the solid matrix. In unsaturated soil this is the dominant term and the one the retention curve describes. Expressed as a length it is the <em>pressure head</em> h (negative), also called suction or tension when quoted as a positive number.</li>
+      <li><strong>Gravitational potential</strong> ψ<sub>g</sub> = ρ<sub>w</sub> g z: position relative to a datum. Expressed as a head it is simply the elevation z.</li>
+      <li><strong>Osmotic potential</strong> ψ<sub>o</sub> (≤ 0): from dissolved salts. It does not drive liquid flow in soil where no membrane separates solutions, but it lowers the water potential that roots experience and the vapour pressure above the soil, which is why salinity reads as drought to a plant (see the nutrients page).</li>
+      <li><strong>Pressure (pneumatic or hydrostatic) potential</strong> ψ<sub>p</sub> (≥ 0): positive pressure below a water table or under ponded water, or air pressure differences in trapped air.</li>
+    </ul>
+    <p>Because potential is energy per unit water, it can be expressed per unit volume (a pressure: Pa, kPa, MPa, bar), per unit weight (a length: m or cm of water head) or per unit mass (J kg⁻¹). The conversions are through ρ<sub>w</sub> g: <strong>1 kPa ≈ 10.2 cm of water head</strong>, 1 bar = 100 kPa ≈ 1020 cm, 1 J kg⁻¹ = 1 kPa. Soil physicists often use <strong>pF = log₁₀(|h| in cm)</strong> because h spans five orders of magnitude between saturation and air-dry. The three anchor values worth memorising in all systems: field capacity −33 kPa = −0.33 bar = −337 cm = pF 2.5 (or −10 kPa = −102 cm = pF 2.0 for coarse soils); permanent wilting point −1500 kPa = −1.5 MPa = −15 300 cm = pF 4.2; air-dry around pF 5–6. The <strong>hydraulic head</strong> that drives liquid flow is H = h + z (with z positive upward): water moves from high to low H, which can mean upward against gravity if the matric gradient is steep enough, as in capillary rise and evaporation.</p>
+  </section>
+
+  <section id="retention">
+    <h2>The water retention curve θ(h)</h2>
+    <p>The retention (or soil moisture characteristic) curve is the equilibrium relation between water content and pressure head. Its physics is the capillary rise equation: a pore of radius r stays water-filled at pressure heads less negative than h = −2σ cos γ/(ρ<sub>w</sub> g r), which with σ = 0.0728 N m⁻¹ and a zero contact angle gives the handy rule <strong>r (µm) ≈ 1500 / |h| (cm)</strong>. So at field capacity (−337 cm) all pores wider than about 4.5 µm have drained; at wilting point (−15 300 cm) only pores below about 0.1 µm, and adsorbed films, hold water. The retention curve is therefore a cumulative pore-size distribution. A sand, with uniform large pores, holds water weakly and empties over a narrow range of h near its air-entry value; a clay, with a broad distribution of small pores, releases water gradually over the entire range. Two closed-form models dominate practice.</p>
+    <h3>Brooks–Corey (1964)</h3>
+    <div class="eq">$$S_e = \frac{\theta - \theta_r}{\theta_s - \theta_r} = \begin{cases} \left(\dfrac{h_b}{h}\right)^{\lambda} & h < h_b \\ 1 & h \ge h_b \end{cases}, \qquad K = K_s\,S_e^{\,(2+3\lambda)/\lambda}$$</div>
+    <p>with air-entry (bubbling) head h<sub>b</sub> and pore-size distribution index λ (large λ: uniform pores, sand; small λ: broad distribution, clay). The power-law form with a sharp air-entry point is the basis of the Clapp–Hornberger [16] parameterisation used in many land-surface models, where it is written θ/θ<sub>s</sub> = (ψ<sub>s</sub>/ψ)<sup>1/b</sup> with b = 1/λ. The exponent on K comes from Burdine's pore-bundle model.</p>
+    <h3>van Genuchten (1980)</h3>
+    <div class="eq">$$\theta(h) = \theta_r + \frac{\theta_s - \theta_r}{\left[1 + |\alpha h|^{n}\right]^{m}}, \qquad m = 1 - \frac{1}{n}, \quad n > 1$$</div>
+    <p>θ<sub>r</sub> and θ<sub>s</sub> are the residual and saturated water contents; α (cm⁻¹) is roughly the inverse of the air-entry head, so 1/α marks where the curve bends away from saturation; and n controls the steepness, i.e. how uniform the pore sizes are (n ≈ 2–3 for sands, 1.1–1.4 for clays and silts). The restriction m = 1 − 1/n is what allows a closed-form conductivity function (next section). Because the curve is smooth and has a continuous slope, it is numerically far better behaved than Brooks–Corey near saturation, which is why HYDRUS and most modern vadose-zone codes use it. Carsel and Parrish [6] fitted van Genuchten parameters to the USDA texture classes; their table is the default parameter set in HYDRUS and a standard exam reference:</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Texture (Carsel &amp; Parrish 1988)</th><th class="num">θ<sub>r</sub></th><th class="num">θ<sub>s</sub></th><th class="num">α (cm⁻¹)</th><th class="num">n</th><th class="num">K<sub>s</sub> (cm d⁻¹)</th></tr></thead>
+      <tbody>
+        <tr><td>Sand</td><td class="num">0.045</td><td class="num">0.43</td><td class="num">0.145</td><td class="num">2.68</td><td class="num">712.8</td></tr>
+        <tr><td>Loamy sand</td><td class="num">0.057</td><td class="num">0.41</td><td class="num">0.124</td><td class="num">2.28</td><td class="num">350.2</td></tr>
+        <tr><td>Sandy loam</td><td class="num">0.065</td><td class="num">0.41</td><td class="num">0.075</td><td class="num">1.89</td><td class="num">106.1</td></tr>
+        <tr><td>Loam</td><td class="num">0.078</td><td class="num">0.43</td><td class="num">0.036</td><td class="num">1.56</td><td class="num">24.96</td></tr>
+        <tr><td>Silt</td><td class="num">0.034</td><td class="num">0.46</td><td class="num">0.016</td><td class="num">1.37</td><td class="num">6.00</td></tr>
+        <tr><td>Silt loam</td><td class="num">0.067</td><td class="num">0.45</td><td class="num">0.020</td><td class="num">1.41</td><td class="num">10.80</td></tr>
+        <tr><td>Sandy clay loam</td><td class="num">0.100</td><td class="num">0.39</td><td class="num">0.059</td><td class="num">1.48</td><td class="num">31.44</td></tr>
+        <tr><td>Clay loam</td><td class="num">0.095</td><td class="num">0.41</td><td class="num">0.019</td><td class="num">1.31</td><td class="num">6.24</td></tr>
+        <tr><td>Silty clay loam</td><td class="num">0.089</td><td class="num">0.43</td><td class="num">0.010</td><td class="num">1.23</td><td class="num">1.68</td></tr>
+        <tr><td>Sandy clay</td><td class="num">0.100</td><td class="num">0.38</td><td class="num">0.027</td><td class="num">1.23</td><td class="num">2.88</td></tr>
+        <tr><td>Silty clay</td><td class="num">0.070</td><td class="num">0.36</td><td class="num">0.005</td><td class="num">1.09</td><td class="num">0.48</td></tr>
+        <tr><td>Clay</td><td class="num">0.068</td><td class="num">0.38</td><td class="num">0.008</td><td class="num">1.09</td><td class="num">4.80</td></tr>
+      </tbody></table></div>
+    <h3>Hysteresis, field capacity, wilting point and plant-available water</h3>
+    <p>θ(h) is not unique: at the same h a soil holds more water when drying than when wetting. The causes are the <strong>ink-bottle effect</strong> (a pore drains only when the suction exceeds the value set by its narrow neck, but fills only when the suction falls below the value set by its wide body), contact-angle hysteresis (advancing angle larger than receding), entrapped air on wetting, and swelling or shrinking. Most models use the main drying curve and ignore hysteresis; HYDRUS offers a scaling model where the wetting curve has twice the drying α.</p>
+    <p><strong>Field capacity</strong> is the water content after rapid drainage of a saturated profile has become "negligible", conventionally two or three days after thorough wetting. It is not a soil property but a kinetic state, because drainage never stops; it is operationally fixed at <strong>−33 kPa</strong> (−1/3 bar) in the US and much of the literature, and at −10 kPa (or −5 kPa) for coarse soils and in European practice, where it matches drained conditions better. The <strong>permanent wilting point</strong> is fixed at <strong>−1500 kPa</strong> (−1.5 MPa), from Briggs and Shantz's sunflower experiments; most crops cannot extract water below that potential fast enough to survive, though desert shrubs and some trees go to −3 to −5 MPa. <strong>Plant-available water</strong> is θ<sub>FC</sub> − θ<sub>WP</sub>, quoted per unit depth: about 60–90 mm m⁻¹ for sands, 150–200 mm m⁻¹ for loams and silt loams (the best agricultural soils), and 120–150 mm m⁻¹ for clays, which hold a great deal of water but much of it below the wilting point. These are exactly the quantities a bucket model uses, and the explorer below computes them from the van Genuchten parameters.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Retention and conductivity explorer (van Genuchten–Mualem)</h3><span class="small muted">Hover either chart to read values</span></div>
+      <div class="lab-grid">
+        <div class="stack">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rcSvg" viewBox="0 0 640 300" role="img" aria-label="Water content versus pressure head on a logarithmic axis for the chosen soil, with field capacity and wilting point marked"></svg>
+            <div class="chart-tip" id="rcTip" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="kcSvg" viewBox="0 0 640 260" role="img" aria-label="Unsaturated hydraulic conductivity versus pressure head on log–log axes"></svg>
+            <div class="chart-tip" id="kcTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">your soil</span><span style="--c:var(--series-1)">sand (reference)</span><span style="--c:var(--series-2)">loam (reference)</span><span style="--c:var(--series-3)">clay (reference)</span><span style="--c:var(--accent)">shaded: plant-available water (−33 to −1500 kPa)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="rcTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rcTex"><span>Texture preset (Carsel &amp; Parrish)</span></label><select id="rcTex"></select></div>
+          <div class="ctrl"><label for="rcTr"><span>θ<sub>r</sub> (cm³ cm⁻³)</span><output id="rcTrO">0.078</output></label><input type="range" id="rcTr" min="0" max="0.15" step="0.001" value="0.078"></div>
+          <div class="ctrl"><label for="rcTs"><span>θ<sub>s</sub> (cm³ cm⁻³)</span><output id="rcTsO">0.43</output></label><input type="range" id="rcTs" min="0.3" max="0.6" step="0.005" value="0.43"></div>
+          <div class="ctrl"><label for="rcA"><span>log₁₀ α (α in cm⁻¹)</span><output id="rcAO">−1.44</output></label><input type="range" id="rcA" min="-2.5" max="-0.5" step="0.01" value="-1.4437"></div>
+          <div class="ctrl"><label for="rcN"><span>n (−)</span><output id="rcNO">1.56</output></label><input type="range" id="rcN" min="1.05" max="3.5" step="0.01" value="1.56"></div>
+          <div class="ctrl"><label for="rcK"><span>log₁₀ K<sub>s</sub> (K<sub>s</sub> in cm d⁻¹)</span><output id="rcKO">1.40</output></label><input type="range" id="rcK" min="-1" max="3.2" step="0.01" value="1.397"></div>
+          <dl class="readout">
+            <dt>m = 1 − 1/n · 1/α (cm)</dt><dd id="rcM"></dd>
+            <dt>θ at −10 kPa</dt><dd id="rcFC10"></dd>
+            <dt>θ at −33 kPa (field capacity)</dt><dd id="rcFC"></dd>
+            <dt>θ at −1500 kPa (wilting point)</dt><dd id="rcWP"></dd>
+            <dt>Plant-available water</dt><dd id="rcPAW"></dd>
+            <dt>Drainable porosity θ<sub>s</sub> − θ<sub>FC</sub></dt><dd id="rcDP"></dd>
+            <dt>K at −33 kPa</dt><dd id="rcKFC"></dd>
+            <dt>K at −1500 kPa</dt><dd id="rcKWP"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: switch between sand and clay and watch where the shaded plant-available band sits (sand holds little at any suction; clay holds a lot but much of it below wilting point). Raise n at fixed α to make the pore sizes more uniform and see the retention curve become a step and the conductivity fall off a cliff. Note that sand's conductivity, highest at saturation, falls below loam's beyond about pF 2.5: this crossover is why sand stops conducting once it drains. Compare the −10 kPa and −33 kPa field capacities for the sand.</p>
+    </div>
+  </section>
+
+  <section id="darcy">
+    <h2>Darcy's law and unsaturated conductivity</h2>
+    <p>Henry Darcy (1856), designing the water supply for Dijon, found that the volume flow Q through a sand column of length L and cross-section A was proportional to the head drop ΔH across it. In differential form, with the <strong>Darcy flux</strong> (specific discharge) q = Q/A,</p>
+    <div class="eq">$$q = -K_s\,\nabla H, \qquad H = h + z, \qquad [q] = [K_s] = \text{L T}^{-1}, \quad [\nabla H] = \text{L L}^{-1} = 1$$</div>
+    <p>The units check is worth stating in an exam: q is a volume of water per unit area per unit time, which reduces to a velocity, and because the head gradient is dimensionless, K<sub>s</sub> carries the same units (cm h⁻¹, cm d⁻¹, mm h⁻¹, m s⁻¹). q is <em>not</em> the velocity of water in the pores: the mean pore velocity is q/θ, several times larger, which matters for solute travel times. Darcy's law is a linear, laminar-flow law (valid for pore Reynolds numbers below about 1–10) and is the macroscopic average of Poiseuille flow in a bundle of capillaries. Poiseuille gives discharge ∝ r⁴ per tube and the number of tubes per area ∝ r⁻², so <strong>K ∝ r²</strong>: halving the characteristic pore size cuts conductivity four-fold. That single fact explains the texture ordering of K<sub>s</sub> (sand ~700 cm d⁻¹, loam ~25, clay ~5 or less, Carsel &amp; Parrish [6]) and the collapse of conductivity as a soil drains.</p>
+    <p><strong>Buckingham (1907)</strong> [2] extended the idea to unsaturated soil two decades before Richards, introducing the capillary potential and arguing that conductivity must depend on water content because draining removes the widest, most conductive pores and lengthens the flow paths. The <strong>Darcy–Buckingham law</strong> is</p>
+    <div class="eq">$$\mathbf{q} = -K(h)\,\nabla(h + z) = -K(\theta)\,\nabla h - K(\theta)\,\nabla z$$</div>
+    <p>and K now falls from K<sub>s</sub> at saturation by four to six orders of magnitude at the wilting point. Mualem (1976) [5] derived K(S<sub>e</sub>) from the pore-size distribution implied by the retention curve; combined with the van Genuchten θ(h) (and the restriction m = 1 − 1/n) it gives the closed-form <strong>Mualem–van Genuchten</strong> function used almost universally:</p>
+    <div class="eq">$$K(S_e) = K_s\,S_e^{\,l}\left[1 - \left(1 - S_e^{1/m}\right)^{m}\right]^{2}, \qquad l \approx 0.5$$</div>
+    <p>The pore-connectivity parameter l is usually fixed at Mualem's 0.5 (Schaap and Leij later found negative values fit many soils better, but 0.5 is the default). Two features of K(h) deserve attention in the explorer above. First, the sand curve is highest at saturation but drops below loam's and then clay's as h becomes more negative: once sand's large pores empty there is little left to conduct, while clay's small pores stay full. Second, the function is extremely steep near saturation for high-n soils, which is the root of the numerical difficulty in the next section.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Darcy's law demonstration: flux versus head gradient</h3><span class="small muted">Hover the chart</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="dcSvg" viewBox="0 0 640 320" role="img" aria-label="Darcy flux versus hydraulic gradient on a logarithmic flux axis for sand, sandy loam, loam and clay, with the chosen column marked"></svg>
+            <div class="chart-tip" id="dcTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">sand, K<sub>s</sub> 712.8 cm d⁻¹</span><span style="--c:var(--series-2)">sandy loam, 106.1</span><span style="--c:var(--series-3)">loam, 24.96</span><span style="--c:var(--accent-2)">clay, 4.80</span><span style="--c:var(--fg)">your column</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="dcTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="dcK"><span>log₁₀ K<sub>s</sub> (cm d⁻¹)</span><output id="dcKO"></output></label><input type="range" id="dcK" min="-1" max="3.2" step="0.01" value="1.397"></div>
+          <div class="ctrl"><label for="dcH"><span>Head difference ΔH (cm)</span><output id="dcHO"></output></label><input type="range" id="dcH" min="0" max="100" step="1" value="30"></div>
+          <div class="ctrl"><label for="dcL"><span>Column length L (cm)</span><output id="dcLO"></output></label><input type="range" id="dcL" min="5" max="100" step="1" value="30"></div>
+          <div class="ctrl"><label for="dcA"><span>Cross-section A (cm²)</span><output id="dcAO"></output></label><input type="range" id="dcA" min="10" max="500" step="10" value="100"></div>
+          <div class="ctrl"><label for="dcT"><span>Water content θ for pore velocity</span><output id="dcTO"></output></label><input type="range" id="dcT" min="0.2" max="0.55" step="0.01" value="0.43"></div>
+          <dl class="readout">
+            <dt>Gradient ΔH/L</dt><dd id="dcI"></dd>
+            <dt>K<sub>s</sub> in cm h⁻¹</dt><dd id="dcKs"></dd>
+            <dt>Darcy flux q</dt><dd id="dcQ"></dd>
+            <dt>q (mm d⁻¹)</dt><dd id="dcQ2"></dd>
+            <dt>q (m s⁻¹)</dt><dd id="dcQ3"></dd>
+            <dt>Q = qA</dt><dd id="dcQQ"></dd>
+            <dt>Pore velocity</dt><dd id="dcV"></dd>
+            <dt>Travel time</dt><dd id="dcTT"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: set ΔH = L (unit gradient, gravity-driven drainage with no suction gradient) and read q = K<sub>s</sub>. Set ΔH to zero: no flow regardless of K<sub>s</sub>. Compare the travel time of a 30 cm sand column (minutes) with clay (days to weeks). The chart is log in q, so the four texture lines are parallel: Darcy's law is linear in the gradient, and the textures differ only by the constant K<sub>s</sub>.</p>
+    </div>
+  </section>
+
+  <section id="richards">
+    <h2>Richards' equation</h2>
+    <p>Richards (1931) [1] combined Darcy–Buckingham with mass conservation. Consider a thin horizontal slab of soil of thickness dz. Water content changes because the flux entering the top differs from that leaving the bottom, and because roots remove water at a volumetric rate S (cm³ cm⁻³ h⁻¹):</p>
+    <div class="eq">$$\frac{\partial \theta}{\partial t} = -\nabla\cdot\mathbf{q} - S \qquad\Longrightarrow\qquad \frac{\partial \theta}{\partial t} = \nabla\cdot\left[K(h)\,\nabla h\right] + \frac{\partial K(h)}{\partial z} - S$$</div>
+    <p>In one vertical dimension with z positive upward this is</p>
+    <div class="eq">$$\frac{\partial \theta}{\partial t} = \frac{\partial}{\partial z}\left[K(h)\left(\frac{\partial h}{\partial z} + 1\right)\right] - S(z,t)$$</div>
+    <p>The equation has one unknown too many (θ and h), closed by the retention curve. Depending on which variable is kept, three forms result.</p>
+    <div class="keybox"><h3>The three forms and when each fails</h3>
+      <div class="eq">$$\text{h-based:}\quad C(h)\frac{\partial h}{\partial t} = \frac{\partial}{\partial z}\left[K(h)\left(\frac{\partial h}{\partial z}+1\right)\right] - S, \qquad C(h) = \frac{d\theta}{dh}$$</div>
+      <div class="eq">$$\theta\text{-based:}\quad \frac{\partial \theta}{\partial t} = \frac{\partial}{\partial z}\left[D(\theta)\frac{\partial \theta}{\partial z} + K(\theta)\right] - S, \qquad D(\theta) = \frac{K(\theta)}{C(\theta)}$$</div>
+      <div class="eq">$$\text{mixed:}\quad \frac{\partial \theta}{\partial t} = \frac{\partial}{\partial z}\left[K(h)\left(\frac{\partial h}{\partial z}+1\right)\right] - S$$</div>
+      <p style="margin-top:0.75rem">C(h) is the <strong>specific moisture capacity</strong>, the slope of the retention curve (cm⁻¹). For van Genuchten, C(h) = α m n (θ<sub>s</sub> − θ<sub>r</sub>) |αh|<sup>n−1</sup> (1 + |αh|<sup>n</sup>)<sup>−m−1</sup>, which is zero at saturation, peaks near h = −1/α and decays towards dryness. The <strong>h-form</strong> handles saturated and layered soils (h is continuous across layer boundaries; θ is not) but conserves mass poorly when discretised, because C(h) is evaluated at one point while θ changes nonlinearly over the step. The <strong>θ-form</strong> is a true conservation law and is excellent for dry, homogeneous soil, but D → ∞ at saturation and θ is discontinuous between layers, so it cannot handle ponding, water tables or heterogeneity. The <strong>mixed form</strong> keeps θ in the storage term and h in the flux term and, discretised as Celia, Bouloutas and Zarba (1990) [7] showed, is mass-conservative and valid everywhere. It is what HYDRUS, CLM and this page's simulator use.</p></div>
+    <h3>Why it is hard</h3>
+    <p>Richards' equation is a nonlinear parabolic (diffusion–advection) equation in which the "diffusivity" K/C and the "advective velocity" dK/dθ vary by orders of magnitude across the domain and in time. A wetting front in dry sand is a near-shock: ahead of it K is ~10⁻⁶ K<sub>s</sub>, behind it near K<sub>s</sub>. Explicit schemes need time steps limited by Δz²/D, which near saturation can be fractions of a second; implicit schemes are stable but produce a nonlinear system at every step. Two linearisations are standard. <strong>Picard</strong> (successive substitution) evaluates K and C at the latest iterate and solves the resulting tridiagonal linear system for the new h, repeating until the change is small; it is robust and simple. <strong>Newton–Raphson</strong> adds the derivatives of K and C with respect to h to the Jacobian and converges quadratically but can diverge from a poor guess. In practice codes use modified Picard with <strong>adaptive time stepping</strong>: shorten Δt when iterations exceed a limit or fail to converge, lengthen it when they converge in two or three. Internodal conductivities must be averaged between nodes (arithmetic, geometric or upstream weighting); the arithmetic mean is most robust for infiltration into dry soil but over-predicts fluxes across sharp fronts.</p>
+    <div class="keybox"><h3>Celia's mass-conservative modified Picard scheme</h3>
+      <p>Write the mixed form implicitly, with the time level n → n+1 and Picard iterate m → m+1, and expand θ<sup>n+1,m+1</sup> about the current iterate: θ<sup>n+1,m+1</sup> ≈ θ<sup>n+1,m</sup> + C<sup>n+1,m</sup> δ, where δ = h<sup>n+1,m+1</sup> − h<sup>n+1,m</sup>. Then for node i (z downward, dz spacing):</p>
+      <div class="eq">$$\frac{C_i^{m}\,\delta_i}{\Delta t} + \frac{\theta_i^{m} - \theta_i^{n}}{\Delta t} = \frac{1}{\Delta z^2}\left[K_{i+1/2}(\delta_{i+1}-\delta_i) - K_{i-1/2}(\delta_i - \delta_{i-1})\right] - \frac{q^{m}_{i+1/2} - q^{m}_{i-1/2}}{\Delta z} - S_i$$</div>
+      <p>The term (θ<sup>m</sup> − θ<sup>n</sup>)/Δt carries the actual storage change, so when δ → 0 at convergence the equation that is satisfied is the exact discrete mass balance, whatever C is. In the plain h-form, C<sup>m</sup>(h<sup>m+1</sup> − h<sup>n</sup>)/Δt replaces the storage term and the error C Δh − Δθ, which can be tens of percent on a sharp front, is lost. Each iteration solves a tridiagonal system by the Thomas algorithm: O(N) work per iteration.</p></div>
+    <h3>Boundary conditions</h3>
+    <p>The top boundary is the <strong>atmospheric boundary</strong> and switches type. During rain it is a <strong>flux (Neumann) condition</strong> q = −P as long as the soil can absorb it; once the surface pressure head reaches zero (ponding) it becomes a <strong>head (Dirichlet) condition</strong> h = 0 (or the ponding depth), and the difference between rainfall and the computed infiltration is runoff. During dry periods it is a flux condition q = +E<sub>pot</sub> as long as the surface can supply it; once the surface head reaches an air-dry limit (h ≈ −10⁵ cm, set by equilibrium with air humidity) it becomes a head condition and actual evaporation drops below potential. The bottom boundary may be a water table (h = 0 at the table), a <strong>free-drainage</strong> (unit-gradient) condition ∂h/∂z = 0 so that q = K(h), a zero-flux condition (bedrock), or a seepage face. Root uptake enters as the sink S(z,t), not as a boundary condition.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>1-D Richards' equation in the browser: infiltration, redistribution, drainage, uptake</h3>
+        <div class="btnrow"><button class="btn small primary" id="rsPlay" type="button">Play</button><button class="btn small" id="rsStep" type="button">+1 h</button><button class="btn small" id="rsReset" type="button">Reset</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rsSvg" viewBox="0 0 640 400" role="img" aria-label="Volumetric water content profile with depth in a one-metre soil column, animated through an infiltration event and its redistribution"></svg>
+            <div class="chart-tip" id="rsTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">θ now</span><span style="--c:var(--muted)">θ initial</span><span style="--c:var(--accent)">snapshots every 6 h</span><span style="--c:var(--series-1)">rain (top bar)</span></div>
+          <div class="status" id="rsStatus"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (current profile)</summary><div class="tablewrap"><table id="rsTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rsTex"><span>Texture (Carsel &amp; Parrish)</span></label><select id="rsTex"></select></div>
+          <div class="ctrl"><label for="rsRain"><span>Rainfall intensity (mm h⁻¹)</span><output id="rsRainO"></output></label><input type="range" id="rsRain" min="0" max="60" step="1" value="15"></div>
+          <div class="ctrl"><label for="rsDur"><span>Rainfall duration (h)</span><output id="rsDurO"></output></label><input type="range" id="rsDur" min="0.5" max="24" step="0.5" value="4"></div>
+          <div class="ctrl"><label for="rsInit"><span>Initial pressure head, pF = log₁₀|h|</span><output id="rsInitO"></output></label><input type="range" id="rsInit" min="2" max="4.2" step="0.05" value="3.3"></div>
+          <div class="ctrl"><label for="rsTp"><span>Potential transpiration (mm d⁻¹; 0 = no roots)</span><output id="rsTpO"></output></label><input type="range" id="rsTp" min="0" max="8" step="0.5" value="3"></div>
+          <div class="ctrl"><label for="rsEp"><span>Potential soil evaporation (mm d⁻¹)</span><output id="rsEpO"></output></label><input type="range" id="rsEp" min="0" max="6" step="0.5" value="2"></div>
+          <dl class="readout">
+            <dt>t (h) · Δt (s) · iterations</dt><dd id="rsT"></dd>
+            <dt>Rain so far (mm)</dt><dd id="rsP"></dd>
+            <dt>Infiltration (mm)</dt><dd id="rsI"></dd>
+            <dt>Runoff (mm)</dt><dd id="rsR"></dd>
+            <dt>Drainage at 1 m (mm)</dt><dd id="rsD"></dd>
+            <dt>T · E (mm)</dt><dd id="rsET"></dd>
+            <dt>Storage change (mm)</dt><dd id="rsS"></dd>
+            <dt>Balance error (mm)</dt><dd id="rsMB"></dd>
+            <dt>Wet front (cm)</dt><dd id="rsWF"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">The page loads with the run already advanced to 6 h (two hours after the rain stopped); press Play to continue to 72 h or Reset to start again. Mixed-form Richards' equation, 50 cells of 2 cm, modified Picard iteration (Celia et al. 1990), adaptive time step, arithmetic internodal K, free drainage at 1 m, Feddes root uptake over 0–50 cm with an exponential root profile; the surface switches from flux to head when it saturates and the excess is runoff. The run lasts 72 h. Suggested experiments: 15 mm h⁻¹ for 4 h on loam (K<sub>s</sub> ≈ 10 mm h⁻¹) ponds only in the fourth hour and loses a few millimetres to runoff; the same storm on clay ponds within minutes and most of it runs off, while on sand it never ponds. Try sand: the front is sharp and reaches 1 m within the day, then the profile drains to a low water content (little plant-available water). Set rain to zero and watch stage-1 then stage-2 evaporation dry the top centimetres, and the Feddes function cut transpiration once the root zone approaches pF 4.2. Change the texture mid-run to see the solver recover.</p>
+    </div>
+  </section>
+
+  <section id="infiltration">
+    <h2>Infiltration, redistribution, drainage and evaporation</h2>
+    <p>Infiltration theory is Richards' equation under special assumptions, and three classic results are expected knowledge. <strong>Horton (1940)</strong> proposed the empirical decay f(t) = f<sub>c</sub> + (f<sub>0</sub> − f<sub>c</sub>) e<sup>−kt</sup>, with no physical content but a shape that fits measured curves. <strong>Philip (1957)</strong> [9] solved the θ-form for ponded infiltration into a uniform semi-infinite soil as a power series in t<sup>1/2</sup>, which truncated to two terms gives</p>
+    <div class="eq">$$I(t) = S\,t^{1/2} + A\,t, \qquad f(t) = \tfrac{1}{2} S\,t^{-1/2} + A$$</div>
+    <p>where S is the <strong>sorptivity</strong> (cm h⁻¹ᐟ²), a soil property that measures capillary absorption, and A ≈ K<sub>s</sub>/3 to 2K<sub>s</sub>/3 is the gravity term. Early infiltration is dominated by capillarity (∝ t<sup>−1/2</sup>), late infiltration by gravity (→ K<sub>s</sub>). <strong>Green and Ampt (1911)</strong> [8] obtained a closed form by assuming a <strong>piston-like wetting front</strong>: above the front the soil is saturated with conductivity K<sub>s</sub>, below it is at the initial content θ<sub>i</sub>, and the front has a constant effective suction ψ<sub>f</sub>. Darcy's law across the wetted depth L, with ponding depth H<sub>0</sub> ≈ 0 and cumulative infiltration F = L Δθ (Δθ = θ<sub>s</sub> − θ<sub>i</sub>), gives</p>
+    <div class="eq">$$f = K_s\,\frac{L + \psi_f}{L} = K_s\left(1 + \frac{\psi_f\,\Delta\theta}{F}\right), \qquad F - \psi_f\Delta\theta\,\ln\!\left(1 + \frac{F}{\psi_f\Delta\theta}\right) = K_s\,t$$</div>
+    <p>The second expression follows by integrating dF/dt = f and must be solved for F(t) iteratively. It has the right limits (f → ∞ at t = 0, f → K<sub>s</sub> as t → ∞) and the early-time behaviour matches Philip with S² = 2K<sub>s</sub>ψ<sub>f</sub>Δθ. Under rainfall of intensity i, Mein and Larson (1973) showed that infiltration equals i until <strong>ponding</strong>, when the capacity has fallen to i, which happens at F<sub>p</sub> = K<sub>s</sub>ψ<sub>f</sub>Δθ/(i − K<sub>s</sub>) (only if i > K<sub>s</sub>); thereafter the Green–Ampt curve applies with a time shift. This is the physics behind <strong>infiltration-excess (Hortonian) runoff</strong>, as opposed to saturation-excess (Dunne) runoff where the profile fills from a shallow water table. Wetting-front suction values from Rawls et al. (1983) run from about 5 cm (sand) through 9 cm (loam) and 17 cm (silt loam) to 32 cm (clay).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Green–Ampt infiltration explorer (with Mein–Larson ponding)</h3><span class="small muted">Hover either chart</span></div>
+      <div class="lab-grid">
+        <div class="stack">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="gaSvg" viewBox="0 0 640 260" role="img" aria-label="Infiltration rate and rainfall intensity versus time"></svg>
+            <div class="chart-tip" id="gaTip" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="gcSvg" viewBox="0 0 640 240" role="img" aria-label="Cumulative infiltration and cumulative rainfall versus time"></svg>
+            <div class="chart-tip" id="gcTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">infiltration rate f / cumulative F</span><span style="--c:var(--series-1)">rainfall i / cumulative P</span><span style="--c:var(--series-2)">ponded Green–Ampt capacity (from t = 0)</span><span style="--c:var(--accent-2)">runoff (shaded)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="gaTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="gaK"><span>log₁₀ K<sub>s</sub> (mm h⁻¹)</span><output id="gaKO"></output></label><input type="range" id="gaK" min="-0.5" max="2.5" step="0.01" value="1.0"></div>
+          <div class="ctrl"><label for="gaPsi"><span>Wetting-front suction ψ<sub>f</sub> (cm)</span><output id="gaPsiO"></output></label><input type="range" id="gaPsi" min="2" max="40" step="0.5" value="9"></div>
+          <div class="ctrl"><label for="gaDt"><span>Δθ = θ<sub>s</sub> − θ<sub>i</sub></span><output id="gaDtO"></output></label><input type="range" id="gaDt" min="0.02" max="0.45" step="0.01" value="0.25"></div>
+          <div class="ctrl"><label for="gaI"><span>Rainfall intensity i (mm h⁻¹)</span><output id="gaIO"></output></label><input type="range" id="gaI" min="1" max="80" step="1" value="20"></div>
+          <dl class="readout">
+            <dt>Sorptivity S</dt><dd id="gaS"></dd>
+            <dt>Ponding F<sub>p</sub> · t<sub>p</sub></dt><dd id="gaTp"></dd>
+            <dt>F at 1 h</dt><dd id="gaF1"></dd>
+            <dt>F at 6 h · runoff</dt><dd id="gaF6"></dd>
+            <dt>Front depth at 6 h</dt><dd id="gaL"></dd>
+            <dt>f at 6 h</dt><dd id="gaf6"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: set i below K<sub>s</sub> and confirm there is never ponding. Raise Δθ (drier initial soil) and watch ponding come later: dry soil absorbs more before its capacity falls to the rainfall rate. Raise ψ<sub>f</sub> with K<sub>s</sub> fixed: the capillary term stays high longer. A 20 mm h⁻¹ storm on a loam (K<sub>s</sub> ≈ 10 mm h⁻¹) ponds after roughly an hour; the same storm on a sandy loam (K<sub>s</sub> ≈ 44 mm h⁻¹) never does.</p>
+    </div>
+
+    <h3>After the rain</h3>
+    <p><strong>Redistribution</strong>: when infiltration stops, the wetted zone keeps moving downward under gravity and the matric gradient, but the front slows and smears because K falls as the upper layers drain. Drainage from the profile is fast at first and decays roughly as a power law in time, which is why "field capacity" after 2–3 days is a useful but arbitrary marker. <strong>Drainage</strong> to a water table or out of the root zone is the main loss from wet soils and the main pathway for nitrate leaching; in free-draining profiles the drainage flux approaches K(θ) of the lower soil. <strong>Soil evaporation</strong> proceeds in three stages: <strong>stage 1</strong> is energy-limited, at the potential rate set by the atmosphere, while the surface is wet enough to supply water; <strong>stage 2</strong> is soil-limited, the rate falling roughly as t<sup>−1/2</sup> (the desorptivity, the evaporation analogue of sorptivity) as the drying front retreats; <strong>stage 3</strong> is vapour-diffusion-limited through a dry surface layer that acts as a mulch. Sands switch to stage 2 within a day and then lose little, which is why sandy soils are self-mulching; clays and silts stay in stage 1 longer and lose more total water. Models that evaporate from a single top layer with a β-function of its θ are approximating stages 1–2 crudely, and the thickness of that layer is a tuning knob.</p>
+  </section>
+
+  <section id="roots">
+    <h2>Root water uptake, preferential flow and capillary rise</h2>
+    <p>Roots enter Richards' equation as the macroscopic sink S(z,t), the volume of water removed per unit soil volume per unit time. The usual form, due to <strong>Feddes, Kowalik and Zaradny (1978)</strong> [10], distributes the potential transpiration T<sub>p</sub> over the root zone by a normalised root density β(z) and reduces it by a stress function of local pressure head:</p>
+    <div class="eq">$$S(z,t) = \alpha(h)\,\beta(z)\,T_p(t), \qquad \int_0^{z_r}\beta(z)\,dz = 1, \qquad T_a = \int_0^{z_r} S\,dz$$</div>
+    <p>α(h) is a trapezoid: zero near saturation (h > h₁ ≈ −10 cm, anaerobiosis), rising to 1 at h₂ ≈ −25 cm, constant to h₃ (≈ −300 to −1000 cm, lower under low evaporative demand), then declining linearly to zero at h₄ = −15 000 cm, the wilting point. The root profile β(z) is often exponential; Jackson et al. (1996) summarised global root distributions as cumulative fraction Y = 1 − β<sup>d</sup> with β between 0.91 (tundra, crops) and 0.98 (deserts, temperate forests), i.e. e-folding depths of about 10–50 cm. Refinements include compensatory uptake (roots in wet layers take more when others are stressed), the van Genuchten S-shaped α(h) that includes osmotic stress, and the "microscopic" Gardner approach that resolves radial flow to a single root. Modern land-surface models (CLM5's plant hydraulics scheme) replace α(h) with a resistance network: uptake from each layer is driven by the difference between soil and root xylem potential across a soil–root conductance that depends on K(h) and root length density, so uptake and hydraulic redistribution (water moving from wet to dry layers through roots at night) follow from the potentials.</p>
+    <p><strong>Preferential flow</strong> is the main limit of Richards' equation. Macropores from roots, earthworms and shrinkage cracks, fingering in layered or water-repellent soils, and funnel flow over lenses move water far faster than the matrix equation predicts and bypass most of the soil volume. The Darcian assumptions (a representative elementary volume, local equilibrium between θ and h) fail. Dual-porosity and dual-permeability models (Gerke and van Genuchten 1993) run two Richards equations or a kinematic-wave macropore domain coupled by an exchange term; land-surface models mostly ignore the issue, or mimic it with an infiltration-excess parameter or by lumping it into an effective K<sub>s</sub> that can exceed the matrix value ten-fold. The practical signature is tracer breakthrough much earlier than the piston-flow estimate, and soil moisture responding at depth before the layers above have wetted.</p>
+    <p><strong>Capillary rise</strong> is upward unsaturated flow from a water table driven by the matric gradient of a drying surface. Because K falls with height above the table, there is a maximum steady upward flux for a given water-table depth; Gardner (1958) solved the steady problem for K(h) = K<sub>s</sub> e<sup>αh</sup> and showed that the maximum flux declines steeply with depth to the table, so a water table at 1 m can supply several mm d⁻¹ in a silt loam but one at 3 m supplies almost nothing. This is why shallow groundwater sustains evapotranspiration in riparian zones and why models that lack a water table under-predict dry-season ET there.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem and land-surface models</h2>
+    <p>All models start from the water balance of a soil column, ΔS = P − ET − R − D (with lateral flow where relevant). They differ in how they divide S into layers and move water between them.</p>
+    <p><strong>Bucket and tipping-bucket models.</strong> Manabe's (1969) 15 cm bucket is the ancestor: one store with a capacity equal to plant-available water, ET reduced as the bucket empties, overflow as runoff. Multi-layer tipping buckets (Century/DayCent, most crop models such as DSSAT and APSIM, and the layered soil-water routines in BioCro) fill each layer to field capacity and cascade the excess to the layer below at a rate limited by a drainage coefficient; water below field capacity moves only by root uptake, and upward flow is ignored or handled by an ad hoc diffusion term. Their parameters are exactly θ<sub>FC</sub>, θ<sub>WP</sub>, θ<sub>s</sub> and a drainage rate, which pedotransfer functions supply from texture, and their behaviour is defensible for daily time steps in free-draining soils. They cannot represent ponding, capillary rise, water-table interactions, or the dynamics of a wetting front within a day.</p>
+    <p><strong>Richards-equation land-surface models.</strong> <strong>CLM5</strong> [18] solves a modified mixed-form Richards equation (Zeng and Decker 2009, which subtracts the hydrostatic equilibrium solution to avoid spurious fluxes) on 20 hydrologically active layers reaching 8.5 m, with a further 5 bedrock layers for heat to 49 m; hydraulic properties come from Clapp–Hornberger [16] curves with Cosby et al. (1984) [12] pedotransfer regressions from sand and clay fractions, modified for organic matter; the bottom is zero-flux with subsurface drainage computed from a water-table depth; infiltration excess and saturation excess both generate runoff. <strong>JULES</strong> uses four layers (0.1, 0.25, 0.65 and 2.0 m; 3 m total) with Darcy fluxes between them and a choice of van Genuchten or Brooks–Corey/Clapp–Hornberger functions, free drainage at the base and TOPMODEL-based saturation-excess runoff. <strong>Noah-MP</strong> uses four layers (0.1, 0.3, 0.6, 1.0 m) with the diffusivity form of Richards' equation and Clapp–Hornberger parameters, with options for free drainage or a simple groundwater store. <strong>ORCHIDEE</strong> (11 layers, 2 m) and <strong>HYDRUS-1D</strong> [15], the reference finite-element solver with van Genuchten–Mualem functions, hysteresis, root uptake, heat and solute transport, bracket the spectrum. A coarse vertical grid is itself a model assumption: with layers of 0.25–1 m a wetting front cannot be resolved, surface evaporation comes from a thick layer, and transpiration stress responds to a layer mean rather than to the dry zone around roots.</p>
+    <p><strong>Pedotransfer functions and uncertainty.</strong> Nobody measures θ(h) and K(h) at a grid cell, so models predict them from texture, bulk density and organic matter. <strong>Clapp and Hornberger (1978)</strong> [16] gave Brooks–Corey-type b, ψ<sub>s</sub>, K<sub>s</sub> and θ<sub>s</sub> by USDA class; <strong>Cosby et al. (1984)</strong> [12] regressed them on sand and clay percentages (the CLM default); <strong>Saxton and Rawls (2006)</strong> [11] predict θ at −33 and −1500 kPa and K<sub>s</sub> from sand, clay and organic matter, the standard for bucket models; ROSETTA (Schaap et al. 2001) predicts van Genuchten parameters by neural network. All have large errors: K<sub>s</sub> is log-normally distributed within a texture class with a coefficient of variation above 100%, and field K<sub>s</sub> with macropores can exceed core values ten-fold. Vereecken et al. (2016) [17] review why this parameter uncertainty, not the equation, dominates soil-model error, and ensemble studies find that swapping pedotransfer functions changes simulated ET, runoff and soil-moisture drought stress by as much as swapping entire land-surface models. For an ecosystem modeller the practical consequences are: the drought response of GPP depends on θ<sub>WP</sub> and the root-zone depth more than on anything else in the soil module; runoff partitioning depends on K<sub>s</sub> and the infiltration scheme; and calibrating soil hydraulic parameters against soil-moisture observations is often the single most effective step in a site-level setup.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Particle density ρ<sub>s</sub></td><td class="num">2.65 g cm⁻³</td><td>Quartz; lower for organic soils</td></tr>
+        <tr><td>Bulk density ρ<sub>b</sub></td><td class="num">1.1–1.6 g cm⁻³</td><td>&gt; 1.7 restricts roots; porosity φ = 1 − ρ<sub>b</sub>/ρ<sub>s</sub></td></tr>
+        <tr><td>Porosity φ</td><td class="num">0.35 (sand) – 0.55 (clay)</td><td>Clays have more, smaller pores</td></tr>
+        <tr><td>Head–pressure conversion</td><td class="num">1 kPa = 10.2 cm = 1 J kg⁻¹</td><td>1 MPa ≈ 102 m head</td></tr>
+        <tr><td>Field capacity</td><td class="num">−33 kPa = −337 cm = pF 2.5</td><td>−10 kPa (pF 2.0) for coarse soils; 2–3 days drainage</td></tr>
+        <tr><td>Permanent wilting point</td><td class="num">−1500 kPa = −15 300 cm = pF 4.2</td><td>Briggs &amp; Shantz sunflower</td></tr>
+        <tr><td>Capillary pore radius</td><td class="num">r (µm) ≈ 1500 / |h| (cm)</td><td>4.5 µm drains at FC; 0.1 µm at WP</td></tr>
+        <tr><td>Plant-available water</td><td class="num">60–90 (sand), 150–200 (loam, silt loam), 120–150 (clay) mm m⁻¹</td><td>θ<sub>FC</sub> − θ<sub>WP</sub> × depth</td></tr>
+        <tr><td>K<sub>s</sub> by texture</td><td class="num">713 (sand), 25 (loam), 11 (silt loam), 4.8 (clay) cm d⁻¹</td><td>Carsel &amp; Parrish [6]; 1 cm d⁻¹ = 0.42 mm h⁻¹</td></tr>
+        <tr><td>van Genuchten n</td><td class="num">2.7 (sand), 1.56 (loam), 1.09 (clay)</td><td>α: 0.145, 0.036, 0.008 cm⁻¹</td></tr>
+        <tr><td>K drop, saturation → WP</td><td class="num">4–6 orders of magnitude</td><td>Mualem–van Genuchten; K ∝ r²</td></tr>
+        <tr><td>Wetting-front suction ψ<sub>f</sub></td><td class="num">5 (sand), 9 (loam), 17 (silt loam), 32 (clay) cm</td><td>Rawls et al. 1983, for Green–Ampt</td></tr>
+        <tr><td>Root depth scale (Jackson β)</td><td class="num">β = 0.91–0.98 (Y = 1 − β<sup>d</sup>)</td><td>Jackson et al. 1996; ~50% of roots in top 10–30 cm</td></tr>
+        <tr><td>Feddes h₁…h₄</td><td class="num">−10, −25, −300…−1000, −15 000 cm</td><td>Stress function for uptake</td></tr>
+        <tr><td>Soil layers in models</td><td class="num">CLM5 20 (8.5 m); JULES 4 (3 m); Noah-MP 4 (2 m); ORCHIDEE 11 (2 m)</td><td>Bucket models: 1–10 layers to FC</td></tr>
+        <tr><td>K<sub>s</sub> uncertainty within a texture class</td><td class="num">CV &gt; 100% (log-normal)</td><td>Field K<sub>s</sub> up to 10× core K<sub>s</sub> with macropores</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Derive Richards' equation from first principles, state its three forms, and say when each fails.</summary><div class="a"><p>Mass conservation for a slab of thickness dz: the rate of change of stored water equals inflow minus outflow minus root extraction, ∂θ/∂t = −∂q/∂z − S. Darcy–Buckingham gives the flux as conductivity times the hydraulic-head gradient, q = −K(h) ∂(h + z)/∂z = −K(h)(∂h/∂z + 1) with z upward. Substituting: ∂θ/∂t = ∂/∂z[K(h)(∂h/∂z + 1)] − S. Two unknowns, θ and h, are linked by the retention curve θ(h). Keeping h gives the h-form, C(h)∂h/∂t = …, with C = dθ/dh the specific moisture capacity; it works in saturated and layered soils because h is continuous, but discretised versions lose mass because CΔh ≠ Δθ over a step. Keeping θ gives the θ-form, ∂θ/∂t = ∂/∂z[D ∂θ/∂z + K] with D = K/C; it is a conservation law and good for dry homogeneous soils but D → ∞ at saturation and θ jumps across layer interfaces. The mixed form keeps θ in the storage term and h in the flux term; discretised with Celia's modified Picard expansion it conserves mass and is valid everywhere, which is why HYDRUS and CLM use it. All forms share the nonlinearity of K and C varying by orders of magnitude.</p></div></details>
+    <details class="q"><summary>2. Sketch θ(h) and K(h) for a sand and a clay on log axes and explain the shapes physically. What do α and n in the van Genuchten model represent?</summary><div class="a"><p>θ(h): both curves start at θ<sub>s</sub> (clay higher, ~0.4–0.5 vs ~0.4 for sand). The sand stays near saturation until an air-entry head of a few tens of cm (pF 1–1.5), then drops steeply to a residual near 0.05 by pF 2.5, because its pores are uniform and large (r ≈ 1500/|h| µm: at pF 2 all pores above 15 µm have emptied). The clay declines gradually over the whole range to pF 4.2 and beyond, still holding ~0.2 at wilting point, because it has a broad distribution of small pores and adsorbed films. The curves cross: below about pF 2 the clay holds far more water. K(h): sand starts highest (K<sub>s</sub> ~700 cm d⁻¹, Poiseuille r²) but falls off a cliff as its big pores drain; clay starts two orders of magnitude lower but declines gently, so the curves cross near pF 2.5–3, after which the clay is more conductive. In van Genuchten, 1/α is the pressure head where the curve bends away from saturation (an air-entry scale, large α = coarse soil), and n is a pore-size uniformity index: large n (2–3) gives a step-like curve, n near 1 a very gradual one. m = 1 − 1/n is imposed to obtain the closed-form Mualem conductivity.</p></div></details>
+    <details class="q"><summary>3. Field capacity and wilting point are "operational" rather than physical quantities. Explain why, and how a modeller should use them.</summary><div class="a"><p>Field capacity is defined as the water content after drainage from saturation becomes negligible, but drainage never stops (Richards' equation has no steady state with free drainage), so the value depends on when you look, on the texture (sands drain fast, clays slowly), on the profile below (a water table or a fine layer slows drainage), and on evaporation during the wait. The conventions −33 kPa (US) or −10/−5 kPa (coarse soils, Europe) are compromises; for a sand the two differ by a factor of two in θ. Wilting point at −1500 kPa is the potential at which a specific test crop (sunflower) could not recover overnight; actual limits range from −1 MPa for sensitive crops to −5 MPa for desert shrubs, and depend on atmospheric demand because uptake is a flux, not an equilibrium. A modeller should use them as what they are: parameters of a bucket (capacity = θ<sub>FC</sub> − θ<sub>WP</sub> over the root depth) that need calibration, with the texture tables as priors, and should remember that a Richards model does not need them at all because drainage and stress emerge from K(h) and α(h).</p></div></details>
+    <details class="q"><summary>4. Derive the Green–Ampt infiltration equation and compare it with Philip's and Horton's. When does ponding occur under steady rain?</summary><div class="a"><p>Assume a sharp wetting front at depth L: saturated soil (θ<sub>s</sub>, K<sub>s</sub>) above, initial θ<sub>i</sub> below, constant suction ψ<sub>f</sub> at the front, negligible ponding depth. Darcy across the wetted zone: f = K<sub>s</sub>(H<sub>0</sub> + L + ψ<sub>f</sub>)/L ≈ K<sub>s</sub>(1 + ψ<sub>f</sub>/L). Cumulative infiltration F = LΔθ, so f = K<sub>s</sub>(1 + ψ<sub>f</sub>Δθ/F). Writing f = dF/dt and separating variables, ∫F dF/(F + ψ<sub>f</sub>Δθ) = K<sub>s</sub>t, which integrates to F − ψ<sub>f</sub>Δθ ln(1 + F/ψ<sub>f</sub>Δθ) = K<sub>s</sub>t, implicit in F. Limits: f → ∞ as t → 0 (capillary suction into a thin wetted zone), f → K<sub>s</sub> as t → ∞ (gravity only). Philip's series I = St<sup>1/2</sup> + At is an analytical solution of the θ-form Richards equation for the first terms; early time matches Green–Ampt with S² = 2K<sub>s</sub>ψ<sub>f</sub>Δθ, and A is between K<sub>s</sub>/3 and 2K<sub>s</sub>/3. Horton's exponential is purely empirical with three fitted constants and f<sub>c</sub> ≈ K<sub>s</sub>. Under rainfall i: all rain infiltrates while the capacity exceeds i; the capacity falls as F grows and equals i when F<sub>p</sub> = K<sub>s</sub>ψ<sub>f</sub>Δθ/(i − K<sub>s</sub>), at time t<sub>p</sub> = F<sub>p</sub>/i (Mein–Larson). Ponding and Hortonian runoff therefore require i &gt; K<sub>s</sub>, come later on drier soil (larger Δθ) and on soils with higher ψ<sub>f</sub>, and never occur if i ≤ K<sub>s</sub>.</p></div></details>
+    <details class="q"><summary>5. Why is Richards' equation difficult to solve numerically, and what does the Celia et al. (1990) scheme fix?</summary><div class="a"><p>Three sources of difficulty. (i) Nonlinearity: K(h) spans six orders of magnitude and C(h) is zero at saturation, peaks near −1/α and decays, so coefficients change by orders of magnitude across a wetting front and within a time step. (ii) Sharp fronts: infiltration into dry sand approaches a shock, demanding fine spatial resolution (cm) and, for explicit schemes, time steps set by Δz²/D that fall to seconds. (iii) Boundary switching: the surface alternates between flux and head conditions as it ponds or dries. Implicit schemes remove the stability limit but require solving a nonlinear system each step, by Picard (lagged coefficients, robust, linear convergence) or Newton (quadratic but fragile). The classical h-form discretisation C<sup>m</sup>(h<sup>n+1</sup> − h<sup>n</sup>)/Δt is not mass conservative because C evaluated at one iterate does not integrate the true Δθ; errors of 10–50% of the infiltrated water appear on sharp fronts and do not vanish at convergence. Celia et al. keep the storage term as (θ<sup>n+1,m</sup> − θ<sup>n</sup>)/Δt plus a linear correction C<sup>m</sup>δ for the iteration update δ = h<sup>m+1</sup> − h<sup>m</sup>; when δ → 0 the discrete equation reduces to the exact mass balance, so the scheme is conservative to iteration tolerance regardless of the nonlinearity. Combined with adaptive time stepping on iteration count, this is the standard modified Picard method in HYDRUS, CLM and the simulator on this page.</p></div></details>
+    <details class="q"><summary>6. Compare how a tipping-bucket model and CLM5 treat soil water. How would their simulated drought responses differ for a grassland on a loam?</summary><div class="a"><p>A tipping bucket divides the profile into layers with capacities set by θ<sub>FC</sub> and θ<sub>WP</sub> from a pedotransfer function; rain fills the top layer to field capacity, the excess cascades downward (daily), drainage below the root zone is lost, and ET is extracted from each layer in proportion to roots, reduced by a function of relative available water. There is no upward flow, no ponding unless all layers are full, and no dependence of drainage on current wetness beyond the FC threshold. CLM5 solves the mixed-form Richards equation on 20 layers to 8.5 m with Clapp–Hornberger functions from Cosby regressions, a zero-flux base with water-table-dependent drainage, infiltration-excess and saturation-excess runoff, and a plant-hydraulics uptake scheme driven by soil–root potential differences. Under a developing drought on a loam: the bucket holds water at FC until roots use it and stress begins at a fixed fraction of available water; CLM keeps draining slowly (K at FC is small but non-zero), can move water upward by capillarity and hydraulic redistribution to shallow roots, and reduces uptake through the leaf–root potential balance, so stress onset depends on K(h) and root conductance rather than on a threshold. Typically the Richards model shows earlier, more gradual stress and a wetter deep profile; the bucket shows a sharper transition. Both are dominated by root-zone depth and the hydraulic parameters: CLM's default Cosby curves for a loam give θ<sub>FC</sub> − θ<sub>WP</sub> that can differ from Saxton–Rawls by 30%, which matters more than the equation.</p></div></details>
+    <details class="q"><summary>7. Write down the Feddes root-uptake sink and explain its parameters. How does a plant-hydraulics scheme differ conceptually?</summary><div class="a"><p>S(z,t) = α(h) β(z) T<sub>p</sub>(t), with β(z) a normalised root-density profile (e.g. exponential or Jackson's 1 − β<sup>d</sup>) and α(h) a trapezoid: 0 above h₁ (≈ −10 cm; anaerobiosis), rising linearly to 1 at h₂ (−25 cm), 1 between h₂ and h₃ (−300 to −1000 cm, with h₃ less negative under high demand), falling linearly to 0 at h₄ (−15 000 cm, wilting). Actual transpiration is the depth integral of S. The sink is "macroscopic": it does not resolve the radial flow to individual roots or the drying of the rhizosphere, so uptake responds to the layer-mean h, and stress cannot be compensated between layers unless an extra rule is added. A plant-hydraulics scheme (CLM5 PHS, SPA, ED2-hydro) instead computes the flux from each layer as (ψ<sub>soil,i</sub> − ψ<sub>root</sub>)·g<sub>soil–root,i</sub>, with the conductance proportional to root length density and K(h<sub>i</sub>), and closes the system through stem and leaf conductances to a leaf water potential that regulates stomata. Uptake then shifts automatically to wetter layers, reverses at night (hydraulic redistribution), and stress is a continuous function of the whole soil–plant potential profile rather than a per-layer function of h.</p></div></details>
+    <details class="q"><summary>8. A site has 20% clay and 40% sand. Outline how a pedotransfer function turns that into model parameters, and discuss the uncertainty that results.</summary><div class="a"><p>Cosby et al. (1984) regress Clapp–Hornberger parameters on sand (S) and clay (C) percentages: e.g. b = 2.91 + 0.159C, θ<sub>s</sub> = 0.489 − 0.00126S, log<sub>10</sub>ψ<sub>s</sub> (cm) = 1.88 − 0.0131S, log<sub>10</sub>K<sub>s</sub> (in s⁻¹ or cm d⁻¹ depending on version) = −0.884 + 0.0153S, giving for this loam b ≈ 6.1, θ<sub>s</sub> ≈ 0.44, ψ<sub>s</sub> ≈ 23 cm and K<sub>s</sub> of order 10–30 cm d⁻¹ (confirm the coefficients before quoting). Saxton and Rawls (2006) instead give θ at −33 and −1500 kPa and K<sub>s</sub> from sand, clay and organic matter, which feed a bucket model directly. ROSETTA gives van Genuchten parameters. The uncertainty: within one texture class K<sub>s</sub> varies log-normally with CV above 100% and field (macropore) values exceed core values several-fold; retention parameters are better constrained (θ<sub>FC</sub> ± 0.03–0.05) but bulk density and organic matter, which the regressions handle poorly, shift them; and the functional form (Clapp–Hornberger versus van Genuchten) changes the shape near saturation. Consequences propagate to runoff partitioning (via K<sub>s</sub> and infiltration), to drought stress (via θ<sub>WP</sub> and the K(h) decline), and to deep drainage and nitrate leaching. Hence the recommendation of Vereecken et al. (2016): treat hydraulic parameters as uncertain, use ensembles or calibrate them to soil-moisture observations, and report sensitivity rather than a single set.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Richards LA (1931). Capillary conduction of liquids through porous mediums. <em>Physics</em> 1: 318–333. <a href="https://doi.org/10.1063/1.1745010">doi:10.1063/1.1745010</a><span class="why">The original derivation of the unsaturated flow equation from Darcy–Buckingham and continuity.</span></li>
+      <li>Buckingham E (1907). <em>Studies on the Movement of Soil Moisture</em>. USDA Bureau of Soils Bulletin 38, Washington DC. <span class="why">Introduced capillary potential and the dependence of conductivity on water content; the "Buckingham" in Darcy–Buckingham.</span></li>
+      <li>van Genuchten MTh (1980). A closed-form equation for predicting the hydraulic conductivity of unsaturated soils. <em>Soil Science Society of America Journal</em> 44: 892–898. <a href="https://doi.org/10.2136/sssaj1980.03615995004400050002x">doi:10.2136/sssaj1980.03615995004400050002x</a><span class="why">The θ(h) function and, with Mualem's model, the K(h) function used almost everywhere; one of the most-cited papers in soil science.</span></li>
+      <li>Brooks RH, Corey AT (1964). <em>Hydraulic Properties of Porous Media</em>. Hydrology Paper 3, Colorado State University, Fort Collins. <span class="why">Power-law retention and conductivity functions; the basis of the Clapp–Hornberger parameterisation.</span></li>
+      <li>Mualem Y (1976). A new model for predicting the hydraulic conductivity of unsaturated porous media. <em>Water Resources Research</em> 12: 513–522. <a href="https://doi.org/10.1029/WR012i003p00513">doi:10.1029/WR012i003p00513</a><span class="why">Derivation of K(S<sub>e</sub>) from the pore-size distribution; the l = 0.5 connectivity parameter.</span></li>
+      <li>Carsel RF, Parrish RS (1988). Developing joint probability distributions of soil water retention characteristics. <em>Water Resources Research</em> 24: 755–769. <a href="https://doi.org/10.1029/WR024i005p00755">doi:10.1029/WR024i005p00755</a><span class="why">The van Genuchten parameters by USDA texture class used in the explorers on this page and as HYDRUS defaults.</span></li>
+      <li>Celia MA, Bouloutas ET, Zarba RL (1990). A general mass-conservative numerical solution for the unsaturated flow equation. <em>Water Resources Research</em> 26: 1483–1496. <a href="https://doi.org/10.1029/WR026i007p01483">doi:10.1029/WR026i007p01483</a><span class="why">The modified Picard, mixed-form scheme; explains why the h-form loses mass and how to fix it.</span></li>
+      <li>Green WH, Ampt GA (1911). Studies on soil physics. Part I: The flow of air and water through soils. <em>Journal of Agricultural Science</em> 4: 1–24. <a href="https://doi.org/10.1017/S0021859600001441">doi:10.1017/S0021859600001441</a><span class="why">The piston-front infiltration model; with Mein &amp; Larson (1973) the standard event-scale infiltration formula.</span></li>
+      <li>Philip JR (1957). The theory of infiltration: 1. The infiltration equation and its solution. <em>Soil Science</em> 83: 345–357. <a href="https://doi.org/10.1097/00010694-195705000-00002">doi:10.1097/00010694-195705000-00002</a><span class="why">Series solution of the θ-form; defines sorptivity.</span></li>
+      <li>Feddes RA, Kowalik PJ, Zaradny H (1978). <em>Simulation of Field Water Use and Crop Yield</em>. Pudoc, Wageningen. <span class="why">The root water uptake sink and the trapezoidal stress function α(h) used in HYDRUS, SWAP and many crop models.</span></li>
+      <li>Saxton KE, Rawls WJ (2006). Soil water characteristic estimates by texture and organic matter for hydrologic solutions. <em>Soil Science Society of America Journal</em> 70: 1569–1578. <a href="https://doi.org/10.2136/sssaj2005.0117">doi:10.2136/sssaj2005.0117</a><span class="why">The most-used pedotransfer function for field capacity, wilting point and K<sub>s</sub> in bucket models.</span></li>
+      <li>Cosby BJ, Hornberger GM, Clapp RB, Ginn TR (1984). A statistical exploration of the relationships of soil moisture characteristics to the physical properties of soils. <em>Water Resources Research</em> 20: 682–690. <a href="https://doi.org/10.1029/WR020i006p00682">doi:10.1029/WR020i006p00682</a><span class="why">Regressions of Clapp–Hornberger parameters on sand and clay; the CLM default.</span></li>
+      <li>Hillel D (1998). <em>Environmental Soil Physics</em>. Academic Press, San Diego. <span class="why">Textbook for the whole page: three-phase system, potential, retention, flow, infiltration, evaporation.</span></li>
+      <li>Jury WA, Horton R (2004). <em>Soil Physics</em>, 6th ed. Wiley, Hoboken. <span class="why">Compact derivations of Richards' equation, Green–Ampt and Philip, with worked problems.</span></li>
+      <li>Šimůnek J, van Genuchten MTh, Šejna M (2016). Recent developments and applications of the HYDRUS computer software packages. <em>Vadose Zone Journal</em> 15(7). <a href="https://doi.org/10.2136/vzj2016.04.0033">doi:10.2136/vzj2016.04.0033</a><span class="why">The reference Richards solver: numerical scheme, boundary options, root uptake, hysteresis, dual-porosity.</span></li>
+      <li>Clapp RB, Hornberger GM (1978). Empirical equations for some soil hydraulic properties. <em>Water Resources Research</em> 14: 601–604. <a href="https://doi.org/10.1029/WR014i004p00601">doi:10.1029/WR014i004p00601</a><span class="why">Brooks–Corey-type parameters by texture class and the parabolic correction near saturation used in CLM and Noah.</span></li>
+      <li>Vereecken H, Schnepf A, Hopmans JW, et al. (2016). Modeling soil processes: review, key challenges, and new perspectives. <em>Vadose Zone Journal</em> 15(5). <a href="https://doi.org/10.2136/vzj2015.09.0131">doi:10.2136/vzj2015.09.0131</a><span class="why">Where soil modelling stands: parameter uncertainty, scale, preferential flow, coupling to ecosystem models.</span></li>
+      <li>Lawrence DM, Fisher RA, Koven CD, et al. (2019). The Community Land Model version 5: description of new features, benchmarking, and impact of forcing uncertainty. <em>Journal of Advances in Modeling Earth Systems</em> 11: 4245–4287. <a href="https://doi.org/10.1029/2018MS001583">doi:10.1029/2018MS001583</a><span class="why">How a modern land-surface model treats soil hydrology: layering, Richards' equation, plant hydraulics, runoff.</span></li>
+      <li>Best MJ, Pryor M, Clark DB, et al. (2011). The Joint UK Land Environment Simulator (JULES), model description – Part 1: Energy and water fluxes. <em>Geoscientific Model Development</em> 4: 677–699. <a href="https://doi.org/10.5194/gmd-4-677-2011">doi:10.5194/gmd-4-677-2011</a><span class="why">Four-layer soil hydrology and the van Genuchten / Brooks–Corey options in JULES.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="transpiration-penman-monteith.html">← Previous: Transpiration and Penman–Monteith</a><a href="drought-response-lai.html">Next: Drought Response and Leaf Area Index →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#phases">Three-phase system</a></li>
+      <li><a href="#potential">Water potential &amp; units</a></li>
+      <li><a href="#retention">Retention curve</a></li>
+      <li><a href="#darcy">Darcy &amp; conductivity</a></li>
+      <li><a href="#richards">Richards' equation</a></li>
+      <li><a href="#infiltration">Infiltration &amp; evaporation</a></li>
+      <li><a href="#roots">Roots, macropores, capillary rise</a></li>
+      <li><a href="#models">Connections to models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use van Genuchten–Mualem functions with Carsel &amp; Parrish (1988) parameters, l = 0.5, no hysteresis, and a 2 cm grid; they are built for intuition, not for site prediction.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function sci(x) { if (x === 0) return '0'; var e = Math.floor(Math.log10(Math.abs(x))); if (e >= -2 && e < 4) return fmt(x, e >= 2 ? 0 : (e >= 0 ? 1 : 3)); var m = x / Math.pow(10, e); return fmt(m, 2) + '×10' + sup(e); }
+  function sup(n) { var s = String(n), o = '', map = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' }; for (var i = 0; i < s.length; i++) o += map[s[i]] || s[i]; return o; }
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function fill(sel, items) { var s = document.getElementById(sel); items.forEach(function (it, i) { var o = document.createElement('option'); o.value = i; o.textContent = it.name; s.appendChild(o); }); }
+
+  /* ---------- soil hydraulic functions (van Genuchten–Mualem), cm and hours ---------- */
+  /* SOLVER-START */
+  var TEX = [
+    { name: 'Sand', tr: 0.045, ts: 0.43, al: 0.145, n: 2.68, Ks: 712.8 },
+    { name: 'Loamy sand', tr: 0.057, ts: 0.41, al: 0.124, n: 2.28, Ks: 350.2 },
+    { name: 'Sandy loam', tr: 0.065, ts: 0.41, al: 0.075, n: 1.89, Ks: 106.1 },
+    { name: 'Loam', tr: 0.078, ts: 0.43, al: 0.036, n: 1.56, Ks: 24.96 },
+    { name: 'Silt', tr: 0.034, ts: 0.46, al: 0.016, n: 1.37, Ks: 6.00 },
+    { name: 'Silt loam', tr: 0.067, ts: 0.45, al: 0.020, n: 1.41, Ks: 10.80 },
+    { name: 'Sandy clay loam', tr: 0.100, ts: 0.39, al: 0.059, n: 1.48, Ks: 31.44 },
+    { name: 'Clay loam', tr: 0.095, ts: 0.41, al: 0.019, n: 1.31, Ks: 6.24 },
+    { name: 'Silty clay loam', tr: 0.089, ts: 0.43, al: 0.010, n: 1.23, Ks: 1.68 },
+    { name: 'Sandy clay', tr: 0.100, ts: 0.38, al: 0.027, n: 1.23, Ks: 2.88 },
+    { name: 'Silty clay', tr: 0.070, ts: 0.36, al: 0.005, n: 1.09, Ks: 0.48 },
+    { name: 'Clay', tr: 0.068, ts: 0.38, al: 0.008, n: 1.09, Ks: 4.80 }
+  ];
+  function soil(p) { return { tr: p.tr, ts: p.ts, al: p.al, n: p.n, m: 1 - 1 / p.n, Ks: p.Ks, Ksh: p.Ks / 24 }; }
+  function vgTheta(h, p) { if (h >= 0) return p.ts; return p.tr + (p.ts - p.tr) * Math.pow(1 + Math.pow(Math.abs(p.al * h), p.n), -p.m); }
+  function vgSe(h, p) { return (vgTheta(h, p) - p.tr) / (p.ts - p.tr); }
+  function vgKrel(h, p) { if (h >= 0) return 1; var Se = clamp(vgSe(h, p), 1e-12, 1); var t = 1 - Math.pow(1 - Math.pow(Se, 1 / p.m), p.m); return Math.sqrt(Se) * t * t; }
+  function vgC(h, p) { if (h >= 0) return 0; var ah = Math.abs(p.al * h), an = Math.pow(ah, p.n); return p.al * p.m * p.n * (p.ts - p.tr) * Math.pow(ah, p.n - 1) * Math.pow(1 + an, -p.m - 1); }
+  function vgH(theta, p) { var Se = clamp((theta - p.tr) / (p.ts - p.tr), 1e-9, 1 - 1e-9); return -Math.pow(Math.pow(Se, -1 / p.m) - 1, 1 / p.n) / p.al; }
+
+  function feddes(h) { var h1 = -10, h2 = -25, h3 = -500, h4 = -15000; if (h >= h1 || h <= h4) return 0; if (h > h2) return (h1 - h) / (h1 - h2); if (h > h3) return 1; return (h - h4) / (h3 - h4); }
+
+  /* 1-D mixed-form Richards solver, z downward, cell-centred, modified Picard (Celia 1990).
+     CMIN is a floor on the specific capacity used only in the iteration matrix (a convergence aid near saturation,
+     where C -> 0 for fine soils); in the mixed form it does not change the converged, mass-conservative solution. */
+  var CMIN = 1e-2;
+  function Richards(opts) {
+    var N = opts.N || 50, L = opts.L || 100, dz = L / N, dz2 = dz * dz;
+    var S = { N: N, L: L, dz: dz, p: null, h: new Array(N), t: 0, dt: 1e-3, its: 0,
+      rain: 0, dur: 0, Tp: 0, Ep: 0, cumP: 0, cumI: 0, cumR: 0, cumD: 0, cumT: 0, cumE: 0, S0: 0, beta: new Array(N) };
+    var zr = 50, w = 0; for (var i = 0; i < N; i++) { var z = (i + 0.5) * dz; S.beta[i] = z < zr ? Math.exp(-z / 20) : 0; w += S.beta[i]; } for (i = 0; i < N; i++) S.beta[i] /= w;
+    S.setup = function (p, hInit, rain, dur, Tp, Ep) {
+      S.p = p; S.rain = rain / 10; S.dur = dur; S.Tp = Tp / 240; S.Ep = Ep / 240; /* mm/h -> cm/h ; mm/d -> cm/h */
+      for (var i = 0; i < N; i++) S.h[i] = hInit;
+      S.t = 0; S.dt = 1e-3; S.ponded = false; S.cumP = S.cumI = S.cumR = S.cumD = S.cumT = S.cumE = 0; S.S0 = S.storage(); S.its = 0;
+    };
+    S.setSoil = function (p) { /* keep theta, recompute h for new soil */ var th = S.theta(); S.p = p; for (var i = 0; i < N; i++) S.h[i] = vgH(clamp(th[i], p.tr + 1e-4, p.ts), p); };
+    S.theta = function () { var th = new Array(N); for (var i = 0; i < N; i++) th[i] = vgTheta(S.h[i], S.p); return th; };
+    S.storage = function () { var th = S.theta(), s = 0; for (var i = 0; i < N; i++) s += th[i]; return s * dz; };
+    S.rainAt = function (t) { return t < S.dur ? S.rain : 0; };
+    function evapFactor(h0) { var a = Math.log10(30000), b = Math.log10(3000); return clamp((a - Math.log10(Math.max(1, -h0))) / (a - b), 0, 1); }
+    /* one implicit step; returns {ok, its, dirichlet}; on success updates S.h */
+    S.tryStep = function (dt, dirichlet) {
+      var p = S.p, hOld = S.h, thOld = new Array(N), hm = hOld.slice(), i;
+      for (i = 0; i < N; i++) thOld[i] = vgTheta(hOld[i], p);
+      var rain = S.rainAt(S.t), Ep = rain > 0 ? 0 : S.Ep;
+      var th = new Array(N), C = new Array(N), K = new Array(N), Kint = new Array(N), sink = new Array(N);
+      var a = new Array(N), b = new Array(N), c = new Array(N), r = new Array(N), d = new Array(N);
+      var maxIt = 20, it, conv = false;
+      for (it = 0; it < maxIt; it++) {
+        for (i = 0; i < N; i++) { th[i] = vgTheta(hm[i], p); C[i] = hm[i] > -10 ? Math.max(vgC(hm[i], p), CMIN) : vgC(hm[i], p); K[i] = p.Ksh * vgKrel(hm[i], p); sink[i] = S.Tp * S.beta[i] * feddes(hm[i]) / dz; }
+        for (i = 0; i < N - 1; i++) Kint[i] = 0.5 * (K[i] + K[i + 1]);
+        var qtop = rain > 0 ? rain : -Ep * evapFactor(hm[0]);
+        for (i = 0; i < N; i++) {
+          var qdn = i < N - 1 ? Kint[i] * (1 - (hm[i + 1] - hm[i]) / dz) : K[N - 1];
+          var qup = i > 0 ? Kint[i - 1] * (1 - (hm[i] - hm[i - 1]) / dz) : qtop;
+          b[i] = C[i] / dt + (i < N - 1 ? Kint[i] / dz2 : 0) + (i > 0 ? Kint[i - 1] / dz2 : 0);
+          a[i] = i > 0 ? -Kint[i - 1] / dz2 : 0;
+          c[i] = i < N - 1 ? -Kint[i] / dz2 : 0;
+          r[i] = -(th[i] - thOld[i]) / dt - (qdn - qup) / dz - sink[i];
+        }
+        if (dirichlet) { b[0] = 1; c[0] = 0; r[0] = -hm[0]; }
+        /* Thomas algorithm */
+        var cp = new Array(N), dp = new Array(N);
+        cp[0] = c[0] / b[0]; dp[0] = r[0] / b[0];
+        for (i = 1; i < N; i++) { var den = b[i] - a[i] * cp[i - 1]; cp[i] = c[i] / den; dp[i] = (r[i] - a[i] * dp[i - 1]) / den; }
+        d[N - 1] = dp[N - 1]; for (i = N - 2; i >= 0; i--) d[i] = dp[i] - cp[i] * d[i + 1];
+        var okTol = true, bad = false;
+        for (i = 0; i < N; i++) {
+          if (!isFinite(d[i])) { bad = true; break; }
+          var dd = d[i], lim = 0.5 * Math.abs(hm[i]) + 20; if (Math.abs(dd) > lim) dd = dd > 0 ? lim : -lim; /* damped update */
+          var nh = clamp(hm[i] + dd, -1e7, 10);
+          if (Math.abs(nh - hm[i]) > 0.02 + 5e-4 * Math.abs(nh)) okTol = false;
+          hm[i] = nh;
+        }
+        if (bad) return { ok: false, its: it + 1 };
+        if (okTol) { conv = true; break; }
+      }
+      if (!conv) return { ok: false, its: it };
+      /* accept: fluxes with converged state */
+      for (i = 0; i < N; i++) { th[i] = vgTheta(hm[i], p); K[i] = p.Ksh * vgKrel(hm[i], p); }
+      var qbot = K[N - 1];
+      var T = 0; for (i = 0; i < N; i++) T += S.Tp * S.beta[i] * feddes(hm[i]);
+      var qin;
+      if (dirichlet) { var q01 = 0.5 * (K[0] + K[1]) * (1 - (hm[1] - hm[0]) / dz); qin = (th[0] - thOld[0]) * dz / dt + q01 + S.Tp * S.beta[0] * feddes(hm[0]); }
+      else qin = rain > 0 ? rain : -Ep * evapFactor(hm[0]);
+      return { ok: true, its: it + 1, h: hm, qin: qin, qbot: qbot, T: T, rain: rain, dirichlet: dirichlet };
+    };
+    S.advance = function (target) {
+      var guard = 0;
+      while (S.t < target - 1e-9 && guard++ < 20000) {
+        var dt = Math.min(S.dt, target - S.t);
+        if (S.t < S.dur && S.t + dt > S.dur) dt = S.dur - S.t;
+        var rainNow = S.rainAt(S.t), res;
+        if (rainNow > 0 && S.ponded) {
+          /* surface ponded: head condition, unless the soil could now take more than the rain */
+          res = S.tryStep(dt, true);
+          if (!res.ok || res.qin > rainNow * 1.05) { var rf = S.tryStep(dt, false); if (rf.ok) { S.ponded = false; res = rf; if (res.h[0] > 0) res.h[0] = 0; } }
+        } else {
+          res = S.tryStep(dt, false);
+          if (rainNow > 0 && (!res.ok || res.h[0] > 0.5)) {
+            var r2 = S.tryStep(dt, true);
+            if (r2.ok && r2.qin <= rainNow * 1.05) { res = r2; S.ponded = true; }
+          }
+          if (res.ok && !res.dirichlet && res.h[0] > 0) res.h[0] = 0; /* capacity ≈ rain: keep flux result, cap the surface at saturation (θ unchanged) */
+        }
+        if (!res.ok) { S.dt = dt * 0.4; if (S.dt < 1e-7) { S.dt = 1e-7; res = S.tryStep(S.dt, false); if (!res.ok) { S.t = target; break; } } else continue; }
+        S.h = res.h; S.t += dt; S.its = res.its;
+        S.cumP += res.rain * dt; S.cumI += Math.max(0, res.qin) * dt; S.cumE += Math.max(0, -res.qin) * dt;
+        S.cumR += Math.max(0, res.rain - Math.max(0, res.qin)) * dt; S.cumD += res.qbot * dt; S.cumT += res.T * dt;
+        if (res.its <= 5) S.dt = Math.min(dt * 1.4, 0.25); else if (res.its >= 10) S.dt = dt * 0.7; else S.dt = dt;
+      }
+    };
+    return S;
+  }
+  /* SOLVER-END */
+
+  /* ---------- generic chart helper ---------- */
+  function chart(svg, o) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var W = o.W || 640, H = o.H || 320, mL = o.mL || 58, mR = o.mR || 24, mT = o.mT || 16, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    function tx(v) { return o.xlog ? Math.log10(v) : v; } function ty(v) { return o.ylog ? Math.log10(v) : v; }
+    var x0 = tx(o.xmin), x1 = tx(o.xmax), y0 = ty(o.ymin), y1 = ty(o.ymax);
+    var sx = function (v) { return mL + (tx(v) - x0) / (x1 - x0) * pw; };
+    var sy = o.yflip ? function (v) { return mT + (ty(v) - y0) / (y1 - y0) * ph; } : function (v) { return mT + (y1 - ty(v)) / (y1 - y0) * ph; };
+    (o.yt || []).forEach(function (v) { var y = sy(v); svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: y, y2: y })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 7, y: y + 4, 'text-anchor': 'end' }, o.yf ? o.yf(v) : v)); });
+    (o.xt || []).forEach(function (v) { var x = sx(v); if (o.xgrid) svg.appendChild(el('line', { 'class': 'gridline', x1: x, x2: x, y1: mT, y2: mT + ph })); svg.appendChild(el('line', { 'class': 'ax', x1: x, x2: x, y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: x, y: mT + ph + 17, 'text-anchor': 'middle' }, o.xf ? o.xf(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xlabel) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xlabel));
+    if (o.ylabel) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(13,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylabel));
+    var ch = { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, xmin: o.xmin, xmax: o.xmax, ymin: o.ymin, ymax: o.ymax };
+    ch.cx = function (px) { var v = x0 + clamp((px - mL) / pw, 0, 1) * (x1 - x0); return o.xlog ? Math.pow(10, v) : v; };
+    ch.cy = function (py) { var f = clamp((py - mT) / ph, 0, 1); var v = o.yflip ? y0 + f * (y1 - y0) : y1 - f * (y1 - y0); return o.ylog ? Math.pow(10, v) : v; };
+    ch.path = function (pts, cls, extra) { var d = ''; pts.forEach(function (q, i) { var x = clamp(q[0], o.xmin, o.xmax), y = clamp(q[1], o.ymin, o.ymax); d += (i ? 'L' : 'M') + sx(x).toFixed(1) + ',' + sy(y).toFixed(1); }); var a = { 'class': 'ser ' + (cls || ''), d: d }; for (var k in (extra || {})) a[k] = extra[k]; var p = el('path', a); svg.appendChild(p); return p; };
+    ch.label = function (x, y, text, col, anchor) { svg.appendChild(el('text', { 'class': 'dl', x: x, y: y, fill: col || 'var(--fg)', 'text-anchor': anchor || 'start' }, text)); };
+    return ch;
+  }
+  /* hover: cb(xval, yval) -> {html, marks:[[x,y,color]]}; vertical crosshair unless horiz */
+  function hover(ch, tip, cb, horiz) {
+    var svg = ch.svg;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: ch.mT, y2: ch.mT + ch.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dots = []; for (var i = 0; i < 4; i++) { var d = el('circle', { r: 4, fill: 'var(--fg)', stroke: 'var(--surface)', 'stroke-width': 1.5, visibility: 'hidden' }); svg.appendChild(d); dots.push(d); }
+    var hit = el('rect', { x: ch.mL, y: ch.mT, width: ch.pw, height: ch.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = ch.cx(p.x), yv = ch.cy(p.y);
+      var out = cb(xv, yv); if (!out) return;
+      if (horiz) { xh.setAttribute('x1', ch.mL); xh.setAttribute('x2', ch.mL + ch.pw); xh.setAttribute('y1', p.y); xh.setAttribute('y2', p.y); }
+      else { xh.setAttribute('x1', ch.sx(xv)); xh.setAttribute('x2', ch.sx(xv)); }
+      xh.setAttribute('visibility', 'visible');
+      dots.forEach(function (d, i) { var m = out.marks && out.marks[i]; if (m && m[1] >= ch.ymin && m[1] <= ch.ymax && m[0] >= ch.xmin && m[0] <= ch.xmax) { d.setAttribute('cx', ch.sx(m[0])); d.setAttribute('cy', ch.sy(m[1])); d.setAttribute('fill', m[2] || 'var(--fg)'); d.setAttribute('visibility', 'visible'); } else d.setAttribute('visibility', 'hidden'); });
+      tip.innerHTML = out.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = Math.max(0, e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  var HT = [1, 10, 100, 1000, 10000, 100000];
+  function hTick(v) { return v >= 1000 ? '10' + sup(Math.round(Math.log10(v))) : String(v); }
+  var REFSOILS = [{ i: 0, c: 'var(--series-1)', t: 'sand' }, { i: 3, c: 'var(--series-2)', t: 'loam' }, { i: 11, c: 'var(--series-3)', t: 'clay' }];
+
+  /* ---------- Lab A: retention & conductivity explorer ---------- */
+  fill('rcTex', TEX);
+  var rcIds = ['rcTr', 'rcTs', 'rcA', 'rcN', 'rcK'], rc = {}; rcIds.forEach(function (id) { rc[id] = document.getElementById(id); });
+  var rcTex = document.getElementById('rcTex'); rcTex.value = 3;
+  function rcPreset() { var p = TEX[+rcTex.value]; rc.rcTr.value = p.tr; rc.rcTs.value = p.ts; rc.rcA.value = Math.log10(p.al).toFixed(3); rc.rcN.value = p.n; rc.rcK.value = Math.log10(p.Ks).toFixed(3); rcDraw(); }
+  rcTex.addEventListener('change', rcPreset);
+  function rcSoil() { var tr = +rc.rcTr.value, ts = Math.max(+rc.rcTs.value, tr + 0.05); return soil({ tr: tr, ts: ts, al: Math.pow(10, +rc.rcA.value), n: +rc.rcN.value, Ks: Math.pow(10, +rc.rcK.value) }); }
+  var H_FC = -337, H_FC10 = -102, H_WP = -15300;
+  function hRange() { var a = []; for (var e = 0; e <= 5.0001; e += 0.04) a.push(-Math.pow(10, e)); return a; }
+  function rcDraw() {
+    var p = rcSoil();
+    document.getElementById('rcTrO').textContent = fmt(p.tr, 3); document.getElementById('rcTsO').textContent = fmt(p.ts, 3);
+    document.getElementById('rcAO').textContent = fmt(+rc.rcA.value, 2) + ' (α = ' + fmt(p.al, 4) + ')'; document.getElementById('rcNO').textContent = fmt(p.n, 2);
+    document.getElementById('rcKO').textContent = fmt(+rc.rcK.value, 2) + ' (' + fmt(p.Ks, p.Ks < 10 ? 2 : 1) + ')';
+    var hs = hRange();
+    /* retention chart */
+    var ch = chart(document.getElementById('rcSvg'), { W: 640, H: 300, xlog: true, xmin: 1, xmax: 1e5, ymin: 0, ymax: 0.6, xt: HT, xf: hTick, yt: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6], yf: function (v) { return fmt(v, 1); }, xlabel: '|h| (cm of water, log scale)   ·   pF 0 → 5   ·   −0.1 kPa → −10 MPa', ylabel: 'θ (cm³ cm⁻³)' });
+    /* PAW band */
+    var band = 'M' + ch.sx(-H_FC) + ',' + ch.sy(0); for (var i = 0; i < hs.length; i++) { if (-hs[i] >= -H_FC && -hs[i] <= -H_WP) band += 'L' + ch.sx(-hs[i]).toFixed(1) + ',' + ch.sy(vgTheta(hs[i], p)).toFixed(1); }
+    band += 'L' + ch.sx(-H_WP) + ',' + ch.sy(0) + 'Z'; ch.svg.appendChild(el('path', { 'class': 'band', d: band }));
+    [[-H_FC10, '−10 kPa'], [-H_FC, 'FC −33 kPa'], [-H_WP, 'WP −1500 kPa']].forEach(function (m) { ch.svg.appendChild(el('line', { 'class': 'mark', x1: ch.sx(m[0]), x2: ch.sx(m[0]), y1: ch.mT, y2: ch.mT + ch.ph })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.sx(m[0]) + 3, y: ch.mT + 11 }, m[1])); });
+    var rlabs = [];
+    REFSOILS.forEach(function (rs) { var q = soil(TEX[rs.i]); ch.path(hs.map(function (h) { return [-h, vgTheta(h, q)]; }), 'ref', { stroke: rs.c }); rlabs.push({ t: rs.t, c: rs.c, y: ch.sy(vgTheta(-1e5, q)) - 4 }); });
+    rlabs.sort(function (a, b) { return a.y - b.y; }); for (var li = 1; li < rlabs.length; li++) if (rlabs[li].y - rlabs[li - 1].y < 12) rlabs[li].y = rlabs[li - 1].y + 12;
+    rlabs.forEach(function (L) { ch.label(ch.sx(1e5) - 4, Math.min(L.y, ch.mT + ch.ph - 2), L.t, L.c, 'end'); });
+    ch.path(hs.map(function (h) { return [-h, vgTheta(h, p)]; }), 'main');
+    hover(ch, document.getElementById('rcTip'), function (x) { var h = -x; return { html: '|h| <b>' + sci(x) + '</b> cm = <b>' + sci(x / 10.2) + '</b> kPa, pF <b>' + fmt(Math.log10(x), 2) + '</b><br>θ <b>' + fmt(vgTheta(h, p), 3) + '</b> · S<sub>e</sub> <b>' + fmt(vgSe(h, p), 3) + '</b> · C(h) <b>' + sci(vgC(h, p)) + '</b> cm⁻¹<br>largest water-filled pore r ≈ <b>' + sci(1500 / x) + '</b> µm', marks: [[x, vgTheta(h, p)]] }; });
+    /* conductivity chart */
+    var kc = chart(document.getElementById('kcSvg'), { W: 640, H: 260, xlog: true, ylog: true, xmin: 1, xmax: 1e5, ymin: 1e-6, ymax: 1e3, xt: HT, xf: hTick, yt: [1e-6, 1e-4, 1e-2, 1, 100], yf: function (v) { return '10' + sup(Math.round(Math.log10(v))); }, xlabel: '|h| (cm of water, log scale)', ylabel: 'K (cm d⁻¹, log)' });
+    [-H_FC, -H_WP].forEach(function (x) { kc.svg.appendChild(el('line', { 'class': 'mark', x1: kc.sx(x), x2: kc.sx(x), y1: kc.mT, y2: kc.mT + kc.ph })); });
+    REFSOILS.forEach(function (rs) { var q = soil(TEX[rs.i]); kc.path(hs.map(function (h) { return [-h, Math.max(1e-6, q.Ks * vgKrel(h, q))]; }), 'ref', { stroke: rs.c }); });
+    kc.path(hs.map(function (h) { return [-h, Math.max(1e-6, p.Ks * vgKrel(h, p))]; }), 'main');
+    kc.label(kc.sx(1e5) - 4, kc.mT + 12, 'Ks = ' + fmt(p.Ks, 1) + ' cm d⁻¹', 'var(--fg)', 'end');
+    hover(kc, document.getElementById('kcTip'), function (x) { var h = -x, K = p.Ks * vgKrel(h, p); return { html: '|h| <b>' + sci(x) + '</b> cm<br>K <b>' + sci(K) + '</b> cm d⁻¹ = <b>' + sci(K / 2.4) + '</b> mm h⁻¹<br>K/K<sub>s</sub> <b>' + sci(K / p.Ks) + '</b>', marks: [[x, Math.max(1e-6, K)]] }; });
+    /* readouts */
+    var fc10 = vgTheta(H_FC10, p), fc = vgTheta(H_FC, p), wp = vgTheta(H_WP, p);
+    document.getElementById('rcM').textContent = fmt(p.m, 3) + ' · ' + fmt(1 / p.al, 0);
+    document.getElementById('rcFC10').textContent = fmt(fc10, 3);
+    document.getElementById('rcFC').textContent = fmt(fc, 3);
+    document.getElementById('rcWP').textContent = fmt(wp, 3);
+    document.getElementById('rcPAW').textContent = fmt(fc - wp, 3) + ' = ' + fmt((fc - wp) * 1000, 0) + ' mm m⁻¹';
+    document.getElementById('rcDP').textContent = fmt(p.ts - fc, 3);
+    document.getElementById('rcKFC').textContent = sci(p.Ks * vgKrel(H_FC, p)) + ' cm d⁻¹';
+    document.getElementById('rcKWP').textContent = sci(p.Ks * vgKrel(H_WP, p)) + ' cm d⁻¹';
+    var html = '<thead><tr><th class="num">|h| (cm)</th><th class="num">kPa</th><th class="num">pF</th><th class="num">θ</th><th class="num">S<sub>e</sub></th><th class="num">K (cm d⁻¹)</th></tr></thead><tbody>';
+    [1, 10, 30, 100, 337, 1000, 3000, 10000, 15300, 100000].forEach(function (x) { html += '<tr><td class="num">' + x + '</td><td class="num">' + fmt(x / 10.2, 1) + '</td><td class="num">' + fmt(Math.log10(x), 1) + '</td><td class="num">' + fmt(vgTheta(-x, p), 3) + '</td><td class="num">' + fmt(vgSe(-x, p), 3) + '</td><td class="num">' + sci(p.Ks * vgKrel(-x, p)) + '</td></tr>'; });
+    document.getElementById('rcTable').innerHTML = html + '</tbody>';
+  }
+  rcIds.forEach(function (id) { rc[id].addEventListener('input', rcDraw); });
+  rcDraw();
+
+  /* ---------- Lab D: Darcy demonstration ---------- */
+  var dcIds = ['dcK', 'dcH', 'dcL', 'dcA', 'dcT'], dc = {}; dcIds.forEach(function (id) { dc[id] = document.getElementById(id); });
+  var DSOILS = [{ i: 0, c: 'var(--series-1)', t: 'sand' }, { i: 2, c: 'var(--series-2)', t: 'sandy loam' }, { i: 3, c: 'var(--series-3)', t: 'loam' }, { i: 11, c: 'var(--accent-2)', t: 'clay' }];
+  function dcDraw() {
+    var Ks = Math.pow(10, +dc.dcK.value), dH = +dc.dcH.value, L = +dc.dcL.value, A = +dc.dcA.value, th = +dc.dcT.value;
+    document.getElementById('dcKO').textContent = fmt(+dc.dcK.value, 2) + ' (' + fmt(Ks, Ks < 10 ? 2 : 1) + ')'; document.getElementById('dcHO').textContent = dH; document.getElementById('dcLO').textContent = L; document.getElementById('dcAO').textContent = A; document.getElementById('dcTO').textContent = fmt(th, 2);
+    var grad = dH / L, q = Ks * grad; /* cm/d */
+    var ch = chart(document.getElementById('dcSvg'), { W: 640, H: 320, xmin: 0, xmax: 3, ymin: 1e-2, ymax: 1e4, ylog: true, xt: [0, 0.5, 1, 1.5, 2, 2.5, 3], yt: [1e-2, 1e-1, 1, 10, 100, 1000, 1e4], yf: function (v) { return v >= 1 ? sci(v) : fmt(v, v < 0.1 ? 2 : 1); }, xlabel: 'Hydraulic gradient ΔH / L (dimensionless)', ylabel: 'Darcy flux q (cm d⁻¹, log)' });
+    ch.svg.appendChild(el('line', { 'class': 'mark', x1: ch.sx(1), x2: ch.sx(1), y1: ch.mT, y2: ch.mT + ch.ph })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.sx(1) + 3, y: ch.mT + 11 }, 'unit gradient: q = Ks'));
+    var gs = []; for (var g = 0.005; g <= 3.0001; g += 0.02) gs.push(g);
+    DSOILS.forEach(function (ds) { var K = TEX[ds.i].Ks; ch.path(gs.map(function (g) { return [g, K * g]; }), '', { stroke: ds.c }); ch.label(ch.sx(3) - 4, ch.sy(clamp(K * 3, 1e-2, 1e4)) - 5, ds.t, ds.c, 'end'); });
+    ch.path(gs.map(function (g) { return [g, Ks * g]; }), 'main');
+    if (grad > 0) { ch.svg.appendChild(el('circle', { cx: ch.sx(clamp(grad, 0, 3)), cy: ch.sy(clamp(q, 1e-2, 1e4)), r: 6, fill: 'var(--fg)', stroke: 'var(--surface)', 'stroke-width': 2 })); }
+    hover(ch, document.getElementById('dcTip'), function (x) { return { html: 'gradient <b>' + fmt(x, 2) + '</b><br>q = Ks·i: sand <b>' + sci(TEX[0].Ks * x) + '</b>, loam <b>' + sci(TEX[3].Ks * x) + '</b>, clay <b>' + sci(TEX[11].Ks * x) + '</b> cm d⁻¹<br>your soil <b>' + sci(Ks * x) + '</b> cm d⁻¹', marks: [[x, Math.max(1e-2, Ks * x)]] }; });
+    document.getElementById('dcI').textContent = fmt(grad, 3);
+    document.getElementById('dcKs').textContent = sci(Ks / 24) + ' cm h⁻¹';
+    document.getElementById('dcQ').textContent = sci(q) + ' cm d⁻¹';
+    document.getElementById('dcQ2').textContent = sci(q * 10) + ' mm d⁻¹';
+    document.getElementById('dcQ3').textContent = sci(q / 8.64e6) + ' m s⁻¹';
+    document.getElementById('dcQQ').textContent = sci(q * A / 24) + ' cm³ h⁻¹';
+    var v = q / th; document.getElementById('dcV').textContent = sci(v) + ' cm d⁻¹';
+    document.getElementById('dcTT').textContent = v > 0 ? (L / v < 1 ? fmt(L / v * 24, 1) + ' h' : fmt(L / v, 1) + ' d') : '∞ (no gradient)';
+    var html = '<thead><tr><th class="num">ΔH/L</th>'; DSOILS.forEach(function (ds) { html += '<th class="num">' + ds.t + ' (cm d⁻¹)</th>'; }); html += '<th class="num">your soil</th></tr></thead><tbody>';
+    [0.1, 0.25, 0.5, 1, 2, 3].forEach(function (g) { html += '<tr><td class="num">' + g + '</td>'; DSOILS.forEach(function (ds) { html += '<td class="num">' + sci(TEX[ds.i].Ks * g) + '</td>'; }); html += '<td class="num">' + sci(Ks * g) + '</td></tr>'; });
+    document.getElementById('dcTable').innerHTML = html + '</tbody>';
+  }
+  dcIds.forEach(function (id) { dc[id].addEventListener('input', dcDraw); });
+  dcDraw();
+
+  /* ---------- Lab C: Green–Ampt with Mein–Larson ponding ---------- */
+  var gaIds = ['gaK', 'gaPsi', 'gaDt', 'gaI'], ga = {}; gaIds.forEach(function (id) { ga[id] = document.getElementById(id); });
+  function gaF(t, Ks, PD) { /* cumulative infiltration (mm) after ponded time t (h), Ks mm/h, PD = psi*dtheta (mm) */ if (t <= 0) return 0; var F = Math.sqrt(2 * Ks * PD * t) + Ks * t; for (var k = 0; k < 60; k++) { var g = F - PD * Math.log(1 + F / PD) - Ks * t, dg = F / (F + PD); var Fn = F - g / dg; if (Fn <= 0) Fn = F / 2; if (Math.abs(Fn - F) < 1e-9) { F = Fn; break; } F = Fn; } return F; }
+  function gaDraw() {
+    var Ks = Math.pow(10, +ga.gaK.value), psi = +ga.gaPsi.value * 10, dth = +ga.gaDt.value, i = +ga.gaI.value, PD = psi * dth; /* mm */
+    document.getElementById('gaKO').textContent = fmt(+ga.gaK.value, 2) + ' (' + fmt(Ks, 1) + ')'; document.getElementById('gaPsiO').textContent = fmt(psi / 10, 1); document.getElementById('gaDtO').textContent = fmt(dth, 2); document.getElementById('gaIO').textContent = i;
+    var Fp = i > Ks ? Ks * PD / (i - Ks) : Infinity, tp = Fp / i; var ts = isFinite(Fp) ? (Fp - PD * Math.log(1 + Fp / PD)) / Ks : 0;
+    function Fr(t) { if (t <= tp) return i * t; return gaF(t - tp + ts, Ks, PD); }
+    function fr(t) { if (t < tp) return i; var F = Fr(t); return Ks * (1 + PD / F); }
+    function fpond(t) { var F = gaF(t, Ks, PD); return F > 0 ? Ks * (1 + PD / F) : 1e9; }
+    var T = 6, ts2 = []; for (var t = 0; t <= T + 1e-9; t += 0.02) ts2.push(t);
+    var ymax = Math.max(i * 1.4, Ks * 3, 10); ymax = Math.ceil(ymax / 10) * 10;
+    var ch = chart(document.getElementById('gaSvg'), { W: 640, H: 260, xmin: 0, xmax: T, ymin: 0, ymax: ymax, xt: [0, 1, 2, 3, 4, 5, 6], yt: [0, ymax / 4, ymax / 2, 3 * ymax / 4, ymax], yf: function (v) { return fmt(v, 0); }, xlabel: 'Time since rain began (h)', ylabel: 'Rate (mm h⁻¹)' });
+    if (isFinite(tp) && tp < T) { var d = 'M' + ch.sx(tp) + ',' + ch.sy(i); ts2.forEach(function (t) { if (t >= tp) d += 'L' + ch.sx(t).toFixed(1) + ',' + ch.sy(clamp(fr(t), 0, ymax)).toFixed(1); }); d += 'L' + ch.sx(T) + ',' + ch.sy(i) + 'Z'; ch.svg.appendChild(el('path', { d: d, fill: 'var(--accent-2)', opacity: 0.18 })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.sx(Math.min(T, tp + (T - tp) / 2)), y: ch.sy(i) - 6, 'text-anchor': 'middle' }, 'runoff = i − f')); ch.svg.appendChild(el('line', { 'class': 'mark', x1: ch.sx(tp), x2: ch.sx(tp), y1: ch.mT, y2: ch.mT + ch.ph })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.sx(tp) + 3, y: ch.mT + ch.ph - 6 }, 'ponding t = ' + fmt(tp, 2) + ' h')); }
+    ch.path(ts2.filter(function (t) { return t > 0.01; }).map(function (t) { return [t, fpond(t)]; }), 'ref', { stroke: 'var(--series-2)' });
+    ch.path([[0, i], [T, i]], '', { stroke: 'var(--series-1)' }); ch.label(ch.sx(T) - 4, ch.sy(i) - 5, 'rain i = ' + i, 'var(--series-1)', 'end');
+    ch.path(ts2.map(function (t) { return [t, fr(t)]; }), 'main');
+    ch.svg.appendChild(el('line', { 'class': 'mark', x1: ch.mL, x2: ch.mL + ch.pw, y1: ch.sy(Ks), y2: ch.sy(Ks) })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.mL + 4, y: ch.sy(Ks) - 4 }, 'Ks = ' + fmt(Ks, 1) + ' mm h⁻¹'));
+    hover(ch, document.getElementById('gaTip'), function (x) { return { html: 't <b>' + fmt(x, 2) + '</b> h<br>f <b>' + fmt(fr(x), 1) + '</b> mm h⁻¹ · ponded capacity <b>' + (x > 0 ? fmt(Math.min(fpond(x), 999), 1) : '∞') + '</b><br>F <b>' + fmt(Fr(x), 1) + '</b> mm · runoff so far <b>' + fmt(i * x - Fr(x), 1) + '</b> mm', marks: [[x, fr(x)], [x, x > 0 ? fpond(x) : ymax, 'var(--series-2)']] }; });
+    var Fmax = Math.max(i * T, 10), ymax2 = Math.ceil(Fmax / 20) * 20;
+    var cc = chart(document.getElementById('gcSvg'), { W: 640, H: 240, xmin: 0, xmax: T, ymin: 0, ymax: ymax2, xt: [0, 1, 2, 3, 4, 5, 6], yt: [0, ymax2 / 4, ymax2 / 2, 3 * ymax2 / 4, ymax2], yf: function (v) { return fmt(v, 0); }, xlabel: 'Time (h)', ylabel: 'Cumulative depth (mm)' });
+    if (isFinite(tp) && tp < T) { var d2 = ''; ts2.forEach(function (t, k) { d2 += (k ? 'L' : 'M') + cc.sx(t).toFixed(1) + ',' + cc.sy(clamp(i * t, 0, ymax2)).toFixed(1); }); for (var k2 = ts2.length - 1; k2 >= 0; k2--) d2 += 'L' + cc.sx(ts2[k2]).toFixed(1) + ',' + cc.sy(clamp(Fr(ts2[k2]), 0, ymax2)).toFixed(1); cc.svg.appendChild(el('path', { d: d2 + 'Z', fill: 'var(--accent-2)', opacity: 0.18 })); }
+    cc.path(ts2.map(function (t) { return [t, i * t]; }), '', { stroke: 'var(--series-1)' }); cc.label(cc.sx(T) - 4, cc.sy(clamp(i * T, 0, ymax2)) + 14, 'P = i·t', 'var(--series-1)', 'end');
+    cc.path(ts2.map(function (t) { return [t, gaF(t, Ks, PD)]; }), 'ref', { stroke: 'var(--series-2)' });
+    cc.path(ts2.map(function (t) { return [t, Fr(t)]; }), 'main'); cc.label(cc.sx(T) - 4, cc.sy(clamp(Fr(T), 0, ymax2)) - 6, 'F', 'var(--fg)', 'end');
+    hover(cc, document.getElementById('gcTip'), function (x) { return { html: 't <b>' + fmt(x, 2) + '</b> h<br>F <b>' + fmt(Fr(x), 1) + '</b> mm · P <b>' + fmt(i * x, 1) + '</b> mm<br>front depth F/Δθ <b>' + fmt(Fr(x) / dth / 10, 1) + '</b> cm', marks: [[x, Fr(x)], [x, i * x, 'var(--series-1)']] }; });
+    document.getElementById('gaS').textContent = fmt(Math.sqrt(2 * Ks * PD), 1) + ' mm h⁻¹ᐟ²';
+    document.getElementById('gaTp').textContent = isFinite(tp) ? fmt(Fp, 1) + ' mm · ' + (tp < 100 ? fmt(tp, 2) + ' h' : '> 100 h') : 'never (i ≤ Ks)';
+    document.getElementById('gaF1').textContent = fmt(Fr(1), 1) + ' mm';
+    document.getElementById('gaF6').textContent = fmt(Fr(6), 1) + ' mm · ' + fmt(i * 6 - Fr(6), 1) + ' mm';
+    document.getElementById('gaL').textContent = fmt(Fr(6) / dth / 10, 0) + ' cm';
+    document.getElementById('gaf6').textContent = fmt(fr(6), 1) + ' mm h⁻¹';
+    var html = '<thead><tr><th class="num">t (h)</th><th class="num">f (mm h⁻¹)</th><th class="num">F (mm)</th><th class="num">P (mm)</th><th class="num">runoff (mm)</th><th class="num">front (cm)</th></tr></thead><tbody>';
+    [0.25, 0.5, 1, 2, 3, 4, 5, 6].forEach(function (t) { html += '<tr><td class="num">' + t + '</td><td class="num">' + fmt(fr(t), 1) + '</td><td class="num">' + fmt(Fr(t), 1) + '</td><td class="num">' + fmt(i * t, 1) + '</td><td class="num">' + fmt(i * t - Fr(t), 1) + '</td><td class="num">' + fmt(Fr(t) / dth / 10, 1) + '</td></tr>'; });
+    document.getElementById('gaTable').innerHTML = html + '</tbody>';
+  }
+  gaIds.forEach(function (id) { ga[id].addEventListener('input', gaDraw); });
+  gaDraw();
+
+  /* ---------- Lab B: Richards simulation ---------- */
+  fill('rsTex', TEX);
+  var rsTex = document.getElementById('rsTex'); rsTex.value = 3;
+  var rsIds = ['rsRain', 'rsDur', 'rsInit', 'rsTp', 'rsEp'], rs = {}; rsIds.forEach(function (id) { rs[id] = document.getElementById(id); });
+  var sim = Richards({ N: 50, L: 100 }), T_END = 72, playing = false, raf = null, snaps = [], thInit = null, SNAP_EVERY = 6;
+  function rsOuts() { document.getElementById('rsRainO').textContent = rs.rsRain.value; document.getElementById('rsDurO').textContent = rs.rsDur.value; document.getElementById('rsInitO').textContent = fmt(+rs.rsInit.value, 2) + ' (h = −' + fmt(Math.pow(10, +rs.rsInit.value), 0) + ' cm)'; document.getElementById('rsTpO').textContent = rs.rsTp.value; document.getElementById('rsEpO').textContent = rs.rsEp.value; }
+  function rsReset(preroll) {
+    stop(); rsOuts();
+    sim.setup(soil(TEX[+rsTex.value]), -Math.pow(10, +rs.rsInit.value), +rs.rsRain.value, +rs.rsDur.value, +rs.rsTp.value, +rs.rsEp.value);
+    thInit = sim.theta(); snaps = [];
+    if (preroll === true) advanceTo(6);
+    rsDraw();
+  }
+  function rsApplyForcing() { sim.rain = +rs.rsRain.value / 10; sim.dur = +rs.rsDur.value; sim.Tp = +rs.rsTp.value / 240; sim.Ep = +rs.rsEp.value / 240; rsOuts(); }
+  function stop() { playing = false; if (raf) cancelAnimationFrame(raf); raf = null; document.getElementById('rsPlay').textContent = 'Play'; }
+  function advanceTo(target) { target = Math.min(target, T_END); var nextSnap = (snaps.length + 1) * SNAP_EVERY; while (nextSnap <= target + 1e-9) { sim.advance(nextSnap); snaps.push({ t: nextSnap, th: sim.theta() }); nextSnap += SNAP_EVERY; } sim.advance(target); }
+  function frame() { if (!playing) return; advanceTo(sim.t + 0.15); rsDraw(); if (sim.t >= T_END - 1e-9) { stop(); return; } raf = requestAnimationFrame(frame); }
+  document.getElementById('rsPlay').addEventListener('click', function () {
+    if (playing) { stop(); return; }
+    if (sim.t >= T_END - 1e-9) rsReset(false);
+    if (reduced) { advanceTo(T_END); rsDraw(); return; }
+    playing = true; document.getElementById('rsPlay').textContent = 'Pause'; raf = requestAnimationFrame(frame);
+  });
+  document.getElementById('rsStep').addEventListener('click', function () { stop(); if (sim.t >= T_END - 1e-9) return; advanceTo(sim.t + 1); rsDraw(); });
+  document.getElementById('rsReset').addEventListener('click', function () { rsReset(true); });
+  rsTex.addEventListener('change', function () { sim.setSoil(soil(TEX[+rsTex.value])); sim.dt = 1e-3; rsDraw(); });
+  rsIds.forEach(function (id) { rs[id].addEventListener('input', function () { if (id === 'rsInit') { rsReset(false); } else { rsApplyForcing(); rsDraw(); } }); });
+  function rsDraw() {
+    var p = sim.p, th = sim.theta(), N = sim.N, dz = sim.dz;
+    var ch = chart(document.getElementById('rsSvg'), { W: 640, H: 400, mT: 34, xmin: 0, xmax: 0.6, ymin: 0, ymax: 100, yflip: true, xt: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6], xf: function (v) { return fmt(v, 1); }, xgrid: true, yt: [0, 20, 40, 60, 80, 100], xlabel: 'Volumetric water content θ (cm³ cm⁻³)', ylabel: 'Depth (cm)' });
+    /* rain bar across the top */
+    var rain = sim.rainAt(sim.t);
+    ch.svg.appendChild(el('rect', { x: ch.mL, y: 6, width: ch.pw, height: 10, fill: 'var(--surface-2)', stroke: 'var(--line)' }));
+    if (rain > 0) ch.svg.appendChild(el('rect', { 'class': 'rainbar', x: ch.mL, y: 6, width: clamp(rain * 10 / 60, 0.02, 1) * ch.pw, height: 10 }));
+    ch.svg.appendChild(el('text', { 'class': 'note', x: ch.mL + ch.pw, y: 27, 'text-anchor': 'end' }, rain > 0 ? 'raining ' + fmt(rain * 10, 0) + ' mm h⁻¹' + (sim.cumR > 0 ? ' · ponded, runoff' : '') : 'no rain · evaporation ' + rs.rsEp.value + ' mm d⁻¹'));
+    ch.svg.appendChild(el('text', { 'class': 'note', x: ch.mL, y: 27 }, 't = ' + fmt(sim.t, 1) + ' h'));
+    /* saturation, FC, WP markers */
+    [[p.ts, 'θs'], [vgTheta(H_FC, p), 'FC'], [vgTheta(H_WP, p), 'WP']].forEach(function (m) { ch.svg.appendChild(el('line', { 'class': 'mark', x1: ch.sx(m[0]), x2: ch.sx(m[0]), y1: ch.mT, y2: ch.mT + ch.ph })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.sx(m[0]) + 3, y: ch.mT + ch.ph - 5 }, m[1])); });
+    /* root zone shading */
+    ch.svg.appendChild(el('rect', { x: ch.mL, y: ch.sy(0), width: 6, height: ch.sy(50) - ch.sy(0), fill: 'var(--accent)', opacity: 0.35 })); ch.svg.appendChild(el('text', { 'class': 'note', x: ch.mL + 9, y: ch.sy(48) }, 'roots'));
+    function prof(arr) { var pts = [[arr[0], 0]]; for (var i = 0; i < N; i++) pts.push([arr[i], (i + 0.5) * dz]); pts.push([arr[N - 1], 100]); return pts; }
+    if (thInit) ch.path(prof(thInit), 'init');
+    snaps.forEach(function (s) { ch.path(prof(s.th), 'trail'); });
+    ch.path(prof(th), 'main');
+    hover(ch, document.getElementById('rsTip'), function (x, y) { var i = clamp(Math.floor(y / dz), 0, N - 1); var h = sim.h[i]; return { html: 'depth <b>' + fmt((i + 0.5) * dz, 0) + '</b> cm<br>θ <b>' + fmt(th[i], 3) + '</b> · h <b>' + fmt(h, h < -100 ? 0 : 1) + '</b> cm (pF ' + fmt(Math.log10(Math.max(1, -h)), 2) + ')<br>K <b>' + sci(p.Ks * vgKrel(h, p)) + '</b> cm d⁻¹ · Feddes α <b>' + fmt(feddes(h), 2) + '</b>', marks: [[th[i], (i + 0.5) * dz]] }; }, true);
+    /* readouts (cm -> mm) */
+    var stor = sim.storage(), dS = (stor - sim.S0) * 10, mb = dS - (sim.cumI - sim.cumD - sim.cumT - sim.cumE) * 10;
+    document.getElementById('rsT').textContent = fmt(sim.t, 2) + ' · ' + fmt(sim.dt * 3600, 1) + ' · ' + sim.its;
+    document.getElementById('rsP').textContent = fmt(sim.cumP * 10, 1);
+    document.getElementById('rsI').textContent = fmt(sim.cumI * 10, 1);
+    document.getElementById('rsR').textContent = fmt(sim.cumR * 10, 1);
+    document.getElementById('rsD').textContent = fmt(sim.cumD * 10, 2);
+    document.getElementById('rsET').textContent = fmt(sim.cumT * 10, 2) + ' · ' + fmt(sim.cumE * 10, 2);
+    document.getElementById('rsS').textContent = (dS >= 0 ? '+' : '') + fmt(dS, 1);
+    document.getElementById('rsMB').textContent = fmt(mb, 3);
+    var wf = 0; if (thInit) { for (var i = 0; i < N; i++) if (th[i] - thInit[i] > 0.02) wf = (i + 1) * dz; }
+    document.getElementById('rsWF').textContent = wf > 0 ? fmt(wf, 0) : '—';
+    document.getElementById('rsStatus').textContent = sim.t >= T_END - 1e-9 ? 'Run complete (72 h). Reset or change the initial head to run again.' : (playing ? 'running…' : 'paused');
+    var html = '<thead><tr><th class="num">depth (cm)</th><th class="num">θ</th><th class="num">h (cm)</th><th class="num">K (cm d⁻¹)</th><th class="num">α(h)</th></tr></thead><tbody>';
+    for (var k = 0; k < N; k += 5) html += '<tr><td class="num">' + fmt((k + 0.5) * dz, 0) + '</td><td class="num">' + fmt(th[k], 3) + '</td><td class="num">' + fmt(sim.h[k], 0) + '</td><td class="num">' + sci(p.Ks * vgKrel(sim.h[k], p)) + '</td><td class="num">' + fmt(feddes(sim.h[k]), 2) + '</td></tr>';
+    document.getElementById('rsTable').innerHTML = html + '</tbody>';
+  }
+  rsReset(true);
+})();
+</script>
+</body>
+</html>

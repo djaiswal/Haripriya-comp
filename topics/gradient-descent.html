@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gradient Descent</title>
+<meta name="description" content="Gradient descent at comprehensive-exam depth: steepest descent, learning rates and convergence rates, conditioning and feature scaling, SGD and mini-batches, momentum, Nesterov, Adam, line search, Newton and quasi-Newton, automatic differentiation and adjoint-based calibration of ecosystem models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .cont { fill: none; stroke: var(--series-1); stroke-width: 1.1; }
+  .ch .path { fill: none; stroke: var(--series-2); stroke-width: 2; stroke-linejoin: round; }
+  .ch .path.alt { stroke: var(--series-3); }
+  .ch .path.alt2 { stroke: var(--accent-2); }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .mark { stroke: var(--surface); stroke-width: 2; }
+  .ch .ttl { font-size: 12.5px; font-weight: 600; }
+  .ch .step { stroke: var(--series-2); stroke-width: 1.6; fill: none; }
+  .chartbox { position: relative; }
+  .twoup { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 640px) { .twoup { grid-template-columns: 1fr; } }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .algo { font-family: var(--font-mono); font-size: 0.85rem; background: var(--surface-2); border-radius: 8px; padding: 0.6rem 0.9rem; overflow-x: auto; white-space: pre; margin: 0.5rem 0 1rem; }
+  .status { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.7rem; border-radius: 8px; background: var(--surface-2); margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Gradient descent</div>
+    <div class="eyebrow">Topic 4 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Gradient Descent</h1>
+    <p class="lead">The workhorse for every problem without a closed form: how the method is derived, when and how fast it converges, why conditioning and scaling decide its fate, and how its stochastic and accelerated variants, and adjoint gradients, are used to calibrate ecosystem models.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Gradient descent minimises a differentiable loss \(J(\theta)\) by repeatedly stepping against the gradient, \(\theta \leftarrow \theta - \eta\nabla J(\theta)\). The gradient is the direction of steepest ascent, so its negative is locally the fastest way down; the <strong>learning rate</strong> \(\eta\) decides how far to go. For a loss whose gradient changes at most at rate \(L\) (an \(L\)-smooth function) any \(\eta \lt 2/L\) decreases the loss, convex losses then converge at rate \(O(1/k)\), and strongly convex ones converge linearly, with the number of iterations proportional to the <strong>condition number</strong> \(\kappa = L/\mu\). Ill-conditioned problems (unscaled features, parameters of very different magnitudes) make the iterates zig-zag across a narrow valley; standardising features and log-transforming positive parameters is the first remedy, momentum, Nesterov acceleration and adaptive methods (AdaGrad, RMSProp, Adam) are the second, and second-order information (Newton, BFGS, Gauss–Newton) is the third. Stochastic gradient descent replaces the full gradient with a cheap unbiased estimate from a mini-batch, trading noise for speed and, in non-convex landscapes, using that noise to escape saddle points. In ecosystem modelling the same machinery calibrates FvCB and soil carbon parameters, trains emulators, and, through automatic differentiation and adjoint models, drives 4D-Var data assimilation in land-surface models.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to derive the update rule and the \(2/L\) stability bound, to explain in one sentence each what momentum, Nesterov and Adam change, to say why SGD works at all, and to compare gradient descent with Newton-type methods for a concrete calibration task. The ecosystem-specific follow-up is usually about adjoint gradients and non-identifiable parameters.</p></div>
+  </section>
+
+  <section id="gradient">
+    <h2>The gradient, steepest descent and the update rule</h2>
+    <p>For \(J:\mathbb{R}^p\to\mathbb{R}\) the gradient \(\nabla J(\theta) = (\partial J/\partial\theta_1,\dots,\partial J/\partial\theta_p)^\top\) collects the partial derivatives. The <strong>directional derivative</strong> along a unit vector \(d\) is the rate of change of \(J\) when moving in that direction,</p>
+    <div class="eq">$$D_d J(\theta) = \lim_{t\to0}\frac{J(\theta + td) - J(\theta)}{t} = \nabla J(\theta)^\top d = \lVert\nabla J\rVert\,\cos\angle(\nabla J, d).$$</div>
+    <p>By the Cauchy–Schwarz inequality this is largest when \(d\) points along \(\nabla J\) and smallest, equal to \(-\lVert\nabla J\rVert\), when \(d = -\nabla J/\lVert\nabla J\rVert\). The negative gradient is therefore the direction of <strong>steepest descent</strong> in the Euclidean norm (Cauchy 1847 [1]). Another route to the same conclusion: the first-order Taylor model \(J(\theta + \delta)\approx J(\theta) + \nabla J^\top\delta\) is minimised, over steps of fixed length, by \(\delta\propto-\nabla J\). Taking a step of length proportional to the gradient gives the update</p>
+    <div class="eq">$$\theta_{k+1} = \theta_k - \eta\,\nabla J(\theta_k), \qquad \eta > 0 .$$</div>
+    <p>The gradient is also perpendicular to the level sets of \(J\), so each step moves at right angles to the contour through the current point. That geometric fact is the source of the zig-zag you will see in the playground: on an elongated valley the perpendicular to the contour rarely points at the minimum.</p>
+    <p>The learning rate is the only tuning parameter of the plain method and it matters enormously. Too small and progress is glacial; too large and the iterates overshoot, oscillate, and finally diverge. The next section makes "too large" precise.</p>
+  </section>
+
+  <section id="convergence">
+    <h2>Convergence: smoothness, convexity and the condition number</h2>
+    <p>Say \(J\) is <strong>\(L\)-smooth</strong> if its gradient is Lipschitz, \(\lVert\nabla J(x) - \nabla J(y)\rVert\le L\lVert x-y\rVert\); for twice-differentiable \(J\) this means the largest Hessian eigenvalue is at most \(L\). Integrating the gradient along the segment from \(x\) to \(y\) gives the <strong>descent lemma</strong>, a quadratic upper bound:</p>
+    <div class="eq">$$J(y)\le J(x) + \nabla J(x)^\top(y-x) + \tfrac{L}{2}\lVert y-x\rVert^2 .$$</div>
+    <p>Put \(y = x - \eta\nabla J(x)\):</p>
+    <div class="eq">$$J(x_{k+1}) \le J(x_k) - \eta\Big(1 - \tfrac{L\eta}{2}\Big)\lVert\nabla J(x_k)\rVert^2 .$$</div>
+    <p>The loss decreases whenever \(0 \lt \eta \lt 2/L\), and the guaranteed decrease per step is largest at \(\eta = 1/L\), where it equals \(\lVert\nabla J\rVert^2/(2L)\). Summing over iterations shows that \(\min_{k\le K}\lVert\nabla J(x_k)\rVert^2 \le 2L(J(x_0) - J^*)/K\): even for non-convex \(J\), gradient descent finds a point with small gradient at rate \(O(1/\sqrt K)\).</p>
+
+    <h3>Convex: sublinear \(O(1/k)\)</h3>
+    <p>If \(J\) is also convex, the first-order condition \(J^* \ge J(x_k) + \nabla J(x_k)^\top(x^* - x_k)\) combines with the identity \(\lVert x_{k+1} - x^*\rVert^2 = \lVert x_k - x^*\rVert^2 - 2\eta\nabla J(x_k)^\top(x_k - x^*) + \eta^2\lVert\nabla J(x_k)\rVert^2\) and the descent lemma (with \(\eta\le 1/L\)) to give \(J(x_{k+1}) - J^* \le \frac{1}{2\eta}\big(\lVert x_k - x^*\rVert^2 - \lVert x_{k+1}-x^*\rVert^2\big)\). Telescoping over \(k\) steps and using that \(J(x_k)\) is non-increasing,</p>
+    <div class="eq">$$J(x_k) - J^* \;\le\; \frac{\lVert x_0 - x^*\rVert^2}{2\eta k} \;=\; \frac{L\lVert x_0 - x^*\rVert^2}{2k}\quad(\eta = 1/L).$$</div>
+    <p>To reach accuracy \(\varepsilon\) takes \(O(1/\varepsilon)\) iterations: slow, but independent of dimension.</p>
+
+    <h3>Strongly convex: linear rate and the condition number</h3>
+    <p>If \(J\) is additionally \(\mu\)-strongly convex (Hessian eigenvalues at least \(\mu\)), then with \(\eta = 1/L\)</p>
+    <div class="eq">$$J(x_k) - J^* \le \Big(1 - \frac{\mu}{L}\Big)^k\big(J(x_0) - J^*\big) = \Big(1-\frac1\kappa\Big)^k\big(J(x_0)-J^*\big),\qquad \kappa = \frac{L}{\mu}.$$</div>
+    <p>The error shrinks by a constant factor per step ("linear" convergence, on a log scale a straight line), and reaching \(\varepsilon\) takes about \(\kappa\log(1/\varepsilon)\) iterations. The condition number \(\kappa\), the ratio of the largest to the smallest curvature, is the whole story: \(\kappa = 1\) (a round bowl) converges in one step, \(\kappa = 10^4\) needs tens of thousands.</p>
+
+    <div class="keybox"><h3>The quadratic case, solved exactly</h3>
+      <p>For \(J(x) = \tfrac12 x^\top A x - b^\top x\) with \(A\) symmetric positive definite, \(\nabla J = Ax - b\), \(x^* = A^{-1}b\), and the iteration is linear: \(x_{k+1} - x^* = (I - \eta A)(x_k - x^*)\). In the eigenbasis of \(A\) each component of the error is multiplied by \(1 - \eta\lambda_i\) per step. Convergence needs \(|1 - \eta\lambda_i| \lt 1\) for every eigenvalue, i.e. \(\eta \lt 2/\lambda_{\max} = 2/L\). At \(\eta\) just below \(2/L\) the stiffest component flips sign each step (oscillation, slowly damped); at \(\eta = 1/L\) it is killed in one step while the softest component shrinks only by \(1 - \mu/L\). The best fixed step balances the two: \(\eta^* = 2/(\lambda_{\min}+\lambda_{\max})\) with contraction \((\kappa-1)/(\kappa+1)\). Everything in the playground below is a non-quadratic version of this picture.</p></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Learning-rate explorer on a 1-D quadratic</h3><span class="small muted">\(J(x) = \tfrac{L}{2}x^2\), \(L = 2\)</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="twoup">
+            <div class="chartbox figwrap"><svg class="ch" id="lrPar" viewBox="0 0 400 300" role="img" aria-label="Parabola with gradient-descent steps drawn as a staircase for the chosen learning rate"></svg></div>
+            <div class="chartbox figwrap"><svg class="ch" id="lrSeq" viewBox="0 0 400 300" role="img" aria-label="Iterate value versus iteration number for the chosen learning rate"></svg></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">J(x)</span><span style="--c:var(--series-2)">iterates x₀ … x₁₂</span></div>
+          <div class="status" id="lrStatus"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="lrTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lrEta"><span>Learning rate \(\eta\)</span><output id="lrEtaO">0.30</output></label><input type="range" id="lrEta" min="0.01" max="1.15" step="0.01" value="0.3"></div>
+          <div class="ctrl"><label for="lrX0"><span>Start \(x_0\)</span><output id="lrX0O">2.0</output></label><input type="range" id="lrX0" min="-2.5" max="2.5" step="0.1" value="2"></div>
+          <dl class="readout">
+            <dt>\(1/L\) · \(2/L\)</dt><dd>0.50 · 1.00</dd>
+            <dt>Contraction factor \(1 - \eta L\)</dt><dd id="lrFac"></dd>
+            <dt>\(|x_{12}|\)</dt><dd id="lrX12"></dd>
+            <dt>Steps to \(|x| \lt 10^{-3}\)</dt><dd id="lrN"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: \(\eta = 0.1\) (slow monotone descent), \(0.5 = 1/L\) (one step to the minimum), \(0.8\) (overshoot, damped oscillation), \(1.0 = 2/L\) (oscillates forever between \(\pm x_0\)), \(1.1\) (divergence). The same thresholds apply to the stiffest eigen-direction of any quadratic, which is why \(L\) alone sets the usable step.</p>
+    </div>
+
+    <h3>Zig-zag, ill-conditioning and feature scaling</h3>
+    <p>In linear regression \(J(\beta) = \tfrac{1}{2n}\lVert y - X\beta\rVert^2\) the Hessian is \(X^\top X/n\), so \(L\) and \(\mu\) are its largest and smallest eigenvalues and \(\kappa = \kappa(X)^2\). If one predictor is photosynthetic photon flux in µmol m⁻² s⁻¹ (values of order \(10^3\)) and another is soil water content as a fraction (order \(10^{-1}\)), their variances differ by eight orders of magnitude, the loss contours are needles, and the step size that is stable for the PPFD coefficient is uselessly small for the moisture coefficient. The iterates bounce across the needle, making little progress along it. <strong>Standardising</strong> each column to zero mean and unit variance brings the eigenvalues within a factor of \((1+\rho)/(1-\rho)\) of each other, where \(\rho\) is the correlation between predictors; correlation is the part scaling cannot fix (ridge or whitening can). For nonlinear models the analogue is to optimise \(\log V_{cmax}\), \(\log K_s\), \(\log k_{decay}\) rather than the raw parameters: positive parameters spanning decades become \(O(1)\), the constraint \(\theta>0\) is enforced automatically, and the loss surface is usually closer to quadratic in log space.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 4 · Feature scaling: the same regression, unscaled vs standardised</h3><span class="small muted">GD with \(\eta = c\cdot 2/L\) on each surface</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="twoup">
+            <div class="chartbox figwrap"><svg class="ch" id="scRaw" viewBox="0 0 400 320" role="img" aria-label="Loss contours and gradient descent path for regression on unscaled temperature and VPD predictors"></svg></div>
+            <div class="chartbox figwrap"><svg class="ch" id="scStd" viewBox="0 0 400 320" role="img" aria-label="Loss contours and gradient descent path for the same regression on standardised predictors"></svg></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">loss contours</span><span style="--c:var(--series-2)">GD path from (0, 0)</span><span style="--c:var(--fg)">closed-form minimum</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="scTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="scRho"><span>Correlation between T and VPD, \(\rho\)</span><output id="scRhoO">0.60</output></label><input type="range" id="scRho" min="0" max="0.95" step="0.01" value="0.6"></div>
+          <div class="ctrl"><label for="scC"><span>Step as a fraction of \(2/L\), \(c\)</span><output id="scCO">0.50</output></label><input type="range" id="scC" min="0.05" max="0.99" step="0.01" value="0.5"></div>
+          <dl class="readout">
+            <dt>\(\kappa\) unscaled · standardised</dt><dd id="scK"></dd>
+            <dt>Eigenvalues of \(X^\top X/n\), unscaled</dt><dd id="scEigR"></dd>
+            <dt>Eigenvalues, standardised</dt><dd id="scEigS"></dd>
+            <dt>Iterations to \(J - J^* \lt 10^{-6}J^*\)</dt><dd id="scIt"></dd>
+            <dt>Predicted \(\kappa\log(10^6)\)</dt><dd id="scPred"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">\(n = 150\) seeded half-hourly records: soil temperature \(T\) (sd ≈ 5 °C) and vapour-pressure deficit \(D\) (sd ≈ 0.5 kPa), response \(y = 0.5T + 4D + \varepsilon\), all variables centred so the intercept drops out and the loss is a function of \((\beta_T, \beta_D)\) alone. The unscaled Hessian has eigenvalues in the ratio of the variances (about 100:1) made worse by correlation; standardising leaves only the correlation. Suggested experiments: set \(\rho = 0\) and see that scaling alone makes the problem perfectly conditioned; set \(\rho = 0.95\) and note that both panels now need many iterations; push \(c\to 0.99\) to see oscillation along the stiff axis.</p>
+    </div>
+  </section>
+
+  <section id="variants">
+    <h2>Stochastic, mini-batch, momentum and adaptive variants</h2>
+    <h3>Batch, stochastic and mini-batch gradients</h3>
+    <p>An empirical risk is an average, \(J(\theta) = \frac1n\sum_{i=1}^n \ell_i(\theta)\), so its gradient is an average of per-observation gradients. <strong>Batch</strong> gradient descent uses all \(n\) terms each step: cost \(O(n)\) per step, exact direction. <strong>Stochastic gradient descent</strong> (SGD) picks one index \(i\) at random and steps along \(\nabla\ell_i\). Because \(\mathbb{E}_i[\nabla\ell_i(\theta)] = \nabla J(\theta)\) this is an <strong>unbiased</strong> estimate of the gradient, with variance \(\sigma^2(\theta) = \frac1n\sum_i\lVert\nabla\ell_i - \nabla J\rVert^2\). A <strong>mini-batch</strong> of \(B\) indices averages \(B\) such estimates, reducing the variance to \(\sigma^2/B\) at cost \(O(B)\): the standard compromise, and the one that exploits vectorised hardware. Robbins and Monro (1951) [2] proved convergence of the stochastic iteration under a decreasing step sequence satisfying</p>
+    <div class="eq">$$\sum_{t=1}^\infty \eta_t = \infty, \qquad \sum_{t=1}^\infty \eta_t^2 \lt \infty,$$</div>
+    <p>for example \(\eta_t = \eta_0/t\) or \(\eta_0/\sqrt t\): the steps must be large enough in total to get anywhere, but shrink fast enough that the gradient noise is eventually averaged out. With a constant step SGD converges only to a noise ball of radius \(\propto\eta\sigma\) around the optimum, which is why schedules (step decay, cosine, warm restarts, "reduce on plateau") exist. Rates: \(O(1/\sqrt k)\) for convex, \(O(1/k)\) for strongly convex objectives, versus \(O(1/k)\) and linear for batch GD, but each SGD step is \(n/B\) times cheaper, and for large redundant datasets a single pass of SGD typically beats many passes of batch GD (Bottou, Curtis &amp; Nocedal 2018 [8]).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · SGD vs mini-batch vs batch on a 200-point regression</h3><span class="small muted">Hover for values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="ch" id="sgdSvg" viewBox="0 0 640 360" role="img" aria-label="Training loss versus epoch for batch sizes 1, 10, 50 and 200"></svg><div class="chart-tip" id="sgdTip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--series-2)">B = 1 (SGD)</span><span style="--c:var(--series-3)">B = 10</span><span style="--c:var(--series-1)">B = 50</span><span style="--c:var(--fg)">B = 200 (batch GD)</span><span style="--c:var(--muted)">OLS minimum</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="sgdTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sgEta"><span>Learning rate \(\eta_0\)</span><output id="sgEtaO">0.05</output></label><input type="range" id="sgEta" min="0.005" max="0.5" step="0.005" value="0.05"></div>
+          <div class="ctrl"><label for="sgEp"><span>Epochs</span><output id="sgEpO">30</output></label><input type="range" id="sgEp" min="2" max="80" step="1" value="30"></div>
+          <div class="ctrl"><label for="sgSch"><span>Schedule</span></label><select id="sgSch"><option value="const">constant η₀</option><option value="inv">η₀ / (1 + t/τ), τ = 200 updates</option><option value="sqrt">η₀ / √(1 + t/τ)</option></select></div>
+          <dl class="readout">
+            <dt>Final MSE, B = 1 · 10</dt><dd id="sgF1"></dd>
+            <dt>Final MSE, B = 50 · 200</dt><dd id="sgF2"></dd>
+            <dt>OLS minimum MSE</dt><dd id="sgMin"></dd>
+            <dt>Gradient evaluations per epoch</dt><dd>200 for every B</dd>
+            <dt>Updates per epoch, B = 1 · 10 · 50 · 200</dt><dd>200 · 20 · 4 · 1</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model \(y = \beta_0 + \beta_1 T + \beta_2\theta_{soil}\) with standardised predictors; the loss is evaluated on all 200 points after every update and plotted against fractional epochs (log axis). Suggested experiments: with a constant step, note that B = 1 drops fastest in the first epoch but then rattles in a noise band whose width grows with \(\eta_0\), while batch GD descends smoothly but slowly; switch to the \(1/t\) schedule and watch the noise band shrink; set \(\eta_0 = 0.5\) to see SGD diverge before batch GD does, because single-sample gradients have a larger effective \(L\).</p>
+    </div>
+
+    <h3>Momentum and Nesterov acceleration</h3>
+    <p>Polyak's <strong>heavy ball</strong> (1964) [3] adds inertia: the step is a decaying sum of past gradients,</p>
+    <div class="eq">$$v_{k+1} = \beta v_k - \eta\nabla J(\theta_k), \qquad \theta_{k+1} = \theta_k + v_{k+1}, \qquad \beta\in[0,1),\ \text{typically } 0.9 .$$</div>
+    <p>Along a long valley the gradients point consistently and the velocity builds up to \(\eta\lVert\nabla J\rVert/(1-\beta)\), ten times the plain step for \(\beta = 0.9\); across the valley they alternate in sign and cancel. For quadratics the optimal \(\beta\) and \(\eta\) give the contraction \((\sqrt\kappa - 1)/(\sqrt\kappa+1)\) per step, so the iteration count scales as \(\sqrt\kappa\) instead of \(\kappa\): for \(\kappa = 10^4\), a hundred-fold saving. <strong>Nesterov's accelerated gradient</strong> (1983) [4] evaluates the gradient at the look-ahead point \(\theta_k + \beta v_k\) rather than at \(\theta_k\):</p>
+    <div class="eq">$$v_{k+1} = \beta v_k - \eta\nabla J(\theta_k + \beta v_k), \qquad \theta_{k+1} = \theta_k + v_{k+1}.$$</div>
+    <p>The correction lets the method "brake" before overshooting and gives the provably optimal \(O(1/k^2)\) rate for smooth convex functions among first-order methods (versus \(O(1/k)\) for plain GD), and the \(\sqrt\kappa\) dependence for strongly convex ones without the heavy ball's occasional failures on non-quadratic functions.</p>
+
+    <h3>Adaptive step sizes: AdaGrad, RMSProp, Adam</h3>
+    <p>These methods give each coordinate its own learning rate, scaled by the history of that coordinate's gradients, which is a cheap, diagonal approximation to preconditioning by the Hessian. <strong>AdaGrad</strong> (Duchi, Hazan &amp; Singer 2011 [7]) accumulates squared gradients, \(G_{k} = G_{k-1} + g_k^2\) (elementwise), and steps \(\theta \leftarrow \theta - \eta\, g_k/(\sqrt{G_k} + \epsilon)\): rarely-updated coordinates get large steps, frequently-updated ones small steps, ideal for sparse features but the accumulated sum only grows, so the effective step decays to zero. <strong>RMSProp</strong> (Hinton, unpublished lecture notes) replaces the sum by an exponential moving average, \(G_k = \rho G_{k-1} + (1-\rho)g_k^2\), which forgets. <strong>Adam</strong> (Kingma &amp; Ba 2015 [6]) combines a momentum-like first moment with the RMSProp second moment and corrects both for their initialisation at zero:</p>
+    <div class="eq">$$\begin{aligned} m_k &= \beta_1 m_{k-1} + (1-\beta_1)g_k, & v_k &= \beta_2 v_{k-1} + (1-\beta_2)g_k^2 \quad(\text{elementwise}),\\ \hat m_k &= \frac{m_k}{1-\beta_1^k}, & \hat v_k &= \frac{v_k}{1-\beta_2^k}, \qquad \theta_{k+1} = \theta_k - \eta\,\frac{\hat m_k}{\sqrt{\hat v_k}+\epsilon}. \end{aligned}$$</div>
+    <p>Defaults \(\beta_1 = 0.9\), \(\beta_2 = 0.999\), \(\epsilon = 10^{-8}\), \(\eta = 10^{-3}\). The <strong>bias correction</strong> matters because \(m_1 = (1-\beta_1)g_1 = 0.1 g_1\) and \(v_1 = 0.001 g_1^2\) badly underestimate the true moments; dividing by \(1 - \beta^k\) (which is \(0.1\) and \(0.001\) at \(k=1\), approaching 1 later) removes that start-up bias so the first steps have sensible size \(\approx\eta\). Because the update is roughly \(\eta\cdot\mathrm{sign}(g)\) in each coordinate, Adam is almost scale-invariant and forgiving of poorly scaled parameters, which is why it is the default for neural networks and for differentiable process models with heterogeneous parameters. The cost is that it does not converge to the exact minimiser without a decaying \(\eta\), and on some convex problems the original Adam fails to converge at all (Reddi et al. 2018 proposed AMSGrad as a fix). Ruder (2016) [9] is a compact survey of all of these.</p>
+
+    <h3>Schedules and warm restarts</h3>
+    <p>A step that is good early is too large late. Common schedules: step decay (divide by 10 every \(m\) epochs), exponential, \(1/t\), cosine annealing from \(\eta_0\) to near zero, and <strong>warm restarts</strong> (SGDR: cosine schedule restarted from \(\eta_0\) every \(T\) epochs, each restart kicking the iterate out of a sharp minimum into a possibly wider one). Learning-rate <em>warm-up</em> (a few hundred steps of increasing \(\eta\)) is standard with Adam on large networks, where the second-moment estimate is unreliable at the start.</p>
+  </section>
+
+  <section id="playground">
+    <h2>The playground: optimisers on four surfaces</h2>
+    <p>Everything above is easiest to internalise by watching. The surfaces: a rotated quadratic bowl whose condition number you control; the Rosenbrock banana \((1-x)^2 + 100(y-x^2)^2\), a curved valley with \(\kappa\) in the thousands near the minimum; a two-minimum function \((x^2-1)^2 + 0.3x + 0.5y^2\) with a saddle at the origin; and the least-squares surface of a Michaelis–Menten fit in \((V_{max}, K_m)\), whose two parameters have different units and scales, exactly the situation of an FvCB or soil-enzyme calibration.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · Gradient-descent playground</h3><div class="steps"><button class="btn small primary" id="pgRun" type="button">Run / replay</button><span class="small muted">or click the map to set the start</span></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="ch" id="pgSvg" viewBox="0 0 640 480" role="img" aria-label="Contour map of the selected loss surface with the optimiser's path animated from the start point"></svg><div class="chart-tip" id="pgTip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--series-1)">loss contours (quantile levels)</span><span style="--c:var(--series-2)">optimiser path</span><span style="--c:var(--fg)">global minimum</span></div>
+          <div class="status" id="pgStatus"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values (every k-th iterate)</summary><div class="tablewrap"><table id="pgTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="pgSurf"><span>Surface</span></label><select id="pgSurf"><option value="quad">Quadratic bowl (κ adjustable)</option><option value="rosen">Rosenbrock banana</option><option value="two">Two minima + saddle</option><option value="mm">Michaelis–Menten SSE in (Vmax, Km)</option></select></div>
+          <div class="ctrl"><label for="pgOpt"><span>Optimiser</span></label><select id="pgOpt"><option value="gd">Gradient descent</option><option value="mom">Momentum (heavy ball)</option><option value="nag">Nesterov accelerated</option><option value="adam">Adam</option><option value="newton">Newton (PD-modified Hessian)</option></select></div>
+          <div class="ctrl"><label for="pgEta"><span>Learning rate \(\eta\) (log₁₀)</span><output id="pgEtaO">0.079</output></label><input type="range" id="pgEta" min="-4" max="0.3" step="0.05" value="-1.1"></div>
+          <div class="ctrl"><label for="pgBeta"><span>Momentum \(\beta\) (\(\beta_1\) for Adam)</span><output id="pgBetaO">0.90</output></label><input type="range" id="pgBeta" min="0" max="0.99" step="0.01" value="0.9"></div>
+          <div class="ctrl"><label for="pgKappa"><span>Condition number \(\kappa\) (bowl only)</span><output id="pgKappaO">20</output></label><input type="range" id="pgKappa" min="1" max="100" step="1" value="20"></div>
+          <div class="ctrl"><label for="pgIt"><span>Max iterations</span><output id="pgItO">200</output></label><input type="range" id="pgIt" min="10" max="1000" step="10" value="200"></div>
+          <div class="ctrl"><label for="pgSx"><span>Start x (fraction of axis)</span><output id="pgSxO">0.85</output></label><input type="range" id="pgSx" min="0" max="1" step="0.01" value="0.85"></div>
+          <div class="ctrl"><label for="pgSy"><span>Start y (fraction of axis)</span><output id="pgSyO">0.85</output></label><input type="range" id="pgSy" min="0" max="1" step="0.01" value="0.85"></div>
+          <dl class="readout">
+            <dt>Iterations used</dt><dd id="pgNit"></dd>
+            <dt>Final loss · \(J^*\)</dt><dd id="pgLoss"></dd>
+            <dt>Final \(\lVert\nabla J\rVert\)</dt><dd id="pgG"></dd>
+            <dt>Final point</dt><dd id="pgPt"></dd>
+            <dt>\(2/L\) at the minimum</dt><dd id="pg2L"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments. Bowl: set \(\kappa = 50\), GD at \(\eta = 0.03\) (zig-zag), then raise \(\eta\) past \(2/L\) and watch it diverge; switch to momentum and Nesterov at the same \(\eta\); Newton converges in one step because the surface is quadratic. Rosenbrock: GD needs \(\eta\approx 10^{-3}\) and a thousand steps, Adam at \(\eta = 0.03\) walks the valley, Newton gets there in a dozen. Two minima: start at \(x\) fractions 0.55 and 0.45 and see different basins; add momentum to carry the iterate over the ridge. Michaelis–Menten: GD at any single \(\eta\) is hopeless because \(V_{max}\) and \(K_m\) have different scales (compare the gradient components); Adam copes; Newton (equivalent here to Gauss–Newton with the exact Hessian) converges fast from a reasonable start but can wander from a poor one.</p>
+    </div>
+  </section>
+
+  <section id="second">
+    <h2>Line search, Newton, quasi-Newton and Gauss–Newton</h2>
+    <h3>Choosing the step adaptively: Armijo and Wolfe</h3>
+    <p>Instead of a fixed \(\eta\), a <strong>line search</strong> picks the step along the descent direction \(d_k\) (\(-\nabla J\) for GD, or a Newton/quasi-Newton direction) at each iteration. Exact minimisation along the line is rarely worth it; the standard is <strong>backtracking</strong> with the <strong>Armijo</strong> (sufficient-decrease) condition: start from \(\alpha = 1\) (or a guess), and while</p>
+    <div class="eq">$$J(\theta_k + \alpha d_k) > J(\theta_k) + c_1\,\alpha\,\nabla J(\theta_k)^\top d_k,\qquad c_1 = 10^{-4},$$</div>
+    <p>shrink \(\alpha\leftarrow\rho\alpha\) (\(\rho = 0.5\)). This guarantees the decrease is at least a fraction \(c_1\) of what the linear model predicts, which is enough for convergence to a stationary point under \(L\)-smoothness. The <strong>Wolfe conditions</strong> add a curvature requirement, \(\nabla J(\theta_k + \alpha d_k)^\top d_k \ge c_2\nabla J(\theta_k)^\top d_k\) with \(c_2 = 0.9\) (0.1 for conjugate gradients), which rules out absurdly short steps and, crucially, guarantees that the BFGS update below stays positive definite. Nocedal and Wright (2006) [10] chapter 3 is the reference.</p>
+
+    <h3>Newton's method and its cost</h3>
+    <p>Where GD uses the first-order Taylor model, Newton minimises the second-order one, \(J(\theta+\delta)\approx J + \nabla J^\top\delta + \tfrac12\delta^\top H\delta\), giving \(\delta = -H^{-1}\nabla J\). Near a minimum with positive-definite Hessian the convergence is quadratic (the number of correct digits doubles each iteration) and invariant to linear rescaling of the parameters, so conditioning is irrelevant. The costs: forming \(H\) (\(p^2\) second derivatives) and solving the \(p\times p\) system, \(O(p^3)\) per iteration, versus \(O(p)\) for a gradient step; and the need to fix \(H\) when it is not positive definite far from the minimum (add \(\lambda I\): Levenberg–Marquardt damping, which interpolates between Newton for \(\lambda\to0\) and a short gradient step for \(\lambda\to\infty\); or restrict the step to a trust region). The <a href="newton-raphson.html">Newton–Raphson page</a> develops all of this.</p>
+
+    <h3>Quasi-Newton: BFGS and L-BFGS</h3>
+    <p>Quasi-Newton methods build an approximation \(B_k\) to the inverse Hessian from gradient differences alone. With \(s_k = \theta_{k+1} - \theta_k\) and \(y_k = \nabla J_{k+1} - \nabla J_k\), the <strong>secant condition</strong> \(B_{k+1}y_k = s_k\) (the approximation must reproduce the observed change in gradient) plus a minimal-change requirement leads to the <strong>BFGS</strong> update (Broyden, Fletcher, Goldfarb and Shanno, 1970 [11]):</p>
+    <div class="eq">$$B_{k+1} = \big(I - \rho_k s_k y_k^\top\big)B_k\big(I - \rho_k y_k s_k^\top\big) + \rho_k s_k s_k^\top,\qquad \rho_k = \frac{1}{y_k^\top s_k}.$$</div>
+    <p>Each iteration then costs \(O(p^2)\) (a matrix–vector product and the update) and typically converges superlinearly. <strong>L-BFGS</strong> stores only the last \(m\approx 5\)–\(20\) pairs \((s_k, y_k)\) and applies \(B_k\) implicitly by a two-loop recursion at \(O(mp)\) cost, so it scales to millions of parameters. L-BFGS (often the bound-constrained variant L-BFGS-B) is the standard minimiser in land data assimilation systems and in <code>optim()</code>/<code>scipy.optimize.minimize</code> for smooth problems with exact gradients.</p>
+
+    <h3>Gauss–Newton and Levenberg–Marquardt for least squares</h3>
+    <p>For a nonlinear least-squares loss \(J(\theta) = \tfrac12\sum_i r_i(\theta)^2 = \tfrac12\lVert r(\theta)\rVert^2\), with Jacobian \(\mathbf{J}_{ij} = \partial r_i/\partial\theta_j\), the gradient is \(\nabla J = \mathbf{J}^\top r\) and the Hessian is \(\mathbf{J}^\top\mathbf{J} + \sum_i r_i\nabla^2 r_i\). <strong>Gauss–Newton</strong> drops the second term (small when residuals are small or the model nearly linear), giving the step \((\mathbf{J}^\top\mathbf{J})\,\delta = -\mathbf{J}^\top r\), a weighted linear least-squares problem with the closed form of the previous page, using only first derivatives. <strong>Levenberg–Marquardt</strong> (Levenberg 1944, Marquardt 1963 [13]) damps it, \((\mathbf{J}^\top\mathbf{J} + \lambda\,\mathrm{diag}(\mathbf{J}^\top\mathbf{J}))\,\delta = -\mathbf{J}^\top r\), increasing \(\lambda\) when a step fails and decreasing it when it succeeds. This is the algorithm inside <code>nls()</code>, <code>minpack.lm</code>, <code>scipy.optimize.least_squares</code> and most A–C<sub>i</sub> fitting tools. For an FvCB fit with four parameters and twelve points it converges in a handful of iterations where plain GD would need thousands and a careful choice of \(\eta\).</p>
+
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Method</th><th>Information per step</th><th>Cost per step</th><th>Convergence near optimum</th><th>Typical use</th></tr></thead>
+      <tbody>
+        <tr><td>Gradient descent</td><td>\(\nabla J\)</td><td>\(O(p)\)</td><td>Linear, \(\kappa\log(1/\varepsilon)\) steps</td><td>Huge \(p\) or \(n\); building block of SGD</td></tr>
+        <tr><td>Momentum / Nesterov</td><td>\(\nabla J\) + velocity</td><td>\(O(p)\)</td><td>Linear, \(\sqrt\kappa\log(1/\varepsilon)\)</td><td>Deep learning, ill-conditioned convex problems</td></tr>
+        <tr><td>Adam</td><td>\(\nabla J\) + diagonal moments</td><td>\(O(p)\)</td><td>No clean rate; robust in practice</td><td>Neural networks, differentiable process models</td></tr>
+        <tr><td>Newton</td><td>\(\nabla J,\ H\)</td><td>\(O(p^3)\)</td><td>Quadratic</td><td>Small \(p\), cheap Hessian, high accuracy (GLMs via IRLS)</td></tr>
+        <tr><td>BFGS / L-BFGS</td><td>\(\nabla J\) history</td><td>\(O(p^2)\) / \(O(mp)\)</td><td>Superlinear</td><td>Smooth problems with exact gradients; 4D-Var</td></tr>
+        <tr><td>Gauss–Newton / LM</td><td>Jacobian of residuals</td><td>\(O(np^2 + p^3)\)</td><td>Quadratic for zero-residual, else linear but fast</td><td>Nonlinear least squares: FvCB, Michaelis–Menten, soil water retention curves</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="constrained">
+    <h2>Constraints and coordinate descent</h2>
+    <p>Parameters usually have bounds (\(V_{cmax}>0\), \(0\le\theta\le\theta_{sat}\), \(0 \lt f_{transfer} \lt 1\)). <strong>Projected gradient descent</strong> takes the ordinary step and then projects back onto the feasible set \(C\): \(\theta_{k+1} = \Pi_C(\theta_k - \eta\nabla J(\theta_k))\). For box constraints the projection is a clip; for the probability simplex or a norm ball it is a cheap closed form. The method inherits the rates of unconstrained GD when \(C\) is convex, and its fixed points satisfy the KKT conditions of the previous page. The alternative is to reparameterise so that constraints disappear (\(\theta = e^{\phi}\) for positivity, \(\theta = \theta_{sat}\,\sigma(\phi)\) for an interval), which is what makes log-transformed parameters doubly useful.</p>
+    <p><strong>Coordinate descent</strong> minimises over one coordinate at a time, holding the others fixed, cycling through them. It is attractive when each one-dimensional problem has a closed form. For the lasso, with standardised columns, the update for \(\beta_j\) given the partial residual \(r^{(-j)} = y - \sum_{l\ne j}x_l\beta_l\) is the soft-thresholding \(\beta_j \leftarrow S_\lambda(x_j^\top r^{(-j)}/n)\) from the previous page; a full cycle costs \(O(np)\), the same as one gradient step, and converges in a few dozen cycles. Coordinate descent is guaranteed to converge for convex objectives that are smooth plus a separable non-smooth penalty (which covers the lasso and elastic net), but it can stall on non-separable non-smooth functions and makes no sense for strongly coupled parameters such as \(V_{max}\) and \(K_m\), where the valley runs diagonally.</p>
+  </section>
+
+  <section id="nonconvex">
+    <h2>Non-convex landscapes, backpropagation and automatic differentiation</h2>
+    <h3>What the landscape looks like</h3>
+    <p>Without convexity the guarantees weaken to "converges to a stationary point". Stationary points come in three kinds: local minima (Hessian positive semi-definite), <strong>saddle points</strong> (Hessian with eigenvalues of both signs), and maxima. In high dimensions saddles vastly outnumber minima, and plain GD slows to a crawl near them because the gradient vanishes while the negative-curvature direction, along which escape is possible, has to be found by chance. <strong>Plateaus</strong> (regions where the loss is nearly flat because a saturating function is saturated, or because a parameter has no influence in that regime) have the same effect. This is where SGD's noise is a feature: a random perturbation has a component along the negative-curvature direction and the iterate leaves the saddle exponentially fast, and the noise also prefers wide minima, which generalise better, to narrow ones. Goodfellow, Bengio and Courville (2016) [12] chapter 8 covers these arguments.</p>
+    <p>Process-model calibration has its own flavour of non-convexity. The sum of squares of a soil carbon or photosynthesis model typically has one broad valley that is strongly curved in a few directions and almost flat in others. The flat directions are combinations of parameters that trade off (a faster decay rate with a larger transfer fraction; \(V_{cmax}\) with \(g_m\); \(J_{max}\) with the curvature \(\theta\)); along them the Hessian eigenvalues are nearly zero, the condition number is enormous, and gradient descent converges quickly in the stiff directions and then creeps forever along the valley floor. The eigenvectors of the Hessian (or of \(\mathbf{J}^\top\mathbf{J}\)) at the solution identify these <strong>non-identifiable directions</strong>, which is the practical meaning of equifinality: the data constrain a few combinations, not the individual parameters.</p>
+
+    <h3>Backpropagation is the chain rule</h3>
+    <p>A neural network is a composition \(f = f_L\circ\dots\circ f_1\), each layer \(h_l = \phi(W_l h_{l-1} + b_l)\). The loss gradient with respect to the parameters of every layer is obtained by one forward pass (store the activations) and one backward pass applying the chain rule from the output back to the input: \(\delta_L = \partial\mathcal{L}/\partial z_L\), \(\delta_{l} = (W_{l+1}^\top\delta_{l+1})\odot\phi'(z_l)\), \(\partial\mathcal{L}/\partial W_l = \delta_l h_{l-1}^\top\). Rumelhart, Hinton and Williams (1986) [14] made this the standard training algorithm. The point for us is not the network but the cost: the whole gradient, with respect to millions of parameters, costs a small constant times one evaluation of the loss.</p>
+
+    <h3>Automatic differentiation and adjoint models</h3>
+    <p>Backpropagation is a special case of <strong>reverse-mode automatic differentiation</strong> (AD). Any program that computes a scalar from inputs by elementary operations can be differentiated exactly (to machine precision, unlike finite differences) by recording the operations and applying the chain rule. <strong>Forward mode</strong> propagates derivatives alongside values, one input direction at a time: cost \(\propto\) number of inputs, ideal for Jacobian–vector products and small \(p\). <strong>Reverse mode</strong> propagates sensitivities from the output back: the full gradient of one scalar output costs at most a few (roughly 2–4) evaluations of the function regardless of \(p\), at the price of memory to store the forward trajectory (Baydin et al. 2018 [15]). Finite differences, by contrast, need \(p+1\) evaluations and suffer truncation and round-off error.</p>
+    <p>In the land-modelling literature reverse-mode AD applied to the time-stepping of a model is called the <strong>adjoint model</strong>. The <strong>Carbon Cycle Data Assimilation System</strong> (CCDAS) built around the BETHY model (Rayner et al. 2005 [16]; Kaminski et al. 2013 [17]) generated the adjoint of the whole model with a source-to-source AD tool (TAF) and minimised a <strong>4D-Var</strong> cost function, \(J(\theta) = \tfrac12(\theta - \theta_b)^\top B^{-1}(\theta-\theta_b) + \tfrac12\sum_t[H(M_t(\theta)) - y_t]^\top R^{-1}[H(M_t(\theta)) - y_t]\), with respect to \(\sim\)60 process parameters against years of atmospheric CO₂ and flux data using a quasi-Newton method; the inverse Hessian at the optimum, also from AD, gave posterior parameter uncertainties. Modern <strong>differentiable ecosystem models</strong> written in JAX, PyTorch or Julia obtain the same gradients automatically and can train neural-network components jointly with process parameters, which is the "hybrid" or "differentiable modelling" programme in hydrology and land science. Without AD one falls back on finite differences or gradient-free methods (Nelder–Mead, DEMC, MCMC), which is why many calibration studies in ecology still use them.</p>
+
+    <h3>Stopping criteria, diagnostics and practical rules</h3>
+    <ul>
+      <li><strong>Stop</strong> when \(\lVert\nabla J\rVert\le\tau_g(1+|J|)\), or the relative decrease in \(J\) over several steps falls below \(\tau_f\), or the step \(\lVert\theta_{k+1}-\theta_k\rVert\) is tiny relative to \(\lVert\theta\rVert\), or a budget is exhausted. Gradient norm is the honest criterion; a flat loss curve can also mean a plateau.</li>
+      <li><strong>Loss curves</strong>: a smooth monotone decrease that flattens is healthy; a curve that falls then rises means \(\eta\) is too large or SGD noise dominates; staircase shapes mean the schedule is doing the work; training loss falling while validation loss rises is overfitting, not an optimisation problem.</li>
+      <li><strong>Gradient checks</strong>: compare an analytic or AD gradient with central finite differences \((J(\theta+he_j)-J(\theta-he_j))/2h\), \(h\approx10^{-5}\), before trusting it.</li>
+      <li><strong>Scale</strong> every parameter to \(O(1)\): standardise features, log-transform positive parameters (\(V_{cmax}\), \(K_s\), decay constants spanning \(10^{-4}\)–\(10^{0}\) d⁻¹), and express bounded fractions through a logit. Most "gradient descent does not work" reports are scaling problems.</li>
+      <li><strong>Multiple starts</strong> for non-convex problems, and inspect the Hessian (or \(\mathbf{J}^\top\mathbf{J}\)) eigenvalues at the end: near-zero eigenvalues name the non-identifiable combinations.</li>
+    </ul>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Leaf-level parameter fitting.</strong> \(V_{cmax}\), \(J_{max}\), \(T_p\), \(R_d\) from A–C<sub>i</sub> curves and \(g_1\) from gas-exchange data are fitted by Levenberg–Marquardt (<code>nls</code>, <code>plantecophys</code>, <code>photosynthesis</code> packages) with gradients from finite differences or analytic Jacobians. The transition point between \(A_c\) and \(A_j\) makes the loss piecewise, so good tools try every assignment or use a smooth minimum.</li>
+      <li><strong>Soil carbon and microbial models.</strong> Century/DayCent, RothC, MIMICS and MEND parameters calibrated to incubation respiration, stocks and isotope data show the flat-valley problem acutely; gradient methods are used on log-parameters with priors (the \(B^{-1}\) term above), and MCMC is used to map the valley rather than find its lowest point.</li>
+      <li><strong>Land data assimilation.</strong> CCDAS/BETHY (adjoint, L-BFGS), ORCHIDAS for ORCHIDEE (gradient-based with tangent-linear or finite-difference gradients, L-BFGS-B), and the JULES and CLM parameter-estimation efforts all minimise a 4D-Var-type cost; the gradient of the land model with respect to parameters is the expensive ingredient and AD is what makes \(p\sim10^2\)–\(10^3\) tractable.</li>
+      <li><strong>Emulators and hybrid models.</strong> Neural-network emulators of radiative transfer, of photosynthesis schemes, or of whole land models are trained with Adam and mini-batches; hybrid models embed a network (for example for stomatal conductance or soil respiration) inside a process model and train the whole thing end to end by reverse-mode AD.</li>
+      <li><strong>Inside the models themselves.</strong> The iterative solvers for leaf temperature, \(C_i\) and Richards' equation are Newton or fixed-point iterations, not gradient descent, because the systems are small and a Jacobian is cheap; the distinction between "solve a system" and "minimise a loss" is worth keeping sharp in an exam answer.</li>
+      <li><strong>Remote-sensing inversion.</strong> Retrieving LAI, chlorophyll or soil moisture from reflectance by inverting a radiative-transfer model (PROSAIL) is a small non-convex least-squares problem with ill-posedness; regularised gradient methods, look-up tables and neural networks are the three standard routes.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Item</th><th class="num">Expression / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Update</td><td class="num">\(\theta\leftarrow\theta-\eta\nabla J\)</td><td>Steepest descent in the Euclidean norm</td></tr>
+        <tr><td>Descent lemma</td><td class="num">\(J(x_+)\le J(x)-\eta(1-L\eta/2)\lVert\nabla J\rVert^2\)</td><td>Decrease for \(\eta \lt 2/L\); best guaranteed at \(\eta = 1/L\)</td></tr>
+        <tr><td>Stability on a quadratic</td><td class="num">\(\eta \lt 2/\lambda_{\max}\)</td><td>Factor \(1-\eta\lambda_i\) per eigen-direction; optimum \(2/(\lambda_{\min}+\lambda_{\max})\)</td></tr>
+        <tr><td>Convex rate</td><td class="num">\(O(1/k)\): \(L\lVert x_0-x^*\rVert^2/2k\)</td><td>Nesterov: \(O(1/k^2)\), optimal for first-order methods</td></tr>
+        <tr><td>Strongly convex rate</td><td class="num">\((1-1/\kappa)^k\)</td><td>\(\approx\kappa\log(1/\varepsilon)\) iterations; momentum \(\sqrt\kappa\log(1/\varepsilon)\)</td></tr>
+        <tr><td>Condition number</td><td class="num">\(\kappa = L/\mu = \lambda_{\max}/\lambda_{\min}\)</td><td>For OLS, \(\kappa(X^\top X) = \kappa(X)^2\)</td></tr>
+        <tr><td>SGD gradient variance</td><td class="num">\(\sigma^2/B\)</td><td>Unbiased for any batch size \(B\)</td></tr>
+        <tr><td>Robbins–Monro</td><td class="num">\(\sum\eta_t=\infty,\ \sum\eta_t^2 \lt \infty\)</td><td>\(\eta_t = \eta_0/t\) satisfies both; constant step gives a noise ball</td></tr>
+        <tr><td>Heavy ball</td><td class="num">\(v\leftarrow\beta v-\eta\nabla J;\ \theta\leftarrow\theta+v\)</td><td>\(\beta = 0.9\); terminal velocity \(\eta\lVert\nabla J\rVert/(1-\beta)\)</td></tr>
+        <tr><td>Adam defaults</td><td class="num">\(\beta_1 = 0.9,\ \beta_2 = 0.999,\ \epsilon = 10^{-8},\ \eta = 10^{-3}\)</td><td>Bias correction divides by \(1-\beta^k\)</td></tr>
+        <tr><td>Armijo / Wolfe constants</td><td class="num">\(c_1 = 10^{-4},\ c_2 = 0.9\)</td><td>Backtracking factor \(\rho = 0.5\)</td></tr>
+        <tr><td>Newton step</td><td class="num">\(-H^{-1}\nabla J\), \(O(p^3)\)</td><td>Quadratic convergence; LM damping \(H+\lambda I\)</td></tr>
+        <tr><td>Gauss–Newton</td><td class="num">\((\mathbf{J}^\top\mathbf{J})\delta = -\mathbf{J}^\top r\)</td><td>Hessian approximated by \(\mathbf{J}^\top\mathbf{J}\)</td></tr>
+        <tr><td>L-BFGS memory</td><td class="num">\(m = 5\)–\(20\) pairs</td><td>Cost \(O(mp)\) per iteration</td></tr>
+        <tr><td>Reverse-mode AD</td><td class="num">Gradient at \(\lesssim 4\times\) one function evaluation</td><td>Independent of \(p\); finite differences need \(p+1\) evaluations</td></tr>
+        <tr><td>Finite-difference step</td><td class="num">\(h\approx10^{-5}\) (central), \(\sqrt{\epsilon_{mach}}\approx10^{-8}\) (forward)</td><td>Error \(O(h^2)\) and \(O(h)\) respectively, plus round-off \(\epsilon/h\)</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Derive the gradient-descent update from the first-order Taylor expansion and show that, for an \(L\)-smooth function, the loss decreases whenever \(0 \lt \eta \lt 2/L\).</span></summary><div class="a"><p>To first order \(J(\theta+\delta)\approx J(\theta)+\nabla J(\theta)^\top\delta\). Among all \(\delta\) of a given length \(\lVert\delta\rVert = s\), the Cauchy–Schwarz inequality \(\nabla J^\top\delta\ge-\lVert\nabla J\rVert s\) with equality iff \(\delta = -s\nabla J/\lVert\nabla J\rVert\) shows the linear model decreases most along \(-\nabla J\); writing the step length as \(\eta\lVert\nabla J\rVert\) gives \(\theta_{k+1} = \theta_k-\eta\nabla J(\theta_k)\). For the decrease: \(L\)-smoothness means \(\lVert\nabla J(x)-\nabla J(y)\rVert\le L\lVert x-y\rVert\). By the fundamental theorem of calculus along the segment, \(J(y) = J(x)+\int_0^1\nabla J(x+t(y-x))^\top(y-x)\,dt = J(x)+\nabla J(x)^\top(y-x)+\int_0^1[\nabla J(x+t(y-x))-\nabla J(x)]^\top(y-x)\,dt\), and the last integrand is bounded by \(Lt\lVert y-x\rVert^2\), integrating to \(\tfrac L2\lVert y-x\rVert^2\). That is the descent lemma. Substituting \(y = x-\eta\nabla J(x)\): \(J(y)\le J(x)-\eta\lVert\nabla J\rVert^2+\tfrac{L\eta^2}{2}\lVert\nabla J\rVert^2 = J(x)-\eta(1-\tfrac{L\eta}{2})\lVert\nabla J\rVert^2\). The coefficient is positive iff \(\eta \lt 2/L\), so the loss strictly decreases unless the gradient is zero; the guaranteed decrease is maximised at \(\eta = 1/L\).</p></div></details>
+    <details class="q"><summary><span>2. For a quadratic loss, analyse gradient descent in the eigenbasis of the Hessian. Explain divergence, the zig-zag, and why standardising predictors helps in linear regression.</span></summary><div class="a"><p>Let \(J(x) = \tfrac12x^\top Ax-b^\top x\), \(A = Q\Lambda Q^\top\) symmetric positive definite, minimiser \(x^* = A^{-1}b\). Then \(\nabla J = A(x-x^*)\) and \(x_{k+1}-x^* = (I-\eta A)(x_k-x^*)\). In coordinates \(z = Q^\top(x-x^*)\) each component evolves independently as \(z_i^{(k)} = (1-\eta\lambda_i)^kz_i^{(0)}\). Convergence requires \(|1-\eta\lambda_i| \lt 1\) for all \(i\), i.e. \(\eta \lt 2/\lambda_{\max}\); beyond that the stiffest component grows geometrically with alternating sign (divergence). For \(1/\lambda_{\max} \lt \eta \lt 2/\lambda_{\max}\) the stiff component overshoots and oscillates while being damped, and the soft components creep at rate \(1-\eta\lambda_{\min}\): on a contour plot the path bounces from wall to wall of the narrow valley while advancing slowly along it, the zig-zag. The best fixed step \(2/(\lambda_{\min}+\lambda_{\max})\) gives a contraction of \((\kappa-1)/(\kappa+1)\), so iterations scale with \(\kappa\). In linear regression \(A = X^\top X/n\) (for MSE loss), whose eigenvalues reflect predictor variances and correlations. Predictors in different units (PPFD in hundreds, moisture fraction in tenths) make the variances, and hence the eigenvalues, differ by orders of magnitude; standardising each column to unit variance makes the diagonal of \(A\) all ones, so that \(\kappa\) depends only on correlations, \((1+\rho)/(1-\rho)\) for two predictors. It also makes a single \(\eta\) appropriate for every coefficient. Correlation itself is not removed by scaling; that needs whitening, ridge, or a second-order method, which is invariant to any linear rescaling.</p></div></details>
+    <details class="q"><summary><span>3. Why does stochastic gradient descent converge at all when each step uses a wrong gradient? State the conditions on the learning-rate sequence, and explain the trade-off that mini-batches make.</span></summary><div class="a"><p>With \(J = \frac1n\sum_i\ell_i\), the single-sample gradient satisfies \(\mathbb{E}_i[\nabla\ell_i(\theta)] = \nabla J(\theta)\): each step is correct on average, and the error \(\nabla\ell_i-\nabla J\) is zero-mean noise with variance \(\sigma^2(\theta)\). The expected decrease per step is therefore the deterministic decrease minus a term \(\propto\eta^2\sigma^2\) from the noise (plug the noisy step into the descent lemma and take expectations). With a constant \(\eta\) the iterate reaches a neighbourhood where the deterministic decrease balances the noise term, a ball of radius \(\propto\eta\sigma/\sqrt\mu\) around the optimum, and then wanders inside it. To converge exactly the steps must shrink: Robbins and Monro showed that \(\sum_t\eta_t = \infty\) (so that the total distance travelled is unbounded and no finite region can trap the iterate) together with \(\sum_t\eta_t^2 \lt \infty\) (so that the accumulated noise variance is finite) gives convergence; \(\eta_t = \eta_0/t\) is the classic choice, \(\eta_0/\sqrt t\) is used when one wants faster early progress. Resulting rates are \(O(1/\sqrt k)\) for convex and \(O(1/k)\) for strongly convex objectives. A mini-batch of size \(B\) averages \(B\) independent single-sample gradients, cutting the noise variance to \(\sigma^2/B\) at cost \(B\) gradient evaluations: variance falls linearly in cost, so in terms of pure convergence there is no free lunch, but (i) vectorised hardware makes a batch of 32–256 nearly as cheap as one sample, (ii) less noise allows a larger stable \(\eta\), and (iii) some noise is useful in non-convex problems for escaping saddles and finding flat minima. Very large batches approach batch GD and lose those benefits; very small ones waste hardware and need tiny steps.</p></div></details>
+    <details class="q"><summary><span>4. Compare momentum, Nesterov's method and Adam: what does each add to plain gradient descent, and why does Adam need bias correction?</span></summary><div class="a"><p>Plain GD uses only the current gradient. <strong>Momentum</strong> (heavy ball) keeps a velocity \(v\leftarrow\beta v-\eta\nabla J\) and moves by \(v\): along directions where successive gradients agree the velocity accumulates to \(\eta\lVert\nabla J\rVert/(1-\beta)\) (ten-fold for \(\beta = 0.9\)), while along directions where they alternate they cancel. On an ill-conditioned quadratic the optimal tuning improves the contraction from \((\kappa-1)/(\kappa+1)\) to \((\sqrt\kappa-1)/(\sqrt\kappa+1)\), so iteration counts scale with \(\sqrt\kappa\). <strong>Nesterov</strong> evaluates the gradient at the look-ahead point \(\theta+\beta v\) instead of \(\theta\): the velocity is corrected by where it is about to take you, which damps overshoot and gives the optimal first-order rate \(O(1/k^2)\) on smooth convex functions, with the same \(\sqrt\kappa\) scaling but better behaviour than heavy ball on non-quadratic surfaces. <strong>Adam</strong> keeps two exponential moving averages per coordinate, of the gradient (\(m\), a momentum term) and of its square (\(v\), as in RMSProp), and steps \(-\eta\hat m/(\sqrt{\hat v}+\epsilon)\): the division normalises each coordinate's step to roughly \(\eta\) regardless of the gradient's scale, giving a diagonal preconditioner that makes the method insensitive to parameter scaling. Bias correction: \(m\) and \(v\) start at zero, so after \(k\) steps \(\mathbb{E}[m_k]\approx(1-\beta_1^k)\mathbb{E}[g]\) and \(\mathbb{E}[v_k]\approx(1-\beta_2^k)\mathbb{E}[g^2]\). At \(k = 1\) with \(\beta_2 = 0.999\), \(v_1 = 0.001g_1^2\) underestimates the second moment a thousand-fold, so the raw ratio \(m/\sqrt v\) would be about \(0.1/\sqrt{0.001}\approx 3\) times too large and the first steps would be erratic. Dividing by \(1-\beta_1^k\) and \(1-\beta_2^k\) restores unbiased estimates; the corrections fade to 1 within a few hundred steps. Caveats: Adam does not reach the exact minimiser with a fixed \(\eta\), may fail to converge on some convex problems (AMSGrad fixes this), and often generalises slightly worse than tuned SGD with momentum on image tasks.</p></div></details>
+    <details class="q"><summary><span>5. You must fit the FvCB model (\(V_{cmax}\), \(J_{max}\), \(T_p\), \(R_d\)) to a 12-point A–C<sub>i</sub> curve. Compare gradient descent, Newton, BFGS and Levenberg–Marquardt for this task and justify a choice.</span></summary><div class="a"><p>The problem is nonlinear least squares with \(p = 4\) and \(n = 12\): tiny, smooth within each limitation regime, but piecewise because of \(\min(A_c,A_j,A_p)\), and badly scaled (\(V_{cmax}\sim 50\)–\(150\), \(T_p\sim 5\)–\(15\), \(R_d\sim 1\)). <em>Gradient descent</em>: each step costs 12 model evaluations' worth of Jacobian, but the loss surface is a long diagonal valley (\(V_{cmax}\) and \(R_d\) trade off on the initial slope; \(J_{max}\) and \(T_p\) on the plateau), so \(\kappa\) is large and GD needs thousands of iterations and a hand-tuned \(\eta\); scaling the parameters (log-transform) helps but it remains the worst choice. <em>Newton</em>: quadratic convergence and scale invariance, but needs second derivatives of the FvCB equations, which are tedious and, through the \(\min\), discontinuous; far from the solution the Hessian may be indefinite. <em>BFGS</em>: needs only gradients, superlinear, robust with a Wolfe line search; a perfectly good general-purpose choice (<code>optim(method = "BFGS")</code>), though it ignores the least-squares structure. <em>Levenberg–Marquardt</em>: exploits that structure, approximating the Hessian by \(\mathbf{J}^\top\mathbf{J}\) from first derivatives only, each step a small weighted least-squares solve with the closed form of the previous page; the damping handles poor starts; convergence in 5–20 iterations is typical, and \((\mathbf{J}^\top\mathbf{J})^{-1}\hat\sigma^2\) gives parameter standard errors for free. Choice: LM (as in <code>nls</code>, <code>minpack.lm</code>, <code>plantecophys</code>), with the regime assignment handled either by trying each plausible transition \(C_i\) and keeping the best fit, or by fitting a smoothed minimum; multiple starting points and inspection of the Jacobian's condition number to check identifiability of \(T_p\) and \(R_d\), which are frequently unidentifiable from a single curve.</p></div></details>
+    <details class="q"><summary><span>6. Explain how a system such as CCDAS obtains the gradient of its cost function with respect to \(\sim\)60 model parameters, why finite differences would be a poor substitute, and what the gradient is then used for.</span></summary><div class="a"><p>The cost is \(J(\theta) = \tfrac12(\theta-\theta_b)^\top B^{-1}(\theta-\theta_b)+\tfrac12\sum_t[H(M_t(\theta))-y_t]^\top R^{-1}[\cdot]\), where \(M_t\) runs the land model (BETHY) forward from parameters \(\theta\) to time \(t\), \(H\) maps model state to observations (fluxes, or atmospheric CO₂ via a transport model), and \(B\), \(R\) are prior and observation covariances. The gradient is obtained by the <strong>adjoint model</strong>: reverse-mode automatic differentiation applied to the entire forward code by a source transformation tool (TAF). Conceptually, the forward run is a chain of elementary operations; the adjoint run traverses that chain backwards, propagating the sensitivity of \(J\) to every intermediate quantity by the chain rule and accumulating the sensitivity to each parameter. One forward run plus one adjoint run, costing a few times a forward run and requiring the forward trajectory to be stored or recomputed (checkpointing), yields the exact gradient with respect to all parameters simultaneously. Finite differences would need \(p+1 = 61\) forward runs of a multi-year global model per gradient, and the result would carry truncation error \(O(h)\) plus round-off error \(O(\epsilon/h)\) that is severe for a long nonlinear integration with thresholds and switches, so the "gradient" could point in a wrong direction near the solution. The gradient drives a quasi-Newton minimisation (BFGS/L-BFGS), typically tens of iterations, and at the optimum a second application of AD gives the Hessian, whose inverse approximates the posterior parameter covariance; propagating that covariance forward gives uncertainties on prognostic quantities such as the net land carbon sink. Rayner et al. (2005) and Kaminski et al. (2013) describe the system and its extensions to multiple data streams.</p></div></details>
+    <details class="q"><summary><span>7. A gradient-based calibration of a three-pool soil carbon model converges quickly at first, then makes negligible progress for thousands of iterations while the gradient norm stays small but non-zero. Diagnose the situation and propose remedies.</span></summary><div class="a"><p>The symptoms, fast initial decrease, then a long creep with a small gradient, are the signature of an <strong>ill-conditioned valley</strong>: the Hessian of the sum of squares has a few large eigenvalues (directions the data constrain well, such as the total decomposition rate that sets the bulk respiration) and some eigenvalues close to zero (directions the data barely constrain, such as the split of carbon between a slow pool's decay rate and the transfer fraction feeding it, or the balance between pool sizes and turnover times that give the same flux). Gradient descent kills the stiff components in a few steps, then advances along the flat direction at a rate \(1-\eta\lambda_{\min}\) per step, essentially zero. The small non-zero gradient is simply the slope of the valley floor. The flat directions are non-identifiable parameter combinations, equifinality in optimisation language. Remedies, in order: (i) reparameterise, log-transform the rate constants (which span orders of magnitude) and transfer fractions through a logit, which usually improves conditioning dramatically; (ii) use a second-order method, Gauss–Newton/Levenberg–Marquardt or BFGS, which is invariant to linear rescaling and effectively takes long steps along flat directions; (iii) compute the eigenvectors of \(\mathbf{J}^\top\mathbf{J}\) at the current point to name the unidentified combinations, then either fix one parameter of each pair at a literature value, add informative priors (a Tikhonov/ridge term \((\theta-\theta_b)^\top B^{-1}(\theta-\theta_b)\), which lifts the small eigenvalues), or collect data that discriminate (isotope tracers, long-term incubations, pool-specific measurements); (iv) accept that the point estimate is not meaningful along those directions and report the posterior with MCMC or a Laplace approximation instead. Declaring convergence because the loss "stopped changing" would be wrong; the correct statement is that the data do not determine where in the valley the truth lies.</p></div></details>
+    <details class="q"><summary><span>8. Describe backpropagation as an instance of reverse-mode automatic differentiation and contrast forward and reverse mode. For which ecosystem-modelling tasks is each appropriate?</span></summary><div class="a"><p>Any numerical program is a composition of elementary operations with known derivatives; the chain rule gives the derivative of the composition as a product of the elementary Jacobians. <strong>Forward mode</strong> multiplies the chain from the inputs outward: it carries, alongside each intermediate value, its derivative with respect to one chosen input direction (a "dual number"), so one pass gives one directional derivative (a Jacobian–vector product) at about twice the cost of the function, and a full gradient of a scalar with respect to \(p\) inputs needs \(p\) passes. <strong>Reverse mode</strong> multiplies from the output inward: a forward pass stores the intermediates, then a backward pass propagates the adjoint \(\bar v = \partial J/\partial v\) of each intermediate back to its arguments (a vector–Jacobian product), accumulating \(\partial J/\partial\theta_j\) for all \(j\) in one pass, at a cost of a small multiple (roughly 2–4) of the forward evaluation regardless of \(p\), but with memory proportional to the number of stored intermediates. Backpropagation is reverse mode applied to a layered network: the stored intermediates are the activations, the adjoints are the \(\delta_l\), and the vector–Jacobian products are \(W_{l+1}^\top\delta_{l+1}\odot\phi'\). Appropriateness: reverse mode (adjoints) whenever one or few scalar outputs (a cost function) depend on many parameters, as in 4D-Var calibration of a land model, training an emulator, or sensitivity of annual NEE to hundreds of parameters; forward mode (tangent-linear model) when a few inputs affect many outputs, for example propagating the uncertainty of one or two parameters through a whole simulated time series, computing a Jacobian column for Gauss–Newton with small \(p\), or the Jacobian of a small nonlinear system (coupled leaf model) in a Newton solver. Finite differences remain the fallback when the source code cannot be differentiated (legacy Fortran with no AD tool), at the price of \(p+1\) evaluations and reduced accuracy.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Cauchy A-L (1847). Méthode générale pour la résolution des systèmes d'équations simultanées. <em>Comptes Rendus de l'Académie des Sciences</em> 25: 536–538. <span class="why">The original proposal of steepest descent, for solving systems of equations by minimising a sum of squares.</span></li>
+      <li>Robbins H, Monro S (1951). A stochastic approximation method. <em>Annals of Mathematical Statistics</em> 22: 400–407. <a href="https://doi.org/10.1214/aoms/1177729586">doi:10.1214/aoms/1177729586</a><span class="why">The conditions \(\sum\eta_t = \infty\), \(\sum\eta_t^2 \lt \infty\) and the convergence theory behind SGD.</span></li>
+      <li>Polyak BT (1964). Some methods of speeding up the convergence of iteration methods. <em>USSR Computational Mathematics and Mathematical Physics</em> 4: 1–17. <a href="https://doi.org/10.1016/0041-5553(64)90137-5">doi:10.1016/0041-5553(64)90137-5</a><span class="why">The heavy-ball method and the \(\sqrt\kappa\) rate for quadratics.</span></li>
+      <li>Nesterov Y (1983). A method of solving a convex programming problem with convergence rate \(O(1/k^2)\). <em>Soviet Mathematics Doklady</em> 27: 372–376. <span class="why">Accelerated gradient descent; the optimal first-order rate for smooth convex problems.</span></li>
+      <li>Boyd S, Vandenberghe L (2004). <em>Convex Optimization</em>. Cambridge University Press. Chapter 9. <span class="why">Clean proofs of the convergence rates for gradient and Newton methods under smoothness and strong convexity.</span></li>
+      <li>Kingma DP, Ba J (2015). Adam: a method for stochastic optimization. <em>International Conference on Learning Representations</em>. arXiv:1412.6980. <span class="why">The Adam update, the bias-correction argument and the default hyperparameters.</span></li>
+      <li>Duchi J, Hazan E, Singer Y (2011). Adaptive subgradient methods for online learning and stochastic optimization. <em>Journal of Machine Learning Research</em> 12: 2121–2159. <span class="why">AdaGrad: per-coordinate learning rates from accumulated squared gradients.</span></li>
+      <li>Bottou L, Curtis FE, Nocedal J (2018). Optimization methods for large-scale machine learning. <em>SIAM Review</em> 60: 223–311. <a href="https://doi.org/10.1137/16M1080173">doi:10.1137/16M1080173</a><span class="why">The authoritative survey of SGD theory, mini-batching, noise reduction and second-order alternatives.</span></li>
+      <li>Ruder S (2016). An overview of gradient descent optimization algorithms. arXiv:1609.04747. <span class="why">A short, readable catalogue of momentum, Nesterov, AdaGrad, RMSProp, Adam and friends with the update equations side by side.</span></li>
+      <li>Nocedal J, Wright SJ (2006). <em>Numerical Optimization</em>, 2nd ed. Springer. <span class="why">Line search (ch. 3), quasi-Newton and L-BFGS (ch. 6–7), nonlinear least squares and LM (ch. 10).</span></li>
+      <li>Broyden CG (1970). The convergence of a class of double-rank minimization algorithms. <em>IMA Journal of Applied Mathematics</em> 6: 76–90. <a href="https://doi.org/10.1093/imamat/6.1.76">doi:10.1093/imamat/6.1.76</a><span class="why">One of the four 1970 papers that produced the BFGS update.</span></li>
+      <li>Goodfellow I, Bengio Y, Courville A (2016). <em>Deep Learning</em>. MIT Press. Chapter 8. Free at deeplearningbook.org. <span class="why">Optimisation for neural networks: saddle points, plateaus, why SGD noise helps, schedules and adaptive methods.</span></li>
+      <li>Marquardt DW (1963). An algorithm for least-squares estimation of nonlinear parameters. <em>SIAM Journal on Applied Mathematics</em> 11: 431–441. <a href="https://doi.org/10.1137/0111030">doi:10.1137/0111030</a><span class="why">The Levenberg–Marquardt damping strategy (with Levenberg 1944, <em>Quarterly of Applied Mathematics</em> 2: 164–168) used by every nonlinear least-squares fitter.</span></li>
+      <li>Rumelhart DE, Hinton GE, Williams RJ (1986). Learning representations by back-propagating errors. <em>Nature</em> 323: 533–536. <a href="https://doi.org/10.1038/323533a0">doi:10.1038/323533a0</a><span class="why">Backpropagation as the practical way to compute gradients for multilayer networks.</span></li>
+      <li>Baydin AG, Pearlmutter BA, Radul AA, Siskind JM (2018). Automatic differentiation in machine learning: a survey. <em>Journal of Machine Learning Research</em> 18(153): 1–43. <span class="why">Forward vs reverse mode, cost bounds, and the relation of backpropagation to adjoint methods.</span></li>
+      <li>Rayner PJ, Scholze M, Knorr W, Kaminski T, Giering R, Widmann H (2005). Two decades of terrestrial carbon fluxes from a carbon cycle data assimilation system (CCDAS). <em>Global Biogeochemical Cycles</em> 19: GB2026. <a href="https://doi.org/10.1029/2004GB002254">doi:10.1029/2004GB002254</a><span class="why">Adjoint-based 4D-Var calibration of the BETHY land model: the canonical gradient-based data assimilation in our field.</span></li>
+      <li>Kaminski T, Knorr W, Schürmann G, et al. (2013). The BETHY/JSBACH Carbon Cycle Data Assimilation System: experiences and challenges. <em>Journal of Geophysical Research: Biogeosciences</em> 118: 1414–1426. <a href="https://doi.org/10.1002/jgrg.20118">doi:10.1002/jgrg.20118</a><span class="why">Lessons from a decade of adjoint-based land data assimilation, including multiple data streams and identifiability.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="closed-form-convex-loss.html">← Previous: Closed-form solutions and convex loss</a><a href="maximum-likelihood.html">Next: Maximum-likelihood estimation →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#gradient">Gradient &amp; update rule</a></li>
+      <li><a href="#convergence">Convergence &amp; conditioning</a></li>
+      <li><a href="#variants">SGD, momentum, Adam</a></li>
+      <li><a href="#playground">The playground</a></li>
+      <li><a href="#second">Line search &amp; second order</a></li>
+      <li><a href="#constrained">Constraints &amp; coordinate descent</a></li>
+      <li><a href="#nonconvex">Non-convex, backprop, AD</a></li>
+      <li><a href="#connections">Connections to ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas to remember</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use seeded synthetic data (mulberry32). Newton in the playground uses a finite-difference Hessian shifted to be positive definite; Adam uses β₂ = 0.999 and ε = 10⁻⁸. Animations are disabled when the system prefers reduced motion.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function sci(x) { if (!isFinite(x)) return String(x); if (x === 0) return '0'; var a = Math.abs(x); if (a >= 0.01 && a < 1e4) return fmt(x, a < 1 ? 4 : 2); return x.toExponential(2); }
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function randn(rng) { var u = 1 - rng(), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function chart(svg, o) {
+    var c = { svg: svg, o: o };
+    c.pw = o.W - o.mL - o.mR; c.ph = o.H - o.mT - o.mB;
+    c.sx = function (x) { return o.mL + (x - o.x0) / (o.x1 - o.x0) * c.pw; };
+    c.sy = function (y) { return o.mT + (o.y1 - y) / (o.y1 - o.y0) * c.ph; };
+    c.ix = function (px) { return o.x0 + (px - o.mL) / c.pw * (o.x1 - o.x0); };
+    c.iy = function (py) { return o.y1 - (py - o.mT) / c.ph * (o.y1 - o.y0); };
+    c.axes = function (xt, yt, xfmt, yfmt) {
+      yt.forEach(function (y) { svg.appendChild(el('line', { 'class': 'gridline', x1: o.mL, x2: o.mL + c.pw, y1: c.sy(y), y2: c.sy(y) })); svg.appendChild(el('text', { 'class': 'tick', x: o.mL - 6, y: c.sy(y) + 4, 'text-anchor': 'end' }, yfmt ? yfmt(y) : y)); });
+      xt.forEach(function (x) { svg.appendChild(el('line', { 'class': 'ax', x1: c.sx(x), x2: c.sx(x), y1: o.mT + c.ph, y2: o.mT + c.ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: c.sx(x), y: o.mT + c.ph + 16, 'text-anchor': 'middle' }, xfmt ? xfmt(x) : x)); });
+      svg.appendChild(el('line', { 'class': 'ax', x1: o.mL, x2: o.mL + c.pw, y1: o.mT + c.ph, y2: o.mT + c.ph }));
+      svg.appendChild(el('line', { 'class': 'ax', x1: o.mL, x2: o.mL, y1: o.mT, y2: o.mT + c.ph }));
+      if (o.xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: o.mL + c.pw / 2, y: o.H - 6, 'text-anchor': 'middle' }, o.xlab));
+      if (o.ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(13,' + (o.mT + c.ph / 2) + ') rotate(-90)' }, o.ylab));
+      if (o.title) svg.appendChild(el('text', { 'class': 'ttl', x: o.mL, y: 14 }, o.title));
+    };
+    c.curve = function (fn, n, cls, stroke) {
+      var d = '', pen = false;
+      for (var i = 0; i <= n; i++) { var x = o.x0 + (o.x1 - o.x0) * i / n; var y = fn(x); if (!isFinite(y)) { pen = false; continue; } d += (pen ? 'L' : 'M') + c.sx(x).toFixed(1) + ',' + c.sy(clamp(y, o.y0, o.y1)).toFixed(1); pen = true; }
+      var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); svg.appendChild(p); return p;
+    };
+    c.poly = function (pts, cls) { var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + c.sx(clamp(p[0], o.x0, o.x1)).toFixed(1) + ',' + c.sy(clamp(p[1], o.y0, o.y1)).toFixed(1); }); var e = el('path', { 'class': cls, d: d }); svg.appendChild(e); return e; };
+    c.hitbox = function () { var h = el('rect', { x: o.mL, y: o.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(h); return h; };
+    return c;
+  }
+  function hover(c, tip, html, dots) {
+    var svg = c.svg, o = c.o;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: o.mT, y2: o.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var ds = []; for (var i = 0; i < (dots || 0); i++) { var d = el('circle', { r: 3.5, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(d); ds.push(d); }
+    var hit = c.hitbox();
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = clamp(c.ix(p.x), o.x0, o.x1);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      var r = html(x, p); tip.innerHTML = r.html; tip.hidden = false;
+      (r.ys || []).forEach(function (y, i) { if (ds[i]) { if (isFinite(y)) { ds[i].setAttribute('cx', c.sx(x)); ds[i].setAttribute('cy', c.sy(clamp(y, o.y0, o.y1))); ds[i].setAttribute('visibility', 'visible'); } else ds[i].setAttribute('visibility', 'hidden'); } });
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); ds.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+    return hit;
+  }
+  // marching squares; levels from quantiles if not given
+  function contours(c, F, nx, ny, levels, strokeFn) {
+    var o = c.o, g = [], i, j, vals = [];
+    var dx = (o.x1 - o.x0) / nx, dy = (o.y1 - o.y0) / ny;
+    for (i = 0; i <= nx; i++) { g[i] = []; for (j = 0; j <= ny; j++) { var v = F(o.x0 + i * dx, o.y0 + j * dy); g[i][j] = v; if (isFinite(v)) vals.push(v); } }
+    if (!levels) { vals.sort(function (a, b) { return a - b; }); levels = [0.01, 0.03, 0.06, 0.1, 0.16, 0.24, 0.34, 0.46, 0.6, 0.75, 0.9].map(function (q) { return vals[Math.floor(q * (vals.length - 1))]; }); }
+    var segs = { 1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]], 5: [[3, 0], [1, 2]], 6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[0, 2]], 10: [[0, 1], [2, 3]], 11: [[1, 2]], 12: [[3, 1]], 13: [[0, 1]], 14: [[3, 0]] };
+    levels.forEach(function (lev, li) {
+      var d = '';
+      for (i = 0; i < nx; i++) for (j = 0; j < ny; j++) {
+        var a = g[i][j], b = g[i + 1][j], cc = g[i + 1][j + 1], dd = g[i][j + 1];
+        var idx = (a >= lev ? 1 : 0) | (b >= lev ? 2 : 0) | (cc >= lev ? 4 : 0) | (dd >= lev ? 8 : 0);
+        if (idx === 0 || idx === 15) continue;
+        var x0 = o.x0 + i * dx, y0 = o.y0 + j * dy;
+        var pt = function (e) { var t; if (e === 0) { t = (lev - a) / (b - a); return [x0 + t * dx, y0]; } if (e === 1) { t = (lev - b) / (cc - b); return [x0 + dx, y0 + t * dy]; } if (e === 2) { t = (lev - dd) / (cc - dd); return [x0 + t * dx, y0 + dy]; } t = (lev - a) / (dd - a); return [x0, y0 + t * dy]; };
+        segs[idx].forEach(function (s) { var p = pt(s[0]), q = pt(s[1]); d += 'M' + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1) + 'L' + c.sx(q[0]).toFixed(1) + ',' + c.sy(q[1]).toFixed(1); });
+      }
+      var p = el('path', { 'class': 'cont', d: d }); if (strokeFn) { var s = strokeFn(li, levels.length); if (s.opacity !== undefined) p.setAttribute('opacity', s.opacity); }
+      c.svg.appendChild(p);
+    });
+    return levels;
+  }
+  function gradFD(f, p, h) { h = h || 1e-6; var g = []; for (var i = 0; i < p.length; i++) { var a = p.slice(), b = p.slice(); a[i] += h; b[i] -= h; g.push((f(a) - f(b)) / (2 * h)); } return g; }
+  function hessFD(f, p, h) { h = h || 1e-4; var n = p.length, H = []; for (var i = 0; i < n; i++) { H.push([]); for (var j = 0; j < n; j++) { var pp = p.slice(), pm = p.slice(), mp = p.slice(), mm = p.slice(); pp[i] += h; pp[j] += h; pm[i] += h; pm[j] -= h; mp[i] -= h; mp[j] += h; mm[i] -= h; mm[j] -= h; H[i].push((f(pp) - f(pm) - f(mp) + f(mm)) / (4 * h * h)); } } return H; }
+  function eig2(H) { var a = H[0][0], b = (H[0][1] + H[1][0]) / 2, d = H[1][1]; var tr = a + d, det = a * d - b * b; var s = Math.sqrt(Math.max(0, tr * tr / 4 - det)); return [tr / 2 - s, tr / 2 + s]; }
+  function solve2(H, g) { var a = H[0][0], b = H[0][1], c = H[1][0], d = H[1][1]; var det = a * d - b * c; return [(d * g[0] - b * g[1]) / det, (-c * g[0] + a * g[1]) / det]; }
+  function norm(v) { return Math.sqrt(v.reduce(function (s, x) { return s + x * x; }, 0)); }
+
+  /* ---------- Lab 1: playground ---------- */
+  (function () {
+    var rng = mulberry32(4242);
+    var S = [0.5, 1, 2, 4, 8, 16, 32], V = [];
+    S.forEach(function (s) { V.push(30 * s / (4 + s) + 1.5 * randn(rng)); });
+    var th = Math.PI / 6, cth = Math.cos(th), sth = Math.sin(th);
+    var surfaces = {
+      quad: { x0: -3, x1: 3, y0: -3, y1: 3, xl: 'x', yl: 'y', min: [0, 0], f: function (p, k) { var u = cth * p[0] + sth * p[1], v = -sth * p[0] + cth * p[1]; return 0.5 * (u * u + k * v * v); } },
+      rosen: { x0: -2, x1: 2, y0: -1, y1: 3, xl: 'x', yl: 'y', min: [1, 1], f: function (p) { return (1 - p[0]) * (1 - p[0]) + 100 * (p[1] - p[0] * p[0]) * (p[1] - p[0] * p[0]); } },
+      two: { x0: -2, x1: 2, y0: -2, y1: 2, xl: 'x', yl: 'y', min: null, f: function (p) { var x = p[0], y = p[1]; return (x * x - 1) * (x * x - 1) + 0.3 * x + 0.5 * y * y; } },
+      mm: { x0: 5, x1: 60, y0: 0.2, y1: 15, xl: 'Vmax (µmol m⁻² s⁻¹)', yl: 'Km (mM)', min: null, f: function (p) { var t = 0; for (var i = 0; i < S.length; i++) { var e = V[i] - p[0] * S[i] / (p[1] + S[i]); t += e * e; } return t / S.length; } }
+    };
+    // find numeric minima for 'two' and 'mm' once by Newton from good starts
+    function polish(f, p) { for (var k = 0; k < 50; k++) { var g = gradFD(f, p), H = hessFD(f, p); var st = solve2(H, g); p = [p[0] - st[0], p[1] - st[1]]; if (norm(g) < 1e-10) break; } return p; }
+    surfaces.two.min = polish(surfaces.two.f, [-1, 0]);
+    surfaces.mm.min = polish(surfaces.mm.f, [30, 4]);
+    var ids = ['pgSurf', 'pgOpt', 'pgEta', 'pgBeta', 'pgKappa', 'pgIt', 'pgSx', 'pgSy'];
+    var inp = {}; ids.forEach(function (id) { inp[id] = document.getElementById(id); });
+    var svg = document.getElementById('pgSvg'), tip = document.getElementById('pgTip');
+    var anim = null;
+    function run(surf, F, opt, eta, beta, maxIt, start) {
+      var p = start.slice(), v = [0, 0], m = [0, 0], s2 = [0, 0], path = [[p[0], p[1], F(p)]], status = 'max iterations reached', k;
+      var b1 = beta, b2 = 0.999, eps = 1e-8;
+      for (k = 1; k <= maxIt; k++) {
+        var g = gradFD(F, p);
+        if (norm(g) < 1e-7) { status = 'converged (‖∇J‖ < 10⁻⁷)'; break; }
+        if (opt === 'gd') { p = [p[0] - eta * g[0], p[1] - eta * g[1]]; }
+        else if (opt === 'mom') { v = [beta * v[0] - eta * g[0], beta * v[1] - eta * g[1]]; p = [p[0] + v[0], p[1] + v[1]]; }
+        else if (opt === 'nag') { var la = [p[0] + beta * v[0], p[1] + beta * v[1]]; var gl = gradFD(F, la); v = [beta * v[0] - eta * gl[0], beta * v[1] - eta * gl[1]]; p = [p[0] + v[0], p[1] + v[1]]; }
+        else if (opt === 'adam') { m = [b1 * m[0] + (1 - b1) * g[0], b1 * m[1] + (1 - b1) * g[1]]; s2 = [b2 * s2[0] + (1 - b2) * g[0] * g[0], b2 * s2[1] + (1 - b2) * g[1] * g[1]]; var mh = [m[0] / (1 - Math.pow(b1, k)), m[1] / (1 - Math.pow(b1, k))], vh = [s2[0] / (1 - Math.pow(b2, k)), s2[1] / (1 - Math.pow(b2, k))]; p = [p[0] - eta * mh[0] / (Math.sqrt(vh[0]) + eps), p[1] - eta * mh[1] / (Math.sqrt(vh[1]) + eps)]; }
+        else { var H = hessFD(F, p); var ev = eig2(H); var shift = ev[0] < 1e-3 ? 1e-3 - ev[0] : 0; H = [[H[0][0] + shift, H[0][1]], [H[1][0], H[1][1] + shift]]; var st = solve2(H, g); p = [p[0] - st[0], p[1] - st[1]]; }
+        var fv = F(p);
+        if (!isFinite(fv) || Math.abs(p[0]) > 1e6 || Math.abs(p[1]) > 1e6) { status = 'diverged at iteration ' + k; path.push([p[0], p[1], fv]); break; }
+        path.push([p[0], p[1], fv]);
+      }
+      return { path: path, status: status };
+    }
+    function draw(replay) {
+      var key = inp.pgSurf.value, S0 = surfaces[key], kappa = +inp.pgKappa.value;
+      var F = key === 'quad' ? function (p) { return S0.f(p, kappa); } : S0.f;
+      var opt = inp.pgOpt.value, eta = Math.pow(10, +inp.pgEta.value), beta = +inp.pgBeta.value, maxIt = +inp.pgIt.value;
+      document.getElementById('pgEtaO').textContent = eta >= 0.01 ? fmt(eta, eta < 0.1 ? 3 : 2) : eta.toExponential(1);
+      document.getElementById('pgBetaO').textContent = fmt(beta); document.getElementById('pgKappaO').textContent = kappa; document.getElementById('pgItO').textContent = maxIt;
+      document.getElementById('pgSxO').textContent = fmt(+inp.pgSx.value); document.getElementById('pgSyO').textContent = fmt(+inp.pgSy.value);
+      var start = [S0.x0 + (S0.x1 - S0.x0) * +inp.pgSx.value, S0.y0 + (S0.y1 - S0.y0) * +inp.pgSy.value];
+      var res = run(S0, F, opt, eta, beta, maxIt, start);
+      clear(svg);
+      var c = chart(svg, { W: 640, H: 480, mL: 56, mR: 16, mT: 16, mB: 42, x0: S0.x0, x1: S0.x1, y0: S0.y0, y1: S0.y1, xlab: S0.xl, ylab: S0.yl });
+      var xt = [], yt = []; for (var i = 0; i <= 6; i++) { xt.push(S0.x0 + (S0.x1 - S0.x0) * i / 6); yt.push(S0.y0 + (S0.y1 - S0.y0) * i / 6); }
+      c.axes(xt, yt, function (v) { return fmt(v, key === 'mm' ? 0 : 1); }, function (v) { return fmt(v, key === 'mm' ? 1 : 1); });
+      var Fxy = function (x, y) { return F([x, y]); };
+      // log-transform for contour quantiles on very peaked surfaces
+      var G = (key === 'rosen' || key === 'mm') ? function (x, y) { return Math.log(1e-6 + Fxy(x, y)); } : Fxy;
+      contours(c, G, 80, 80, null, function (li, n) { return { opacity: 0.3 + 0.6 * (1 - li / n) }; });
+      var mn = S0.min;
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(mn[0]), cy: c.sy(mn[1]), r: 6, fill: 'var(--fg)' }));
+      if (key === 'two') { var m2 = polish(F, [1, 0]); svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(m2[0]), cy: c.sy(m2[1]), r: 5, fill: 'var(--muted)' })); svg.appendChild(el('text', { 'class': 'dl', x: c.sx(m2[0]) + 9, y: c.sy(m2[1]) + 4, fill: 'var(--muted)' }, 'local min')); svg.appendChild(el('text', { 'class': 'dl', x: c.sx(0) + 6, y: c.sy(0) - 8, fill: 'var(--muted)' }, 'saddle')); }
+      svg.appendChild(el('text', { 'class': 'dl', x: c.sx(mn[0]) + 9, y: c.sy(mn[1]) - 8, fill: 'var(--fg)' }, 'global min'));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(start[0]), cy: c.sy(start[1]), r: 5.5, fill: 'var(--series-2)' }));
+      svg.appendChild(el('text', { 'class': 'dl', x: c.sx(start[0]) + 9, y: c.sy(start[1]) + 14, fill: 'var(--series-2)' }, 'start'));
+      var pathEl = el('path', { 'class': 'path', d: '' }); svg.appendChild(pathEl);
+      var endDot = el('circle', { 'class': 'mark', r: 4.5, fill: 'var(--series-2)', visibility: 'hidden' }); svg.appendChild(endDot);
+      var P = res.path;
+      function dUpTo(n) { var d = ''; for (var i = 0; i < n && i < P.length; i++) { var x = clamp(P[i][0], S0.x0 - 0.1 * (S0.x1 - S0.x0), S0.x1 + 0.1 * (S0.x1 - S0.x0)), y = clamp(P[i][1], S0.y0 - 0.1 * (S0.y1 - S0.y0), S0.y1 + 0.1 * (S0.y1 - S0.y0)); d += (i ? 'L' : 'M') + c.sx(x).toFixed(1) + ',' + c.sy(y).toFixed(1); } return d; }
+      if (anim) { cancelAnimationFrame(anim); anim = null; }
+      var statusEl = document.getElementById('pgStatus');
+      function finish() { pathEl.setAttribute('d', dUpTo(P.length)); var L = P[P.length - 1]; if (isFinite(L[0]) && Math.abs(L[0]) < 1e6) { endDot.setAttribute('cx', c.sx(clamp(L[0], S0.x0, S0.x1))); endDot.setAttribute('cy', c.sy(clamp(L[1], S0.y0, S0.y1))); endDot.setAttribute('visibility', 'visible'); } statusEl.textContent = res.status + ' · ' + (P.length - 1) + ' iterations'; }
+      if (reduced || !replay) finish();
+      else {
+        var step = Math.max(1, Math.ceil(P.length / 150)), n = 1;
+        statusEl.textContent = 'running…';
+        var tick = function () { n += step; pathEl.setAttribute('d', dUpTo(n)); if (n < P.length) anim = requestAnimationFrame(tick); else { anim = null; finish(); } };
+        anim = requestAnimationFrame(tick);
+      }
+      // readouts
+      var L = P[P.length - 1], gL = gradFD(F, [L[0], L[1]]);
+      document.getElementById('pgNit').textContent = P.length - 1;
+      document.getElementById('pgLoss').textContent = sci(L[2]) + ' · ' + sci(F(mn));
+      document.getElementById('pgG').textContent = sci(norm(gL));
+      document.getElementById('pgPt').textContent = '(' + fmt(L[0], 3) + ', ' + fmt(L[1], 3) + ')';
+      var Hm = hessFD(F, mn), evm = eig2(Hm);
+      document.getElementById('pg2L').textContent = sci(2 / evm[1]) + '  (κ ≈ ' + fmt(evm[1] / Math.max(evm[0], 1e-12), 0) + ')';
+      // hover: show loss & gradient at cursor; click sets start
+      var hit = hover(c, tip, function (x, p) { var y = c.iy(p.y); var g = gradFD(F, [x, y]); return { html: '(' + fmt(x, 2) + ', ' + fmt(y, 2) + ')<br>J <b>' + sci(F([x, y])) + '</b> · ∇J <b>(' + sci(g[0]) + ', ' + sci(g[1]) + ')</b>' }; }, 0);
+      hit.addEventListener('click', function (evt) { var pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; var q = pt.matrixTransform(svg.getScreenCTM().inverse()); inp.pgSx.value = clamp((c.ix(q.x) - S0.x0) / (S0.x1 - S0.x0), 0, 1).toFixed(2); inp.pgSy.value = clamp((c.iy(q.y) - S0.y0) / (S0.y1 - S0.y0), 0, 1).toFixed(2); draw(true); });
+      // table
+      var tb = document.getElementById('pgTable'), html = '<thead><tr><th class="num">k</th><th class="num">x</th><th class="num">y</th><th class="num">J</th><th class="num">‖∇J‖</th></tr></thead><tbody>';
+      var every = Math.max(1, Math.floor((P.length - 1) / 12));
+      for (var i = 0; i < P.length; i += every) { var gg = gradFD(F, [P[i][0], P[i][1]]); html += '<tr><td class="num">' + i + '</td><td class="num">' + fmt(P[i][0], 3) + '</td><td class="num">' + fmt(P[i][1], 3) + '</td><td class="num">' + sci(P[i][2]) + '</td><td class="num">' + sci(norm(gg)) + '</td></tr>'; }
+      tb.innerHTML = html + '</tbody>';
+    }
+    ids.forEach(function (id) { inp[id].addEventListener(id === 'pgSurf' || id === 'pgOpt' ? 'change' : 'input', function () { draw(true); }); });
+    inp.pgSurf.addEventListener('change', function () { // sensible defaults per surface
+      var d = { quad: [-1.1, 0.85, 0.85], rosen: [-3, 0.1, 0.1], two: [-1.5, 0.95, 0.9], mm: [-2, 0.85, 0.85] }[inp.pgSurf.value];
+      inp.pgEta.value = d[0]; inp.pgSx.value = d[1]; inp.pgSy.value = d[2]; draw(true);
+    });
+    document.getElementById('pgRun').addEventListener('click', function () { draw(true); });
+    draw(true);
+  })();
+
+  /* ---------- Lab 2: 1-D learning rate ---------- */
+  (function () {
+    var L = 2, sEta = document.getElementById('lrEta'), sX0 = document.getElementById('lrX0');
+    var svgP = document.getElementById('lrPar'), svgS = document.getElementById('lrSeq');
+    function draw() {
+      var eta = +sEta.value, x0 = +sX0.value, N = 12;
+      document.getElementById('lrEtaO').textContent = fmt(eta); document.getElementById('lrX0O').textContent = fmt(x0, 1);
+      var xs = [x0]; for (var k = 0; k < N; k++) xs.push(xs[k] - eta * L * xs[k]);
+      var J = function (x) { return 0.5 * L * x * x; };
+      clear(svgP);
+      var c = chart(svgP, { W: 400, H: 300, mL: 44, mR: 12, mT: 22, mB: 38, x0: -3, x1: 3, y0: -0.5, y1: 9.5, xlab: 'x', ylab: 'J(x) = x²', title: 'Steps on the parabola' });
+      c.axes([-3, -2, -1, 0, 1, 2, 3], [0, 2, 4, 6, 8]);
+      c.curve(J, 200, 'net');
+      var d = ''; for (k = 0; k < xs.length; k++) { var x = clamp(xs[k], -3, 3), y = clamp(J(xs[k]), -0.5, 9.5); d += (k ? 'L' : 'M') + c.sx(x).toFixed(1) + ',' + c.sy(y).toFixed(1); }
+      svgP.appendChild(el('path', { 'class': 'step', d: d }));
+      for (k = 0; k < xs.length; k++) if (Math.abs(xs[k]) <= 3.2) svgP.appendChild(el('circle', { 'class': 'mark', cx: c.sx(clamp(xs[k], -3, 3)), cy: c.sy(clamp(J(xs[k]), -0.5, 9.5)), r: k === 0 ? 5 : 3.5, fill: 'var(--series-2)' }));
+      clear(svgS);
+      var c2 = chart(svgS, { W: 400, H: 300, mL: 44, mR: 12, mT: 22, mB: 38, x0: 0, x1: N, y0: -3, y1: 3, xlab: 'iteration k', ylab: 'x_k', title: 'Iterates' });
+      c2.axes([0, 2, 4, 6, 8, 10, 12], [-3, -2, -1, 0, 1, 2, 3]);
+      var pts = xs.map(function (x, k) { return [k, x]; });
+      c2.poly(pts, 'step');
+      pts.forEach(function (p) { svgS.appendChild(el('circle', { 'class': 'mark', cx: c2.sx(p[0]), cy: c2.sy(clamp(p[1], -3, 3)), r: 3.5, fill: 'var(--series-2)' })); });
+      var fac = 1 - eta * L;
+      document.getElementById('lrFac').textContent = fmt(fac, 2);
+      document.getElementById('lrX12').textContent = sci(Math.abs(xs[N]));
+      var n = null; var xx = x0; for (k = 0; k < 10000; k++) { if (Math.abs(xx) < 1e-3) { n = k; break; } xx *= fac; if (!isFinite(xx) || Math.abs(xx) > 1e12) break; }
+      document.getElementById('lrN').textContent = n === null ? 'never' : n;
+      var regime = Math.abs(fac) < 1e-12 ? 'η = 1/L: exact minimum in one step.' : (fac > 0 ? 'η < 1/L: monotone convergence, factor ' + fmt(fac, 2) + ' per step.' : (fac > -1 ? '1/L < η < 2/L: overshoots each step, oscillating convergence with factor ' + fmt(Math.abs(fac), 2) + '.' : (Math.abs(fac + 1) < 1e-12 ? 'η = 2/L: oscillates forever between ±x₀.' : 'η > 2/L: divergence, |x| grows by ' + fmt(Math.abs(fac), 2) + ' per step.')));
+      document.getElementById('lrStatus').textContent = regime;
+      var tb = document.getElementById('lrTable'), html = '<thead><tr><th class="num">k</th><th class="num">x_k</th><th class="num">J(x_k)</th></tr></thead><tbody>';
+      xs.forEach(function (x, k) { html += '<tr><td class="num">' + k + '</td><td class="num">' + sci(x) + '</td><td class="num">' + sci(J(x)) + '</td></tr>'; });
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sEta, sX0].forEach(function (s) { s.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ---------- Lab 3: SGD vs batch ---------- */
+  (function () {
+    var rng = mulberry32(2024), n = 200, X1 = [], X2 = [], Y = [];
+    for (var i = 0; i < n; i++) { var a = randn(rng), b = 0.4 * a + Math.sqrt(1 - 0.16) * randn(rng); X1.push(a); X2.push(b); Y.push(2 + 1.5 * a - 0.8 * b + 0.7 * randn(rng)); }
+    // OLS minimum MSE
+    function mse(th) { var s = 0; for (var i = 0; i < n; i++) { var e = Y[i] - th[0] - th[1] * X1[i] - th[2] * X2[i]; s += e * e; } return s / n; }
+    var A = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], bvec = [0, 0, 0];
+    for (i = 0; i < n; i++) { var xr = [1, X1[i], X2[i]]; for (var r = 0; r < 3; r++) { bvec[r] += xr[r] * Y[i]; for (var q = 0; q < 3; q++) A[r][q] += xr[r] * xr[q]; } }
+    function solve3(A, b) { var M = A.map(function (row, i) { return row.concat([b[i]]); }); for (var c = 0; c < 3; c++) { var p = c; for (var r = c + 1; r < 3; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r; var t = M[c]; M[c] = M[p]; M[p] = t; for (r = 0; r < 3; r++) if (r !== c) { var f = M[r][c] / M[c][c]; for (var k = c; k < 4; k++) M[r][k] -= f * M[c][k]; } } return [M[0][3] / M[0][0], M[1][3] / M[1][1], M[2][3] / M[2][2]]; }
+    var thOLS = solve3(A, bvec), mseMin = mse(thOLS);
+    var sEta = document.getElementById('sgEta'), sEp = document.getElementById('sgEp'), sSch = document.getElementById('sgSch');
+    var svg = document.getElementById('sgdSvg'), tip = document.getElementById('sgdTip');
+    var batches = [1, 10, 50, 200], cols = ['var(--series-2)', 'var(--series-3)', 'var(--series-1)', 'var(--fg)'];
+    function train(B, eta0, epochs, sch) {
+      var th = [0, 0, 0], curve = [[0, mse(th)]], t = 0, tau = 200, prng = mulberry32(7);
+      var idx = []; for (var i = 0; i < n; i++) idx.push(i);
+      var perEpoch = Math.ceil(n / B), total = epochs * perEpoch, keepEvery = Math.max(1, Math.floor(total / 400));
+      for (var ep = 0; ep < epochs; ep++) {
+        for (i = n - 1; i > 0; i--) { var j = Math.floor(prng() * (i + 1)); var tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; }
+        for (var s = 0; s < n; s += B) {
+          var g = [0, 0, 0], m = Math.min(B, n - s);
+          for (i = s; i < s + m; i++) { var k = idx[i]; var e = th[0] + th[1] * X1[k] + th[2] * X2[k] - Y[k]; g[0] += 2 * e / m; g[1] += 2 * e * X1[k] / m; g[2] += 2 * e * X2[k] / m; }
+          t++; var eta = sch === 'const' ? eta0 : (sch === 'inv' ? eta0 / (1 + t / tau) : eta0 / Math.sqrt(1 + t / tau));
+          th = [th[0] - eta * g[0], th[1] - eta * g[1], th[2] - eta * g[2]];
+          if (t % keepEvery === 0 || s + m >= n) { var v = mse(th); if (!isFinite(v) || v > 1e6) { curve.push([ep + (s + m) / n, 1e6]); return { curve: curve, final: Infinity, diverged: true }; } curve.push([ep + (s + m) / n, v]); }
+        }
+      }
+      return { curve: curve, final: mse(th), diverged: false };
+    }
+    function draw() {
+      var eta0 = +sEta.value, epochs = +sEp.value, sch = sSch.value;
+      document.getElementById('sgEtaO').textContent = fmt(eta0, 3); document.getElementById('sgEpO').textContent = epochs;
+      var runs = batches.map(function (B) { return train(B, eta0, epochs, sch); });
+      clear(svg);
+      var ylo = Math.floor(Math.log10(mseMin) * 2) / 2 - 0.5, yhi = 1.5;
+      var c = chart(svg, { W: 640, H: 360, mL: 56, mR: 62, mT: 16, mB: 42, x0: 0, x1: epochs, y0: ylo, y1: yhi, xlab: 'epoch (passes over the 200 points)', ylab: 'training MSE (log₁₀)' });
+      var xt = []; var st = epochs <= 10 ? 1 : (epochs <= 40 ? 5 : 10); for (var x = 0; x <= epochs; x += st) xt.push(x);
+      var yt = []; for (var y = Math.ceil(ylo); y <= yhi; y += 0.5) yt.push(y);
+      c.axes(xt, yt, null, function (v) { return Number.isInteger(v) ? Math.pow(10, v) : ''; });
+      svg.appendChild(el('line', { 'class': 'xh', x1: c.sx(0), x2: c.sx(epochs), y1: c.sy(Math.log10(mseMin)), y2: c.sy(Math.log10(mseMin)), 'stroke-dasharray': '4 4' }));
+      svg.appendChild(el('text', { 'class': 'tick', x: c.sx(0) + 6, y: c.sy(Math.log10(mseMin)) + 12 }, 'OLS minimum ' + fmt(mseMin, 3)));
+      runs.forEach(function (r, i) { var pts = r.curve.map(function (p) { return [p[0], Math.log10(Math.max(p[1], 1e-12))]; }); var e = c.poly(pts, 'ser'); e.setAttribute('stroke', cols[i]); e.setAttribute('stroke-width', i === 3 ? 2.4 : 1.6); });
+      // labels at right
+      var labs = runs.map(function (r, i) { var last = r.curve[r.curve.length - 1]; return { t: 'B = ' + batches[i], y: c.sy(clamp(Math.log10(Math.max(last[1], 1e-12)), ylo, yhi)), col: cols[i] }; });
+      labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+      labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: c.sx(epochs) + 6, y: L.y + 4, fill: L.col }, L.t)); });
+      hover(c, tip, function (x) { var h = 'epoch <b>' + fmt(x, 2) + '</b>'; var ys = []; runs.forEach(function (r, i) { var best = r.curve[0]; for (var k = 0; k < r.curve.length; k++) { if (r.curve[k][0] <= x) best = r.curve[k]; else break; } h += '<br>B = ' + batches[i] + ': MSE <b>' + sci(best[1]) + '</b>'; ys.push(Math.log10(Math.max(best[1], 1e-12))); }); return { html: h, ys: ys }; }, 4);
+      document.getElementById('sgF1').textContent = sci(runs[0].final) + ' · ' + sci(runs[1].final);
+      document.getElementById('sgF2').textContent = sci(runs[2].final) + ' · ' + sci(runs[3].final);
+      document.getElementById('sgMin').textContent = fmt(mseMin, 4);
+      var tb = document.getElementById('sgdTable'), html = '<thead><tr><th class="num">epoch</th>' + batches.map(function (B) { return '<th class="num">MSE, B = ' + B + '</th>'; }).join('') + '</tr></thead><tbody>';
+      var rows = [0, 1, 2, 3, 5, 10, 20, 40, 80].filter(function (e) { return e <= epochs; });
+      rows.forEach(function (e) { html += '<tr><td class="num">' + e + '</td>' + runs.map(function (r) { var best = r.curve[0]; for (var k = 0; k < r.curve.length; k++) { if (r.curve[k][0] <= e + 1e-9) best = r.curve[k]; else break; } return '<td class="num">' + sci(best[1]) + '</td>'; }).join('') + '</tr>'; });
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sEta, sEp].forEach(function (s) { s.addEventListener('input', draw); }); sSch.addEventListener('change', draw);
+    draw();
+  })();
+
+  /* ---------- Lab 4: feature scaling ---------- */
+  (function () {
+    var rng = mulberry32(31337), n = 150, zT = [], zD = [], eps = [];
+    for (var i = 0; i < n; i++) { zT.push(randn(rng)); zD.push(randn(rng)); eps.push(randn(rng)); }
+    var sRho = document.getElementById('scRho'), sC = document.getElementById('scC');
+    var svgR = document.getElementById('scRaw'), svgS = document.getElementById('scStd');
+    function centre(v) { var m = 0; v.forEach(function (x) { m += x / v.length; }); return v.map(function (x) { return x - m; }); }
+    function sd(v) { var s = 0; v.forEach(function (x) { s += x * x; }); return Math.sqrt(s / v.length); }
+    function gdRun(A, b, J, Jstar, c, maxIt) {
+      var ev = eig2(A), eta = c * 2 / ev[1], p = [0, 0], path = [[0, 0]], k;
+      for (k = 1; k <= maxIt; k++) { var g = [A[0][0] * p[0] + A[0][1] * p[1] - b[0], A[1][0] * p[0] + A[1][1] * p[1] - b[1]]; p = [p[0] - eta * g[0], p[1] - eta * g[1]]; if (k <= 400 || k % 10 === 0) path.push(p.slice()); if (J(p) - Jstar < 1e-6 * Jstar) break; }
+      return { path: path, it: k > maxIt ? null : k, ev: ev, eta: eta, final: p };
+    }
+    function panel(svg, x1, x2, y, title, xl, yl, c, maxIt, win) {
+      var A = [[0, 0], [0, 0]], b = [0, 0];
+      for (var i = 0; i < n; i++) { A[0][0] += x1[i] * x1[i] / n; A[0][1] += x1[i] * x2[i] / n; A[1][1] += x2[i] * x2[i] / n; b[0] += x1[i] * y[i] / n; b[1] += x2[i] * y[i] / n; } A[1][0] = A[0][1];
+      var bh = solve2(A, b);
+      var J = function (p) { var s = 0; for (var i = 0; i < n; i++) { var e = y[i] - p[0] * x1[i] - p[1] * x2[i]; s += e * e; } return s / (2 * n); };
+      var Jstar = J(bh), run = gdRun(A, b, J, Jstar, c, maxIt);
+      clear(svg);
+      var ch = chart(svg, { W: 400, H: 320, mL: 50, mR: 12, mT: 22, mB: 40, x0: bh[0] - win[0], x1: bh[0] + win[0], y0: bh[1] - win[1], y1: bh[1] + win[1], xlab: xl, ylab: yl, title: title });
+      var xt = [], yt = []; for (i = -2; i <= 2; i++) { xt.push(bh[0] + win[0] * i / 2); yt.push(bh[1] + win[1] * i / 2); }
+      ch.axes(xt, yt, function (v) { return fmt(v, win[0] < 1 ? 2 : 1); }, function (v) { return fmt(v, win[1] < 1 ? 2 : 1); });
+      contours(ch, function (u, v) { return J([u, v]); }, 70, 70, null, function (li, nl) { return { opacity: 0.3 + 0.6 * (1 - li / nl) }; });
+      ch.poly(run.path, 'path');
+      svg.appendChild(el('circle', { 'class': 'mark', cx: ch.sx(clamp(0, ch.o.x0, ch.o.x1)), cy: ch.sy(clamp(0, ch.o.y0, ch.o.y1)), r: 5, fill: 'var(--series-2)' }));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: ch.sx(bh[0]), cy: ch.sy(bh[1]), r: 5.5, fill: 'var(--fg)' }));
+      svg.appendChild(el('text', { 'class': 'dl', x: ch.sx(bh[0]) + 9, y: ch.sy(bh[1]) - 8, fill: 'var(--fg)' }, 'β̂'));
+      return { run: run, bh: bh, kappa: run.ev[1] / run.ev[0] };
+    }
+    function draw() {
+      var rho = +sRho.value, c = +sC.value;
+      document.getElementById('scRhoO').textContent = fmt(rho); document.getElementById('scCO').textContent = fmt(c);
+      var T = [], D = [], y = [];
+      for (var i = 0; i < n; i++) { var t = 15 + 5 * zT[i]; var d = 1.2 + 0.5 * (rho * zT[i] + Math.sqrt(1 - rho * rho) * zD[i]); T.push(t); D.push(d); y.push(0.5 * t + 4 * d + 1.0 * eps[i]); }
+      var Tc = centre(T), Dc = centre(D), yc = centre(y);
+      var Ts = Tc.map(function (v) { return v / sd(Tc); }), Ds = Dc.map(function (v) { return v / sd(Dc); });
+      var raw = panel(svgR, Tc, Dc, yc, 'Unscaled: T in °C, D in kPa', 'β_T (per °C)', 'β_D (per kPa)', c, 20000, [1.0, 10]);
+      var std = panel(svgS, Ts, Ds, yc, 'Standardised predictors', 'β_T (per sd)', 'β_D (per sd)', c, 20000, [3, 3]);
+      document.getElementById('scK').textContent = fmt(raw.kappa, 0) + ' · ' + fmt(std.kappa, 1);
+      document.getElementById('scEigR').textContent = fmt(raw.run.ev[0], 3) + ', ' + fmt(raw.run.ev[1], 1);
+      document.getElementById('scEigS').textContent = fmt(std.run.ev[0], 3) + ', ' + fmt(std.run.ev[1], 3);
+      document.getElementById('scIt').textContent = (raw.run.it === null ? '>20000' : raw.run.it) + ' · ' + (std.run.it === null ? '>20000' : std.run.it);
+      document.getElementById('scPred').textContent = fmt(raw.kappa * Math.log(1e6) / (2 * c) / 2, 0) + ' · ' + fmt(std.kappa * Math.log(1e6) / (2 * c) / 2, 0);
+      var tb = document.getElementById('scTable'), html = '<thead><tr><th>Panel</th><th class="num">β̂₁</th><th class="num">β̂₂</th><th class="num">λ_min</th><th class="num">λ_max</th><th class="num">κ</th><th class="num">η used</th><th class="num">iterations</th></tr></thead><tbody>';
+      [['Unscaled', raw], ['Standardised', std]].forEach(function (r) { html += '<tr><td>' + r[0] + '</td><td class="num">' + fmt(r[1].bh[0], 3) + '</td><td class="num">' + fmt(r[1].bh[1], 3) + '</td><td class="num">' + fmt(r[1].run.ev[0], 4) + '</td><td class="num">' + fmt(r[1].run.ev[1], 3) + '</td><td class="num">' + fmt(r[1].kappa, 1) + '</td><td class="num">' + sci(r[1].run.eta) + '</td><td class="num">' + (r[1].run.it === null ? '>20000' : r[1].run.it) + '</td></tr>'; });
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sRho, sC].forEach(function (s) { s.addEventListener('input', draw); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

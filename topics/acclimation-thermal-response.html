@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acclimation and Thermal Response</title>
+<meta name="description" content="Thermal responses of photosynthesis and respiration at comprehensive-exam depth: Arrhenius and peaked-Arrhenius formalism, Q10, Kattge–Knorr acclimation, Kumarathunge's global synthesis, respiration acclimation types I and II, Heskel's global curve, thermal tolerance, and how acclimation changes Earth-system-model projections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .mark { fill: var(--surface); stroke-width: 2; }
+  .chartbox { position: relative; }
+  .modebtns { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Acclimation and thermal response</div>
+    <div class="eyebrow">Topic 8 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Acclimation and Thermal Response</h1>
+    <p class="lead">How photosynthesis and respiration respond to temperature over minutes, how those responses shift when plants live at a different temperature for weeks, and why the difference decides whether a warmer world holds more or less carbon on land.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Every enzyme-catalysed step in a leaf speeds up with temperature (Arrhenius), and most slow down again at high temperature as proteins and membranes lose function (the <strong>peaked Arrhenius</strong>). The net rate of photosynthesis has a cooler optimum than V<sub>cmax</sub> because photorespiration and the Rubisco kinetic constants also rise with temperature. These are <strong>instantaneous</strong> responses, measured in minutes. Over days to weeks plants <strong>acclimate</strong>: a leaf grown warm shifts its temperature optimum upward (by about a third of a degree per degree of growth temperature), lowers its J<sub>max</sub>/V<sub>cmax</sub> ratio, and reduces its respiration at any given temperature. Over generations populations <strong>adapt</strong>. Earth-system models that use fixed instantaneous response curves therefore exaggerate both the loss of tropical photosynthesis and the surge in respiration under warming; models that include acclimation (Kattge &amp; Knorr for photosynthesis, Atkin et al. for respiration) project a larger future land carbon sink. The central exam skills are to write the peaked-Arrhenius function and its optimum, to state the empirical acclimation relations, to distinguish type I and type II respiratory acclimation, and to explain why mismatched acclimation of A and R matters for NPP.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to be handed a temperature response curve and asked (i) which parameters shape it, (ii) how it would move if the plant were grown 5 °C warmer, (iii) whether a Q10 is adequate, and (iv) what a model that ignores acclimation gets wrong. Be ready to derive T<sub>opt</sub> from the peaked Arrhenius function and to sketch A, R and A − R versus temperature on the same axes.</p></div>
+  </section>
+
+  <section id="timescales">
+    <h2>Three timescales: response, acclimation, adaptation</h2>
+    <p><strong>Instantaneous response</strong> (seconds to minutes): the change in a rate when leaf temperature changes with everything else fixed; it reflects enzyme kinetics, membrane fluidity and gas solubilities, and is what an A–T curve on a gas-exchange system measures. <strong>Acclimation</strong> (days to weeks): a phenotypic adjustment of the response curve itself after sustained exposure to a new growth temperature, through changed enzyme amounts, isoforms, lipid composition and allocation. Acclimation is reversible and happens within a leaf (for existing leaves) or by producing new leaves with different properties (developmental acclimation, usually stronger). <strong>Adaptation</strong> (generations): genetic change in the response, visible as differences between populations or species from contrasting climates; "home vs away" comparisons in common gardens separate it from acclimation. Berry &amp; Björkman (1980) [1] established this framework and showed that the photosynthetic optimum of desert and coastal <em>Atriplex</em> and <em>Nerium</em> tracks the growth temperature. For a modeller the distinction maps onto parameters: instantaneous responses are the temperature functions inside the model, acclimation makes their parameters functions of recent climate, and adaptation makes them functions of plant functional type or location.</p>
+  </section>
+
+  <section id="formalism">
+    <h2>Arrhenius, peaked Arrhenius, Q10 and T<sub>opt</sub></h2>
+    <p>For a parameter <em>k</em> with activation energy H<sub>a</sub> (J mol⁻¹), relative to its value at 25 °C (T<sub>ref</sub> = 298.15 K):</p>
+    <div class="eq">$$\frac{k(T)}{k_{25}} = \exp\!\left[\frac{H_a}{R}\left(\frac{1}{T_{ref}} - \frac{1}{T}\right)\right] = \exp\!\left[\frac{H_a\,(T - T_{ref})}{R\,T_{ref}\,T}\right]$$</div>
+    <p>This never saturates. Enzymes denature and complexes dissociate at high temperature, which Johnson, Eyring &amp; Williams (1942) represented with a thermodynamic deactivation term with enthalpy H<sub>d</sub> and entropy ΔS. The <strong>peaked Arrhenius</strong> (Medlyn et al. 2002 [2], Kattge &amp; Knorr 2007 [3] form) is</p>
+    <div class="eq">$$\frac{k(T)}{k_{25}} = \exp\!\left[\frac{H_a\,(T - T_{ref})}{R\,T_{ref}\,T}\right]\;\frac{1 + \exp\!\left(\dfrac{T_{ref}\,\Delta S - H_d}{R\,T_{ref}}\right)}{1 + \exp\!\left(\dfrac{T\,\Delta S - H_d}{R\,T}\right)}$$</div>
+    <p>Setting the derivative to zero gives the temperature of the peak,</p>
+    <div class="eq">$$T_{opt} = \frac{H_d}{\Delta S - R\,\ln\!\left(\dfrac{H_a}{H_d - H_a}\right)},$$</div>
+    <p>which shows that with H<sub>d</sub> fixed (200 kJ mol⁻¹ is conventional, because H<sub>d</sub> and ΔS are strongly correlated in fits), <strong>ΔS alone sets T<sub>opt</sub></strong>: a lower ΔS means a higher optimum. This is the handle through which acclimation enters models. H<sub>a</sub> controls the steepness of the rise below the optimum; H<sub>d</sub> the sharpness of the decline. Medlyn et al. (2002) [2] fitted this form to V<sub>cmax</sub> and J<sub>max</sub> data from many species and found the peaked form necessary for J<sub>max</sub> (optimum ≈ 30–35 °C) but often not for V<sub>cmax</sub> below 40 °C.</p>
+    <h3>Q10 and why it is not enough</h3>
+    <p>The Q10 is the factor by which a rate changes for a 10 °C rise: \(k(T) = k_{ref}\,Q_{10}^{(T - T_{ref})/10}\). It is exactly exponential in temperature, whereas Arrhenius is exponential in 1/T, so an Arrhenius process has a Q10 that declines with temperature: \(Q_{10} = \exp[10 H_a/(R\,T\,(T+10))]\), about 2.4 at 10 °C and 2.0 at 30 °C for H<sub>a</sub> = 55 kJ mol⁻¹. Measured respiration shows an even stronger decline of Q10 with temperature (Tjoelker et al. 2001: Q10 ≈ 3.22 − 0.046 T), which is why a single Q10 overpredicts respiration at high temperature and underpredicts it at low temperature. For soil respiration the apparent Q10 also absorbs seasonal covariation of temperature with moisture, substrate supply and root growth (see the last section). Q10 remains in use because it is one parameter and intuitive, but any serious model should treat it as a local tangent, not a law.</p>
+    <h3>Which parameters change with temperature</h3>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Parameter</th><th>Form</th><th class="num">H<sub>a</sub> (kJ mol⁻¹)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>K<sub>c</sub></td><td>Arrhenius</td><td class="num">79.4</td><td>Bernacchi et al. 2001 [18]; rises fast, so effective K<sub>m</sub> increases with T</td></tr>
+        <tr><td>K<sub>o</sub></td><td>Arrhenius</td><td class="num">36.4</td><td>Rises slowly, so O₂ inhibition strengthens with T</td></tr>
+        <tr><td>Γ*</td><td>Arrhenius</td><td class="num">37.8</td><td>Specificity falls, CO₂ solubility falls faster than O₂; photorespiration share grows</td></tr>
+        <tr><td>V<sub>cmax</sub></td><td>Peaked</td><td class="num">65–72</td><td>T<sub>opt</sub> ≈ 35–40 °C; limited by Rubisco activase at high T</td></tr>
+        <tr><td>J<sub>max</sub></td><td>Peaked</td><td class="num">44–50</td><td>T<sub>opt</sub> ≈ 30–35 °C, lower than V<sub>cmax</sub>; thylakoid membrane sensitivity</td></tr>
+        <tr><td>J<sub>max</sub>/V<sub>cmax</sub></td><td>Ratio</td><td class="num">–</td><td>Declines with T instantaneously and with growth T (≈ 1.9 at 15 °C to 1.5 at 30 °C)</td></tr>
+        <tr><td>R<sub>d</sub></td><td>Arrhenius / log-polynomial</td><td class="num">46.4</td><td>Q10 ≈ 2 near 20 °C, declining with T; acclimates strongly</td></tr>
+        <tr><td>g<sub>m</sub></td><td>Peaked</td><td class="num">≈ 50</td><td>Bernacchi et al. 2002; T<sub>opt</sub> ≈ 35–40 °C, species-dependent</td></tr>
+        <tr><td>g<sub>s</sub></td><td>Indirect</td><td class="num">–</td><td>Follows A and VPD in coupled models; direct T effect small except near heat stress, when g<sub>s</sub> may rise for cooling</td></tr>
+        <tr><td>T<sub>p</sub> (TPU)</td><td>Peaked</td><td class="num">≈ 53</td><td>Limits at low T and high CO₂</td></tr>
+      </tbody></table></div>
+    <p>The temperature optimum of <em>net</em> assimilation is lower than that of V<sub>cmax</sub> because K<sub>c</sub>(1 + O/K<sub>o</sub>) and Γ* rise while C<sub>i</sub> does not; it is higher under elevated CO₂ (photorespiration suppressed) and under light limitation it follows J<sub>max</sub> rather than V<sub>cmax</sub>. Sage &amp; Kubien (2007) [13] give the mechanistic account of what limits A at each temperature: Rubisco capacity and activase state at moderately high T, electron transport and RuBP regeneration at high T in many species, and TPU or sink feedback at low T.</p>
+  </section>
+
+  <section id="acclim">
+    <h2>Photosynthetic acclimation: Kattge &amp; Knorr and the global synthesis</h2>
+    <p>Kattge &amp; Knorr (2007) [3] re-analysed temperature response data for 36 species grown at 11–35 °C and expressed the peaked-Arrhenius parameters as linear functions of growth temperature T<sub>g</sub> (°C, the mean of the preceding ~30 days), with H<sub>d</sub> fixed at 200 kJ mol⁻¹, H<sub>a,V</sub> = 71.5 and H<sub>a,J</sub> = 49.9 kJ mol⁻¹:</p>
+    <div class="eq">$$\Delta S_V = 668.39 - 1.07\,T_g,\qquad \Delta S_J = 659.70 - 0.75\,T_g \quad(\mathrm{J\,mol^{-1}\,K^{-1}}),$$</div>
+    <div class="eq">$$r_{JV} = \frac{J_{max,25}}{V_{cmax,25}} = 2.59 - 0.035\,T_g.$$</div>
+    <p>Because ΔS falls with T<sub>g</sub>, T<sub>opt</sub> rises: roughly 0.44 °C per °C for V<sub>cmax</sub> and 0.33 °C per °C for J<sub>max</sub> over the fitted range. The decline of r<sub>JV</sub> with growth temperature means warm-grown leaves invest relatively less in electron transport and more in Rubisco, consistent with co-limitation being maintained as the temperature optimum of J<sub>max</sub> moves. These relations were adopted by CLM4.5/5, JULES (as an option) and many offline models because they require only a running mean of air temperature.</p>
+    <p>Kumarathunge et al. (2019) [4] assembled 141 datasets of A–T curves from 83 species spanning Arctic to tropical sites and both growth-chamber and field studies. Main findings: the temperature optimum of net photosynthesis increases with growth temperature by about 0.3–0.4 °C per °C across the global dataset; the shift is achieved mostly through changes in the J<sub>max</sub>/V<sub>cmax</sub> ratio and the ΔS of J<sub>max</sub>, with the activation energy of V<sub>cmax</sub> also increasing with growth temperature (unlike in Kattge &amp; Knorr, where H<sub>a</sub> was fixed); the breadth of the response is also a function of climate; and separating "home" (climate of origin) from "away" (recent growth) temperature shows that both acclimation and adaptation contribute, with acclimation dominant for ΔS<sub>J</sub> and adaptation visible in H<sub>a,V</sub>. The practical outcome is an updated set of functions that replace Kattge &amp; Knorr in several models; the lesson is that tropical leaves are already near their optimum, so warming reduces their photosynthesis despite acclimation, while boreal leaves gain.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Peaked-Arrhenius explorer with Kattge &amp; Knorr acclimation</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="kkSvg" viewBox="0 0 640 380" role="img" aria-label="Normalised Vcmax and Jmax versus leaf temperature for a leaf acclimated to the chosen growth temperature compared with a leaf acclimated to 25 degrees"></svg>
+            <div class="chart-tip" id="kkTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">V<sub>cmax</sub>(T)/V<sub>cmax,25</sub>, acclimated to T<sub>g</sub></span><span style="--c:var(--series-2)">J<sub>max</sub>(T)/J<sub>max,25</sub>, acclimated to T<sub>g</sub></span><span style="--c:var(--muted)">Dashed: same functions for T<sub>g</sub> = 25 °C</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="kkTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="kTg"><span>Growth temperature T<sub>g</sub> (°C)</span><output id="kTgO">25</output></label><input type="range" id="kTg" min="10" max="35" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="kHd"><span>Deactivation enthalpy H<sub>d</sub> (kJ mol⁻¹)</span><output id="kHdO">200</output></label><input type="range" id="kHd" min="150" max="250" step="5" value="200"></div>
+          <dl class="readout">
+            <dt>ΔS<sub>V</sub> (J mol⁻¹ K⁻¹)</dt><dd id="kSv"></dd>
+            <dt>ΔS<sub>J</sub> (J mol⁻¹ K⁻¹)</dt><dd id="kSj"></dd>
+            <dt>T<sub>opt</sub> of V<sub>cmax</sub> (°C)</dt><dd id="kTv"></dd>
+            <dt>T<sub>opt</sub> of J<sub>max</sub> (°C)</dt><dd id="kTj"></dd>
+            <dt>ΔT<sub>opt,V</sub> vs T<sub>g</sub> = 25 (°C)</dt><dd id="kDv"></dd>
+            <dt>r<sub>JV</sub> = J<sub>max,25</sub>/V<sub>cmax,25</sub></dt><dd id="kR"></dd>
+            <dt>V<sub>cmax</sub> peak / V<sub>cmax,25</sub></dt><dd id="kPk"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">H<sub>a,V</sub> = 71.5, H<sub>a,J</sub> = 49.9 kJ mol⁻¹ with ΔS from the Kattge &amp; Knorr relations [3]. Suggested experiments: move T<sub>g</sub> from 10 to 35 °C and read the slope of T<sub>opt</sub> against T<sub>g</sub> (≈ 0.44 for V<sub>cmax</sub>); note that the curves are pinned at 1 at 25 °C by normalisation, so acclimation changes the <em>shape</em> and the optimum, while r<sub>JV</sub> changes the <em>amount</em> of J<sub>max</sub>; lower H<sub>d</sub> to see how it trades off against ΔS.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Net photosynthesis vs leaf temperature: acclimated vs fixed parameters at two CO₂ levels</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="atSvg" viewBox="0 0 640 380" role="img" aria-label="Net assimilation versus leaf temperature for leaves with acclimated and non-acclimated parameters at two atmospheric CO2 concentrations"></svg>
+            <div class="chart-tip" id="atTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Acclimated to T<sub>g</sub>, C<sub>a,1</sub></span><span style="--c:var(--series-1)">Dashed: fixed 25 °C parameters, C<sub>a,1</sub></span><span style="--c:var(--series-2)">Acclimated to T<sub>g</sub>, C<sub>a,2</sub></span><span style="--c:var(--series-2)">Dashed: fixed 25 °C parameters, C<sub>a,2</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="atTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="aTg"><span>Growth temperature T<sub>g</sub> (°C)</span><output id="aTgO">30</output></label><input type="range" id="aTg" min="10" max="35" step="0.5" value="30"></div>
+          <div class="ctrl"><label for="aCa1"><span>C<sub>a,1</sub> (µmol mol⁻¹)</span><output id="aCa1O">420</output></label><input type="range" id="aCa1" min="200" max="1000" step="10" value="420"></div>
+          <div class="ctrl"><label for="aCa2"><span>C<sub>a,2</sub> (µmol mol⁻¹)</span><output id="aCa2O">800</output></label><input type="range" id="aCa2" min="200" max="1000" step="10" value="800"></div>
+          <div class="ctrl"><label for="aQ"><span>PPFD (µmol m⁻² s⁻¹)</span><output id="aQO">1500</output></label><input type="range" id="aQ" min="100" max="2000" step="50" value="1500"></div>
+          <div class="ctrl"><label for="aV"><span>V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="aVO">60</output></label><input type="range" id="aV" min="20" max="120" step="5" value="60"></div>
+          <dl class="readout">
+            <dt>T<sub>opt</sub> acclimated, C<sub>a,1</sub> (°C)</dt><dd id="aT1a"></dd>
+            <dt>T<sub>opt</sub> fixed, C<sub>a,1</sub> (°C)</dt><dd id="aT1f"></dd>
+            <dt>T<sub>opt</sub> acclimated, C<sub>a,2</sub> (°C)</dt><dd id="aT2a"></dd>
+            <dt>T<sub>opt</sub> fixed, C<sub>a,2</sub> (°C)</dt><dd id="aT2f"></dd>
+            <dt>A(T<sub>g</sub>) acclimated, C<sub>a,1</sub></dt><dd id="aAg"></dd>
+            <dt>A(T<sub>g</sub>) fixed, C<sub>a,1</sub></dt><dd id="aAgf"></dd>
+            <dt>J<sub>max,25</sub> acclimated</dt><dd id="aJ"></dd>
+            <dt>J<sub>max,25</sub> fixed</dt><dd id="aJf"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">FvCB with C<sub>i</sub> = 0.7 C<sub>a</sub>, Bernacchi constants for K<sub>c</sub>, K<sub>o</sub>, Γ*, R<sub>d</sub> (R<sub>d,25</sub> = 0.015 V<sub>cmax,25</sub>), J from a non-rectangular hyperbola (θ = 0.7), and V<sub>cmax</sub>, J<sub>max</sub> peaked functions with Kattge &amp; Knorr ΔS and r<sub>JV</sub> evaluated at T<sub>g</sub> ("acclimated") or at 25 °C ("fixed"). Suggested experiments: set T<sub>g</sub> = 35 °C and compare the two C<sub>a,1</sub> curves above 35 °C, which is the tropical-warming case; set T<sub>g</sub> = 12 °C to see that a cold-acclimated leaf does better at low T but loses at high T; raise C<sub>a</sub> and watch the optimum move up by several degrees as photorespiration is suppressed; lower PPFD to 300 so that A follows J<sub>max</sub>.</p>
+    </div>
+  </section>
+
+  <section id="respiration">
+    <h2>Respiration: instantaneous response, acclimation and the global curve</h2>
+    <p>Leaf dark respiration R<sub>d</sub> rises roughly exponentially with temperature over the physiological range, with Q10 ≈ 2 near 20 °C but declining as temperature rises. Heskel et al. (2016) [7] fitted 673 temperature–respiration curves from 231 species across all major biomes and found a <strong>globally convergent</strong> shape well described by a log-polynomial,</p>
+    <div class="eq">$$\ln R = a + b\,T + c\,T^2 \quad\Longleftrightarrow\quad R(T) = R_{T_{ref}}\exp\!\left[b\,(T - T_{ref}) + c\,(T^2 - T_{ref}^2)\right],$$</div>
+    <div class="eq">$$b = 0.1012\ \mathrm{°C^{-1}},\qquad c = -0.0005\ \mathrm{°C^{-2}},$$</div>
+    <p>with the same b and c across biomes and plant functional types; only the basal rate differs. The negative c captures the falling Q10 (from ≈ 2.4 at 5 °C to ≈ 1.6 at 35 °C), and the single curve replaces biome-specific Q10 values in models. Atkin et al. (2015) [6] assembled a global database of R<sub>d,25</sub> and showed that, at a standard temperature, leaves from cold sites respire <em>more</em> than leaves from warm sites, and that R<sub>d,25</sub> relates to leaf N, P, LMA and V<sub>cmax</sub> with climate as an additional predictor.</p>
+    <h3>Type I and type II acclimation</h3>
+    <p>Atkin &amp; Tjoelker (2003) [5] distinguish two patterns when a plant is moved to a warmer growth temperature. <strong>Type I</strong>: the Q10 falls (the response curve flattens), so acclimated and non-acclimated leaves respire similarly at low measurement temperatures but differ increasingly at high ones; this reflects changes in substrate supply and adenylate control of existing enzymes and can occur within days in existing leaves. <strong>Type II</strong>: the basal rate (R at the reference temperature) falls with little change in Q10, shifting the whole curve down; this reflects changed mitochondrial density, protein content and respiratory capacity and generally requires new tissue developed at the new temperature. Full type II acclimation gives <em>homeostasis</em>: the leaf respires at the same rate in its new, warmer environment as it did in the old one. Globally, acclimation of R to warming is substantial (Atkin et al. 2015 and Heskel et al. 2016 suggest that the realised increase in R with a 10 °C warmer growth temperature is far smaller than an instantaneous Q10 of 2 would predict, often of the order of 20–40% rather than 100%), and models that ignore it overstate the respiratory feedback to warming.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Respiration explorer: Q10, Arrhenius, log-polynomial and acclimation</h3>
+        <div class="modebtns"><span class="small muted">Acclimation:</span><button class="btn small on" id="rType1" type="button">Type I (Q10 falls)</button><button class="btn small" id="rType2" type="button">Type II (base rate falls)</button></div>
+      </div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rSvg" viewBox="0 0 640 380" role="img" aria-label="Leaf respiration versus temperature from Q10, Arrhenius and log-polynomial formulations and an acclimated curve"></svg>
+            <div class="chart-tip" id="rTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Q10 (constant)</span><span style="--c:var(--series-2)">Arrhenius, H<sub>a</sub> = 46.4 kJ mol⁻¹</span><span style="--c:var(--series-3)">Heskel log-polynomial</span><span style="--c:var(--fg)">Q10 curve after acclimation to warming ΔT<sub>g</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="rTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rQ"><span>Q10</span><output id="rQO">2.0</output></label><input type="range" id="rQ" min="1.4" max="3.2" step="0.05" value="2"></div>
+          <div class="ctrl"><label for="rR"><span>R at T<sub>ref</sub> (µmol m⁻² s⁻¹)</span><output id="rRO">1.0</output></label><input type="range" id="rR" min="0.3" max="3" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="rTr"><span>T<sub>ref</sub> (°C)</span><output id="rTrO">20</output></label><input type="range" id="rTr" min="10" max="30" step="1" value="20"></div>
+          <div class="ctrl"><label for="rDT"><span>Growth-T warming ΔT<sub>g</sub> (°C)</span><output id="rDTO">5</output></label><input type="range" id="rDT" min="0" max="12" step="0.5" value="5"></div>
+          <div class="ctrl"><label for="rAcc"><span>Acclimation strength (0–1)</span><output id="rAccO">0.6</output></label><input type="range" id="rAcc" min="0" max="1" step="0.05" value="0.6"></div>
+          <dl class="readout">
+            <dt>Acclimated Q10</dt><dd id="rQa"></dd>
+            <dt>Acclimated R at T<sub>ref</sub></dt><dd id="rQb"></dd>
+            <dt>R(T<sub>ref</sub> + ΔT<sub>g</sub>), fixed</dt><dd id="rN"></dd>
+            <dt>R(T<sub>ref</sub> + ΔT<sub>g</sub>), acclimated</dt><dd id="rA"></dd>
+            <dt>Daily mean R, fixed</dt><dd id="rDn"></dd>
+            <dt>Daily mean R, acclimated</dt><dd id="rDa"></dd>
+            <dt>Daily R saved by acclimation</dt><dd id="rDd"></dd>
+            <dt>Heskel Q10 at T<sub>ref</sub></dt><dd id="rHq"></dd>
+            <dt>Heskel Q10 at 35 °C</dt><dd id="rHq2"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">All curves share R at T<sub>ref</sub>. Daily means integrate a sinusoidal day with mean T<sub>ref</sub> + ΔT<sub>g</sub> and amplitude 8 °C. Type I lowers Q10 by the acclimation strength times 0.06 per °C of warming, pivoting about 5 °C (Atkin &amp; Tjoelker's "convergence at low temperature"); type II lowers the base rate toward homeostasis (strength 1 gives the same R at the new growth temperature as at the old one). Suggested experiments: compare the three non-acclimated forms at 35 °C to see how far a fixed Q10 overshoots; set ΔT<sub>g</sub> = 4 °C (a 2100 scenario) and read the daily respiration difference; find the acclimation strength at which the acclimated curve matches the Heskel curve at warm temperatures.</p>
+    </div>
+  </section>
+
+  <section id="mechanisms">
+    <h2>Mechanisms and thermal tolerance</h2>
+    <p>Acclimation of photosynthesis to warm temperatures involves (Yamori, Hikosaka &amp; Way 2014 [9]; Way &amp; Yamori 2014 [8]): (i) <strong>membrane lipid composition</strong>: fewer unsaturated fatty acids in thylakoid membranes raise the temperature at which they become leaky, protecting PSII and electron transport; (ii) <strong>Rubisco activase</strong>: this ATP-dependent chaperone is the most heat-labile step of the Calvin cycle (deactivating above ~35–40 °C), and warm-grown plants express more thermostable isoforms, which raises the temperature at which V<sub>cmax</sub> falls; (iii) <strong>nitrogen reallocation</strong> between Rubisco and electron-transport components, visible as the fall in J<sub>max</sub>/V<sub>cmax</sub> with growth temperature; (iv) <strong>heat shock proteins</strong> and other chaperones, and increased antioxidant capacity against reactive oxygen species generated when electron sinks are limited. Cold acclimation works the other way (more unsaturated lipids, more Rubisco and cycle enzymes to compensate for low k<sub>cat</sub>, sink-strength adjustments to avoid TPU limitation).</p>
+    <p><strong>Thermal tolerance thresholds.</strong> T<sub>crit</sub> is the temperature at which minimal chlorophyll fluorescence (F<sub>0</sub>) begins to rise sharply, indicating the onset of PSII damage, and T<sub>50</sub> is where F<sub>v</sub>/F<sub>m</sub> has fallen by half. O'Sullivan et al. (2017) [12] measured 218 species across a global temperature gradient and found T<sub>crit</sub> of roughly 42–50 °C, increasing with latitude-related mean temperature by only ~0.3 °C per °C of site temperature, so that the <em>thermal safety margin</em> (T<sub>crit</sub> minus maximum leaf temperature) is smallest in the mid-latitudes and the tropics, not at the poles. Leaf temperatures regularly exceed air temperature by 5–10 °C in still, sunny conditions, especially when stomata close under drought, so heatwaves push leaves toward T<sub>crit</sub> in exactly the conditions when transpirational cooling fails. For models, T<sub>crit</sub> provides a hard upper bound that peaked-Arrhenius functions should respect, and an irreversible damage threshold that none of the standard functions represent.</p>
+  </section>
+
+  <section id="esm">
+    <h2>Mismatch, optimality and what models do</h2>
+    <h3>Why the mismatch between A and R acclimation matters</h3>
+    <p>NPP is the small difference between GPP and R<sub>a</sub>. If respiration acclimates strongly (type II homeostasis) and photosynthesis only partly, warming reduces respiratory losses relative to a fixed-Q10 projection and NPP is more robust; if photosynthesis acclimates and respiration does not, the opposite. Smith &amp; Dukes (2013) [10] reviewed the evidence and concluded that models with fixed responses systematically overestimate the loss of net carbon uptake with warming, because they ignore both forms of acclimation. Lombardozzi et al. (2015) [11] implemented Kattge &amp; Knorr acclimation for V<sub>cmax</sub> and J<sub>max</sub> and Atkin-style acclimation of R<sub>d</sub> in CLM4.5 and found that acclimation increased simulated land carbon uptake under RCP8.5 relative to the fixed-parameter version, with the respiratory acclimation acting everywhere and the photosynthetic acclimation increasing GPP at high latitudes but slightly decreasing it in the tropics (where leaves are pushed past their optimum regardless). Mercado et al. (2018) [17] showed in JULES that geographical and temporal variation in the thermal response of V<sub>cmax</sub> and J<sub>max</sub>, including acclimation, changes the projected land carbon store by amounts comparable to the spread among CMIP5 models, which makes the thermal response one of the most consequential plant-physiological uncertainties in Earth-system projections.</p>
+    <h3>Optimality-based acclimation</h3>
+    <p>Rather than fitting ΔS to growth temperature empirically, optimality models predict the acclimated state from first principles. Wang et al. (2017) [15] combined the <strong>least-cost hypothesis</strong> (plants minimise the summed costs of maintaining carboxylation and transpiration capacity, predicting C<sub>i</sub>/C<sub>a</sub> as a function of VPD, temperature and elevation) with the <strong>coordination hypothesis</strong> (V<sub>cmax</sub> acclimates so that Rubisco-limited and electron-transport-limited rates are equal under typical daytime conditions) to form the <strong>P-model</strong>, which predicts GPP from light, temperature, VPD and CO₂ with essentially no PFT-specific parameters. Smith et al. (2019) [16] used the same eco-evolutionary optimality logic to predict V<sub>cmax,25</sub> globally and showed it captures the observed decline of V<sub>cmax,25</sub> with growth temperature and its increase with light, better than N-based predictors. In these models acclimation of capacity emerges from the environment, which is attractive for projections because the empirical functions were fitted to a limited range of conditions.</p>
+    <h3>Phenology and growing degree days</h3>
+    <p>Temperature also acts through timing. Leaf-out and flowering in temperate species are commonly modelled with growing degree days, \(\mathrm{GDD} = \sum \max(0, T_{mean} - T_{base})\), accumulated from a start date until a threshold is reached, with chilling requirements and photoperiod as additional controls. Warming advances spring and lengthens the growing season, which is a form of acclimation of the <em>season</em> rather than of the leaf, and in many models contributes as much to the warming response of GPP as the leaf-level thermal response. The threshold GDD itself appears to decline when chilling is insufficient, another acclimation-like adjustment that fixed-parameter phenology models miss.</p>
+    <h3>Soil respiration Q10 and its confounders</h3>
+    <p>Soil respiration is routinely fitted with Q10 (typically 1.5–3, median ≈ 2.4 across sites) or the Lloyd &amp; Taylor (1994) function. Davidson &amp; Janssens (2006) [14] separate the <strong>intrinsic</strong> temperature sensitivity of decomposition (set by activation energy, higher for recalcitrant substrates by Arrhenius kinetics: the "carbon quality–temperature" hypothesis) from the <strong>apparent</strong> sensitivity observed in the field, which is confounded by substrate supply (root exudation and litterfall peak in the warm season), by moisture (dry summers suppress respiration when it is warmest, lowering the apparent Q10), by physical protection and diffusion limits, and by microbial acclimation and community change. The apparent Q10 of soil respiration is therefore not a transferable parameter, and the long-running debate over whether old soil carbon is more or less temperature-sensitive than young carbon turns on this distinction.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Carbon balance: A, R and A − R vs temperature and the thermal breadth</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cbSvg" viewBox="0 0 640 380" role="img" aria-label="Photosynthesis, respiration and their difference versus temperature with the optimum and 80 percent breadth marked"></svg>
+            <div class="chart-tip" id="cbTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Gross-ish photosynthesis A + R<sub>d</sub></span><span style="--c:var(--series-2)">Respiration R (leaf plus allocated non-leaf)</span><span style="--c:var(--fg)">Net carbon balance A − R</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cbTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cTg"><span>Growth temperature T<sub>g</sub> (°C)</span><output id="cTgO">25</output></label><input type="range" id="cTg" min="10" max="35" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="cRf"><span>R<sub>25</sub> / A<sub>max</sub></span><output id="cRfO">0.15</output></label><input type="range" id="cRf" min="0.05" max="0.5" step="0.01" value="0.15"></div>
+          <div class="ctrl"><label for="cQ"><span>Q10 of respiration</span><output id="cQO">2.0</output></label><input type="range" id="cQ" min="1.4" max="3" step="0.05" value="2"></div>
+          <div class="ctrl"><label for="cRacc"><span>R acclimation strength (0–1)</span><output id="cRaccO">0.5</output></label><input type="range" id="cRacc" min="0" max="1" step="0.05" value="0.5"></div>
+          <dl class="readout">
+            <dt>T<sub>opt</sub> of A (°C)</dt><dd id="cTa"></dd>
+            <dt>T<sub>opt</sub> of A − R (°C)</dt><dd id="cTn"></dd>
+            <dt>80% breadth range (°C)</dt><dd id="cBr"></dd>
+            <dt>Breadth width (°C)</dt><dd id="cBw"></dd>
+            <dt>T where A − R = 0 (°C)</dt><dd id="cT0"></dd>
+            <dt>A − R at T<sub>g</sub></dt><dd id="cNg"></dd>
+            <dt>A − R at T<sub>g</sub> + 4 °C</dt><dd id="cNg4"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Conceptual: A from the same acclimated FvCB leaf as above (C<sub>a</sub> = 420, PPFD 1500, V<sub>cmax,25</sub> = 60), R as a Q10 function scaled to A<sub>max</sub>, with type II respiratory acclimation reducing the base rate toward the value at a 25 °C growth temperature. Suggested experiments: raise T<sub>g</sub> and note that T<sub>opt</sub> of A − R moves less than T<sub>opt</sub> of A unless respiration also acclimates; set the acclimation strength to 0 with Q10 = 2.5 to see the "respiration runs away" projection; compare the breadth at T<sub>g</sub> = 15 and 30 °C.</p>
+    </div>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Model</th><th>Photosynthesis T response</th><th>Acclimation</th><th>Respiration</th></tr></thead>
+      <tbody>
+        <tr><td>CLM4.5 / CLM5</td><td>Peaked Arrhenius for V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub>; Arrhenius for K<sub>c</sub>, K<sub>o</sub>, Γ*, R<sub>d</sub> (Bernacchi)</td><td>Kattge &amp; Knorr ΔS and r<sub>JV</sub> from 10-day mean T (CLM4.5 on by default)</td><td>R<sub>d,25</sub> = 0.015 V<sub>cmax,25</sub>; CLM5 adds Atkin et al. 2015 acclimation of R<sub>d,25</sub> to growth T; maintenance R with Q10 = 2 (older) or Atkin</td></tr>
+        <tr><td>JULES</td><td>Q10-based with high/low T cut-offs (original Collatz form) or peaked Arrhenius option</td><td>Kattge &amp; Knorr and Kumarathunge options; Mercado 2018 variants</td><td>R<sub>d</sub> ∝ V<sub>cmax</sub>; Heskel/Atkin options</td></tr>
+        <tr><td>ORCHIDEE</td><td>Peaked Arrhenius (since Kattge &amp; Knorr), per PFT</td><td>Kattge &amp; Knorr growth-T dependence</td><td>Maintenance respiration linear in T with slope per PFT; Q10 for soil</td></tr>
+        <tr><td>BioCro</td><td>Bernacchi functions for C3; Collatz-type for C4 with Q10 and T cut-offs</td><td>Not by default</td><td>Q10 growth and maintenance respiration</td></tr>
+        <tr><td>P-model</td><td>Bernacchi/Arrhenius for kinetics; V<sub>cmax</sub> from coordination</td><td>Emergent from optimality (acclimated V<sub>cmax</sub>, J<sub>max</sub>, C<sub>i</sub>/C<sub>a</sub>)</td><td>R<sub>d</sub> ∝ V<sub>cmax</sub></td></tr>
+        <tr><td>Century / DayCent, MIMICS</td><td>–</td><td>Microbial acclimation implicit or absent (MIMICS has T-sensitive kinetics and CUE)</td><td>Soil decomposition: Q10 or Arrhenius with moisture scalar; CUE declines with T in MIMICS</td></tr>
+      </tbody></table></div>
+    <p>Three points for an exam answer. First, which quantities acclimate in a given model: usually ΔS (hence T<sub>opt</sub>), r<sub>JV</sub> and R<sub>d,25</sub>, rarely H<sub>a</sub> or T<sub>crit</sub>. Second, over what window the growth temperature is averaged (10–30 days), because that sets how fast the model responds to a heatwave versus a climatic trend. Third, the sign of the result: acclimation consistently increases projected land carbon storage relative to fixed responses, with the largest effects in the tropics (where it limits GPP loss) and boreal zone (where it limits respiratory increase).</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>H<sub>a</sub> for V<sub>cmax</sub>, J<sub>max</sub>, R<sub>d</sub></td><td class="num">65–72 · 44–50 · 46 kJ mol⁻¹</td><td>Bernacchi 2001/2003 [18]; Kattge &amp; Knorr [3]</td></tr>
+        <tr><td>H<sub>d</sub> (fixed)</td><td class="num">200 kJ mol⁻¹</td><td>Convention in [2, 3]</td></tr>
+        <tr><td>ΔS<sub>V</sub> at T<sub>g</sub> = 25 °C</td><td class="num">641.6 J mol⁻¹ K⁻¹</td><td>668.39 − 1.07 × 25; gives T<sub>opt,V</sub> ≈ 36 °C</td></tr>
+        <tr><td>ΔS<sub>J</sub> at T<sub>g</sub> = 25 °C</td><td class="num">641.0 J mol⁻¹ K⁻¹</td><td>659.70 − 0.75 × 25; gives T<sub>opt,J</sub> ≈ 34 °C</td></tr>
+        <tr><td>r<sub>JV</sub> = J<sub>max,25</sub>/V<sub>cmax,25</sub></td><td class="num">2.59 − 0.035 T<sub>g</sub> (1.72 at 25 °C)</td><td>[3]</td></tr>
+        <tr><td>Shift of T<sub>opt</sub> of A with growth T</td><td class="num">≈ 0.3–0.4 °C per °C</td><td>Kumarathunge et al. 2019 [4]</td></tr>
+        <tr><td>Q10 of leaf R near 20 °C</td><td class="num">≈ 2, falling to ≈ 1.6 at 35 °C</td><td>Heskel et al. 2016: b = 0.1012, c = −0.0005 [7]</td></tr>
+        <tr><td>Arrhenius Q10 for H<sub>a</sub> = 55 kJ mol⁻¹</td><td class="num">2.4 at 10 °C, 2.0 at 30 °C</td><td>Q10 declines with T even for pure Arrhenius</td></tr>
+        <tr><td>T<sub>crit</sub> (PSII damage onset)</td><td class="num">≈ 42–50 °C</td><td>O'Sullivan et al. 2017 [12]; rises only ~0.3 °C per °C site T</td></tr>
+        <tr><td>Rubisco activase deactivation</td><td class="num">above ≈ 35–40 °C</td><td>Sage &amp; Kubien 2007 [13]</td></tr>
+        <tr><td>T<sub>opt</sub> of net A, C3, ambient CO₂</td><td class="num">20–30 °C (tropical trees ≈ 28–32)</td><td>Rises ≈ 2–5 °C under doubled CO₂</td></tr>
+        <tr><td>Growth-T window for acclimation in models</td><td class="num">10–30 days</td><td>CLM: 10-day running mean</td></tr>
+        <tr><td>Soil respiration apparent Q10</td><td class="num">1.5–3 (median ≈ 2.4)</td><td>Confounded by moisture and substrate [14]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Write the peaked-Arrhenius function, derive the expression for its optimum temperature, and explain which parameter a model should change to represent thermal acclimation.</summary><div class="a"><p>k(T) = k<sub>25</sub> exp[H<sub>a</sub>(T − T<sub>ref</sub>)/(R T<sub>ref</sub> T)] × [1 + exp((T<sub>ref</sub>ΔS − H<sub>d</sub>)/(R T<sub>ref</sub>))]/[1 + exp((TΔS − H<sub>d</sub>)/(RT))]. Ignoring the constant normalisation, write k ∝ exp(−H<sub>a</sub>/RT)/[1 + exp((TΔS − H<sub>d</sub>)/RT)]. Differentiate ln k with respect to T: d ln k/dT = H<sub>a</sub>/(RT²) − [exp(x) · (H<sub>d</sub>/(RT²))]/[1 + exp(x)] where x = (TΔS − H<sub>d</sub>)/(RT) and dx/dT = H<sub>d</sub>/(RT²). Setting to zero: H<sub>a</sub>(1 + e<sup>x</sup>) = H<sub>d</sub> e<sup>x</sup>, so e<sup>x</sup> = H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>), i.e. (T<sub>opt</sub>ΔS − H<sub>d</sub>)/(RT<sub>opt</sub>) = ln[H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>)], giving T<sub>opt</sub> = H<sub>d</sub>/[ΔS − R ln(H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>))]. With H<sub>d</sub> fixed at 200 kJ mol⁻¹ (because H<sub>d</sub> and ΔS are nearly collinear in fits) and H<sub>a</sub> fixed, T<sub>opt</sub> depends only on ΔS: decreasing ΔS raises T<sub>opt</sub>. Kattge &amp; Knorr therefore make ΔS a declining linear function of growth temperature (ΔS<sub>V</sub> = 668.39 − 1.07 T<sub>g</sub>), which shifts the optimum by about 0.44 °C per °C; they also make J<sub>max,25</sub>/V<sub>cmax,25</sub> decline with T<sub>g</sub>. Kumarathunge et al. additionally let H<sub>a,V</sub> rise with growth temperature.</p></div></details>
+    <details class="q"><summary>2. Why does a single Q10 misrepresent the temperature response of respiration, and what do Heskel et al. (2016) propose instead?</summary><div class="a"><p>A constant Q10 implies ln R is linear in T. Both theory and data disagree. Theory: an Arrhenius process is exponential in 1/T, so its Q10 = exp[10 H<sub>a</sub>/(RT(T + 10))] declines with temperature (2.4 at 10 °C to 2.0 at 30 °C for H<sub>a</sub> = 55 kJ mol⁻¹). Data: measured leaf respiration curves bend even more, with Q10 falling from above 3 near 0 °C to about 1.5 at 35 °C, because at high temperatures respiration becomes limited by substrate and adenylate availability rather than enzyme capacity, and at very high temperatures by membrane and enzyme damage. A Q10 fitted at moderate temperatures therefore overpredicts R at high temperature and underpredicts it at low temperature, which biases the simulated respiratory response to warming upward. Heskel et al. fitted 673 curves from 231 species and found a globally convergent second-order log-polynomial, ln R = a + bT + cT² with b = 0.1012 and c = −0.0005 (T in °C), i.e. R(T) = R<sub>ref</sub> exp[b(T − T<sub>ref</sub>) + c(T² − T<sub>ref</sub>²)], with the same curvature across biomes and only the basal rate varying. Implemented in a model this replaces biome-specific Q10 values with one shape plus an acclimating or trait-predicted R<sub>25</sub>, and reduces the simulated increase in leaf respiration under warming.</p></div></details>
+    <details class="q"><summary>3. Distinguish type I and type II acclimation of respiration. Sketch both (in words) and say what each implies for respiration in a warmer climate.</summary><div class="a"><p>Both describe how the R–T curve changes after a plant is grown at a warmer temperature. Type I: the slope (Q10) decreases, so the acclimated and non-acclimated curves coincide at low measurement temperature and diverge increasingly at high temperature; on a plot of R vs T the warm-grown curve is flatter and lies below the cool-grown one only above the pivot temperature. It is attributed to adjustments in substrate supply, adenylate restriction and enzyme regulation, and can occur in existing leaves within days. Type II: the basal rate R<sub>ref</sub> falls with little change in Q10, so the whole curve shifts down; it reflects reduced respiratory capacity (mitochondrial number, protein content) and typically needs leaves developed at the new temperature. Full type II acclimation yields homeostasis, the leaf respiring at its new growth temperature at the rate it previously had at the old one. Implications: with type I, warming raises respiration less than Q10 would predict, especially during warm days, but cool nights are unaffected; with type II, respiration at all temperatures is lower, so the annual respiratory flux may hardly change. In both cases models that use a fixed Q10 and fixed R<sub>25</sub> overstate the respiratory feedback to warming; CLM5 and JULES now reduce R<sub>d,25</sub> with growth temperature following Atkin et al. (2015), which is a type II representation.</p></div></details>
+    <details class="q"><summary>4. A tropical forest leaf and a boreal conifer needle are each warmed 4 °C with full acclimation. Predict the direction of change in net photosynthesis for each and justify with the shape of the A–T curve.</summary><div class="a"><p>The A–T curve is asymmetric: a gentle rise below T<sub>opt</sub>, a steep fall above it. Acclimation moves T<sub>opt</sub> by only ~0.3–0.4 °C per °C of growth temperature, so a 4 °C warming moves the optimum about 1.5 °C while the operating temperature moves 4 °C; leaves end up relatively further up the warm side of their curve. The tropical leaf already operates at or slightly above its optimum (T<sub>opt</sub> ≈ 28–32 °C, midday leaf temperatures 30–38 °C), so warming pushes it onto the steep descending limb where photorespiration, Rubisco deactivation and high VPD-driven stomatal closure all reduce A; acclimation softens but does not reverse the loss. The boreal needle operates well below its optimum for most of the season (growth temperatures 10–15 °C, T<sub>opt</sub> ≈ 20–25 °C), so a 4 °C warming moves it up the ascending limb, increases A, and the acclimation (slightly higher optimum, lower r<sub>JV</sub>) adds further; it also lengthens the growing season. This is the pattern Kumarathunge et al. and Lombardozzi et al. find: photosynthetic acclimation produces gains at high latitudes and smaller losses, but still losses, in the tropics, with the tropical response being the most consequential for global GPP because that is where most of it occurs. Caveat: both answers assume adequate water; drought changes the sign for the boreal needle by raising leaf temperature toward T<sub>crit</sub>.</p></div></details>
+    <details class="q"><summary>5. Explain how Lombardozzi et al. (2015) implemented thermal acclimation in a land model and why it changed the projected carbon cycle. What are the limitations of their approach?</summary><div class="a"><p>They added two empirical acclimation schemes to CLM4.5. For photosynthesis, the ΔS parameters of the peaked-Arrhenius functions for V<sub>cmax</sub> and J<sub>max</sub> and the J<sub>max,25</sub>/V<sub>cmax,25</sub> ratio were made linear functions of the 10-day mean air temperature following Kattge &amp; Knorr (2007), so that T<sub>opt</sub> rises in warm periods. For respiration, leaf R<sub>d,25</sub> was reduced with increasing growth temperature following Atkin and colleagues' type II acclimation. Running RCP8.5 to 2100, respiratory acclimation lowered autotrophic respiration everywhere, and photosynthetic acclimation increased GPP at mid and high latitudes while reducing it slightly in the tropics; net, acclimation increased land carbon storage relative to the fixed-parameter run by a significant fraction of the projected sink. The reason is that fixed functions parameterised at 25 °C place warming leaves on the steep side of their curves and let respiration rise with a constant Q10; acclimation flattens both responses. Limitations: the functions were fitted to a limited set of mostly temperate species and extrapolated to tropical and boreal temperatures; H<sub>a</sub>, T<sub>crit</sub> and stomatal parameters were not acclimated; acclimation was instantaneous with the 10-day mean, with no lag for leaf development; respiration acclimation was applied to leaves only, not to stems and roots; and the scheme does not represent damage or mortality above T<sub>crit</sub>. Mercado et al. (2018) showed that alternative plausible thermal-response assumptions change the land carbon store by amounts comparable to inter-model spread, so the uncertainty is large.</p></div></details>
+    <details class="q"><summary>6. What is the "apparent" versus "intrinsic" temperature sensitivity of soil respiration, and how does the distinction affect the interpretation of a field-measured Q10?</summary><div class="a"><p>Intrinsic sensitivity is the response of a decomposition reaction to temperature when substrate, enzyme and moisture are not limiting; by Arrhenius kinetics it should be higher for substrates with higher activation energy (chemically recalcitrant compounds), the carbon quality–temperature hypothesis. Apparent sensitivity is what a seasonal regression of soil CO₂ efflux on soil temperature yields. Davidson &amp; Janssens (2006) list the confounders: substrate supply co-varies with temperature (root exudation and fresh litter are greatest in the growing season), so part of the apparent response is a supply effect; soil moisture limits respiration when soils are hot and dry, lowering the apparent Q10, or when cold and waterlogged; physical protection (aggregates, mineral association) and diffusion limits make the available substrate pool itself temperature-dependent; roots and microbes acclimate and communities shift; and the temperature at the measurement depth does not represent the temperature where most respiration occurs. A field Q10 of 2.4 therefore cannot be transferred to a different site or climate, nor decomposed into root and microbial parts, and models that use it to project warming feedbacks confuse a seasonal correlation with a causal response. Better practice: measure Q10 from short-term manipulations with substrate controlled, separate heterotrophic from autotrophic respiration (trenching, girdling, isotopes), fit moisture jointly with temperature, and treat the long-term response as including acclimation and substrate depletion.</p></div></details>
+    <details class="q"><summary>7. Describe how optimality-based models (P-model; Smith et al. 2019) predict acclimated photosynthetic capacity without empirical acclimation functions, and give one strength and one weakness relative to the Kattge &amp; Knorr approach.</summary><div class="a"><p>Two hypotheses are combined. The least-cost hypothesis states that plants adjust C<sub>i</sub>/C<sub>a</sub> to minimise the combined unit costs of maintaining carboxylation capacity and water transport, which predicts χ = C<sub>i</sub>/C<sub>a</sub> as a function of VPD, temperature (through Γ*, K and water viscosity) and elevation, matching the global pattern in leaf δ¹³C. The coordination hypothesis states that V<sub>cmax</sub> acclimates over weeks so that the Rubisco-limited rate equals the electron-transport-limited rate under average daytime conditions of light, temperature and C<sub>i</sub>; hence V<sub>cmax</sub> = φ<sub>0</sub> I (C<sub>i</sub> + K)/(C<sub>i</sub> + 2Γ*) with a correction for J<sub>max</sub> limitation. Given monthly light, temperature, VPD and CO₂ the P-model thus predicts χ, V<sub>cmax</sub>, J<sub>max</sub> and GPP; Smith et al. (2019) show the predicted V<sub>cmax,25</sub> reproduces the observed global decline with growth temperature and increase with irradiance. Strength: acclimation emerges from the environment, so the scheme extrapolates to novel climates and CO₂ without the limited calibration range of the Kattge &amp; Knorr regressions, and it removes PFT-specific V<sub>cmax</sub> values. Weakness: it predicts only the acclimated steady state, not the instantaneous response or the dynamics of adjustment, it assumes nutrients allow the optimal capacity to be built, and the cost parameters are themselves fitted; the instantaneous temperature functions (Bernacchi kinetics) still have to be supplied.</p></div></details>
+    <details class="q"><summary>8. Define T<sub>crit</sub>, explain how it is measured, and discuss why thermal safety margins are smallest at mid latitudes despite T<sub>crit</sub> increasing toward the tropics.</summary><div class="a"><p>T<sub>crit</sub> is the leaf temperature at which the minimal chlorophyll fluorescence F<sub>0</sub> begins to rise steeply during a controlled heating ramp (typically 1 °C min⁻¹ on dark-adapted leaf discs), signalling the onset of irreversible damage to PSII and thylakoid membranes; T<sub>50</sub>, the temperature at which F<sub>v</sub>/F<sub>m</sub> falls to half, is a related metric. O'Sullivan et al. (2017) measured 218 species from 19 sites and found T<sub>crit</sub> from about 42 °C in Arctic and cool-temperate plants to about 50 °C in hot-desert and tropical species, increasing with site temperature at roughly 0.3 °C per °C, a weak slope. The thermal safety margin is T<sub>crit</sub> minus the maximum leaf temperature experienced. Maximum leaf temperatures depend on air temperature extremes plus the leaf-to-air difference set by radiation load, wind and transpirational cooling; mid-latitude continental sites have very high summer extremes (heatwaves of 40 °C or more) combined with drought that closes stomata and removes cooling, while tropical sites have higher means but less extreme maxima and more humid air. Because T<sub>crit</sub> rises more slowly than site temperature across latitude, and extremes rise faster than means, the margin narrows toward warm and especially continental mid-latitude sites. For models the point is that peaked-Arrhenius functions decline smoothly and reversibly, whereas real leaves cross a damage threshold; current land models lack this, which matters for heatwave impacts on crops and forests.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Berry JA, Björkman O (1980). Photosynthetic response and adaptation to temperature in higher plants. <em>Annual Review of Plant Physiology</em> 31: 491–543. <a href="https://doi.org/10.1146/annurev.pp.31.060180.002423">doi:10.1146/annurev.pp.31.060180.002423</a><span class="why">The classic review establishing response, acclimation and adaptation of the photosynthetic temperature optimum.</span></li>
+      <li>Medlyn BE, Dreyer E, Ellsworth D, et al. (2002). Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. <em>Plant, Cell &amp; Environment</em> 25: 1167–1179. <a href="https://doi.org/10.1046/j.1365-3040.2002.00891.x">doi:10.1046/j.1365-3040.2002.00891.x</a><span class="why">The peaked-Arrhenius parameterisation for V<sub>cmax</sub> and J<sub>max</sub> and the species comparison that motivated acclimation functions.</span></li>
+      <li>Kattge J, Knorr W (2007). Temperature acclimation in a biochemical model of photosynthesis: a reanalysis of data from 36 species. <em>Plant, Cell &amp; Environment</em> 30: 1176–1190. <a href="https://doi.org/10.1111/j.1365-3040.2007.01690.x">doi:10.1111/j.1365-3040.2007.01690.x</a><span class="why">Source of the ΔS and r<sub>JV</sub> growth-temperature relations used in CLM, JULES and the labs on this page.</span></li>
+      <li>Kumarathunge DP, Medlyn BE, Drake JE, et al. (2019). Acclimation and adaptation components of the temperature dependence of plant photosynthesis at the global scale. <em>New Phytologist</em> 222: 768–784. <a href="https://doi.org/10.1111/nph.15668">doi:10.1111/nph.15668</a><span class="why">Global synthesis separating acclimation from adaptation; updated functions replacing Kattge &amp; Knorr.</span></li>
+      <li>Atkin OK, Tjoelker MG (2003). Thermal acclimation and the dynamic response of plant respiration to temperature. <em>Trends in Plant Science</em> 8: 343–351. <a href="https://doi.org/10.1016/S1360-1385(03)00136-5">doi:10.1016/S1360-1385(03)00136-5</a><span class="why">Defines type I and type II acclimation of respiration.</span></li>
+      <li>Atkin OK, Bloomfield KJ, Reich PB, et al. (2015). Global variability in leaf respiration in relation to climate, plant functional types and leaf traits. <em>New Phytologist</em> 206: 614–636. <a href="https://doi.org/10.1111/nph.13253">doi:10.1111/nph.13253</a><span class="why">The GlobResp database; R<sub>d,25</sub> declines with growth temperature, which CLM5 implements.</span></li>
+      <li>Heskel MA, O'Sullivan OS, Reich PB, et al. (2016). Convergence in the temperature response of leaf respiration across biomes and plant functional types. <em>PNAS</em> 113: 3832–3837. <a href="https://doi.org/10.1073/pnas.1520282113">doi:10.1073/pnas.1520282113</a><span class="why">The global log-polynomial respiration curve (b = 0.1012, c = −0.0005).</span></li>
+      <li>Way DA, Yamori W (2014). Thermal acclimation of photosynthesis: on the importance of adjusting our definitions and accounting for thermal acclimation of respiration. <em>Photosynthesis Research</em> 119: 89–100. <a href="https://doi.org/10.1007/s11120-013-9873-7">doi:10.1007/s11120-013-9873-7</a><span class="why">Clarifies what counts as acclimation (shift of T<sub>opt</sub> vs change in rate) and why respiration must be considered jointly.</span></li>
+      <li>Yamori W, Hikosaka K, Way DA (2014). Temperature response of photosynthesis in C3, C4, and CAM plants: temperature acclimation and temperature adaptation. <em>Photosynthesis Research</em> 119: 101–117. <a href="https://doi.org/10.1007/s11120-013-9874-6">doi:10.1007/s11120-013-9874-6</a><span class="why">Mechanisms: Rubisco activase, membranes, N reallocation, differences among photosynthetic types.</span></li>
+      <li>Smith NG, Dukes JS (2013). Plant respiration and photosynthesis in global-scale models: incorporating acclimation to temperature and CO₂. <em>Global Change Biology</em> 19: 45–63. <a href="https://doi.org/10.1111/j.1365-2486.2012.02797.x">doi:10.1111/j.1365-2486.2012.02797.x</a><span class="why">Review of how models represent (or omit) acclimation and what the omission costs.</span></li>
+      <li>Lombardozzi DL, Bonan GB, Smith NG, Dukes JS, Fisher RA (2015). Temperature acclimation of photosynthesis and respiration: a key uncertainty in the carbon cycle-climate feedback. <em>Geophysical Research Letters</em> 42: 8624–8631. <a href="https://doi.org/10.1002/2015GL065934">doi:10.1002/2015GL065934</a><span class="why">Acclimation in CLM4.5 increases projected land carbon storage.</span></li>
+      <li>O'Sullivan OS, Heskel MA, Reich PB, et al. (2017). Thermal limits of leaf metabolism across biomes. <em>Global Change Biology</em> 23: 209–223. <a href="https://doi.org/10.1111/gcb.13477">doi:10.1111/gcb.13477</a><span class="why">Global T<sub>crit</sub> and T<sub>max</sub> of respiration; thermal safety margins.</span></li>
+      <li>Sage RF, Kubien DS (2007). The temperature response of C3 and C4 photosynthesis. <em>Plant, Cell &amp; Environment</em> 30: 1086–1106. <a href="https://doi.org/10.1111/j.1365-3040.2007.01682.x">doi:10.1111/j.1365-3040.2007.01682.x</a><span class="why">Which process limits A at each temperature; Rubisco activase and electron transport at high T.</span></li>
+      <li>Davidson EA, Janssens IA (2006). Temperature sensitivity of soil carbon decomposition and feedbacks to climate change. <em>Nature</em> 440: 165–173. <a href="https://doi.org/10.1038/nature04514">doi:10.1038/nature04514</a><span class="why">Intrinsic vs apparent temperature sensitivity and the confounders of soil respiration Q10.</span></li>
+      <li>Wang H, Prentice IC, Keenan TF, et al. (2017). Towards a universal model for carbon dioxide uptake by plants. <em>Nature Plants</em> 3: 734–741. <a href="https://doi.org/10.1038/s41477-017-0006-8">doi:10.1038/s41477-017-0006-8</a><span class="why">The P-model: least-cost plus coordination hypotheses giving acclimated capacity from climate.</span></li>
+      <li>Smith NG, Keenan TF, Prentice IC, et al. (2019). Global photosynthetic capacity is optimized to the environment. <em>Ecology Letters</em> 22: 506–517. <a href="https://doi.org/10.1111/ele.13210">doi:10.1111/ele.13210</a><span class="why">Optimality prediction of V<sub>cmax,25</sub> including its decline with growth temperature.</span></li>
+      <li>Mercado LM, Medlyn BE, Huntingford C, et al. (2018). Large sensitivity in land carbon storage due to geographical and temporal variation in the thermal response of photosynthetic capacity. <em>New Phytologist</em> 218: 1462–1477. <a href="https://doi.org/10.1111/nph.15100">doi:10.1111/nph.15100</a><span class="why">JULES experiments showing the thermal response is a first-order uncertainty for the land sink.</span></li>
+      <li>Bernacchi CJ, Singsaas EL, Pimentel C, Portis AR Jr, Long SP (2001). Improved temperature response functions for models of Rubisco-limited photosynthesis. <em>Plant, Cell &amp; Environment</em> 24: 253–259. <a href="https://doi.org/10.1111/j.1365-3040.2001.00668.x">doi:10.1111/j.1365-3040.2001.00668.x</a>; Bernacchi CJ, Portis AR, Nakano H, von Caemmerer S, Long SP (2002). Temperature response of mesophyll conductance. <em>Plant Physiology</em> 130: 1992–1998. <a href="https://doi.org/10.1104/pp.008250">doi:10.1104/pp.008250</a><span class="why">Kinetic constants and g<sub>m</sub> temperature response used in the labs.</span></li>
+      <li>Lloyd J, Taylor JA (1994). On the temperature dependence of soil respiration. <em>Functional Ecology</em> 8: 315–323. <a href="https://doi.org/10.2307/2389824">doi:10.2307/2389824</a><span class="why">The Lloyd–Taylor function and the argument against constant Q10 for soils.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="canopy-upscaling.html">← Previous: Canopy upscaling</a><a href="water-potential-vpd.html">Next: Water potential and VPD →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#timescales">Three timescales</a></li>
+      <li><a href="#formalism">Arrhenius, Q10, T<sub>opt</sub></a></li>
+      <li><a href="#acclim">Photosynthetic acclimation</a></li>
+      <li><a href="#respiration">Respiration</a></li>
+      <li><a href="#mechanisms">Mechanisms &amp; tolerance</a></li>
+      <li><a href="#esm">Mismatch, optimality, models</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (C<sub>i</sub> = 0.7 C<sub>a</sub>, infinite g<sub>m</sub>, no energy balance, idealised acclimation strength) chosen for intuition. Constants follow Bernacchi et al. 2001, Kattge &amp; Knorr 2007 and Heskel et al. 2016.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function $(id) { return document.getElementById(id); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = $(id); if (e) e.addEventListener('input', fn); }); }
+  function outs(ids) { ids.forEach(function (id) { var o = $(id + 'O'), e = $(id); if (o && e) o.textContent = e.value; }); }
+  function ticks(min, max, step) { var t = []; for (var v = min; v <= max + 1e-9; v += step) t.push(Math.round(v * 1000) / 1000); return t; }
+  function niceStep(range) { var raw = range / 6, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / p; return (r < 1.5 ? 1 : r < 3.5 ? 2 : r < 7.5 ? 5 : 10) * p; }
+
+  /* ---------- generic line chart ---------- */
+  function makeChart(svg, tip, cfg) {
+    var W = 640, H = 380, mL = 58, mR = cfg.mR == null ? 96 : cfg.mR, mT = 18, mB = 48;
+    var pw = W - mL - mR, ph = H - mT - mB, x = cfg.x, y = cfg.y;
+    function sx(v) { return mL + (v - x.min) / (x.max - x.min) * pw; }
+    function sy(v) { return mT + (y.max - v) / (y.max - y.min) * ph; }
+    function cy(v) { return sy(clamp(v, y.min, y.max)); }
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    y.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(t), y2: sy(t) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(t) + 4, 'text-anchor': 'end' }, y.fmt ? y.fmt(t) : t)); });
+    x.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(t), x2: sx(t), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(t), y: mT + ph + 18, 'text-anchor': 'middle' }, x.fmt ? x.fmt(t) : t)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    if (y.min < 0 && y.max > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, x.label));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, y.label));
+    (cfg.vlines || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ref', x1: sx(v.x), x2: sx(v.x), y1: mT, y2: mT + ph })); if (v.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(v.x) + 4, y: mT + 12 + (v.dy || 0) }, v.label)); });
+    (cfg.hlines || []).forEach(function (h) { svg.appendChild(el('line', { 'class': 'ref', x1: mL, x2: mL + pw, y1: sy(h.y), y2: sy(h.y) })); if (h.label) svg.appendChild(el('text', { 'class': 'tick', x: mL + 6, y: sy(h.y) - 4 }, h.label)); });
+    var n = cfg.n || 160;
+    function val(s, xv) {
+      if (s.f) return s.f(xv);
+      var p = s.pts; if (xv <= p[0][0]) return p[0][1];
+      for (var i = 1; i < p.length; i++) if (xv <= p[i][0]) { var a = p[i - 1], b = p[i]; return a[1] + (b[1] - a[1]) * (xv - a[0]) / ((b[0] - a[0]) || 1); }
+      return p[p.length - 1][1];
+    }
+    var labs = [];
+    cfg.series.forEach(function (s) {
+      var d = '';
+      if (s.pts) { s.pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + sx(p[0]).toFixed(1) + ',' + cy(p[1]).toFixed(1); }); }
+      else { for (var i = 0; i <= n; i++) { var xv = x.min + (x.max - x.min) * i / n; var yv = s.f(xv); if (!isFinite(yv)) continue; d += (d === '' ? 'M' : 'L') + sx(xv).toFixed(1) + ',' + cy(yv).toFixed(1); } }
+      var attrs = { 'class': 'ser', d: d, stroke: s.color };
+      if (s.dash) attrs['stroke-dasharray'] = s.dash;
+      if (s.width) attrs['stroke-width'] = s.width;
+      svg.appendChild(el('path', attrs));
+      if (s.label) { var last = s.pts ? s.pts[s.pts.length - 1][1] : s.f(x.max); labs.push({ t: s.label, y: cy(last), col: s.color }); }
+    });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    (cfg.marks || []).forEach(function (m) { svg.appendChild(el('circle', { 'class': 'mark', cx: sx(m.x), cy: cy(m.y), r: 4.5, stroke: m.color })); if (m.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(m.x) + 7, y: cy(m.y) - 6 }, m.label)); });
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dots = cfg.series.map(function (s) { var d = el('circle', { r: 4, fill: s.color, visibility: 'hidden' }); svg.appendChild(d); return d; });
+    var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = clamp(x.min + (p.x - mL) / pw * (x.max - x.min), x.min, x.max);
+      xh.setAttribute('x1', sx(xv)); xh.setAttribute('x2', sx(xv)); xh.setAttribute('visibility', 'visible');
+      var html = (x.name || 'x') + ' <b>' + (x.tipfmt ? x.tipfmt(xv) : fmt(xv, 1)) + '</b>';
+      cfg.series.forEach(function (s, i) { var v = val(s, xv); dots[i].setAttribute('cx', sx(xv)); dots[i].setAttribute('cy', cy(v)); dots[i].setAttribute('visibility', 'visible'); html += '<br>' + s.name + ' <b>' + (y.tipfmt ? y.tipfmt(v) : fmt(v, 2)) + '</b>'; });
+      if (cfg.extra) html += cfg.extra(xv);
+      tip.innerHTML = html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function table(tb, head, rows) {
+    var html = '<thead><tr>' + head.map(function (h) { return '<th class="num">' + h + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r) { html += '<tr>' + r.map(function (c) { return '<td class="num">' + c + '</td>'; }).join('') + '</tr>'; });
+    tb.innerHTML = html + '</tbody>';
+  }
+  function argmax(f, a, b, step) { var best = -Infinity, bx = a; for (var x = a; x <= b + 1e-9; x += step) { var v = f(x); if (v > best) { best = v; bx = x; } } return { x: bx, v: best }; }
+
+  /* ---------- physics ---------- */
+  var R = 8.314, T25 = 298.15;
+  function arrN(Ha, Tk) { return Math.exp(Ha * (Tk - T25) / (T25 * R * Tk)); }          // Ha in J/mol
+  function peakN(Ha, Hd, dS, Tk) { var num = 1 + Math.exp((T25 * dS - Hd) / (T25 * R)); var den = 1 + Math.exp((Tk * dS - Hd) / (Tk * R)); return arrN(Ha, Tk) * num / den; }
+  function Topt(Ha, Hd, dS) { return Hd / (dS - R * Math.log(Ha / (Hd - Ha))) - 273.15; }
+  var HaV = 71513, HaJ = 49884;
+  function dSV(Tg) { return 668.39 - 1.07 * Tg; }
+  function dSJ(Tg) { return 659.70 - 0.75 * Tg; }
+  function rJV(Tg) { return 2.59 - 0.035 * Tg; }
+  // Bernacchi 2001 absolute functions (ubar, mbar)
+  function Kc(Tk) { return Math.exp(38.05 - 79430 / (R * Tk)); }
+  function Ko(Tk) { return Math.exp(20.30 - 36380 / (R * Tk)); }
+  function Gs(Tk) { return Math.exp(19.02 - 37830 / (R * Tk)); }
+  // leaf net A at temperature T (C), given Tg for acclimation (null = fixed 25)
+  function leafA(T, Tg, Ca, Q, V25) {
+    var Tk = T + 273.15, g = Tg === null ? 25 : Tg;
+    var Vc = V25 * peakN(HaV, 200000, dSV(g), Tk);
+    var J25 = V25 * rJV(g);
+    var Jm = J25 * peakN(HaJ, 200000, dSJ(g), Tk);
+    var Rd = 0.015 * V25 * arrN(46390, Tk);
+    var I2 = Q * 0.85 * (1 - 0.15) / 2, th = 0.7;
+    var J = (I2 + Jm - Math.sqrt((I2 + Jm) * (I2 + Jm) - 4 * th * I2 * Jm)) / (2 * th);
+    var Ci = 0.7 * Ca, kc = Kc(Tk), ko = Ko(Tk), gs = Gs(Tk), O = 210;
+    var Ac = Vc * (Ci - gs) / (Ci + kc * (1 + O / ko));
+    var Aj = J * (Ci - gs) / (4 * Ci + 8 * gs);
+    return { A: Math.min(Ac, Aj) - Rd, Rd: Rd, J25: J25 };
+  }
+
+  /* ---------- Lab A: Kattge & Knorr explorer ---------- */
+  var kIds = ['kTg', 'kHd'];
+  function drawKK() {
+    outs(kIds);
+    var Tg = +$('kTg').value, Hd = +$('kHd').value * 1000;
+    var sv = dSV(Tg), sj = dSJ(Tg), sv25 = dSV(25), sj25 = dSJ(25);
+    var fV = function (T) { return peakN(HaV, Hd, sv, T + 273.15); }, fJ = function (T) { return peakN(HaJ, Hd, sj, T + 273.15); };
+    var fV25 = function (T) { return peakN(HaV, Hd, sv25, T + 273.15); }, fJ25 = function (T) { return peakN(HaJ, Hd, sj25, T + 273.15); };
+    var tv = Topt(HaV, Hd, sv), tj = Topt(HaJ, Hd, sj);
+    makeChart($('kkSvg'), $('kkTip'), {
+      x: { min: 0, max: 50, ticks: ticks(0, 50, 10), label: 'Leaf temperature (°C)', name: 'T', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1) + ' °C'; } },
+      y: { min: 0, max: 3, ticks: [0, 0.5, 1, 1.5, 2, 2.5, 3], label: 'Rate relative to 25 °C value', fmt: function (v) { return fmt(v, 1); } },
+      vlines: [{ x: Tg, label: 'Tg = ' + Tg + ' °C' }],
+      hlines: [{ y: 1 }],
+      marks: [{ x: tv, y: fV(tv), color: 'var(--series-1)', label: 'Topt,V ' + fmt(tv, 1) }, { x: tj, y: fJ(tj), color: 'var(--series-2)', label: 'Topt,J ' + fmt(tj, 1) }],
+      series: [
+        { name: 'Vcmax fixed (Tg = 25)', label: '', color: 'var(--series-1)', f: fV25, dash: '5 4' },
+        { name: 'Jmax fixed (Tg = 25)', label: '', color: 'var(--series-2)', f: fJ25, dash: '5 4' },
+        { name: 'Vcmax acclimated', label: 'Vcmax', color: 'var(--series-1)', f: fV, width: 2.6 },
+        { name: 'Jmax acclimated', label: 'Jmax', color: 'var(--series-2)', f: fJ, width: 2.6 }
+      ]
+    });
+    $('kSv').textContent = fmt(sv, 1); $('kSj').textContent = fmt(sj, 1);
+    $('kTv').textContent = fmt(tv, 1); $('kTj').textContent = fmt(tj, 1);
+    $('kDv').textContent = (tv - Topt(HaV, Hd, sv25) >= 0 ? '+' : '') + fmt(tv - Topt(HaV, Hd, sv25), 1);
+    $('kR').textContent = fmt(rJV(Tg), 2);
+    $('kPk').textContent = fmt(fV(tv), 2);
+    var rows = []; for (var T = 5; T <= 45; T += 5) rows.push([T, fmt(fV(T), 2), fmt(fV25(T), 2), fmt(fJ(T), 2), fmt(fJ25(T), 2)]);
+    table($('kkTable'), ['T (°C)', 'Vcmax acc.', 'Vcmax fixed', 'Jmax acc.', 'Jmax fixed'], rows);
+  }
+  bind(kIds, drawKK); drawKK();
+
+  /* ---------- Lab B: A vs T, acclimated vs fixed, two CO2 ---------- */
+  var aIds = ['aTg', 'aCa1', 'aCa2', 'aQ', 'aV'];
+  function drawAT() {
+    outs(aIds);
+    var Tg = +$('aTg').value, Ca1 = +$('aCa1').value, Ca2 = +$('aCa2').value, Q = +$('aQ').value, V25 = +$('aV').value;
+    var f1a = function (T) { return leafA(T, Tg, Ca1, Q, V25).A; }, f1f = function (T) { return leafA(T, null, Ca1, Q, V25).A; };
+    var f2a = function (T) { return leafA(T, Tg, Ca2, Q, V25).A; }, f2f = function (T) { return leafA(T, null, Ca2, Q, V25).A; };
+    var ymax = Math.max(10, Math.ceil(Math.max(argmax(f2a, 0, 50, 0.5).v, argmax(f2f, 0, 50, 0.5).v, argmax(f1a, 0, 50, 0.5).v) * 1.15 / 5) * 5);
+    var o1a = argmax(f1a, 0, 50, 0.1), o1f = argmax(f1f, 0, 50, 0.1), o2a = argmax(f2a, 0, 50, 0.1), o2f = argmax(f2f, 0, 50, 0.1);
+    makeChart($('atSvg'), $('atTip'), {
+      x: { min: 0, max: 50, ticks: ticks(0, 50, 10), label: 'Leaf temperature (°C)', name: 'T', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1) + ' °C'; } },
+      y: { min: -5, max: ymax, ticks: ticks(-5, ymax, niceStep(ymax + 5)), label: 'Net assimilation, A (µmol CO₂ m⁻² s⁻¹)', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1); } },
+      vlines: [{ x: Tg, label: 'Tg = ' + Tg + ' °C' }],
+      marks: [{ x: o1a.x, y: o1a.v, color: 'var(--series-1)' }, { x: o1f.x, y: o1f.v, color: 'var(--series-1)' }, { x: o2a.x, y: o2a.v, color: 'var(--series-2)' }, { x: o2f.x, y: o2f.v, color: 'var(--series-2)' }],
+      series: [
+        { name: 'Fixed, Ca = ' + Ca1, label: '', color: 'var(--series-1)', f: f1f, dash: '5 4' },
+        { name: 'Acclimated, Ca = ' + Ca1, label: 'Ca ' + Ca1, color: 'var(--series-1)', f: f1a, width: 2.6 },
+        { name: 'Fixed, Ca = ' + Ca2, label: '', color: 'var(--series-2)', f: f2f, dash: '5 4' },
+        { name: 'Acclimated, Ca = ' + Ca2, label: 'Ca ' + Ca2, color: 'var(--series-2)', f: f2a, width: 2.6 }
+      ]
+    });
+    $('aT1a').textContent = fmt(o1a.x, 1); $('aT1f').textContent = fmt(o1f.x, 1);
+    $('aT2a').textContent = fmt(o2a.x, 1); $('aT2f').textContent = fmt(o2f.x, 1);
+    $('aAg').textContent = fmt(f1a(Tg), 1); $('aAgf').textContent = fmt(f1f(Tg), 1);
+    $('aJ').textContent = fmt(V25 * rJV(Tg), 0); $('aJf').textContent = fmt(V25 * rJV(25), 0);
+    var rows = []; for (var T = 5; T <= 45; T += 5) rows.push([T, fmt(f1a(T), 1), fmt(f1f(T), 1), fmt(f2a(T), 1), fmt(f2f(T), 1)]);
+    table($('atTable'), ['T (°C)', 'acc. Ca1', 'fixed Ca1', 'acc. Ca2', 'fixed Ca2'], rows);
+  }
+  bind(aIds, drawAT); drawAT();
+
+  /* ---------- Lab C: respiration explorer ---------- */
+  var rIds = ['rQ', 'rR', 'rTr', 'rDT', 'rAcc'];
+  var rType = 1;
+  function drawR() {
+    outs(rIds);
+    var Q10 = +$('rQ').value, Rr = +$('rR').value, Tr = +$('rTr').value, dT = +$('rDT').value, acc = +$('rAcc').value;
+    var fQ = function (T) { return Rr * Math.pow(Q10, (T - Tr) / 10); };
+    var fA = function (T) { return Rr * Math.exp(46390 / R * (1 / (Tr + 273.15) - 1 / (T + 273.15))); };
+    var b = 0.1012, c = -0.0005;
+    var fH = function (T) { return Rr * Math.exp(b * (T - Tr) + c * (T * T - Tr * Tr)); };
+    var Qa, Ra, fAcc;
+    if (rType === 1) { Qa = Math.max(1.1, Q10 - acc * 0.06 * dT); var T0 = 5, R0 = fQ(T0); Ra = R0 * Math.pow(Qa, (Tr - T0) / 10); fAcc = function (T) { return R0 * Math.pow(Qa, (T - T0) / 10); }; }
+    else { Qa = Q10; Ra = Rr * Math.pow(Q10, -acc * dT / 10); fAcc = function (T) { return Ra * Math.pow(Q10, (T - Tr) / 10); }; }
+    var ymax = Math.max(2, Math.ceil(Math.max(fQ(40), fA(40), fH(40)) * 1.05));
+    makeChart($('rSvg'), $('rTip'), {
+      x: { min: 0, max: 40, ticks: ticks(0, 40, 5), label: 'Leaf temperature (°C)', name: 'T', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1) + ' °C'; } },
+      y: { min: 0, max: ymax, ticks: ticks(0, ymax, niceStep(ymax)), label: 'Respiration, R (µmol CO₂ m⁻² s⁻¹)', fmt: function (v) { return v; } },
+      vlines: [{ x: Tr, label: 'Tref' }, { x: Tr + dT, label: 'Tref + ΔTg', dy: 14 }],
+      series: [
+        { name: 'Q10', label: 'Q10', color: 'var(--series-1)', f: fQ },
+        { name: 'Arrhenius', label: 'Arrhenius', color: 'var(--series-2)', f: fA },
+        { name: 'Heskel', label: 'Heskel', color: 'var(--series-3)', f: fH },
+        { name: 'Acclimated', label: 'acclimated', color: 'var(--fg)', f: fAcc, width: 2.6 }
+      ]
+    });
+    var Tm = Tr + dT, amp = 8, n = 48, sN = 0, sA = 0;
+    for (var i = 0; i < n; i++) { var T = Tm + amp * Math.sin(2 * Math.PI * i / n); sN += fQ(T); sA += fAcc(T); }
+    sN /= n; sA /= n;
+    $('rQa').textContent = fmt(Qa, 2); $('rQb').textContent = fmt(Ra, 2);
+    $('rN').textContent = fmt(fQ(Tm), 2); $('rA').textContent = fmt(fAcc(Tm), 2);
+    $('rDn').textContent = fmt(sN, 2); $('rDa').textContent = fmt(sA, 2);
+    $('rDd').textContent = fmt((1 - sA / sN) * 100, 0) + '%';
+    function hq(T) { return Math.exp(10 * (b + c * (2 * T + 10))); }
+    $('rHq').textContent = fmt(hq(Tr), 2); $('rHq2').textContent = fmt(hq(35), 2);
+    var rows = []; for (var t = 0; t <= 40; t += 5) rows.push([t, fmt(fQ(t), 2), fmt(fA(t), 2), fmt(fH(t), 2), fmt(fAcc(t), 2)]);
+    table($('rTable'), ['T (°C)', 'Q10', 'Arrhenius', 'Heskel', 'acclimated'], rows);
+  }
+  bind(rIds, drawR);
+  $('rType1').addEventListener('click', function () { rType = 1; $('rType1').classList.add('on'); $('rType2').classList.remove('on'); drawR(); });
+  $('rType2').addEventListener('click', function () { rType = 2; $('rType2').classList.add('on'); $('rType1').classList.remove('on'); drawR(); });
+  drawR();
+
+  /* ---------- Lab D: carbon balance ---------- */
+  var cIds = ['cTg', 'cRf', 'cQ', 'cRacc'];
+  function drawCB() {
+    outs(cIds);
+    var Tg = +$('cTg').value, rf = +$('cRf').value, Q10 = +$('cQ').value, acc = +$('cRacc').value;
+    var fA = function (T) { var r = leafA(T, Tg, 420, 1500, 60); return r.A + r.Rd; };
+    var Amax = argmax(fA, 0, 50, 0.25);
+    var R25 = rf * Amax.v * Math.pow(Q10, -acc * (Tg - 25) / 10);
+    var fR = function (T) { return R25 * Math.pow(Q10, (T - 25) / 10); };
+    var fN = function (T) { return fA(T) - fR(T); };
+    var oN = argmax(fN, 0, 50, 0.1);
+    var lo = null, hi = null, t0 = null;
+    for (var T = 0; T <= 50; T += 0.1) { var v = fN(T); if (v >= 0.8 * oN.v) { if (lo === null) lo = T; hi = T; } if (T > oN.x && t0 === null && v <= 0) t0 = T; }
+    var ymax = Math.max(10, Math.ceil(Amax.v * 1.15 / 5) * 5);
+    makeChart($('cbSvg'), $('cbTip'), {
+      x: { min: 0, max: 50, ticks: ticks(0, 50, 10), label: 'Temperature (°C)', name: 'T', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1) + ' °C'; } },
+      y: { min: -5, max: ymax, ticks: ticks(-5, ymax, niceStep(ymax + 5)), label: 'Carbon flux (µmol CO₂ m⁻² s⁻¹)', fmt: function (v) { return v; }, tipfmt: function (v) { return fmt(v, 1); } },
+      vlines: [{ x: Tg, label: 'Tg = ' + Tg + ' °C' }].concat(lo !== null ? [{ x: lo, label: '80%' }, { x: hi, label: '80%' }] : []),
+      marks: [{ x: oN.x, y: oN.v, color: 'var(--fg)', label: 'Topt net ' + fmt(oN.x, 1) }, { x: Amax.x, y: Amax.v, color: 'var(--series-1)', label: 'Topt A ' + fmt(Amax.x, 1) }],
+      series: [
+        { name: 'A + Rd', label: 'A + Rd', color: 'var(--series-1)', f: fA },
+        { name: 'R', label: 'R', color: 'var(--series-2)', f: fR },
+        { name: 'A − R', label: 'A − R', color: 'var(--fg)', f: fN, width: 2.6 }
+      ]
+    });
+    $('cTa').textContent = fmt(Amax.x, 1); $('cTn').textContent = fmt(oN.x, 1);
+    $('cBr').textContent = lo === null ? 'n/a' : fmt(lo, 1) + '–' + fmt(hi, 1); $('cBw').textContent = lo === null ? 'n/a' : fmt(hi - lo, 1);
+    $('cT0').textContent = t0 === null ? '> 50' : fmt(t0, 1);
+    $('cNg').textContent = fmt(fN(Tg), 1); $('cNg4').textContent = fmt(fN(Tg + 4), 1);
+    var rows = []; for (var t = 5; t <= 45; t += 5) rows.push([t, fmt(fA(t), 1), fmt(fR(t), 1), fmt(fN(t), 1)]);
+    table($('cbTable'), ['T (°C)', 'A + Rd', 'R', 'A − R'], rows);
+  }
+  bind(cIds, drawCB); drawCB();
+})();
+</script>
+</body>
+</html>

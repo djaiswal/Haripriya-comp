@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stomatal Conductance Models</title>
+<meta name="description" content="Stomatal conductance models at comprehensive-exam depth: guard-cell physiology, Jarvis, Ball–Woodrow–Berry, Leuning and Medlyn models, the Cowan–Farquhar optimality derivation, hydraulic and profit-maximisation models, coupling with FvCB, and their use in land-surface models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ptitle { font-size: 12px; font-weight: 600; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .tan { stroke: var(--accent-2); stroke-width: 1.8; stroke-dasharray: 6 4; }
+  .chartbox { position: relative; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .subctl { font-size: 0.75rem; color: var(--muted); margin: -0.25rem 0 0; }
+  .ctrl.grp { border-top: 1px solid var(--line); padding-top: 0.5rem; }
+  .ctrl.grp .eyebrow { margin-bottom: 0.4rem; }
+  .readout.stack { grid-template-columns: 1fr; gap: 0; }
+  .readout.stack dt { margin-top: 0.45rem; }
+  .readout.stack dd { text-align: left; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Stomatal conductance models</div>
+    <div class="eyebrow">Topic 6 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Stomatal Conductance Models</h1>
+    <p class="lead">How a leaf sets the valve between carbon gain and water loss, how five generations of models have described that valve, and why the choice of model decides what a land-surface model says about transpiration and CO₂ fertilisation.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Stomata are the only variable resistance in the leaf's CO₂ supply path and the dominant control on transpiration, so every coupled carbon–water model needs a rule for stomatal conductance, g<sub>s</sub>. The oldest rule (<strong>Jarvis 1976</strong>) multiplies independent empirical responses to light, temperature, humidity, CO₂ and water status. The <strong>Ball–Woodrow–Berry</strong> (BWB, 1987) family instead ties g<sub>s</sub> to the assimilation rate itself, g<sub>s</sub> = g<sub>0</sub> + g<sub>1</sub>A h<sub>s</sub>/C<sub>s</sub>, which <strong>Leuning</strong> (1995) refined by using vapour-pressure deficit D instead of humidity. <strong>Medlyn et al. (2011)</strong> showed that nearly the same form, g<sub>s</sub> = g<sub>0</sub> + 1.6(1 + g<sub>1</sub>/√D)A/C<sub>a</sub>, follows from the <strong>Cowan–Farquhar optimality</strong> hypothesis that leaves maximise carbon gain minus a water cost λ, so that the single slope g<sub>1</sub> ∝ √(Γ*λ) measures a species' water-use strategy. All of these predict a nearly constant C<sub>i</sub>/C<sub>a</sub> at a given D, which is why the coupled A–g<sub>s</sub>–C<sub>i</sub> system has a stable solution. Where they fail, under soil drying, the newer <strong>hydraulic</strong> models (Tuzet 2003, Sperry 2017, Eller 2020) make g<sub>s</sub> a function of leaf water potential and xylem vulnerability, and land-surface models such as CLM5 and JULES are moving that way.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Three things get asked over and over: (1) write down and compare the BWB, Leuning and Medlyn equations and state what C<sub>i</sub>/C<sub>a</sub> each predicts; (2) derive Medlyn's model from the Cowan–Farquhar condition ∂A/∂E = 1/λ and interpret g<sub>1</sub>; (3) explain how g<sub>s</sub> is solved together with FvCB and the energy balance in a land model, and where the soil-moisture stress factor β belongs. Be ready to say which model each major land-surface model uses and what difference it makes to ET and CO₂ responses.</p></div>
+  </section>
+
+  <section id="physiology">
+    <h2>Stomatal physiology in one page</h2>
+    <p>A stoma is a pore bounded by two <strong>guard cells</strong>. Opening is driven by solute accumulation: blue light and red light (via photosynthesis) activate the plasma-membrane H⁺-ATPase, the membrane hyperpolarises, K⁺ enters through inward-rectifying channels together with Cl⁻ and malate (synthesised from starch), water follows osmotically, and the turgid guard cells bow apart. Closure reverses this: <strong>abscisic acid</strong> (ABA) raises cytosolic Ca²⁺, activates anion channels (SLAC1), depolarises the membrane and drives K⁺ efflux. ABA is produced in roots under soil drying and, as is now considered dominant in angiosperms, in the leaf itself in response to falling leaf turgor. Guard cells therefore integrate <strong>hydraulic signals</strong> (epidermal and guard-cell turgor, hence leaf water potential and VPD) and <strong>chemical signals</strong> (ABA, also C<sub>i</sub>: high intercellular CO₂ closes stomata, low C<sub>i</sub> opens them). Response times are minutes to tens of minutes: closing in response to a step in VPD or darkness typically takes 5–15 min, opening in response to light 10–30 min, and these lags matter for sunfleck and flux-tower half-hourly data but are ignored by all the steady-state models below.</p>
+    <p>Three conversions recur in every stomatal model. First, conductance is measured for water vapour (g<sub>sw</sub>, mol H₂O m⁻² s⁻¹) but photosynthesis needs it for CO₂; the ratio of binary diffusivities in air gives</p>
+    <div class="eq">$$g_{sc} = \frac{g_{sw}}{1.6}, \qquad \frac{D_{H_2O}}{D_{CO_2}} = \frac{2.49\times10^{-5}}{1.55\times10^{-5}} \approx 1.6.$$</div>
+    <p>Second, the leaf <strong>boundary layer</strong> is a second conductance in series, g<sub>bw</sub> ≈ 1–3 mol m⁻² s⁻¹ for a leaf of a few centimetres in moderate wind (it scales with √(u/d)). Because transport there is partly turbulent the CO₂ ratio is 1.6<sup>2/3</sup> ≈ 1.37 rather than 1.6. The total CO₂ conductance from bulk air to the intercellular spaces is</p>
+    <div class="eq">$$\frac{1}{g_{tc}} = \frac{1.6}{g_{sw}} + \frac{1.37}{g_{bw}}, \qquad A = g_{tc}\,(C_a - C_i),$$</div>
+    <p>and C<sub>s</sub>, the CO₂ mole fraction at the leaf surface that BWB-type models use, is C<sub>s</sub> = C<sub>a</sub> − 1.37A/g<sub>bw</sub>. Third, conductance in mol m⁻² s⁻¹ (the physiologist's unit, since the diffusion driving force is a mole-fraction difference) converts to the meteorologist's m s⁻¹ by dividing by the molar density of air, P/(RT) ≈ 41 mol m⁻³ at 25 °C and sea level: 0.4 mol m⁻² s⁻¹ ≈ 9.8 mm s⁻¹, i.e. a resistance of ≈ 100 s m⁻¹.</p>
+  </section>
+
+  <section id="empirical">
+    <h2>Empirical and semi-empirical models</h2>
+    <h3>Jarvis 1976: a product of independent responses</h3>
+    <p>Jarvis [1] fitted conductance of Sitka spruce and Douglas fir to measurements and proposed that g<sub>s</sub> is a maximum conductance multiplied by independent, bounded response functions of each environmental driver:</p>
+    <div class="eq">$$g_s = g_{s,max}\; f_1(Q)\; f_2(T)\; f_3(D)\; f_4(\Psi_{leaf}\ \text{or}\ \theta_{soil})\; f_5(C_a), \qquad 0 \le f_k \le 1.$$</div>
+    <p>The light function is a saturating hyperbola, the temperature function a parabola around an optimum, the humidity function a linear decline with D, and the water-status function a threshold. The model is transparent and still underlies many hydrological and some biosphere models (SiB1, BIOME-BGC, Stewart's 1988 canopy version), but it has 8–12 parameters per species that must be re-fitted for each site, assumes the responses are independent (they are not: the D response depends on light and on soil water), and contains no mechanism linking conductance to photosynthesis, so it cannot predict the stomatal response to rising CO₂ except by an ad hoc f<sub>5</sub>.</p>
+
+    <h3>Ball, Woodrow and Berry 1987</h3>
+    <p>Ball et al. [2] plotted measured g<sub>s</sub> against A h<sub>s</sub>/C<sub>s</sub>, where h<sub>s</sub> is the fractional relative humidity and C<sub>s</sub> the CO₂ mole fraction, both at the leaf surface, and found a single straight line across light, temperature, humidity and CO₂ treatments:</p>
+    <div class="eq">$$g_{sw} = g_0 + g_1\,\frac{A\,h_s}{C_s}.$$</div>
+    <p>g<sub>1</sub> is dimensionless (≈ 9–10 for C3 species, ≈ 4 for C4) and g<sub>0</sub> is the residual conductance when A → 0 (≈ 0.01 mol m⁻² s⁻¹ for C3, 0.04 for C4 in Collatz's parameterisations [4, 5]). Its strengths are its simplicity and the built-in coupling to A, which gives sensible responses to light, temperature and CO₂ for free. Its weaknesses: the linear h<sub>s</sub> response has no mechanistic basis and predicts g<sub>s</sub> → g<sub>0</sub> in very dry air regardless of A; g<sub>s</sub> does not approach g<sub>0</sub> correctly at the CO₂ compensation point (A → 0 there, but the real leaf keeps a finite conductance); and it predicts, with g<sub>0</sub> ≈ 0 and no boundary layer, from 1.6/(C<sub>a</sub> − C<sub>i</sub>) = g<sub>1</sub>h<sub>s</sub>/C<sub>a</sub>,</p>
+    <div class="eq">$$\frac{C_i}{C_a} = 1 - \frac{1.6}{g_1 h_s}, \qquad \text{e.g. } 1 - \frac{1.6}{9\times0.7} = 0.75 .$$</div>
+    <p>Collatz et al. [4] made this the standard closure for coupled leaf models; it was used in SiB2, in CLM4 and CLM4.5, and in most of the first-generation coupled land-surface models.</p>
+
+    <h3>Leuning 1995</h3>
+    <p>Leuning [3] made two changes. Replacing C<sub>s</sub> by C<sub>s</sub> − Γ (Γ the CO₂ compensation point) fixes the low-CO₂ behaviour, since A and C<sub>s</sub> − Γ now go to zero together and g<sub>s</sub> stays finite. Replacing h<sub>s</sub> by a hyperbolic function of VPD matches the observed response of stomata to the evaporative driving force rather than to humidity as such:</p>
+    <div class="eq">$$g_{sw} = g_0 + \frac{g_1\,A}{(C_s - \Gamma)\left(1 + D/D_0\right)},$$</div>
+    <p>with D<sub>0</sub> an empirical sensitivity (≈ 1.5 kPa, range 0.35–3 kPa) and g<sub>1</sub> (Leuning's a<sub>1</sub>) ≈ 5–15. The implied ratio is</p>
+    <div class="eq">$$\frac{C_i}{C_a} = 1 - \frac{1.6\,(1 - \Gamma/C_a)(1 + D/D_0)}{g_1},$$</div>
+    <p>which falls linearly with D rather than with 1 − h<sub>s</sub>. This is the closure used in CABLE and in several Australian and European models. Both BWB and Leuning are "semi-empirical": A does the mechanistic work, and the humidity or D factor is a fitted correlation.</p>
+  </section>
+
+  <section id="optimality">
+    <h2>Optimal stomatal behaviour and the Medlyn model</h2>
+    <p>Cowan and Farquhar [6] asked what stomatal behaviour would maximise total carbon gain over a day for a fixed total water loss. By the Lagrangian condition, the marginal gain per unit water must be the same at every moment:</p>
+    <div class="eq">$$\frac{\partial A}{\partial E} = \frac{1}{\lambda} = \text{const}, \qquad \lambda = \frac{\partial E}{\partial A}\ \ (\text{mol H}_2\text{O mol}^{-1}\text{ CO}_2),$$</div>
+    <p>where λ is the <strong>marginal water cost of carbon gain</strong>, typically of order 10³ mol mol⁻¹. Equivalently, at each instant the leaf maximises A − E/λ. The condition says stomata should close more in dry air, where each unit of opening buys the same carbon but more water loss, and open more in the morning when D is low.</p>
+    <p>Medlyn et al. [7] turned this into a usable model by assuming photosynthesis is RuBP-regeneration limited, A = J(C<sub>i</sub> − Γ*)/(4(C<sub>i</sub> + 2Γ*)), and E = 1.6 g<sub>sc</sub> D (D as a mole fraction). Differentiating A with respect to g<sub>sc</sub> through C<sub>i</sub>, and assuming C<sub>i</sub> ≫ Γ* and that the slope term is small relative to A itself, the optimality condition becomes</p>
+    <div class="eq">$$\frac{3\,\Gamma^*\,(C_a - C_i)^2}{1.6\,D\,C_i^2} = \frac{1}{\lambda} \;\Longrightarrow\; \frac{C_a - C_i}{C_i} = \sqrt{\frac{1.6\,D}{3\,\Gamma^*\lambda}} \;\Longrightarrow\; \frac{C_i}{C_a} = \frac{g_1}{g_1 + \sqrt{D}},\quad g_1 = \sqrt{\frac{3\,\Gamma^*\lambda}{1.6}} .$$</div>
+    <p>Substituting into g<sub>sw</sub> = 1.6A/(C<sub>a</sub> − C<sub>i</sub>) and adding an intercept gives the <strong>unified stomatal optimisation</strong> (USO) model:</p>
+    <div class="keybox"><h3>Medlyn et al. 2011</h3>
+      <div class="eq">$$g_{sw} = g_0 + 1.6\left(1 + \frac{g_1}{\sqrt{D}}\right)\frac{A}{C_a}, \qquad \frac{C_i}{C_a} \approx \frac{g_1}{g_1 + \sqrt{D}}, \qquad \frac{A}{g_{sw}} \approx \frac{C_a\sqrt{D}}{1.6\,(g_1 + \sqrt{D})} .$$</div>
+      <p style="margin-top:0.75rem">g<sub>1</sub> has units of √kPa when D is in kPa. It is the only free slope and has a clear meaning: a leaf with a large g<sub>1</sub> has a high marginal water cost of carbon (λ large), keeps C<sub>i</sub>/C<sub>a</sub> high, and is "water-spending"; a small g<sub>1</sub> leaf is conservative. Because Γ* rises with temperature, g<sub>1</sub> is predicted to increase with growth temperature, which Lin et al. [8] confirmed. The 1.6 is kept explicit so that g<sub>1</sub> is comparable across the water and CO₂ bases.</p></div>
+    <p>Lin et al. [8] compiled leaf gas-exchange data from 314 species and fitted g<sub>1</sub> by plant functional type (approximate values, √kPa): C4 grasses 1.6, evergreen gymnosperms 2.3, tundra and arctic shrubs 2.2, evergreen angiosperm trees 4.1, deciduous angiosperm trees 4.5, shrubs 4.7, C3 grasses 5.3, C3 crops 5.8. The ordering follows wood density and leaf economics: dense-wooded, slow conifers are conservative, fast crops are profligate. Those are the values now used in CABLE, CLM5 and JULES.</p>
+    <p>The <strong>intrinsic water-use efficiency</strong> A/g<sub>sw</sub> = C<sub>a</sub>(1 − C<sub>i</sub>/C<sub>a</sub>)/1.6 is a direct consequence of the C<sub>i</sub>/C<sub>a</sub> prediction. For Medlyn, at constant D and g<sub>1</sub> it is proportional to C<sub>a</sub>: as CO₂ rises, g<sub>s</sub> falls so that C<sub>i</sub>/C<sub>a</sub> stays constant, which is the behaviour seen in tree-ring δ¹³C records and FACE experiments. The three models differ in which humidity variable holds C<sub>i</sub>/C<sub>a</sub> constant (h<sub>s</sub>, 1 + D/D<sub>0</sub>, √D) and therefore in how transpiration responds to a drying atmosphere, which the first lab makes visible.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · g<sub>s</sub> model comparison: conductance versus VPD at fixed A</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cmpSvg" viewBox="0 0 640 360" role="img" aria-label="Stomatal conductance versus vapour pressure deficit for the Ball–Woodrow–Berry, Leuning and Medlyn models"></svg>
+            <div class="chart-tip" id="cmpTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Ball–Woodrow–Berry</span><span style="--c:var(--series-2)">Leuning</span><span style="--c:var(--series-3)">Medlyn (USO)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cmpTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cA"><span>Assimilation, A (µmol m⁻² s⁻¹)</span><output id="cAO">15</output></label><input type="range" id="cA" min="1" max="40" step="0.5" value="15"></div>
+          <div class="ctrl"><label for="cCa"><span>C<sub>a</sub> (µmol mol⁻¹)</span><output id="cCaO">420</output></label><input type="range" id="cCa" min="200" max="1000" step="10" value="420"></div>
+          <div class="ctrl"><label for="cT"><span>Leaf temperature (°C), sets e<sub>s</sub> for h<sub>s</sub></span><output id="cTO">25</output></label><input type="range" id="cT" min="10" max="40" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="cGb"><span>Boundary-layer g<sub>bw</sub> (mol m⁻² s⁻¹)</span><output id="cGbO">2.0</output></label><input type="range" id="cGb" min="0.3" max="5" step="0.1" value="2"></div>
+          <div class="ctrl"><label for="cG0"><span>g<sub>0</sub> (mol m⁻² s⁻¹), all models</span><output id="cG0O">0.01</output></label><input type="range" id="cG0" min="0" max="0.1" step="0.005" value="0.01"></div>
+          <div class="ctrl grp"><div class="eyebrow">Model slopes</div>
+            <label for="cG1b"><span>BWB g<sub>1</sub> (–)</span><output id="cG1bO">9</output></label><input type="range" id="cG1b" min="2" max="16" step="0.5" value="9"></div>
+          <div class="ctrl"><label for="cG1l"><span>Leuning g<sub>1</sub> (–)</span><output id="cG1lO">9</output></label><input type="range" id="cG1l" min="2" max="16" step="0.5" value="9"></div>
+          <div class="ctrl"><label for="cD0"><span>Leuning D<sub>0</sub> (kPa)</span><output id="cD0O">1.5</output></label><input type="range" id="cD0" min="0.3" max="4" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="cG1m"><span>Medlyn g<sub>1</sub> (√kPa)</span><output id="cG1mO">4.5</output></label><input type="range" id="cG1m" min="1" max="8" step="0.1" value="4.5"></div>
+          <dl class="readout stack">
+            <dt>At D = 1.5 kPa, BWB · Leuning · Medlyn:</dt>
+            <dt>g<sub>sw</sub> (mol m⁻² s⁻¹)</dt><dd id="cGs"></dd>
+            <dt>C<sub>i</sub>/C<sub>a</sub></dt><dd id="cRatio"></dd>
+            <dt>Intrinsic WUE A/g<sub>sw</sub> (µmol mol⁻¹)</dt><dd id="cWue"></dd>
+            <dt>C<sub>s</sub> at leaf surface (µmol mol⁻¹)</dt><dd id="cCs"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">A is held fixed while D varies, so the plot isolates the humidity response of each equation; in a real leaf A would fall as g<sub>s</sub> falls (Lab 2). h<sub>s</sub> is taken as 1 − D/e<sub>s</sub>(T<sub>leaf</sub>); Γ = 45 µmol mol⁻¹ in Leuning's model. Suggested experiments: set the three slopes so the curves agree at D = 1.5 kPa, then compare them at 0.5 and 3.5 kPa; double C<sub>a</sub> and note that Medlyn's g<sub>s</sub> halves at fixed A while BWB's response depends on C<sub>s</sub>; lower g<sub>bw</sub> to 0.5 and watch C<sub>s</sub> fall away from C<sub>a</sub>.</p>
+    </div>
+  </section>
+
+  <section id="hydraulic">
+    <h2>Water-potential feedback and hydraulic models</h2>
+    <p>None of the models above contains soil water. In practice a <strong>β factor</strong> (0–1, a function of soil moisture or soil water potential) is applied somewhere: to V<sub>cmax</sub> (CLM, ORCHIDEE, JSBACH), to g<sub>1</sub> or the whole g<sub>s</sub> (CABLE in some versions, LPJ), or to both. De Kauwe et al. [16] tested the alternatives in CABLE against FLUXNET drought sites: applying β only to V<sub>cmax</sub> leaves C<sub>i</sub>/C<sub>a</sub> unchanged (because g<sub>s</sub> follows A) and underestimates the rise in water-use efficiency during drought; applying it to g<sub>1</sub> captures the WUE rise but gives the wrong A. Observations (e.g. Zhou et al. 2013) show both the slope g<sub>1</sub> and V<sub>cmax</sub> declining as predawn water potential falls, with the stomatal decline leading. This is the main failure mode of all three semi-empirical models under soil drying and the motivation for making g<sub>s</sub> depend on plant water status.</p>
+    <h3>Tuzet, Perrier and Leuning 2003</h3>
+    <p>Tuzet et al. [9] replaced the humidity term by a sigmoid function of leaf water potential Ψ<sub>l</sub> and coupled it to a soil–root–xylem hydraulic model:</p>
+    <div class="eq">$$g_{sw} = g_0 + \frac{a\,A}{C_i - \Gamma}\,f_\Psi, \qquad f_\Psi = \frac{1 + e^{s_f\Psi_f}}{1 + e^{s_f(\Psi_f - \Psi_l)}}, \qquad E = \frac{\Psi_{soil} - \Psi_l}{R_{soil} + R_{plant}},$$</div>
+    <p>with Ψ<sub>f</sub> ≈ −1.9 MPa the potential at which f<sub>Ψ</sub> has fallen to half and s<sub>f</sub> ≈ 3.2 MPa⁻¹ its steepness. Because E = 1.6 g<sub>s</sub>D depends on g<sub>s</sub>, Ψ<sub>l</sub> depends on E and g<sub>s</sub> depends on Ψ<sub>l</sub>, the system is a closed feedback loop solved iteratively. The VPD response emerges rather than being imposed: higher D raises E, lowers Ψ<sub>l</sub>, closes stomata. Soil drying does the same through Ψ<sub>soil</sub>. This is the conceptual ancestor of the plant-hydraulics schemes now in land models.</p>
+    <h3>Profit maximisation and SOX</h3>
+    <p>Sperry et al. [10] proposed that stomata maximise the difference between a normalised carbon <em>gain</em> A/A<sub>max</sub> and a normalised hydraulic <em>risk</em> (K<sub>max</sub> − K(Ψ))/K<sub>max</sub>, where K(Ψ) is the xylem hydraulic conductance from the vulnerability curve. Opening increases A, but it also lowers Ψ along the pathway and moves the plant down its vulnerability curve, so the profit has a maximum at intermediate g<sub>s</sub>. The model needs no g<sub>1</sub> and no empirical D function: both the VPD and soil-moisture responses come from the vulnerability curve (P50, slope) and the maximum conductance. Eller et al. [11] simplified this to the <strong>stomatal optimisation based on xylem hydraulics</strong> (SOX) model, in which stomata maximise A × K(Ψ<sub>leaf</sub>)/K<sub>max</sub>, i.e. carbon gain weighted by the remaining fraction of hydraulic conductance; it has an analytical approximation cheap enough for a global model and has been implemented in JULES. Both predict that species with vulnerable xylem (less negative P50) should close earlier and behave more isohydrically.</p>
+    <p>At the model-infrastructure level, CLM5 replaced the soil-moisture β with <strong>plant hydraulic stress</strong> (PHS): a resistor network from soil to root to stem to leaf, with Ψ<sub>leaf</sub> solved each time step and used to scale V<sub>cmax</sub> and g<sub>0</sub>; JULES has an optional SOX scheme; ED2 and other demographic models carry plant hydraulics for mortality. The stomatal model itself (Medlyn in CLM5 and JULES) is unchanged, but its drought behaviour is now set by hydraulics rather than by soil moisture in the root zone. Buckley [12] reviews the mechanistic basis for all of these schemes and the remaining gaps, particularly the lack of an agreed mechanism for the VPD response.</p>
+  </section>
+
+  <section id="coupling">
+    <h2>Coupling g<sub>s</sub> with FvCB and the energy balance</h2>
+    <p>In a coupled leaf model three equations must hold simultaneously: the biochemical demand for CO₂ (FvCB), the diffusive supply through stomata and boundary layer, and the stomatal rule itself:</p>
+    <div class="eq">$$A = \min(A_c, A_j, A_p)(C_i,\,T_l), \qquad A = \frac{C_a - C_i}{1.6/g_{sw} + 1.37/g_{bw}}, \qquad g_{sw} = f(A, D, C_a, \dots).$$</div>
+    <p>A fourth, the leaf energy balance, sets T<sub>l</sub> from radiation, sensible heat and λE = λ·E(g<sub>sw</sub>, D), and D itself depends on T<sub>l</sub>. Collatz et al. [4] showed how to solve this. For a given g<sub>sc</sub> = g<sub>sw</sub>/1.6 and leaf temperature, substituting C<sub>i</sub> = C<sub>a</sub> − A/g<sub>sc</sub> into each FvCB rate gives a <strong>quadratic in A</strong>. For a rate of the generic form A + R<sub>d</sub> = V<sub>m</sub>(C<sub>i</sub> − Γ*)/(C<sub>i</sub> + K<sub>m</sub>) (V<sub>m</sub> = V<sub>cmax</sub>, K<sub>m</sub> = K<sub>c</sub>(1 + O/K<sub>o</sub>) for Rubisco; V<sub>m</sub> = J/4, K<sub>m</sub> = 2Γ* for RuBP regeneration), writing A′ = A + R<sub>d</sub> and C′ = C<sub>a</sub> + R<sub>d</sub>/g<sub>sc</sub>,</p>
+    <div class="eq">$$A'^2 - \left[g_{sc}(C' + K_m) + V_m\right]A' + g_{sc}V_m\,(C' - \Gamma^*) = 0,$$</div>
+    <p>and the smaller root is the physical one. The outer loop then updates g<sub>sw</sub> from the stomatal model and iterates, usually 3–5 times, until A, C<sub>i</sub> and g<sub>sw</sub> stop changing; the leaf temperature is updated in a further outer loop or solved jointly by Newton's method. With BWB closure the whole system can be reduced to a cubic in A (Baldocchi 1994), which is what CLM4.5 solved; CLM5 uses a bracketed root-finder on C<sub>i</sub>. The solution is stable because all the semi-empirical models imply a near-constant C<sub>i</sub>/C<sub>a</sub> at given D: the supply and demand curves cross once.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Coupled leaf explorer: FvCB + Medlyn + diffusion</h3><span class="small muted">Hover any panel to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cplSvg" viewBox="0 0 640 560" role="img" aria-label="Assimilation, stomatal conductance and Ci/Ca versus a chosen driver from the coupled FvCB–Medlyn leaf model"></svg>
+            <div class="chart-tip" id="cplTip" hidden></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cplTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="pDrv"><span>x-axis driver</span></label><select id="pDrv"><option value="D">Leaf-to-air VPD (kPa)</option><option value="Ca">C<sub>a</sub> (µmol mol⁻¹)</option><option value="Q">PPFD (µmol m⁻² s⁻¹)</option></select></div>
+          <div class="ctrl"><label for="pD"><span>VPD, D (kPa)</span><output id="pDO">1.5</output></label><input type="range" id="pD" min="0.2" max="5" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="pCa"><span>C<sub>a</sub> (µmol mol⁻¹)</span><output id="pCaO">420</output></label><input type="range" id="pCa" min="150" max="1000" step="10" value="420"></div>
+          <div class="ctrl"><label for="pQ"><span>PPFD (µmol m⁻² s⁻¹)</span><output id="pQO">1500</output></label><input type="range" id="pQ" min="0" max="2200" step="25" value="1500"></div>
+          <div class="ctrl"><label for="pG1"><span>Medlyn g<sub>1</sub> (√kPa)</span><output id="pG1O">4.5</output></label><input type="range" id="pG1" min="1" max="8" step="0.1" value="4.5"></div>
+          <div class="ctrl"><label for="pG0"><span>g<sub>0</sub> (mol m⁻² s⁻¹)</span><output id="pG0O">0.01</output></label><input type="range" id="pG0" min="0" max="0.1" step="0.005" value="0.01"></div>
+          <div class="ctrl"><label for="pT"><span>Leaf temperature (°C)</span><output id="pTO">25</output></label><input type="range" id="pT" min="8" max="42" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="pBeta"><span>Soil-moisture β on V<sub>cmax</sub> (–)</span><output id="pBetaO">1.00</output></label><input type="range" id="pBeta" min="0.1" max="1" step="0.05" value="1"></div>
+          <dl class="readout">
+            <dt>A (µmol m⁻² s⁻¹)</dt><dd id="pA"></dd>
+            <dt>g<sub>sw</sub> (mol m⁻² s⁻¹)</dt><dd id="pGs"></dd>
+            <dt>C<sub>i</sub> · C<sub>i</sub>/C<sub>a</sub></dt><dd id="pCi"></dd>
+            <dt>g<sub>1</sub>/(g<sub>1</sub>+√D)</dt><dd id="pPred"></dd>
+            <dt>E (mmol m⁻² s⁻¹)</dt><dd id="pE"></dd>
+            <dt>A/g<sub>sw</sub> · A/E</dt><dd id="pWue"></dd>
+            <dt>Limiting</dt><dd id="pLim"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">V<sub>cmax,25</sub> = 60 and J<sub>max,25</sub> = 120 µmol m⁻² s⁻¹, R<sub>d</sub> = 0.015 V<sub>cmax</sub>, g<sub>bw</sub> = 2 mol m⁻² s⁻¹, Bernacchi temperature functions, no TPU limit. C<sub>i</sub> is found by bisection on the fixed-point residual of the A → g<sub>s</sub> → C<sub>i</sub> loop. Suggested experiments: with VPD on the x-axis, note that g<sub>s</sub> falls as D<sup>−1/2</sup> while A barely changes until D is large; switch to C<sub>a</sub> and confirm that C<sub>i</sub>/C<sub>a</sub> is flat while A rises and g<sub>s</sub> falls; set β = 0.4 and watch g<sub>s</sub> fall with A at unchanged C<sub>i</sub>/C<sub>a</sub>, the signature of applying stress to V<sub>cmax</sub> only; lower g<sub>1</sub> to 2 for a conifer.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · Optimality explorer: the Cowan–Farquhar tangent</h3><span class="small muted">Hover the A–E curve</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="optSvg" viewBox="0 0 640 520" role="img" aria-label="Assimilation versus transpiration as stomata open, with the tangent of slope 1/lambda marking the optimum, and the optimum Ci/Ca versus VPD"></svg>
+            <div class="chart-tip" id="optTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">A(E) as g<sub>s</sub> opens</span><span style="--c:var(--accent-2)">tangent, slope 1/λ</span><span style="--c:var(--series-1)">numerical optimum C<sub>i</sub>/C<sub>a</sub> vs D</span><span style="--c:var(--series-3)">Medlyn g<sub>1</sub>/(g<sub>1</sub>+√D)</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="oLam"><span>λ = ∂E/∂A (mol H₂O mol⁻¹ CO₂)</span><output id="oLamO">2000</output></label><input type="range" id="oLam" min="200" max="6000" step="50" value="2000"></div>
+          <div class="ctrl"><label for="oD"><span>VPD, D (kPa)</span><output id="oDO">1.5</output></label><input type="range" id="oD" min="0.2" max="5" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="oCa"><span>C<sub>a</sub> (µmol mol⁻¹)</span><output id="oCaO">420</output></label><input type="range" id="oCa" min="200" max="1000" step="10" value="420"></div>
+          <div class="ctrl"><label for="oMode"><span>Photosynthesis limitation</span></label><select id="oMode"><option value="j">RuBP-regeneration only (Medlyn's assumption)</option><option value="min">min(A<sub>c</sub>, A<sub>j</sub>)</option></select></div>
+          <dl class="readout stack">
+            <dt>Optimum g<sub>sw</sub> (mol m⁻² s⁻¹)</dt><dd id="oGs"></dd>
+            <dt>Optimum A (µmol m⁻² s⁻¹) · E (mmol m⁻² s⁻¹)</dt><dd id="oAE"></dd>
+            <dt>Optimum C<sub>i</sub>/C<sub>a</sub></dt><dd id="oRat"></dd>
+            <dt>Implied g<sub>1</sub> = √(3Γ*λ/1.6) (√kPa)</dt><dd id="oG1"></dd>
+            <dt>Medlyn C<sub>i</sub>/C<sub>a</sub> at this D</dt><dd id="oMed"></dd>
+            <dt>Slope 1/λ (µmol CO₂ mmol⁻¹ H₂O)</dt><dd id="oSlope"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Top panel: A against E as g<sub>sw</sub> is swept from 0 to 1 mol m⁻² s⁻¹ at fixed D; the leaf maximises A − E/λ, which is where the curve's slope equals 1/λ (dashed tangent). Bottom panel: the C<sub>i</sub>/C<sub>a</sub> that satisfies the condition at each D, compared with the Medlyn closed form. Suggested experiments: raise λ (water is cheap) and watch the tangent flatten and the optimum move right; raise D and watch the optimum close; switch to min(A<sub>c</sub>, A<sub>j</sub>) and see where the closed form departs from the numerical optimum (the Rubisco-limited region gives lower C<sub>i</sub>/C<sub>a</sub>); double C<sub>a</sub> and note that the optimum C<sub>i</sub>/C<sub>a</sub> is essentially unchanged.</p>
+    </div>
+  </section>
+
+  <section id="behaviour">
+    <h2>Behaviour under elevated CO₂, drought and at night</h2>
+    <p><strong>Elevated CO₂.</strong> All A-based models predict g<sub>s</sub> falling as C<sub>a</sub> rises because C<sub>i</sub>/C<sub>a</sub> is held constant: a doubling of C<sub>a</sub> with a ~30% increase in A gives a ~35% reduction in g<sub>s</sub>, consistent with the FACE meta-analysis average of about −20% for +200 µmol mol⁻¹. Jarvis-type models need an explicit CO₂ function. Franks et al. [13] compared the responses of the model families to CO₂ across geological to decadal time scales and recommended the optimality form because it gets the C<sub>i</sub>/C<sub>a</sub> conservation right; they also note that the long-term response includes stomatal density and size changes that no instantaneous model captures.</p>
+    <p><strong>Drought.</strong> The semi-empirical models respond to atmospheric drought (high D) but not to soil drought unless β is added. Where β is applied matters, as discussed above; the observed pattern is that g<sub>1</sub> declines first and V<sub>cmax</sub> later, which the hydraulic models reproduce because stomatal closure precedes the loss of biochemical capacity. A further failure of BWB under heat waves is its dependence on h<sub>s</sub>: at a given D, hot air has higher h<sub>s</sub>, so BWB predicts stomata opening with temperature when they are observed to close.</p>
+    <p><strong>Night-time conductance g<sub>0</sub>.</strong> The intercept is not a fitting convenience: stomata do not shut completely at night, and measured night-time g<sub>sw</sub> is 0.01–0.05 mol m⁻² s⁻¹ in most C3 species, higher in some crops and fast-growing trees. Night-time transpiration can be 5–15% of the daily total in dry climates, and g<sub>0</sub> also sets the daytime conductance of deeply shaded leaves, so it has a disproportionate effect on simulated canopy water loss. Many models set g<sub>0</sub> to zero or to Collatz's 0.01 mol m⁻² s⁻¹; a recent tendency is to treat it as a separate minimum conductance rather than as the intercept of the daytime fit, because the two are not the same quantity.</p>
+  </section>
+
+  <section id="estimation">
+    <h2>Parameter estimation</h2>
+    <p><strong>From leaf gas exchange.</strong> Measure A, g<sub>sw</sub>, D and C<sub>a</sub> on well-watered leaves across a range of light, temperature and D; regress g<sub>sw</sub> on 1.6A/(C<sub>a</sub>√D) with intercept g<sub>0</sub>, or better, fit the non-linear form by least squares with g<sub>0</sub> fixed at a measured night-time value, because g<sub>0</sub> and g<sub>1</sub> are strongly correlated in the fit. Lin et al. [8] used Bayesian non-linear fitting. Points with A < 0 or very low light are excluded. The same data give g<sub>1</sub> for BWB (regress on A h<sub>s</sub>/C<sub>s</sub>) and Leuning (fit g<sub>1</sub> and D<sub>0</sub> jointly), so model comparison on a common dataset is straightforward.</p>
+    <p><strong>From eddy-covariance towers.</strong> Medlyn et al. [17] inverted canopy conductance (from the Penman–Monteith equation and measured λE) and GPP from FLUXNET sites to estimate an ecosystem-scale g<sub>1</sub>. The tower g<sub>1</sub> values ranked PFTs much as the leaf data did but were systematically larger (roughly 1.3–2× for several PFTs), partly because canopy conductance includes soil and wet-canopy evaporation, partly because of the non-linear averaging over sunlit and shaded leaves, and partly because g<sub>0</sub> is poorly constrained at the canopy scale. They also showed g<sub>1</sub> declining with soil water deficit. This is the empirical basis for a soil-moisture modifier on g<sub>1</sub>, and a caution that leaf-fitted and canopy-fitted g<sub>1</sub> are not interchangeable in a model.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p>The stomatal closure is where the carbon and water cycles of a land model meet; it is the single parameterisation that most directly controls simulated ET, canopy temperature, water-use efficiency and the transpiration response to CO₂. The table gives the lineage.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Model</th><th>Stomatal scheme</th><th>Water stress</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>SiB2, CLM4/4.5, early ISAM</td><td>Ball–Woodrow–Berry via Collatz 1991</td><td>β on V<sub>cmax</sub> (and g<sub>0</sub>)</td><td>Cubic solution for A; g<sub>1</sub> = 9 (C3), 4 (C4)</td></tr>
+        <tr><td>CLM5</td><td>Medlyn USO, Lin 2015 g<sub>1</sub> by PFT</td><td>Plant hydraulic stress (Ψ<sub>leaf</sub>) on V<sub>cmax</sub>, g<sub>0</sub></td><td>Root-finder on C<sub>i</sub>; sunlit/shaded leaves</td></tr>
+        <tr><td>CABLE</td><td>Leuning 1995; Medlyn option</td><td>β tested on g<sub>1</sub> vs V<sub>cmax</sub> [16]</td><td>Two-leaf canopy</td></tr>
+        <tr><td>JULES</td><td>Jacobs-type closure (C<sub>i</sub>/C<sub>a</sub> declines with D); Medlyn and SOX options</td><td>β on V<sub>cmax</sub>; SOX uses K(Ψ)</td><td>Multi-layer canopy option</td></tr>
+        <tr><td>ORCHIDEE, JSBACH</td><td>Yin &amp; Struik variant of BWB–Leuning; BWB</td><td>β on V<sub>cmax</sub> and/or g<sub>s</sub></td><td>Knauer et al. [15] compared schemes in JSBACH</td></tr>
+        <tr><td>Noah-MP</td><td>BWB (Collatz) or Jarvis option</td><td>β on V<sub>cmax</sub></td><td>Jarvis retained for weather-model lineage</td></tr>
+        <tr><td>BioCro, crop models (APSIM, DSSAT)</td><td>BWB coupled with Collatz C3/C4 (BioCro); Jarvis-like or potential-ET scaling (crop models)</td><td>Soil water deficit factors</td><td>Crop models often use Penman–Monteith with a fixed canopy resistance</td></tr>
+        <tr><td>SPA, ED2-hydro, Sperry's gain–risk</td><td>Optimisation against hydraulic risk</td><td>Emergent from vulnerability curve</td><td>No g<sub>1</sub>; needs P50, K<sub>max</sub>, root distribution</td></tr>
+      </tbody></table></div>
+    <p>Three intercomparisons are worth knowing. Knauer et al. [15] ran BWB, Leuning and Medlyn closures in JSBACH at FLUXNET sites and found that the choice changed simulated ET and GPP by tens of percent, with the humidity formulation mattering most in dry climates, and that parameters tuned to one site transferred poorly. De Kauwe et al. [16] implemented Medlyn with Lin's g<sub>1</sub> in CABLE and found a global reduction in simulated transpiration compared with Leuning, largest for evergreen needleleaf forests and C4 grasslands where the PFT-specific g<sub>1</sub> is small; this is also the paper that located the β factor problem. Franks et al. [13] compared model families on their CO₂ response and argued for the optimality closure plus an explicit treatment of long-term stomatal anatomical adjustment. The consensus direction is: Medlyn-type closure with PFT g<sub>1</sub>, hydraulics rather than root-zone β for stress, and separate treatment of g<sub>0</sub>.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Diffusivity ratio H₂O:CO₂, stomata</td><td class="num">1.6</td><td>g<sub>sc</sub> = g<sub>sw</sub>/1.6</td></tr>
+        <tr><td>Ratio in the boundary layer</td><td class="num">1.37</td><td>1.6<sup>2/3</sup>; turbulent plus molecular transport</td></tr>
+        <tr><td>BWB g<sub>1</sub> (dimensionless)</td><td class="num">9 (C3) · 4 (C4)</td><td>Collatz et al. 1991, 1992 [4, 5]</td></tr>
+        <tr><td>g<sub>0</sub> / night-time g<sub>sw</sub></td><td class="num">0.01 (C3) · 0.04 (C4) mol m⁻² s⁻¹</td><td>Measured night values 0.01–0.05 [4, 5]</td></tr>
+        <tr><td>Leuning D<sub>0</sub></td><td class="num">≈ 1.5 kPa</td><td>Range 0.35–3 kPa [3]</td></tr>
+        <tr><td>Medlyn g<sub>1</sub> (√kPa)</td><td class="num">1.6 C4 grass · 2.3 conifer · 4.1–4.5 broadleaf tree · 5.3 C3 grass · 5.8 crop</td><td>Lin et al. 2015 [8]</td></tr>
+        <tr><td>λ, marginal water cost of carbon</td><td class="num">≈ 500–3000 mol H₂O mol⁻¹ CO₂</td><td>g<sub>1</sub> = 4 √kPa ↔ λ ≈ 2000 mol mol⁻¹ at Γ* = 40 µmol mol⁻¹</td></tr>
+        <tr><td>C<sub>i</sub>/C<sub>a</sub>, well watered</td><td class="num">0.7 (C3) · 0.4 (C4)</td><td>Medlyn: g<sub>1</sub>/(g<sub>1</sub> + √D)</td></tr>
+        <tr><td>Typical midday g<sub>sw</sub></td><td class="num">0.1–0.5 mol m⁻² s⁻¹</td><td>Conifers low, crops high; ≈ 2.5–12 mm s⁻¹</td></tr>
+        <tr><td>Boundary-layer g<sub>bw</sub></td><td class="num">1–3 mol m⁻² s⁻¹</td><td>Leaf of 5 cm in 1–3 m s⁻¹ wind; ∝ √(u/d)</td></tr>
+        <tr><td>Stomatal response time</td><td class="num">5–30 min</td><td>Closing faster than opening</td></tr>
+        <tr><td>g<sub>s</sub> response to +200 µmol mol⁻¹ CO₂</td><td class="num">≈ −20%</td><td>FACE meta-analyses</td></tr>
+        <tr><td>Tuzet Ψ<sub>f</sub> · s<sub>f</sub></td><td class="num">−1.9 MPa · 3.2 MPa⁻¹</td><td>[9]</td></tr>
+        <tr><td>Conversion mol m⁻² s⁻¹ → mm s⁻¹</td><td class="num">× 24.5 at 25 °C, 101.3 kPa</td><td>RT/P molar volume</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Write down the Ball–Woodrow–Berry, Leuning and Medlyn stomatal models. For each, derive the C<sub>i</sub>/C<sub>a</sub> it implies when g<sub>0</sub> and the boundary layer are neglected, and explain what the result means for water-use efficiency.</summary><div class="a"><p>BWB: g<sub>sw</sub> = g<sub>0</sub> + g<sub>1</sub>A h<sub>s</sub>/C<sub>s</sub>. Leuning: g<sub>sw</sub> = g<sub>0</sub> + g<sub>1</sub>A/((C<sub>s</sub> − Γ)(1 + D/D<sub>0</sub>)). Medlyn: g<sub>sw</sub> = g<sub>0</sub> + 1.6(1 + g<sub>1</sub>/√D)A/C<sub>a</sub>. In each case use the supply equation A = (g<sub>sw</sub>/1.6)(C<sub>a</sub> − C<sub>i</sub>), i.e. g<sub>sw</sub> = 1.6A/(C<sub>a</sub> − C<sub>i</sub>), and equate. BWB: 1.6/(C<sub>a</sub> − C<sub>i</sub>) = g<sub>1</sub>h<sub>s</sub>/C<sub>a</sub> ⇒ C<sub>i</sub>/C<sub>a</sub> = 1 − 1.6/(g<sub>1</sub>h<sub>s</sub>). Leuning: C<sub>i</sub>/C<sub>a</sub> = 1 − 1.6(1 − Γ/C<sub>a</sub>)(1 + D/D<sub>0</sub>)/g<sub>1</sub>. Medlyn: C<sub>a</sub>/(C<sub>a</sub> − C<sub>i</sub>) = 1 + g<sub>1</sub>/√D ⇒ C<sub>i</sub>/C<sub>a</sub> = g<sub>1</sub>/(g<sub>1</sub> + √D). In all three the ratio is independent of A and of light and temperature, and depends only on humidity and the slope parameter. Since intrinsic WUE is A/g<sub>sw</sub> = C<sub>a</sub>(1 − C<sub>i</sub>/C<sub>a</sub>)/1.6, a constant C<sub>i</sub>/C<sub>a</sub> means iWUE ∝ C<sub>a</sub>: stomata close in proportion as CO₂ rises, which is what tree-ring δ¹³C and FACE experiments show. The models differ in how iWUE depends on humidity: linearly in 1/h<sub>s</sub>, linearly in D, or as √D.</p></div></details>
+    <details class="q"><summary>2. Starting from the Cowan–Farquhar optimality condition, derive the Medlyn et al. (2011) model and state the assumptions made. Interpret g<sub>1</sub>.</summary><div class="a"><p>Cowan and Farquhar: over a day with fixed total water loss, carbon gain is maximised when ∂A/∂E = 1/λ is constant, where λ = ∂E/∂A is the marginal water cost of carbon. Instantaneously the leaf maximises A − E/λ. Assume (i) RuBP-regeneration-limited photosynthesis, A = J(C<sub>i</sub> − Γ*)/(4(C<sub>i</sub> + 2Γ*)); (ii) E = 1.6g<sub>sc</sub>D with D as a mole fraction and no boundary layer; (iii) A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>). Then ∂A/∂E = (∂A/∂g<sub>sc</sub>)/(1.6D). Writing g<sub>sc</sub> = A(C<sub>i</sub>)/(C<sub>a</sub> − C<sub>i</sub>) and differentiating, ∂A/∂g<sub>sc</sub> = A′(C<sub>a</sub> − C<sub>i</sub>)²/(A′(C<sub>a</sub> − C<sub>i</sub>) + A), with A′ = dA/dC<sub>i</sub> = 3JΓ*/(4(C<sub>i</sub> + 2Γ*)²). Assuming A′(C<sub>a</sub> − C<sub>i</sub>) ≪ A and C<sub>i</sub> ≫ Γ*, this reduces to ∂A/∂g<sub>sc</sub> ≈ 3Γ*(C<sub>a</sub> − C<sub>i</sub>)²/C<sub>i</sub>². Setting it equal to 1.6D/λ gives (C<sub>a</sub> − C<sub>i</sub>)/C<sub>i</sub> = √(1.6D/(3Γ*λ)), so C<sub>i</sub>/C<sub>a</sub> = g<sub>1</sub>/(g<sub>1</sub> + √D) with g<sub>1</sub> = √(3Γ*λ/1.6). Substituting into g<sub>sw</sub> = 1.6A/(C<sub>a</sub> − C<sub>i</sub>) gives g<sub>sw</sub> = 1.6(1 + g<sub>1</sub>/√D)A/C<sub>a</sub>, and g<sub>0</sub> is added empirically. g<sub>1</sub> (√kPa) is proportional to √λ: a high g<sub>1</sub> species spends water freely and keeps C<sub>i</sub>/C<sub>a</sub> high; a low g<sub>1</sub> species is conservative. It should rise with Γ*, hence with temperature, and across PFTs it ranges from ≈ 1.6 (C4 grasses) to ≈ 5.8 (C3 crops). Note the model predicts the shape of the D response (g<sub>s</sub> ∝ D<sup>−1/2</sup>), not merely fitting it.</p></div></details>
+    <details class="q"><summary>3. A land-surface model couples FvCB photosynthesis with a stomatal model and a leaf energy balance. Describe the system of equations and an algorithm for solving it. Why does a unique, stable solution exist?</summary><div class="a"><p>Unknowns: A, C<sub>i</sub>, g<sub>sw</sub>, T<sub>l</sub>. Equations: (1) demand, A = min(A<sub>c</sub>, A<sub>j</sub>, A<sub>p</sub>) evaluated at C<sub>i</sub> and T<sub>l</sub>; (2) supply, A = (C<sub>a</sub> − C<sub>i</sub>)/(1.6/g<sub>sw</sub> + 1.37/g<sub>bw</sub>); (3) stomatal rule, e.g. g<sub>sw</sub> = g<sub>0</sub> + 1.6(1 + g<sub>1</sub>/√D)A/C<sub>a</sub> with D = e<sub>s</sub>(T<sub>l</sub>) − e<sub>a</sub>; (4) energy balance, R<sub>n</sub> = c<sub>p</sub>g<sub>H</sub>(T<sub>l</sub> − T<sub>a</sub>) + λE with E = g<sub>tw</sub>D/P. Algorithm (Collatz 1991): guess T<sub>l</sub> = T<sub>a</sub> and C<sub>i</sub> = 0.7C<sub>a</sub>; compute A from FvCB; compute g<sub>sw</sub> from the stomatal model; update C<sub>i</sub> from supply (or, for fixed g<sub>s</sub>, solve the quadratic in A obtained by substituting C<sub>i</sub> = C<sub>a</sub> − A/g<sub>sc</sub> into each FvCB rate); iterate until C<sub>i</sub> converges, typically with damping or a bracketed root-finder on the residual C<sub>i</sub> − C<sub>i</sub>′(C<sub>i</sub>); then update T<sub>l</sub> from the energy balance (Newton step on the residual) and repeat the inner loop. Uniqueness and stability follow because the demand curve A(C<sub>i</sub>) is increasing and concave while the effective supply implied by the stomatal rule corresponds to a nearly fixed C<sub>i</sub>/C<sub>a</sub> at given D (a near-vertical line in the A–C<sub>i</sub> plane), so the two cross exactly once. Difficulties arise at low light (A ≈ 0, g<sub>s</sub> ≈ g<sub>0</sub>, C<sub>i</sub> → C<sub>a</sub>) and when the min() switches limitation, which is why CLM5 uses a bracketing method rather than fixed-point iteration.</p></div></details>
+    <details class="q"><summary>4. Explain how the three semi-empirical models respond to a doubling of atmospheric CO₂, and why the Jarvis model cannot make the same prediction. How well do the predictions match FACE observations?</summary><div class="a"><p>In BWB, Leuning and Medlyn, g<sub>s</sub> ∝ A/C<sub>a</sub> (or A/C<sub>s</sub>), so g<sub>s</sub> changes by the ratio (A<sub>e</sub>/A<sub>a</sub>)/(C<sub>a,e</sub>/C<sub>a,a</sub>). With a doubling of CO₂ and a ~30–40% stimulation of A under RuBP-limited conditions, g<sub>s</sub> falls by 30–35%; the mechanism is that C<sub>i</sub>/C<sub>a</sub> is conserved, so the leaf needs proportionally less conductance to maintain the same drawdown fraction. In optimality terms, at higher C<sub>a</sub> each unit of conductance buys more carbon, so the optimum shifts to lower g<sub>s</sub> at the same λ. The Jarvis model has no link to A, so its CO₂ response is whatever f<sub>5</sub>(C<sub>a</sub>) the modeller supplies, often omitted entirely, which is why early hydrological models missed the "physiological forcing" of runoff by rising CO₂. FACE experiments across trees, crops and grasses show g<sub>s</sub> reductions averaging about 20% for +200 µmol mol⁻¹ (roughly +50% CO₂), with large variation; the coupled models reproduce the average well, but over-predict the response where stomata acclimate, where canopy conductance is dominated by boundary-layer or aerodynamic limits (tall forests, low Ω), or where longer-term anatomical adjustments (fewer, smaller stomata) are the dominant response (Franks et al. 2018).</p></div></details>
+    <details class="q"><summary>5. Soil drying is often represented by a factor β. Compare applying β to V<sub>cmax</sub> versus to g<sub>1</sub>, and explain how plant-hydraulic schemes change the picture.</summary><div class="a"><p>With β on V<sub>cmax</sub> only, A falls and g<sub>s</sub> follows through the stomatal rule, so C<sub>i</sub>/C<sub>a</sub> and intrinsic WUE are unchanged by drought: this contradicts observations of rising iWUE (and more positive δ¹³C) during drought, and gives too much transpiration per unit carbon. With β on g<sub>1</sub> only, stomata close and C<sub>i</sub>/C<sub>a</sub> falls, iWUE rises, but photosynthetic capacity is retained; A falls only through the lower C<sub>i</sub>, which is often too little to match observed GPP declines. Leaf-level data (e.g. Zhou et al. 2013) show the stomatal slope declining first and V<sub>cmax</sub> later as predawn Ψ falls, so both are needed with different thresholds; De Kauwe et al. (2015) showed that CABLE's performance at drought sites depended strongly on this choice. Hydraulic schemes (Tuzet 2003; Sperry 2017; Eller 2020 SOX; CLM5 PHS) replace the root-zone θ with the leaf water potential solved from a soil–root–xylem resistance network. Stomata then respond to the actual Ψ<sub>leaf</sub>, which integrates soil Ψ, root distribution, xylem conductance and the current transpiration rate; the VPD and soil-moisture responses become one mechanism, species differences are encoded in P50 and K<sub>max</sub> rather than a tuned β curve, and the models can represent isohydric versus anisohydric behaviour and hydraulic failure. The price is extra parameters (vulnerability curves, root hydraulic conductances) that are poorly constrained globally.</p></div></details>
+    <details class="q"><summary>6. What is intrinsic water-use efficiency and how does it differ from instantaneous and ecosystem WUE? Show how the Medlyn model predicts each should respond to VPD and CO₂.</summary><div class="a"><p>Intrinsic WUE is A/g<sub>sw</sub> (µmol CO₂ mol⁻¹ H₂O), a property of the stomata–biochemistry balance independent of the evaporative demand; instantaneous WUE is A/E = A/(g<sub>sw</sub>D/P), which falls with D; ecosystem WUE is GPP/ET (g C kg⁻¹ H₂O), which includes soil and canopy-interception evaporation and respiration-free GPP. From Medlyn, A/g<sub>sw</sub> = C<sub>a</sub>(1 − C<sub>i</sub>/C<sub>a</sub>)/1.6 = C<sub>a</sub>√D/(1.6(g<sub>1</sub> + √D)): iWUE rises with √D (stomata close in dry air more than A falls) and linearly with C<sub>a</sub>. Instantaneous WUE = A/E = C<sub>a</sub>P/(1.6D) × √D/(g<sub>1</sub> + √D) ∝ C<sub>a</sub>/(√D(g<sub>1</sub> + √D)), which declines with D roughly as D<sup>−1/2</sup> to D<sup>−1</sup>. Hence the "underlying WUE" GPP√D/ET used in flux-tower analyses: Medlyn's model predicts it should be nearly constant with D at a site and proportional to C<sub>a</sub>, which is approximately what multi-decade FLUXNET records show. Deviations identify non-stomatal evaporation or changes in g<sub>1</sub> with soil moisture.</p></div></details>
+    <details class="q"><summary>7. Describe how you would estimate g<sub>1</sub> (a) from leaf gas-exchange measurements and (b) from eddy-covariance data, and why the two estimates differ.</summary><div class="a"><p>(a) Measure A, g<sub>sw</sub>, leaf-to-air D and C<sub>a</sub> on well-watered leaves over a range of light, temperature and humidity; exclude A ≤ 0; fit g<sub>sw</sub> = g<sub>0</sub> + 1.6(1 + g<sub>1</sub>/√D)A/C<sub>a</sub> by non-linear least squares, ideally fixing g<sub>0</sub> at a measured dark value because g<sub>0</sub> and g<sub>1</sub> trade off. Report units (√kPa) and the D range used. (b) Invert the Penman–Monteith equation with measured λE, R<sub>n</sub>, G, D, and an aerodynamic conductance from u* to obtain canopy conductance G<sub>c</sub>; take GPP from NEE partitioning; use D and C<sub>a</sub> at the reference height; fit the same equation with A → GPP and g<sub>sw</sub> → G<sub>c</sub>, restricting to dry-canopy, daytime, growing-season periods. Medlyn et al. (2017) found canopy g<sub>1</sub> ranked PFTs as the leaf data did but was higher, because G<sub>c</sub> contains soil and wet-surface evaporation, the canopy integrates sunlit and shaded leaves non-linearly (shaded leaves have low A and relatively high g<sub>s</sub>), the reference-height D is lower than leaf-to-air D at the top of the canopy, and g<sub>0</sub> is confounded with non-stomatal fluxes. The practical lesson for a modeller is to use the g<sub>1</sub> appropriate to the scale at which the model applies it, and to treat g<sub>0</sub> separately.</p></div></details>
+    <details class="q"><summary>8. Compare the Jarvis, Ball–Berry-type, optimality and hydraulic classes of stomatal model in terms of assumptions, parameters, strengths and the situations in which each fails.</summary><div class="a"><p><strong>Jarvis (1976):</strong> product of independent empirical responses; 8–12 parameters per species; transparent and easy to constrain where data exist; fails to extrapolate (new CO₂, new climates), treats interacting responses as independent, no link to carbon. <strong>Ball–Berry/Leuning:</strong> g<sub>s</sub> ∝ A × humidity function / CO₂; 2–3 parameters; strong coupling to photosynthesis, sensible CO₂ and light responses; the humidity function is empirical (h<sub>s</sub> in BWB gives wrong temperature behaviour at fixed D), no soil-water response without β, g<sub>0</sub> poorly defined. <strong>Optimality (Medlyn 2011):</strong> same form derived from maximising A − E/λ; one meaningful slope g<sub>1</sub> ∝ √(Γ*λ) with PFT values from a global database; predicts the √D response and constant C<sub>i</sub>/C<sub>a</sub>; assumes RuBP limitation and a constant λ, so it still lacks soil-water and hydraulic behaviour and gives no mechanism for how λ is set. <strong>Hydraulic/profit-maximisation (Tuzet 2003; Sperry 2017; SOX; CLM5 PHS):</strong> g<sub>s</sub> responds to leaf water potential solved from a resistance network, or maximises gain minus hydraulic risk; needs P50, vulnerability slope, K<sub>max</sub>, root parameters; unifies VPD and soil-drought responses and predicts isohydry and mortality; parameters are scarce globally, the schemes are computationally heavier, and they still require an assumption about what is being optimised. In practice land-surface models are converging on a Medlyn-type closure for the humidity and CO₂ response with hydraulics supplying the water-stress term.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Jarvis PG (1976). The interpretation of the variations in leaf water potential and stomatal conductance found in canopies in the field. <em>Philosophical Transactions of the Royal Society B</em> 273: 593–610. <a href="https://doi.org/10.1098/rstb.1976.0035">doi:10.1098/rstb.1976.0035</a><span class="why">The original multiplicative empirical model; read for the response-function shapes and the argument for independence.</span></li>
+      <li>Ball JT, Woodrow IE, Berry JA (1987). A model predicting stomatal conductance and its contribution to the control of photosynthesis under different environmental conditions. In Biggins J (ed.) <em>Progress in Photosynthesis Research</em>, vol. 4, pp. 221–224. Martinus Nijhoff, Dordrecht. <span class="why">Four pages that defined the A h<sub>s</sub>/C<sub>s</sub> correlation used by most coupled models for two decades.</span></li>
+      <li>Leuning R (1995). A critical appraisal of a combined stomatal–photosynthesis model for C3 plants. <em>Plant, Cell &amp; Environment</em> 18: 339–355. <a href="https://doi.org/10.1111/j.1365-3040.1995.tb00370.x">doi:10.1111/j.1365-3040.1995.tb00370.x</a><span class="why">Introduces the D/D<sub>0</sub> humidity term and C<sub>s</sub> − Γ; also a clear treatment of boundary-layer effects.</span></li>
+      <li>Collatz GJ, Ball JT, Grivet C, Berry JA (1991). Physiological and environmental regulation of stomatal conductance, photosynthesis and transpiration: a model that includes a laminar boundary layer. <em>Agricultural and Forest Meteorology</em> 54: 107–136. <a href="https://doi.org/10.1016/0168-1923(91)90002-8">doi:10.1016/0168-1923(91)90002-8</a><span class="why">The coupled FvCB–BWB–energy-balance leaf model and its solution; the template for SiB2 and CLM.</span></li>
+      <li>Collatz GJ, Ribas-Carbo M, Berry JA (1992). Coupled photosynthesis–stomatal conductance model for leaves of C4 plants. <em>Australian Journal of Plant Physiology</em> 19: 519–538. <span class="why">The C4 counterpart; source of g<sub>1</sub> = 4 and g<sub>0</sub> = 0.04 for C4.</span></li>
+      <li>Cowan IR, Farquhar GD (1977). Stomatal function in relation to leaf metabolism and environment. <em>Symposia of the Society for Experimental Biology</em> 31: 471–505. <span class="why">The optimality hypothesis: constant marginal water cost of carbon, ∂A/∂E = 1/λ.</span></li>
+      <li>Medlyn BE, Duursma RA, Eamus D, et al. (2011). Reconciling the optimal and empirical approaches to modelling stomatal conductance. <em>Global Change Biology</em> 17: 2134–2144. <a href="https://doi.org/10.1111/j.1365-2486.2010.02375.x">doi:10.1111/j.1365-2486.2010.02375.x</a><span class="why">Derivation of the USO model and the interpretation of g<sub>1</sub>; the central paper for this topic.</span></li>
+      <li>Lin Y-S, Medlyn BE, Duursma RA, et al. (2015). Optimal stomatal behaviour around the world. <em>Nature Climate Change</em> 5: 459–464. <a href="https://doi.org/10.1038/nclimate2550">doi:10.1038/nclimate2550</a><span class="why">Global g<sub>1</sub> database and PFT values; shows g<sub>1</sub> varies with temperature and aridity as the theory predicts.</span></li>
+      <li>Tuzet A, Perrier A, Leuning R (2003). A coupled model of stomatal conductance, photosynthesis and transpiration. <em>Plant, Cell &amp; Environment</em> 26: 1097–1116. <a href="https://doi.org/10.1046/j.1365-3040.2003.01035.x">doi:10.1046/j.1365-3040.2003.01035.x</a><span class="why">Leaf-water-potential feedback on g<sub>s</sub> coupled to a soil–plant hydraulic model.</span></li>
+      <li>Sperry JS, Venturas MD, Anderegg WRL, et al. (2017). Predicting stomatal responses to the environment from the optimization of photosynthetic gain and hydraulic cost. <em>Plant, Cell &amp; Environment</em> 40: 816–830. <a href="https://doi.org/10.1111/pce.12852">doi:10.1111/pce.12852</a><span class="why">The gain–risk (profit-maximisation) model built on the xylem vulnerability curve.</span></li>
+      <li>Eller CB, Rowland L, Mencuccini M, et al. (2020). Stomatal optimization based on xylem hydraulics (SOX) improves land surface model simulation of vegetation responses to climate. <em>New Phytologist</em> 226: 1622–1637. <a href="https://doi.org/10.1111/nph.16419">doi:10.1111/nph.16419</a><span class="why">A tractable hydraulic optimisation scheme and its implementation in JULES.</span></li>
+      <li>Buckley TN (2017). Modeling stomatal conductance. <em>Plant Physiology</em> 174: 572–582; see also Buckley TN (2019) How do stomata respond to water status? <em>New Phytologist</em> 224: 21–36. <span class="why">Critical reviews of the mechanistic basis (or lack of it) behind each model class.</span></li>
+      <li>Franks PJ, Bonan GB, Berry JA, et al. (2018). Comparing optimal and empirical stomatal conductance models for application in Earth system models. <em>Global Change Biology</em> 24: 5708–5723. <a href="https://doi.org/10.1111/gcb.14445">doi:10.1111/gcb.14445</a><span class="why">Side-by-side comparison of model families in an ESM context, with emphasis on CO₂ responses.</span></li>
+      <li>Damour G, Simonneau T, Cochard H, Urban L (2010). An overview of models of stomatal conductance at the leaf level. <em>Plant, Cell &amp; Environment</em> 33: 1419–1438. <a href="https://doi.org/10.1111/j.1365-3040.2010.02181.x">doi:10.1111/j.1365-3040.2010.02181.x</a><span class="why">Catalogue of 35 models with their equations and parameters; useful for the comparison question.</span></li>
+      <li>Knauer J, Werner C, Zaehle S (2015). Evaluating stomatal models and their atmospheric drought response in a land surface scheme: a multibiome analysis. <em>Journal of Geophysical Research: Biogeosciences</em> 120: 1894–1911; and Knauer J, et al. (2018) Towards physiologically meaningful water-use efficiency estimates from eddy covariance data. <em>Global Change Biology</em> 24: 694–710. <span class="why">Stomatal-model intercomparison in JSBACH at FLUXNET sites and the canopy-scale WUE methodology.</span></li>
+      <li>De Kauwe MG, Kala J, Lin Y-S, et al. (2015). A test of an optimal stomatal conductance scheme within the CABLE land surface model. <em>Geoscientific Model Development</em> 8: 431–452. <a href="https://doi.org/10.5194/gmd-8-431-2015">doi:10.5194/gmd-8-431-2015</a><span class="why">Medlyn scheme with Lin g<sub>1</sub> in a global model; the β-on-g<sub>1</sub>-versus-V<sub>cmax</sub> analysis.</span></li>
+      <li>Medlyn BE, De Kauwe MG, Lin Y-S, et al. (2017). How do leaf and ecosystem measures of water-use efficiency compare? <em>New Phytologist</em> 216: 758–770. <a href="https://doi.org/10.1111/nph.14626">doi:10.1111/nph.14626</a><span class="why">g<sub>1</sub> inverted from FLUXNET towers compared with leaf-level values.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="response-curves.html">← A–C<sub>i</sub>, A–Q and A–T response curves</a><a href="canopy-upscaling.html">Next: Canopy upscaling →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#physiology">Stomatal physiology</a></li>
+      <li><a href="#empirical">Jarvis, BWB, Leuning</a></li>
+      <li><a href="#optimality">Optimality &amp; Medlyn</a></li>
+      <li><a href="#hydraulic">Hydraulic models</a></li>
+      <li><a href="#coupling">Coupling with FvCB</a></li>
+      <li><a href="#behaviour">CO₂, drought, night</a></li>
+      <li><a href="#estimation">Parameter estimation</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (fixed V<sub>cmax</sub> and J<sub>max</sub>, C<sub>c</sub> = C<sub>i</sub>, prescribed leaf temperature, no TPU limit) chosen for intuition. Kinetic constants follow Bernacchi et al. 2001/2003.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var R = 0.008314, T25 = 298.15, P = 101.3;
+  function arr(c, Ha, Tk) { return Math.exp(c - Ha / (R * Tk)); }
+  function Kc(Tk) { return arr(38.05, 79.43, Tk); }
+  function Ko(Tk) { return arr(20.30, 36.38, Tk); }
+  function Gstar(Tk) { return arr(19.02, 37.83, Tk); }
+  function arrN(Ha, Tk) { return Math.exp(Ha * (Tk - T25) / (T25 * R * Tk)); }
+  function peakN(Ha, Hd, dS, Tk) { var num = 1 + Math.exp((T25 * dS - Hd) / (T25 * R)); var den = 1 + Math.exp((Tk * dS - Hd) / (Tk * R)); return arrN(Ha, Tk) * num / den; }
+  function esat(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); } // kPa
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function setOut(id, v) { var o = document.getElementById(id); if (o) o.textContent = v; }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(6)); return t; }
+
+  /* Chart panel helper: draws axes/grid, returns scales. box = {x,y,w,h} in viewBox units */
+  function panel(svg, box, xr, yr, xlab, ylab, title) {
+    var sx = function (x) { return box.x + (x - xr[0]) / (xr[1] - xr[0]) * box.w; };
+    var sy = function (y) { return box.y + (yr[1] - y) / (yr[1] - yr[0]) * box.h; };
+    niceTicks(yr[0], yr[1], 5).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: box.x, x2: box.x + box.w, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: box.x - 7, y: sy(v) + 4, 'text-anchor': 'end' }, +v.toFixed(3))); });
+    niceTicks(xr[0], xr[1], 6).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: box.y + box.h, y2: box.y + box.h + 4 })); if (xlab !== null) svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: box.y + box.h + 17, 'text-anchor': 'middle' }, +v.toFixed(3))); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x + box.w, y1: box.y + box.h, y2: box.y + box.h }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x, y1: box.y, y2: box.y + box.h }));
+    if (xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: box.x + box.w / 2, y: box.y + box.h + 34, 'text-anchor': 'middle' }, xlab));
+    if (ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(' + (box.x - 42) + ',' + (box.y + box.h / 2) + ') rotate(-90)' }, ylab));
+    if (title) svg.appendChild(el('text', { 'class': 'ptitle', x: box.x + 6, y: box.y + 13 }, title));
+    return { sx: sx, sy: sy, xr: xr, yr: yr, box: box };
+  }
+  function pathXY(p, pts) { var d = ''; pts.forEach(function (q, i) { if (q[1] === null || !isFinite(q[1])) return; d += (d === '' ? 'M' : 'L') + p.sx(q[0]).toFixed(1) + ',' + p.sy(clamp(q[1], p.yr[0], p.yr[1])).toFixed(1); }); return d; }
+  function placeTip(tip, e) { var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; }
+  function hoverLayer(svg, tip, box, onX) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.y, y2: box.y + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: box.x, y: box.y, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var fx = clamp((p.x - box.x) / box.w, 0, 1);
+      xh.setAttribute('x1', p.x); xh.setAttribute('x2', p.x); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = onX(fx); tip.hidden = false; placeTip(tip, e);
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+    return xh;
+  }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener(id === 'pDrv' || id === 'oMode' ? 'change' : 'input', fn); }); }
+  function val(id) { return +document.getElementById(id).value; }
+
+  /* ---------- FvCB leaf (shared by labs 2 and 3) ---------- */
+  function leafParams(T, beta, Q) {
+    var Tk = T + 273.15, O2 = 210;
+    var Vc = 60 * beta * peakN(65.33, 200, 0.65, Tk);
+    var Jm = 120 * peakN(43.9, 152.3, 0.495, Tk);
+    var Rd = 0.015 * 60 * arrN(46.39, Tk);
+    var gs = Gstar(Tk), keff = Kc(Tk) * (1 + O2 / Ko(Tk));
+    var I2 = Q * 0.85 * 0.85 / 2, th = 0.7;
+    var J = (I2 + Jm - Math.sqrt((I2 + Jm) * (I2 + Jm) - 4 * th * I2 * Jm)) / (2 * th);
+    return { Vc: Vc, J: J, Rd: Rd, gs: gs, keff: keff,
+      Ac: function (C) { return Vc * (C - gs) / (C + keff) - Rd; },
+      Aj: function (C) { return J * (C - gs) / (4 * C + 8 * gs) - Rd; },
+      A: function (C) { return Math.min(this.Ac(C), this.Aj(C)); } };
+  }
+  // solve coupled FvCB + Medlyn + diffusion for Ci by bisection on fixed-point residual
+  function solveLeaf(Ca, D, lp, g1, g0, gb) {
+    function step(Ci) { var A = lp.A(Ci); var gsw = g0 + (A > 0 ? 1.6 * (1 + g1 / Math.sqrt(D)) * A / Ca : 0); gsw = Math.max(gsw, 1e-4); var gtc = 1 / (1.6 / gsw + 1.37 / gb); var Cn = Ca - A / gtc; return { A: A, gsw: gsw, Cn: Cn }; }
+    var lo = 1, hi = Ca * 1.5, s;
+    for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2; s = step(mid); if (mid - s.Cn > 0) hi = mid; else lo = mid; }
+    var Ci = (lo + hi) / 2; s = step(Ci);
+    var lim = lp.Ac(Ci) <= lp.Aj(Ci) ? 'Rubisco' : 'RuBP regeneration';
+    return { Ci: Ci, A: s.A, gsw: s.gsw, lim: lim };
+  }
+
+  /* ---------- Lab 1: model comparison ---------- */
+  (function () {
+    var svg = document.getElementById('cmpSvg'), tip = document.getElementById('cmpTip');
+    if (!svg) return;
+    var ids = ['cA', 'cCa', 'cT', 'cGb', 'cG0', 'cG1b', 'cG1l', 'cD0', 'cG1m'];
+    var Gam = 45;
+    function models(D) {
+      var A = val('cA'), Ca = val('cCa'), T = val('cT'), gb = val('cGb'), g0 = val('cG0');
+      var Cs = Ca - 1.37 * A / gb, hs = clamp(1 - D / esat(T), 0.02, 1);
+      var bb = g0 + val('cG1b') * A * hs / Cs;
+      var le = g0 + val('cG1l') * A / ((Cs - Gam) * (1 + D / val('cD0')));
+      var me = g0 + 1.6 * (1 + val('cG1m') / Math.sqrt(D)) * A / Ca;
+      function ratio(g) { return (Cs - 1.6 * A / g) / Ca; }
+      return { bb: bb, le: le, me: me, Cs: Cs, hs: hs, rbb: ratio(bb), rle: ratio(le), rme: ratio(me), A: A };
+    }
+    function draw() {
+      ids.forEach(function (id) { setOut(id + 'O', document.getElementById(id).value); });
+      clear(svg);
+      var Dmin = 0.2, Dmax = 4.5;
+      var pts = { bb: [], le: [], me: [] }, ymax = 0;
+      for (var D = Dmin; D <= Dmax + 1e-9; D += 0.05) { var m = models(D); pts.bb.push([D, m.bb]); pts.le.push([D, m.le]); pts.me.push([D, m.me]); if (D >= 0.5) ymax = Math.max(ymax, m.bb, m.le, m.me); }
+      ymax = Math.max(0.2, Math.ceil(ymax * 1.15 / 0.1) * 0.1);
+      var p = panel(svg, { x: 62, y: 18, w: 640 - 62 - 96, h: 360 - 18 - 54 }, [0, Dmax], [0, ymax], 'Leaf-to-air vapour pressure deficit, D (kPa)', 'gₛᵥ (mol m⁻² s⁻¹)');
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(1.5), x2: p.sx(1.5), y1: p.box.y, y2: p.box.y + p.box.h }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(1.5) + 4, y: p.box.y + 12 }, 'D = 1.5 kPa'));
+      var cols = { bb: 'var(--series-1)', le: 'var(--series-2)', me: 'var(--series-3)' }, names = { bb: 'BWB', le: 'Leuning', me: 'Medlyn' };
+      var labs = [];
+      ['bb', 'le', 'me'].forEach(function (k) { svg.appendChild(el('path', { 'class': 'ser', d: pathXY(p, pts[k]), stroke: cols[k] })); var last = pts[k][pts[k].length - 1]; labs.push({ t: names[k], y: p.sy(clamp(last[1], 0, ymax)), c: cols[k] }); });
+      labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+      labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: p.box.x + p.box.w + 8, y: L.y + 4, fill: L.c }, L.t)); });
+      hoverLayer(svg, tip, p.box, function (fx) { var D = Math.max(Dmin, fx * Dmax); var m = models(D); return 'D <b>' + fmt(D, 2) + '</b> kPa · hₛ <b>' + fmt(m.hs, 2) + '</b><br>gₛᵥ: BWB <b>' + fmt(m.bb, 3) + '</b> · Leuning <b>' + fmt(m.le, 3) + '</b> · Medlyn <b>' + fmt(m.me, 3) + '</b><br>Cᵢ/Cₐ: <b>' + fmt(m.rbb, 2) + '</b> · <b>' + fmt(m.rle, 2) + '</b> · <b>' + fmt(m.rme, 2) + '</b>'; });
+      var r = models(1.5);
+      setOut('cGs', fmt(r.bb, 3) + ' · ' + fmt(r.le, 3) + ' · ' + fmt(r.me, 3));
+      setOut('cRatio', fmt(r.rbb, 2) + ' · ' + fmt(r.rle, 2) + ' · ' + fmt(r.rme, 2));
+      setOut('cWue', fmt(r.A / r.bb, 0) + ' · ' + fmt(r.A / r.le, 0) + ' · ' + fmt(r.A / r.me, 0));
+      setOut('cCs', fmt(r.Cs, 0));
+      var html = '<thead><tr><th class="num">D (kPa)</th><th class="num">hₛ</th><th class="num">BWB</th><th class="num">Leuning</th><th class="num">Medlyn</th><th class="num">Cᵢ/Cₐ (M)</th></tr></thead><tbody>';
+      for (var d = 0.5; d <= 4.01; d += 0.5) { var mm = models(d); html += '<tr><td class="num">' + fmt(d, 1) + '</td><td class="num">' + fmt(mm.hs, 2) + '</td><td class="num">' + fmt(mm.bb, 3) + '</td><td class="num">' + fmt(mm.le, 3) + '</td><td class="num">' + fmt(mm.me, 3) + '</td><td class="num">' + fmt(mm.rme, 2) + '</td></tr>'; }
+      document.getElementById('cmpTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 2: coupled leaf explorer ---------- */
+  (function () {
+    var svg = document.getElementById('cplSvg'), tip = document.getElementById('cplTip');
+    if (!svg) return;
+    var ids = ['pDrv', 'pD', 'pCa', 'pQ', 'pG1', 'pG0', 'pT', 'pBeta'];
+    var gb = 2;
+    function state() { return { D: val('pD'), Ca: val('pCa'), Q: val('pQ'), g1: val('pG1'), g0: val('pG0'), T: val('pT'), beta: val('pBeta') }; }
+    function run(s) { var lp = leafParams(s.T, s.beta, s.Q); var r = solveLeaf(s.Ca, s.D, lp, s.g1, s.g0, gb); r.E = 1.6 * (r.gsw / 1.6) * s.D / P * 1000; r.ratio = r.Ci / s.Ca; return r; }
+    function draw() {
+      ids.forEach(function (id) { if (id !== 'pDrv') setOut(id + 'O', id === 'pBeta' ? fmt(val(id), 2) : document.getElementById(id).value); });
+      clear(svg);
+      var s = state(), drv = document.getElementById('pDrv').value;
+      var xr, xlab, key;
+      if (drv === 'D') { xr = [0.2, 5]; xlab = 'Leaf-to-air VPD, D (kPa)'; key = 'D'; }
+      else if (drv === 'Ca') { xr = [150, 1000]; xlab = 'Ambient CO₂, Cₐ (µmol mol⁻¹)'; key = 'Ca'; }
+      else { xr = [0, 2200]; xlab = 'PPFD (µmol photons m⁻² s⁻¹)'; key = 'Q'; }
+      var N = 80, series = [], amax = 1, gmax = 0.1;
+      for (var i = 0; i <= N; i++) { var x = xr[0] + (xr[1] - xr[0]) * i / N; var ss = state(); ss[key] = x; var r = run(ss); series.push({ x: x, A: r.A, gsw: r.gsw, ratio: r.ratio }); amax = Math.max(amax, r.A); gmax = Math.max(gmax, r.gsw); }
+      amax = Math.ceil(amax * 1.1 / 5) * 5; gmax = Math.ceil(gmax * 1.1 / 0.1) * 0.1;
+      var L = 62, Rm = 20, W = 640, pad = 14, top = 10, bot = 48, ph = (560 - top - bot - 2 * pad) / 3;
+      var p1 = panel(svg, { x: L, y: top, w: W - L - Rm, h: ph }, xr, [Math.min(0, Math.floor(Math.min.apply(null, series.map(function (q) { return q.A; })))), amax], null, 'A (µmol m⁻² s⁻¹)', 'Net assimilation');
+      var p2 = panel(svg, { x: L, y: top + ph + pad, w: W - L - Rm, h: ph }, xr, [0, gmax], null, 'gₛᵥ (mol m⁻² s⁻¹)', 'Stomatal conductance');
+      var p3 = panel(svg, { x: L, y: top + 2 * (ph + pad), w: W - L - Rm, h: ph }, xr, [0, 1], xlab, 'Cᵢ / Cₐ', 'Intercellular to ambient CO₂ ratio');
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p1, series.map(function (q) { return [q.x, q.A]; })) }));
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-1)', d: pathXY(p2, series.map(function (q) { return [q.x, q.gsw]; })) }));
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-3)', d: pathXY(p3, series.map(function (q) { return [q.x, q.ratio]; })) }));
+      // Medlyn closed-form Ci/Ca as dashed reference
+      svg.appendChild(el('path', { 'class': 'ser dash', stroke: 'var(--muted)', d: pathXY(p3, series.map(function (q) { var D = key === 'D' ? q.x : s.D; return [q.x, s.g1 / (s.g1 + Math.sqrt(D))]; })) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p3.box.x + p3.box.w - 4, y: p3.box.y + 13, 'text-anchor': 'end' }, 'dashed: g₁/(g₁+√D)'));
+      // current operating point
+      var cur = run(s), cx = s[key];
+      [[p1, cur.A], [p2, cur.gsw], [p3, cur.ratio]].forEach(function (q) { svg.appendChild(el('circle', { 'class': 'op', cx: q[0].sx(cx), cy: q[0].sy(clamp(q[1], q[0].yr[0], q[0].yr[1])), r: 4.5 })); });
+      var fullBox = { x: L, y: top, w: W - L - Rm, h: 3 * ph + 2 * pad };
+      hoverLayer(svg, tip, fullBox, function (fx) { var x = xr[0] + fx * (xr[1] - xr[0]); var ss = state(); ss[key] = x; var r = run(ss); return xlab.split(',')[0] + ' <b>' + fmt(x, key === 'D' ? 2 : 0) + '</b><br>A <b>' + fmt(r.A, 1) + '</b> · gₛᵥ <b>' + fmt(r.gsw, 3) + '</b> · Cᵢ/Cₐ <b>' + fmt(r.ratio, 2) + '</b><br>Cᵢ <b>' + fmt(r.Ci, 0) + '</b> · ' + r.lim + '-limited'; });
+      setOut('pA', fmt(cur.A, 1)); setOut('pGs', fmt(cur.gsw, 3)); setOut('pCi', fmt(cur.Ci, 0) + ' · ' + fmt(cur.ratio, 2));
+      setOut('pPred', fmt(s.g1 / (s.g1 + Math.sqrt(s.D)), 2)); setOut('pE', fmt(cur.E, 2));
+      setOut('pWue', fmt(cur.A / cur.gsw, 0) + ' · ' + fmt(cur.A / cur.E, 2)); setOut('pLim', cur.lim);
+      var html = '<thead><tr><th class="num">' + xlab.split(' (')[0] + '</th><th class="num">A</th><th class="num">gₛᵥ</th><th class="num">Cᵢ</th><th class="num">Cᵢ/Cₐ</th><th>Limiting</th></tr></thead><tbody>';
+      for (var j = 0; j <= 8; j++) { var xx = xr[0] + (xr[1] - xr[0]) * j / 8; var st = state(); st[key] = xx; var rr = run(st); html += '<tr><td class="num">' + fmt(xx, key === 'D' ? 2 : 0) + '</td><td class="num">' + fmt(rr.A, 1) + '</td><td class="num">' + fmt(rr.gsw, 3) + '</td><td class="num">' + fmt(rr.Ci, 0) + '</td><td class="num">' + fmt(rr.ratio, 2) + '</td><td>' + rr.lim + '</td></tr>'; }
+      document.getElementById('cplTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 3: optimality explorer ---------- */
+  (function () {
+    var svg = document.getElementById('optSvg'), tip = document.getElementById('optTip');
+    if (!svg) return;
+    var ids = ['oLam', 'oD', 'oCa', 'oMode'];
+    var lp = leafParams(25, 1, 1500);
+    function Afn(C, mode) { return mode === 'j' ? lp.Aj(C) : lp.A(C); }
+    // A as a function of gsw at given Ca, D (no boundary layer): solve A = (gsw/1.6)(Ca - Ci) with demand
+    function AofG(gsw, Ca, mode) { var gc = gsw / 1.6, lo = 0, hi = Ca; for (var k = 0; k < 50; k++) { var mid = (lo + hi) / 2; if (Afn(mid, mode) - gc * (Ca - mid) > 0) hi = mid; else lo = mid; } var Ci = (lo + hi) / 2; return { A: gc * (Ca - Ci), Ci: Ci }; }
+    function curve(Ca, D, mode) { var pts = []; for (var g = 0.002; g <= 1.0001; g += 0.004) { var r = AofG(g, Ca, mode); pts.push({ g: g, A: r.A, Ci: r.Ci, E: g * D / P * 1000 }); } return pts; }
+    function optimum(pts, lam) { var best = null, slope = 1000 / lam; pts.forEach(function (q) { var prof = q.A - slope * q.E; if (best === null || prof > best.prof) { best = q; best.prof = prof; } }); return best; }
+    function draw() {
+      ['oLam', 'oD', 'oCa'].forEach(function (id) { setOut(id + 'O', document.getElementById(id).value); });
+      clear(svg);
+      var lam = val('oLam'), D = val('oD'), Ca = val('oCa'), mode = document.getElementById('oMode').value, slope = 1000 / lam;
+      var pts = curve(Ca, D, mode), opt = optimum(pts, lam);
+      var Emax = Math.ceil(pts[pts.length - 1].E / 2) * 2, Amax = Math.ceil(Math.max.apply(null, pts.map(function (q) { return q.A; })) * 1.15 / 5) * 5;
+      var W = 640, L = 62;
+      var p1 = panel(svg, { x: L, y: 12, w: W - L - 22, h: 250 }, [0, Emax], [Math.min(0, Math.floor(pts[0].A)), Amax], 'Transpiration, E (mmol m⁻² s⁻¹)', 'A (µmol m⁻² s⁻¹)', 'A versus E as gₛ opens at D = ' + fmt(D, 1) + ' kPa');
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p1, pts.map(function (q) { return [q.E, q.A]; })) }));
+      // tangent through optimum
+      var x0 = Math.max(0, opt.E - Emax * 0.45), x1 = Math.min(Emax, opt.E + Emax * 0.45);
+      svg.appendChild(el('line', { 'class': 'tan', x1: p1.sx(x0), y1: p1.sy(clamp(opt.A + slope * (x0 - opt.E), p1.yr[0], p1.yr[1])), x2: p1.sx(x1), y2: p1.sy(clamp(opt.A + slope * (x1 - opt.E), p1.yr[0], p1.yr[1])) }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p1.sx(opt.E), cy: p1.sy(opt.A), r: 5 }));
+      var rightHalf = opt.E > Emax / 2;
+      svg.appendChild(el('text', { 'class': 'tick', x: p1.sx(opt.E) + (rightHalf ? -8 : 8), y: p1.sy(opt.A) + 18, 'text-anchor': rightHalf ? 'end' : 'start' }, 'optimum: gₛᵥ = ' + fmt(opt.g, 2) + ', Cᵢ/Cₐ = ' + fmt(opt.Ci / Ca, 2)));
+      hoverLayer(svg, tip, p1.box, function (fx) { var E = fx * Emax; var best = pts[0]; pts.forEach(function (q) { if (Math.abs(q.E - E) < Math.abs(best.E - E)) best = q; }); var i = pts.indexOf(best), dAdE = i > 0 && i < pts.length - 1 ? (pts[i + 1].A - pts[i - 1].A) / (pts[i + 1].E - pts[i - 1].E) : NaN; return 'E <b>' + fmt(best.E, 2) + '</b> mmol · gₛᵥ <b>' + fmt(best.g, 3) + '</b><br>A <b>' + fmt(best.A, 1) + '</b> · Cᵢ/Cₐ <b>' + fmt(best.Ci / Ca, 2) + '</b><br>∂A/∂E <b>' + fmt(dAdE, 2) + '</b> vs 1/λ <b>' + fmt(slope, 2) + '</b> µmol mmol⁻¹'; });
+      // lower panel: optimum Ci/Ca vs D
+      var p2 = panel(svg, { x: L, y: 300, w: W - L - 22, h: 160 }, [0.2, 5], [0.3, 1], 'Leaf-to-air VPD, D (kPa)', 'optimum Cᵢ/Cₐ', 'Optimum ratio versus D at λ = ' + lam);
+      var gstar = lp.gs; var g1 = Math.sqrt(3 * (gstar * 1e-6) * lam / 1.6) * Math.sqrt(P); // sqrt(kPa)
+      var num = [], med = [];
+      for (var d = 0.2; d <= 5.001; d += 0.1) { var o = optimum(curve(Ca, d, mode), lam); num.push([d, o.Ci / Ca]); med.push([d, g1 / (g1 + Math.sqrt(d))]); }
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-1)', d: pathXY(p2, num) }));
+      svg.appendChild(el('path', { 'class': 'ser dash', stroke: 'var(--series-3)', d: pathXY(p2, med) }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p2.sx(D), cy: p2.sy(clamp(opt.Ci / Ca, 0.3, 1)), r: 4.5 }));
+      setOut('oGs', fmt(opt.g, 3)); setOut('oAE', fmt(opt.A, 1) + ' · ' + fmt(opt.E, 2));
+      setOut('oRat', fmt(opt.Ci / Ca, 3)); setOut('oG1', fmt(g1, 2)); setOut('oMed', fmt(g1 / (g1 + Math.sqrt(D)), 3)); setOut('oSlope', fmt(slope, 2));
+    }
+    bind(ids, draw); draw();
+  })();
+})();
+</script>
+</body>
+</html>

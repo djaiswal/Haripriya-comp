@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soil Organic Matter Pools and Fluxes</title>
+<meta name="description" content="Soil organic matter at comprehensive-exam depth: stocks, inputs and outputs, first-order kinetics, turnover versus age, Century and RothC pools, rate modifiers, the end of humus, radiocarbon, and the data–model problems of soil carbon projections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ev { stroke: var(--muted); stroke-dasharray: 3 4; }
+  .ch .cell { stroke: none; }
+  .chartbox { position: relative; }
+  .boxes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .box { background: var(--surface-2); border-radius: 8px; padding: 0.4rem 0.7rem; font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); min-width: 110px; }
+  .box b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ctrl select { width: 100%; font: inherit; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .ctrl .seg { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .ctrl .seg button { font: inherit; font-size: 0.78rem; padding: 0.25rem 0.55rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .ctrl .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › Soil organic matter pools and fluxes</div>
+    <div class="eyebrow">Topic 1 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">Soil Organic Matter Pools and Fluxes</h1>
+    <p class="lead">What soil organic matter is, how much of it there is, how carbon enters and leaves it, and why the first-order multi-pool bookkeeping of Century and RothC is still the backbone of every land-surface model's soil, even as the chemistry behind the pools has been rewritten.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Soil organic matter (SOM) is the dead organic material in soil plus the living microbial biomass: plant litter and roots in all stages of decay, microbial cells and their residues, and organic molecules bound to mineral surfaces. It holds roughly <strong>1500–2400 Pg C</strong> in the top 1–2 m, more than the atmosphere (~870 Pg C) and vegetation (~450–650 Pg C) together. Carbon enters as litter, root turnover and rhizodeposition (~60 Pg C yr⁻¹ globally) and leaves mainly as heterotrophic respiration, with small leaks to dissolved organic carbon and erosion. The simplest model, <strong>dC/dt = I − kC</strong>, gives a steady state C* = I/k and a turnover time 1/k, but a single pool cannot reproduce incubation, chronosequence or radiocarbon data: soil carbon behaves as if it comprised a few pools with turnover times of years, decades and centuries-to-millennia. Century and RothC formalised this as active/slow/passive or DPM/RPM/BIO/HUM/IOM pools with first-order kinetics scaled by temperature, moisture and clay. The pools were conceptual, and the "humus" idea behind the slow ones has since been abandoned: persistence is now understood as an ecosystem property set by mineral association, spatial inaccessibility and microbial processing rather than by molecular recalcitrance. The pool structure survives because it is a good description of the dynamics even where the chemistry was wrong.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>The examiner will want you to (i) derive the one-pool solution and explain why turnover time, mean residence time and mean age differ; (ii) draw the Century and RothC pool diagrams with their rates and controls; (iii) explain how radiocarbon exposed the single pool as inadequate; (iv) say what changed with Schmidt et al. 2011 and Lehmann &amp; Kleber 2015; and (v) connect all of that to why CMIP soil-carbon projections disagree. Every section below ends on one of those links.</p></div>
+  </section>
+
+  <section id="what">
+    <h2>What soil organic matter is, and how much there is</h2>
+    <p>Operationally, SOM is everything organic that passes a 2 mm sieve, so it excludes coarse roots and surface litter but includes fine roots, fragments of litter (particulate organic matter), microbial biomass, microbial necromass and the organic coatings on clay and oxide surfaces. Most of it is in the top 30 cm, but about half of the 1 m stock and most of the oldest carbon lie below 30 cm. The living microbial biomass is only 1–5% of SOM carbon, yet it mediates almost every flux out of the pool.</p>
+    <p><strong>Composition and the carbon fraction.</strong> SOM is roughly 50% C, 5% N, 0.5% P and 0.5% S by mass with C:N near 10–12 in mineral soils; the old "van Bemmelen factor" of 1.724 (SOM = 1.724 × SOC, i.e. 58% C) overstates the carbon content of most soils, and Pribyl's 2010 review recommends a factor near 2 (SOM ≈ 50% C) when a conversion is unavoidable. The practical point for the exam: always state whether a stock is organic matter or organic carbon, and never convert loss-on-ignition data to carbon without a soil-specific calibration.</p>
+    <p><strong>Global stocks and their distribution.</strong> Soil organic carbon (SOC) to 1 m is about 1500 Pg C (Batjes 1996; Jobbágy &amp; Jackson 2000), rising to 2000–2400 Pg C to 2 m or 3 m once deep tropical and permafrost soils are included. Permafrost-region soils alone hold ~1300–1600 Pg C to 3 m (Hugelius et al. 2014), of which ~800 Pg is perennially frozen; northern peatlands hold ~500 Pg C in only 3% of the land area. Per unit area, stocks range from &lt;2 kg C m⁻² in deserts to 10–15 kg C m⁻² in temperate forests and grasslands to &gt;30 kg C m⁻² in boreal peat and wetland soils. Jobbágy &amp; Jackson showed that vertical distribution is set by vegetation type (grasslands and shrublands put proportionally more carbon deep because of deep root inputs) and by climate (cold, wet sites store more at every depth because decomposition, not input, limits). Depth matters for modelling because a soil in which 50% of the carbon is below 30 cm, where turnover is slow and warming arrives later, responds very differently from a surface-dominated one.</p>
+  </section>
+
+  <section id="io">
+    <h2>Inputs and outputs</h2>
+    <p><strong>Inputs.</strong> Net primary production that is not harvested or burned eventually becomes soil input: aboveground litter (leaves, twigs, reproductive parts), root litter from fine-root turnover (fine roots live from months to a few years, so belowground litter is 30–60% of total litter in forests and often more in grasslands), and rhizodeposition (exudates, mucilage, sloughed cells and transfer to mycorrhizal fungi), typically 5–20% of net C fixation. Globally, inputs are ~55–65 Pg C yr⁻¹. A robust result from isotope-labelling studies and from the pool-fractionation literature is that <strong>root inputs are retained in SOM about twice as efficiently as aboveground inputs</strong> (Rasse et al. 2005 "roots are the key"), because they are delivered directly into the mineral matrix, into aggregates, and in chemical forms (suberin, mycorrhizal necromass, exudates sorbed on minerals) that stabilise easily.</p>
+    <p><strong>Outputs.</strong> Heterotrophic respiration (R<sub>h</sub>) returns 50–60 Pg C yr⁻¹ to the atmosphere and accounts for &gt;95% of losses in most upland soils. Dissolved organic carbon (DOC) leaching is 1–10 g C m⁻² yr⁻¹ in most mineral soils, small relative to R<sub>h</sub> but important for exporting carbon to deeper horizons where it sorbs and for river carbon budgets. Erosion moves 1–5 Pg C yr⁻¹ laterally; whether it is a net source or sink depends on whether buried carbon is protected faster than exposed subsoil is destabilised. Methane matters in wetlands, where anaerobic decomposition dominates; in upland soils CH₄ is a small net uptake.</p>
+    <p>At the ecosystem scale the balance is net ecosystem production: NEP = NPP − R<sub>h</sub> (− leaching − erosion − harvest). A mature ecosystem is close to steady state, so SOC is a stock set by the balance of inputs and decomposition rate rather than by inputs alone. This is why "add more carbon" strategies often fail to raise SOC as much as expected: the added inputs are decomposed in proportion to how much carbon is present.</p>
+  </section>
+
+  <section id="kinetics">
+    <h2>First-order kinetics: turnover, residence time and age</h2>
+    <p>The standard assumption is that decomposition is proportional to the amount of substrate, with a rate constant k (yr⁻¹) that depends on environment but not on the amount of decomposer. For one pool receiving a constant input I (g C m⁻² yr⁻¹):</p>
+    <div class="eq">$$\frac{dC}{dt} = I - kC, \qquad C(t) = C^* + \big(C_0 - C^*\big)\,e^{-kt}, \qquad C^* = \frac{I}{k}$$</div>
+    <p>Three things to notice. The steady state C* is a ratio of a flux to a rate: doubling inputs doubles the stock; halving k (colder, wetter, more clay) doubles it too. The approach to the new steady state after any perturbation is exponential with time constant τ = 1/k, so the system has moved 63% of the way after one τ, 95% after 3τ and 99% after 4.6τ. The response time does not depend on the size of the step, only on k, which is why a slow pool makes a soil slow to gain as well as slow to lose carbon.</p>
+    <div class="keybox"><h3>Turnover time, mean residence time, mean transit time and mean age</h3>
+      <p>At steady state in a <em>single well-mixed</em> pool, four quantities coincide: the <strong>turnover time</strong> τ = C*/I = C*/output = 1/k; the <strong>mean residence time</strong> (MRT) of a carbon atom from entry to exit; the <strong>mean transit time</strong> (the same thing seen from the output: the mean age of carbon leaving the soil); and the <strong>mean age</strong> of carbon currently in the soil. For an exponential, the age of atoms in the pool and the age of atoms leaving are both distributed exponentially with mean 1/k.</p>
+      <p>In a multi-pool system they separate (Sierra et al. 2017 [11]). The system turnover time is still total stock over total input, but the mean age of carbon <em>in</em> the soil is weighted towards the large slow pools and can be centuries, while the mean transit time of carbon <em>leaving</em> the soil is weighted towards the fast pools that produce most of the respiration and is typically years to a few decades (for pools in parallel it equals the system turnover time C/I, but its median is far shorter than its mean). For a soil with 10% active (τ = 2 yr), 60% slow (τ = 40 yr) and 30% passive (τ = 1000 yr), the mean age is ~325 yr while most of the CO₂ leaving it is less than a decade old. Turnover time therefore is neither the age of the carbon nor the age of the respired CO₂, and confusing them is a classic error that examiners probe.</p>
+    </div>
+    <p>Because the solution is linear, the response of a multi-pool soil to a step change in inputs is a sum of exponentials, one per pool, and the system's apparent "time to equilibrium" is dominated by its slowest significant pool. Lab (a) makes that visible.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (a): one pool versus three pools after a step change</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="poolSvg" viewBox="0 0 640 380" role="img" aria-label="Trajectories of total soil carbon and of active, slow and passive pools after a step change in inputs or temperature, compared with a single pool of the same initial stock"></svg>
+            <div class="chart-tip" id="poolTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Total (3-pool)</span><span style="--c:var(--muted)">Total (1-pool, same C₀ and I)</span><span style="--c:var(--series-1)">Active</span><span style="--c:var(--series-2)">Slow</span><span style="--c:var(--series-3)">Passive</span></div>
+          <div class="boxes">
+            <div class="box">τ active · slow · passive<b id="pTau"></b></div>
+            <div class="box">New steady state (3-pool)<b id="pCss"></b></div>
+            <div class="box">Time to 63% of change<b id="pT63"></b></div>
+            <div class="box">1-pool equivalent τ = C₀/I<b id="pTau1"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="poolTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="pI"><span>Litter input, I (g C m⁻² yr⁻¹)</span><output id="pIO">400</output></label><input type="range" id="pI" min="100" max="1000" step="10" value="400"></div>
+          <div class="ctrl"><label for="pKa"><span>k active (yr⁻¹)</span><output id="pKaO">0.5</output></label><input type="range" id="pKa" min="0.1" max="2" step="0.05" value="0.5"></div>
+          <div class="ctrl"><label for="pKs"><span>k slow (yr⁻¹)</span><output id="pKsO">0.03</output></label><input type="range" id="pKs" min="0.005" max="0.1" step="0.005" value="0.03"></div>
+          <div class="ctrl"><label for="pKp"><span>k passive (yr⁻¹)</span><output id="pKpO">0.001</output></label><input type="range" id="pKp" min="0.0002" max="0.005" step="0.0002" value="0.001"></div>
+          <div class="ctrl"><label for="pStep"><span>Step at year 20</span></label><select id="pStep"><option value="in-50">Inputs −50% (residue removal)</option><option value="in+30">Inputs +30% (cover crop)</option><option value="t+3">Warming +3 °C (Q₁₀ = 2 on all k)</option><option value="in0">Inputs → 0 (bare fallow)</option></select></div>
+          <div class="ctrl"><label for="pYrs"><span>Years shown</span><output id="pYrsO">200</output></label><input type="range" id="pYrs" min="50" max="1000" step="50" value="200"></div>
+          <p class="small muted" style="margin:0">The soil starts at steady state with 70% of inputs entering the active pool, 29% entering slow and 1% entering passive (plus transfers 20% active→slow, 2% slow→passive). The one-pool curve uses k = I/C₀ so it has the same initial stock and flux. Suggested experiments: compare the fast initial loss and long tail of the 3-pool soil against the single exponential; stretch "years shown" to 1000 to see when the passive pool finally moves; apply warming and note that the fast pools lose a larger fraction first even though the passive pool holds most carbon.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pools">
+    <h2>Why one pool is not enough: the multi-pool models</h2>
+    <p>Three lines of evidence killed the single pool. Litter-bag and incubation studies show that the decay rate of a given cohort of material falls continuously with time: fresh residue loses half its mass in a year, the remainder far more slowly. Long-term experiments (Rothamsted since 1843) show that after a change of management, SOC changes quickly for a decade and then creeps for a century without reaching a new plateau. And radiocarbon says that bulk soil carbon is centuries to millennia old while respired CO₂ is mostly a few years old; a single pool cannot have both properties at once. The response was to represent SOM as a few pools in series and parallel, each with first-order kinetics. Two models defined the genre.</p>
+    <h3>Century (Parton et al. 1987, 1988)</h3>
+    <p>Century splits plant residue into <strong>metabolic</strong> and <strong>structural</strong> litter according to the lignin:N ratio of the material (F<sub>met</sub> = 0.85 − 0.018 × L:N, so a high-lignin, low-N residue is mostly structural), with the structural pool's rate reduced by its lignin fraction. Soil organic matter is three pools: <strong>active</strong> (microbial biomass and its immediate products, turnover ~1–5 yr), <strong>slow</strong> (stabilised microbial products and partly decomposed structural material, ~20–50 yr) and <strong>passive</strong> (physically and chemically stabilised, ~400–2000 yr). Each decay flow is a first-order loss k<sub>i</sub>C<sub>i</sub> × f(T) × f(W), with a fixed fraction respired as CO₂ and the rest transferred to another pool:</p>
+    <div class="eq">$$\frac{dC_i}{dt} = \sum_{j \ne i} a_{ij}\,k_j\,C_j\,f(T)\,f(W) \;-\; k_i\,C_i\,f(T)\,f(W) \;+\; I_i$$</div>
+    <p>where the transfer coefficients a<sub>ij</sub> sum with the respired fraction to one. Texture enters in two places: the respired fraction of the active pool rises with sand content (0.17 + 0.68 × sand), so coarse soils stabilise less, and the fraction of active-pool output transferred to passive rises with clay (0.003 + 0.032 × clay). Nitrogen is simulated with fixed C:N ratios for each pool, so decomposition can be N-limited and mineralisation or immobilisation follows automatically. Century's monthly time step and its agricultural descendant DayCent (daily, with trace-gas submodels) make it the ancestor of most soil modules in crop and ecosystem models.</p>
+    <h3>RothC (Jenkinson &amp; Rayner 1977; Coleman &amp; Jenkinson 1996)</h3>
+    <p>RothC was built to reproduce the Rothamsted long-term plots and radiocarbon. Incoming plant material is split into <strong>DPM</strong> (decomposable plant material, k = 10 yr⁻¹) and <strong>RPM</strong> (resistant plant material, k = 0.3 yr⁻¹) with a DPM/RPM ratio set by vegetation (1.44 for arable crops and improved grassland, 0.67 for unimproved grassland and scrub, 0.25 for forest). Both decompose to CO₂, <strong>BIO</strong> (microbial biomass, k = 0.66 yr⁻¹) and <strong>HUM</strong> (humified organic matter, k = 0.02 yr⁻¹), which themselves recycle through BIO and HUM. <strong>IOM</strong> (inert organic matter) is radiocarbon-dead and does not decompose; Falloon et al. estimated it as IOM = 0.049 × SOC<sup>1.139</sup>. The split between CO₂ and (BIO + HUM) depends on clay:</p>
+    <div class="eq">$$\frac{\text{CO}_2}{\text{BIO}+\text{HUM}} = 1.67\,\big(1.85 + 1.60\,e^{-0.0786\,\%\text{clay}}\big), \qquad \text{BIO}:\text{HUM} = 46:54$$</div>
+    <p>so at 10% clay about 72% of decomposed carbon is respired versus 59% at 50% clay. Rate modifiers for temperature (a saturating function of monthly air temperature), topsoil moisture deficit and plant cover (bare soil decomposes faster) multiply all rate constants. RothC has no nitrogen and no microbial feedback; its strength is parsimony and its calibration against a century of data.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Feature</th><th>Century / DayCent</th><th>RothC-26.3</th></tr></thead>
+      <tbody>
+        <tr><td>Litter pools</td><td>Metabolic, structural (split by lignin:N)</td><td>DPM, RPM (split by vegetation ratio)</td></tr>
+        <tr><td>SOM pools (turnover)</td><td>Active 1–5 yr; slow 20–50 yr; passive 400–2000 yr</td><td>BIO 1.5 yr; HUM 50 yr; IOM inert</td></tr>
+        <tr><td>Texture effect</td><td>Sand raises active respiration; clay raises passive formation</td><td>Clay lowers CO₂/(BIO+HUM)</td></tr>
+        <tr><td>Nutrients</td><td>N, P, S with pool C:N ratios</td><td>Carbon only</td></tr>
+        <tr><td>Time step and drivers</td><td>Monthly (Century) or daily (DayCent); T, soil water, texture</td><td>Monthly; air T, rain, evaporation, cover, clay</td></tr>
+        <tr><td>Heritage</td><td>Soil module of many ecosystem and crop models (e.g. BioCro's soil, CLM4 CN descendants)</td><td>Soil module of JULES (via ECOSSE lineage), national GHG inventories</td></tr>
+      </tbody></table></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (b): a Century-style litter + active/slow/passive model (200 years, monthly steps)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cenSvg" viewBox="0 0 640 380" role="img" aria-label="Century-style simulation of metabolic and structural litter and active, slow and passive soil pools over 200 years with a management change at year 50"></svg>
+            <div class="chart-tip" id="cenTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Total SOC (soil pools)</span><span style="--c:var(--accent-2)">Litter (metabolic + structural)</span><span style="--c:var(--series-1)">Active</span><span style="--c:var(--series-2)">Slow</span><span style="--c:var(--series-3)">Passive</span></div>
+          <div class="boxes">
+            <div class="box">Metabolic fraction of litter<b id="cFmet"></b></div>
+            <div class="box">SOC at year 50 → 200 (g C m⁻²)<b id="cDelta"></b></div>
+            <div class="box">Respired fraction, active pool<b id="cResp"></b></div>
+            <div class="box">Annual f(T)·f(W)<b id="cMod"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cenTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cIn"><span>Litter input (g C m⁻² yr⁻¹)</span><output id="cInO">450</output></label><input type="range" id="cIn" min="100" max="1000" step="10" value="450"></div>
+          <div class="ctrl"><label for="cLN"><span>Litter lignin:N ratio</span><output id="cLNO">15</output></label><input type="range" id="cLN" min="2" max="40" step="1" value="15"></div>
+          <div class="ctrl"><label for="cClay"><span>Clay (%)</span><output id="cClayO">25</output></label><input type="range" id="cClay" min="5" max="60" step="1" value="25"></div>
+          <div class="ctrl"><label for="cSand"><span>Sand (%)</span><output id="cSandO">35</output></label><input type="range" id="cSand" min="5" max="85" step="1" value="35"></div>
+          <div class="ctrl"><label for="cT"><span>Mean annual temperature (°C)</span><output id="cTO">12</output></label><input type="range" id="cT" min="-2" max="28" step="0.5" value="12"></div>
+          <div class="ctrl"><label for="cW"><span>Moisture index (ppt / PET)</span><output id="cWO">0.8</output></label><input type="range" id="cW" min="0.1" max="2" step="0.05" value="0.8"></div>
+          <div class="ctrl"><label for="cMgmt"><span>Management change at year 50</span></label><select id="cMgmt"><option value="none">None (continue to equilibrium)</option><option value="residue">Residue removal: inputs −40%</option><option value="notill">No-till: slow/passive k −20%, inputs +10%</option><option value="warm">Warming +4 °C</option><option value="convert">Conversion to crop: inputs −40%, k ×1.3</option></select></div>
+          <p class="small muted" style="margin:0">Simplified Century: F<sub>met</sub> = 0.85 − 0.018 L:N; k = 14.8 (metabolic), 3.9 × e<sup>−3·lignin</sup> (structural), 7.3 (active), 0.2 (slow), 0.0045 (passive) yr⁻¹ at optimum, scaled by f(T) (Parton's generalised Poisson curve, 1 at ~30 °C) and f(W) (saturating in ppt/PET); respired fraction of active = 0.17 + 0.68 × sand, active→passive = 0.003 + 0.032 × clay. The run starts from a spun-up state for the default management. Suggested experiments: compare high L:N (woody, 35) with low (legume, 5) and watch the litter pool and slow-pool formation; raise clay to 55% and note that the gain appears mostly in passive and takes centuries; apply residue removal and compare the decade-scale and century-scale losses.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modifiers">
+    <h2>Rate modifiers: temperature, moisture, clay, pH and nitrogen</h2>
+    <p>Every first-order model multiplies its base rates by environmental scalars. The <strong>temperature</strong> function is the most consequential. Three forms recur. The Q<sub>10</sub> form, f(T) = Q<sub>10</sub><sup>(T − T<sub>ref</sub>)/10</sup>, assumes a constant proportional increase per 10 °C; Q<sub>10</sub> ≈ 2 is the default in many models (CLM, Century's older versions), but measured apparent Q<sub>10</sub> values range from 1.4 to over 4 and decrease with temperature. The Arrhenius form, k = A e<sup>−E<sub>a</sub>/RT</sup>, has a theoretical basis in reaction kinetics and predicts Q<sub>10</sub> falling with temperature; with E<sub>a</sub> ≈ 50–60 kJ mol⁻¹ it gives Q<sub>10</sub> ≈ 2.1 at 15 °C. Lloyd &amp; Taylor (1994) found that neither fit soil respiration data across a wide range and proposed a modified Arrhenius with a temperature-dependent activation energy:</p>
+    <div class="eq">$$k(T) = k_{10}\,\exp\!\left[E_0\left(\frac{1}{56.02} - \frac{1}{T - 227.13}\right)\right]$$</div>
+    <p>with E<sub>0</sub> = 308.56 K and T in kelvin, which rises steeply at low temperature (large apparent Q<sub>10</sub>, ~4 near 0 °C) and flattens at high temperature (Q<sub>10</sub> ≈ 1.6 at 30 °C). Davidson &amp; Janssens (2006) [9] reframed the question: by Arrhenius kinetics, substrates with higher activation energy (more complex, "recalcitrant" compounds) should have higher temperature sensitivity ("carbon-quality–temperature" hypothesis), but environmental constraints (sorption, aggregation, drought, freezing, O₂ supply) can mask that intrinsic sensitivity, so apparent and intrinsic sensitivities differ. Whole-soil warming experiments (Hicks Pries et al. 2017 [16]) found that deep soil (to 1 m) respiration responded with a Q<sub>10</sub> near 2.4, no less sensitive than the surface, implying the deep stock is not insulated by intrinsic stability.</p>
+    <p><strong>Moisture</strong> functions are humped: decomposition is limited by diffusion of substrate and enzymes when soil is dry and by oxygen supply when wet. Century uses a function of the ratio of precipitation (plus stored water) to potential evapotranspiration that saturates near 1; RothC uses a topsoil moisture deficit; models with explicit hydrology use relative water content or matric potential, often with an optimum near 60% of water holding capacity and a steep decline towards saturation. Field data show large hysteresis and rewetting pulses that none of these simple curves capture (the Birch effect, below). <strong>Clay</strong> and mineralogy act on the partitioning rather than on the rate in Century and RothC, as described above. <strong>pH</strong> is implicit in most models but matters in reality: fungal:bacterial ratios, enzyme activities and Al/Fe solubility all change with pH, and pH has emerged as the best single predictor of microbial community composition. <strong>Nitrogen</strong> availability can limit decomposition of N-poor substrates, which Century implements through pool C:N constraints; carbon-only models like RothC ignore it.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (c): rate-modifier explorer</h3><span class="small muted">Hover either chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="tSvg" viewBox="0 0 640 300" role="img" aria-label="Temperature modifier functions: Q10, Arrhenius and Lloyd–Taylor, normalised to one at 10 °C"></svg>
+            <div class="chart-tip" id="tTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Q₁₀</span><span style="--c:var(--series-2)">Arrhenius (E<sub>a</sub>)</span><span style="--c:var(--series-3)">Lloyd–Taylor</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="wSvg" viewBox="0 0 640 260" role="img" aria-label="Moisture modifier function with an optimum, and the product f(T) f(W) at the chosen temperature"></svg>
+            <div class="chart-tip" id="wTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--accent)">f(W), Century/RothC-type</span><span style="--c:var(--fg)">f(T)·f(W) at the slider temperature</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="tTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mQ"><span>Q₁₀</span><output id="mQO">2.0</output></label><input type="range" id="mQ" min="1.2" max="4" step="0.1" value="2"></div>
+          <div class="ctrl"><label for="mEa"><span>Arrhenius E<sub>a</sub> (kJ mol⁻¹)</span><output id="mEaO">55</output></label><input type="range" id="mEa" min="20" max="120" step="1" value="55"></div>
+          <div class="ctrl"><label for="mE0"><span>Lloyd–Taylor E₀ (K)</span><output id="mE0O">309</output></label><input type="range" id="mE0" min="150" max="450" step="1" value="309"></div>
+          <div class="ctrl"><label for="mWopt"><span>Moisture optimum (fraction of saturation)</span><output id="mWoptO">0.60</output></label><input type="range" id="mWopt" min="0.3" max="0.9" step="0.01" value="0.6"></div>
+          <div class="ctrl"><label for="mWsat"><span>f(W) at saturation (anoxia penalty)</span><output id="mWsatO">0.3</output></label><input type="range" id="mWsat" min="0" max="1" step="0.05" value="0.3"></div>
+          <div class="ctrl"><label for="mT"><span>Soil temperature for the product (°C)</span><output id="mTO">15</output></label><input type="range" id="mT" min="-5" max="40" step="0.5" value="15"></div>
+          <dl class="readout">
+            <dt>Apparent Q₁₀ of Arrhenius at slider T</dt><dd id="mQarr"></dd>
+            <dt>Apparent Q₁₀ of Lloyd–Taylor at slider T</dt><dd id="mQlt"></dd>
+            <dt>f(T) at slider T: Q₁₀ · Arr · L–T</dt><dd id="mFt"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">All three temperature functions are normalised to 1 at 10 °C. Suggested experiments: set Q₁₀ = 2 and E<sub>a</sub> = 55 kJ mol⁻¹ and notice they agree near 10–20 °C but diverge at the extremes; lower E₀ to see Lloyd–Taylor approach a constant Q₁₀; move the soil temperature to 0 °C and compare apparent Q₁₀ values, which is the cold-soil sensitivity argument for permafrost and boreal carbon.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>The Birch effect, priming and depth</h3>
+    <p>Three observations that first-order models with smooth modifiers miss. The <strong>Birch effect</strong> is the burst of CO₂ (and N mineralisation) when a dry soil is rewetted: microbial cells lysing or releasing osmolytes, aggregates slaking and exposing protected substrate, and accumulated enzyme products being flushed all contribute, and in seasonally dry systems these pulses can be 10–20% of annual respiration. <strong>Priming</strong> (Kuzyakov 2010 [15]) is the change in decomposition of native SOM caused by adding fresh substrate: typically positive (10–100% increase for days to weeks) because labile carbon fuels microbial growth and enzyme production that also attacks old carbon, sometimes negative when microbes switch to the easier substrate. Priming is an interaction between pools that first-order independence rules out by construction; it is one of the main motivations for the microbial-explicit models of the next page. <strong>Depth</strong> changes everything: inputs fall roughly exponentially with depth, so deep carbon is old (radiocarbon ages of 1000–10,000 yr below 50 cm), mineral-associated and energy-starved; its slow turnover reflects lack of fresh substrate and reduced microbial activity as much as intrinsic stability, which is why adding labile carbon to deep soil (as deep roots do) can destabilise it (Fontaine et al. 2007).</p>
+  </section>
+
+  <section id="persistence">
+    <h2>From humus to persistence as an ecosystem property</h2>
+    <p>For most of the twentieth century the slow and passive pools were identified with <strong>humus</strong>: large, dark, aromatic macromolecules ("humic and fulvic acids", "humin") thought to form by secondary synthesis from decomposition products and to persist because they were chemically recalcitrant. The operational basis was alkaline extraction: humic acids are what precipitates when an NaOH extract is acidified. <strong>Lehmann &amp; Kleber (2015)</strong> [7] argued that these fractions are artefacts of the extraction, that no analytical method finds such macromolecules in situ (NMR, synchrotron and mass-spectrometric methods instead see a continuum of recognisable biomolecules and their fragments), and proposed the <strong>soil continuum model</strong>: organic matter is progressively decomposed into smaller, more oxidised and more polar molecules, which become more soluble and more likely to sorb to minerals or to be taken up by microbes; persistence is a property of the molecule's environment, not its structure.</p>
+    <p><strong>Schmidt et al. (2011)</strong> [6] had made the broader case that "persistence of soil organic matter is an ecosystem property": molecular structure alone does not predict longevity (lignin and other supposedly recalcitrant compounds turn over faster than bulk SOM, while simple sugars can be millennia old when sorbed), and the real controls are <strong>accessibility</strong> (sorption to minerals, occlusion in aggregates, spatial separation of substrate from decomposers at the micron scale, freezing, anoxia) and <strong>microbial processing</strong> (most stable carbon has passed through microbial cells; microbial necromass is a large share of SOM). Together these papers replaced "recalcitrant humus" with "protected microbial and plant residues" as the content of the slow and passive pools, and prompted the move to measurable fractions (MAOM and POM, next-but-one page), to microbial-explicit models (next page), and to saturation concepts: mineral surfaces have finite capacity, so the passive pool cannot grow without limit (Hassink 1997; Six et al. 2002).</p>
+    <p>Land-use change is where these ideas have consequence. Conversion of native vegetation to cropland typically loses 25–40% of topsoil SOC over 20–50 yr (Guo &amp; Gifford 2002), mostly from the active and slow pools and from particulate organic matter; reversion to grassland or forest recovers it over similar or longer timescales, and the fast losses/slow gains asymmetry follows directly from which pools are affected. The "4 per 1000" initiative, which asks whether a 0.4% yr⁻¹ increase in global SOC could offset fossil emissions, is tested exactly on these numbers.</p>
+  </section>
+
+  <section id="radiocarbon">
+    <h2>Radiocarbon: why bulk ¹⁴C ages are not turnover times</h2>
+    <p>Radiocarbon enters SOM with plant inputs and decays with a half-life of 5730 yr (λ = 1/8267 yr⁻¹, using the Libby mean life convention of 8033 yr for conventional ages and 8267 yr for the true mean life). In a soil at steady state with a single pool of turnover time τ, before atmospheric bomb ¹⁴C, the fraction of modern carbon follows from balancing input, decay and decomposition:</p>
+    <div class="eq">$$\frac{dF}{dt} = \frac{I}{C}(1) - kF - \lambda F = 0 \;\Rightarrow\; F^* = \frac{k}{k+\lambda} = \frac{1}{1+\lambda\tau}, \qquad \Delta^{14}\text{C} \approx -\frac{\lambda\tau}{1+\lambda\tau}\times 1000\ \text{‰}$$</div>
+    <p>A pool with τ = 100 yr has Δ¹⁴C ≈ −12‰ and a "radiocarbon age" of ~100 yr; τ = 1000 yr gives −108‰ and an age of ~950 yr. But a soil that is a <em>mixture</em> of pools gives a bulk Δ¹⁴C that is the carbon-weighted mean of the pools' values, and the "age" inferred from that mixture is not the turnover time of anything: mixing a young, large-flux pool with an old pool produces an intermediate Δ¹⁴C that corresponds to a single-pool τ far shorter than the mean age and far longer than the turnover time of the carbon actually respired. Shi et al. (2020) [10] compiled 789 profiles and found the carbon-weighted mean age of SOC to 1 m is ~4830 yr (surface soils ~1000 yr, deep soils &gt;10,000 yr), far older than Earth-system model soils, whose single or few pools imply ages of hundreds of years.</p>
+    <p>The <strong>bomb spike</strong> (atmospheric Δ¹⁴C doubled to ~+900‰ in 1963 and has since declined to below +0‰) turned ¹⁴C into a tracer with decadal resolution. Trumbore (2000, 2009) [8] showed that the incorporation of bomb carbon into fractions and into respired CO₂ constrains the turnover times of the fast pools, while pre-bomb depletion constrains the slow ones, and that no single-pool interpretation is consistent with both. Because the same Δ¹⁴C value today can be produced by a pool of τ ≈ 5 yr (which has already lost most of its bomb carbon) or τ ≈ 100 yr (which has only partly taken it up), interpreting modern ¹⁴C requires a time-dependent model, not a steady-state formula.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (d): radiocarbon of a one-pool versus multi-pool soil (pre-bomb steady state)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="rcSvg" viewBox="0 0 640 340" role="img" aria-label="Delta 14C of a single pool as a function of turnover time on a log axis, with markers for three pools, the bulk mixture and the implied single-pool turnover time"></svg>
+            <div class="chart-tip" id="rcTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Δ¹⁴C of one pool vs its turnover time</span><span style="--c:var(--series-1)">Active</span><span style="--c:var(--series-2)">Slow</span><span style="--c:var(--series-3)">Passive</span><span style="--c:var(--accent-2)">Bulk mixture</span></div>
+          <div class="boxes">
+            <div class="box">Bulk Δ¹⁴C (‰)<b id="rcBulk"></b></div>
+            <div class="box">Conventional ¹⁴C age of bulk (yr)<b id="rcAge"></b></div>
+            <div class="box">Implied single-pool τ (yr)<b id="rcTauImp"></b></div>
+            <div class="box">True mean age of C in soil (yr)<b id="rcMeanAge"></b></div>
+            <div class="box">System turnover C/I (yr)<b id="rcTauSys"></b></div>
+            <div class="box">Median age of respired CO₂ (yr)<b id="rcTransit"></b></div><div class="box">Share of respiration from active pool<b id="rcShare"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="rcTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rTa"><span>Active τ (yr)</span><output id="rTaO">3</output></label><input type="range" id="rTa" min="0.5" max="20" step="0.5" value="3"></div>
+          <div class="ctrl"><label for="rTs"><span>Slow τ (yr)</span><output id="rTsO">50</output></label><input type="range" id="rTs" min="10" max="300" step="5" value="50"></div>
+          <div class="ctrl"><label for="rTp"><span>Passive τ (yr)</span><output id="rTpO">1500</output></label><input type="range" id="rTp" min="300" max="10000" step="100" value="1500"></div>
+          <div class="ctrl"><label for="rFa"><span>Fraction of stock in active (%)</span><output id="rFaO">8</output></label><input type="range" id="rFa" min="1" max="40" step="1" value="8"></div>
+          <div class="ctrl"><label for="rFp"><span>Fraction of stock in passive (%)</span><output id="rFpO">35</output></label><input type="range" id="rFp" min="0" max="90" step="1" value="35"></div>
+          <p class="small muted" style="margin:0">The slow pool takes the remaining stock. Pools are independent and at steady state, so each pool's input is C<sub>i</sub>/τ<sub>i</sub>, and the mean age of respired CO₂ is the input-weighted mean of pool turnover times (Sierra et al. 2017). Conventional age uses the Libby mean life, 8033 × ln(1/F). Suggested experiments: with the defaults, compare the implied single-pool τ (hundreds of years) with the true mean age (over 500 yr) and the age of respired CO₂ (under 10 yr); push the passive fraction to 60% and see the bulk age approach a millennium while respiration stays young; set all τ equal to confirm the three agree for a single pool.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="measure">
+    <h2>Measuring SOM and matching pools to measurements</h2>
+    <p><strong>Stocks.</strong> SOC concentration is measured by dry combustion (elemental analyser, after removing carbonates with acid in calcareous soils); the older Walkley–Black wet oxidation recovers only ~75% of carbon and needs a correction factor; loss on ignition measures organic matter mass, not carbon, and is confounded by clay dehydroxylation and carbonate loss. Stock (kg C m⁻²) = concentration × bulk density × depth × (1 − coarse fragments), and bulk density is the largest source of error in stock-change studies; comparisons should be made on an <strong>equivalent soil mass</strong> basis rather than fixed depth, because tillage and compaction change density.</p>
+    <p><strong>Dynamics.</strong> Natural-abundance ¹³C exploits the ~14‰ difference between C3 (δ¹³C ≈ −27‰) and C4 (≈ −12‰) plants: after a vegetation switch (maize after forest, or C4 grass invasion), the fraction of SOC derived from the new vegetation, f = (δ − δ<sub>old</sub>)/(δ<sub>new</sub> − δ<sub>old</sub>), traced through time gives turnover of the replaced carbon, typically showing fast replacement of 30–50% within 20 yr and a stubborn remainder. ¹⁴C gives the ages above. Long-term incubations partition carbon into fast and slow pools by fitting two or three exponentials to the cumulative CO₂ curve. <strong>Fractionation</strong> separates SOM physically (size: &gt;53 µm particulate vs &lt;53 µm mineral-associated; density: light fraction &lt;1.6–1.85 g cm⁻³ vs heavy) or chemically (acid hydrolysis residue as a proxy for passive carbon, oxidation resistance).</p>
+    <p>The question Elliott, Paustian &amp; Frey (1996) posed as "<strong>modelling the measurable or measuring the modelable</strong>" is whether conceptual pools can be matched to measured fractions. Zimmermann et al. (2007) [13] proposed a scheme (particulate &gt;63 µm, sand and aggregates, silt and clay, dissolved, and oxidation-resistant carbon) that explains most of the variance of RothC's DPM+RPM, HUM and IOM pools across Swiss soils, and this became the standard initialisation route for RothC. It works partly because both the fractions and the pools are coarse; the correspondence is empirical, and the measured fractions do not have single turnover times (the heavy fraction contains young microbial necromass and millennia-old sorbed carbon). The modern answer is to redefine the pools as fractions that can be measured (Millennial, MEMS; see the MAOM/POM page).</p>
+  </section>
+
+  <section id="datamodel">
+    <h2>Data–model issues: spin-up, equifinality and warming projections</h2>
+    <p>Because pools are conceptual, models cannot be initialised from measurements directly. The usual procedure is <strong>spin-up</strong>: run the model with pre-industrial climate and inputs until every pool reaches steady state (thousands of years for the passive pool, or an analytical/accelerated solution of C* = A⁻¹I for the linear system), then start the transient run. This assumes the soil was at steady state in 1850, which it was not in most places (ongoing land-use change, post-glacial soil development, peat accumulation), and it ties the simulated stock to the simulated NPP: a model with the wrong NPP or the wrong k has a wrong stock even if its dynamics are right. <strong>Equifinality</strong> follows: many combinations of input, pool fractions and rates reproduce the same observed stock, and even the same stock trajectory, so the stock alone does not constrain the parameters that determine the future. Fractions, incubations and radiocarbon are needed to separate them.</p>
+    <p>Todd-Brown et al. (2013) [17] showed that CMIP5 model soil carbon ranged from 510 to 3040 Pg C globally, and that most of the spread could be explained by differences in NPP and in the intrinsic turnover time of soil carbon, so the models were in effect single-pool systems with different I and k; in 2014 they showed that projected changes to 2100 ranged from a loss of 72 Pg to a gain of 253 Pg C, driven mainly by changes in NPP rather than by turnover. Varney et al. (2020) [18] used a spatial temperature gradient as an emergent constraint and estimated a loss of 232 ± 52 Pg C per degree of warming through decreased turnover time, implying a soil carbon–climate feedback stronger than most CMIP6 models. Luo et al. (2016) [20] laid out the agenda: represent measurable pools, test transient behaviour rather than steady states, include microbial and mineral controls, and use data assimilation to constrain parameters.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem models</h2>
+    <ul>
+      <li><strong>CLM4/CLM4.5/CLM5</strong> use a Century-derived structure (CLM4.5 BGC: three litter and three SOM pools with CN coupling, a vertically resolved profile with depth-dependent decomposition and a Q<sub>10</sub> = 1.5 plus moisture and O₂ scalars). Spin-up uses an accelerated-decomposition method for the slow pools.</li>
+      <li><strong>JULES</strong> uses the four RothC pools (DPM, RPM, BIO, HUM) with the Jenkinson temperature function and a soil-moisture modifier; ECOSSE and the vertically resolved JULES variants extend it with depth and N.</li>
+      <li><strong>ORCHIDEE</strong> also follows Century (metabolic/structural litter, active/slow/passive SOM) with the clay-dependent transfer coefficients described above; ORCHIDEE-SOM adds depth and DOC transport.</li>
+      <li><strong>DayCent</strong> is the daily Century used for agricultural GHG inventories (US national inventory of N₂O and soil C); <strong>BioCro</strong> and other crop models borrow its soil module for residue decomposition and N mineralisation.</li>
+      <li><strong>MIMICS, CORPSE, MEND</strong> (next page) replace the first-order rates with microbial-biomass-dependent kinetics while keeping a pool structure; <strong>Millennial</strong> and <strong>MEMS</strong> (MAOM/POM page) redefine the pools as measurable fractions.</li>
+      <li>Everywhere, the soil's response to warming in a land-surface model is the product of the temperature function in this page and the turnover times of the pools: a Q<sub>10</sub> of 2 applied to a 1500 Pg stock of 30 yr turnover gives very different century-scale losses from the same Q<sub>10</sub> applied to pools of 2, 40 and 1000 yr.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Global SOC to 1 m</td><td class="num">≈ 1500 Pg C</td><td>Batjes 1996; Jobbágy &amp; Jackson 2000 [19]</td></tr>
+        <tr><td>Global SOC to 2–3 m</td><td class="num">2000–2400 Pg C</td><td>Includes permafrost and deep tropical soils</td></tr>
+        <tr><td>Permafrost-region soils to 3 m</td><td class="num">1300–1600 Pg C</td><td>Hugelius et al. 2014</td></tr>
+        <tr><td>Atmosphere · vegetation</td><td class="num">≈ 870 · 450–650 Pg C</td><td>Soil exceeds both combined</td></tr>
+        <tr><td>Global litter input · heterotrophic respiration</td><td class="num">≈ 60 · 50–60 Pg C yr⁻¹</td><td>Near balance; NEP is a small residual</td></tr>
+        <tr><td>SOM carbon content</td><td class="num">≈ 50% (not 58%)</td><td>Pribyl 2010; factor 2 rather than 1.724</td></tr>
+        <tr><td>Microbial biomass C</td><td class="num">1–5% of SOC</td><td>Fumigation–extraction</td></tr>
+        <tr><td>Century pool turnover</td><td class="num">1–5 · 20–50 · 400–2000 yr</td><td>Active · slow · passive [1, 2]</td></tr>
+        <tr><td>RothC rate constants</td><td class="num">10 · 0.3 · 0.66 · 0.02 yr⁻¹</td><td>DPM · RPM · BIO · HUM [3, 4]</td></tr>
+        <tr><td>RothC DPM/RPM</td><td class="num">1.44 · 0.67 · 0.25</td><td>Arable/grass · unimproved grass · forest</td></tr>
+        <tr><td>Q₁₀ of decomposition</td><td class="num">≈ 2 (1.4–4)</td><td>Decreases with temperature; Lloyd &amp; Taylor E₀ = 308.56 K [12]</td></tr>
+        <tr><td>Time to 63% · 95% of new steady state</td><td class="num">1τ · 3τ</td><td>One pool, τ = 1/k</td></tr>
+        <tr><td>Carbon-weighted mean SOC age to 1 m</td><td class="num">≈ 4800 yr</td><td>Shi et al. 2020 [10]; surface ≈ 1000 yr</td></tr>
+        <tr><td>¹⁴C half-life · mean life</td><td class="num">5730 · 8267 yr</td><td>Libby mean life 8033 yr for conventional ages</td></tr>
+        <tr><td>Root vs shoot retention in SOM</td><td class="num">≈ 2×</td><td>Rasse et al. 2005</td></tr>
+        <tr><td>SOC loss on conversion to cropland</td><td class="num">25–40% (topsoil, 20–50 yr)</td><td>Guo &amp; Gifford 2002</td></tr>
+        <tr><td>CMIP5 global soil C range</td><td class="num">510–3040 Pg C</td><td>Todd-Brown et al. 2013 [17]</td></tr>
+        <tr><td>Soil C loss per °C warming (emergent constraint)</td><td class="num">232 ± 52 Pg C</td><td>Varney et al. 2020 [18]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Derive the solution of dC/dt = I − kC, define turnover time, mean residence time and mean age, and explain when they coincide and when they do not.</summary><div class="a"><p>Rearranging, dC/dt + kC = I. The homogeneous solution is Ae<sup>−kt</sup> and the particular solution is the steady state C* = I/k, so C(t) = C* + (C₀ − C*)e<sup>−kt</sup>. Turnover time τ = C*/I = 1/k is a stock over a flux. Mean residence time is the mean time a carbon atom spends in the pool from entry to exit; because exits are random with constant hazard k, residence times are exponentially distributed with mean 1/k. Mean age is the mean time since entry for atoms currently present; for a well-mixed exponential pool this is also 1/k because the age distribution of the stock is the same exponential. In a single well-mixed pool at steady state all three are equal. In a multi-pool system (or any system with a non-exponential age distribution) they separate: system turnover time is total C over total input, mean transit time of exiting carbon is weighted by the fluxes through each pool and is dominated by fast pools, and mean age of stored carbon is weighted by the stocks and dominated by slow pools. Sierra et al. (2017) formalised this and showed mean ages of centuries alongside transit times of years for Century-type parameterisations. The practical consequence is that turnover time inferred from stock/flux underestimates how old the carbon is, and radiocarbon ages overestimate how slowly most of the carbon cycles.</p></div></details>
+    <details class="q"><summary>2. Describe the pool structure of Century and RothC, including what determines partitioning of inputs, and explain how texture enters each model.</summary><div class="a"><p>Century: plant residue is split into metabolic and structural litter by the lignin:N ratio (F<sub>met</sub> = 0.85 − 0.018 L:N); structural decomposition is slowed by lignin content. Three SOM pools follow: active (microbial biomass and labile products, 1–5 yr), slow (20–50 yr) and passive (400–2000 yr). Each pool loses carbon at k<sub>i</sub>C<sub>i</sub>f(T)f(W), with a fixed respired fraction and the remainder transferred to other pools (metabolic → active; structural → active and slow with lignin to slow; active → slow and passive; slow → active and passive; passive → active). Texture: the respired fraction from the active pool is 0.17 + 0.68 × sand, so sandy soils stabilise less; the fraction of active output going to passive is 0.003 + 0.032 × clay. N, P and S are tracked with pool-specific C:N:P:S. RothC: inputs are split into DPM and RPM by a vegetation-specific ratio (1.44 arable, 0.67 unimproved grassland, 0.25 forest). DPM (k = 10 yr⁻¹) and RPM (0.3) decompose to CO₂, BIO (0.66) and HUM (0.02) in proportions set by clay: CO₂/(BIO+HUM) = 1.67(1.85 + 1.60e<sup>−0.0786 clay</sup>), BIO:HUM = 46:54; BIO and HUM decompose with the same partitioning. IOM is inert, radiocarbon-dead, sized from total SOC. Rate modifiers are temperature, topsoil moisture deficit and plant cover. The two models differ in that Century couples nutrients and treats texture as controlling passive formation, whereas RothC is carbon-only and treats clay as controlling efficiency; both are first order with fixed partitioning, so neither has priming or microbial feedback.</p></div></details>
+    <details class="q"><summary>3. A grassland soil has 8 kg C m⁻² and receives 400 g C m⁻² yr⁻¹. Compute the single-pool turnover time, then explain why its bulk radiocarbon age of 900 years and its respired-CO₂ age of 5 years are both consistent with that stock and flux.</summary><div class="a"><p>Turnover time = 8000/400 = 20 yr, so a single pool would need k = 0.05 yr⁻¹ and would have a pre-bomb Δ¹⁴C of −λτ/(1+λτ) × 1000 = −(20/8267)/(1.0024) × 1000 ≈ −2.4‰, i.e. essentially modern, with a radiocarbon age of ~20 yr. The observed 900 yr age requires a large fraction of the carbon to have τ of order 1000 yr or more; but a single 1000-yr pool with 8 kg C m⁻² could only accept 8 g C m⁻² yr⁻¹ of the 400 input. Resolution: the soil is a mixture. For example 600 g (7.5%) active with τ = 2 yr receives 300 g yr⁻¹; 4000 g slow with τ = 50 yr receives 80 g yr⁻¹; 3400 g passive with τ = 1700 yr receives 2 g yr⁻¹; the total input is 382 g yr⁻¹ (close to 400) and the total stock 8 kg. Respiration equals input for each pool at steady state, so the respired CO₂ is 300/382 = 79% from the 2-yr pool and has a flux-weighted mean age of (300×2 + 80×50 + 2×1700)/382 ≈ 21 yr but a median under 5 yr; the bulk Δ¹⁴C is the stock-weighted mean (0.075 × 0 + 0.5 × (−6) + 0.425 × (−171)) ≈ −76‰, a conventional age of roughly 640 yr; adjusting the passive τ upward gives 900 yr. The system turnover time (20 yr) sits between the respired age (years) and the stock age (centuries) and equals neither.</p></div></details>
+    <details class="q"><summary>4. What did Schmidt et al. (2011) and Lehmann &amp; Kleber (2015) change about how we interpret the slow and passive pools, and does it invalidate Century and RothC?</summary><div class="a"><p>Schmidt et al. argued that persistence is an ecosystem property: molecular structure (lignin, aromaticity) does not predict residence time, since supposedly recalcitrant compounds turn over within years to decades while simple compounds can be millennia old when sorbed to minerals or isolated from decomposers; the controls are accessibility (mineral association, aggregate occlusion, micron-scale spatial separation, freezing, anoxia), microbial processing (stable SOM is largely microbial residue), and environmental constraints (temperature, moisture, depth). Lehmann &amp; Kleber argued that humic substances are products of alkaline extraction, not components of soil, and proposed the soil continuum model in which decomposition progressively produces smaller, more oxidised, more polar and more sorbable compounds; stability comes from the environment of the molecule, not from secondary synthesis of recalcitrant macromolecules. This invalidates the mechanistic story behind the passive pool (recalcitrant humus) but not the kinetics: Century and RothC are descriptions of dynamics fitted to data and still reproduce long-term experiments and radiocarbon. The consequences are (i) pool definitions should be physical (mineral-associated, particulate) rather than chemical; (ii) mineral capacity implies saturation, so passive growth is bounded; (iii) stabilisation efficiency depends on microbial physiology (CUE) rather than only litter chemistry; (iv) warming can destabilise "passive" carbon if it loosens mineral associations or increases microbial access, which first-order Q₁₀ scaling may misrepresent. Hence the shift to microbial-explicit and measurable-pool models.</p></div></details>
+    <details class="q"><summary>5. Compare Q₁₀, Arrhenius and Lloyd–Taylor temperature functions and explain Davidson &amp; Janssens' distinction between intrinsic and apparent temperature sensitivity.</summary><div class="a"><p>Q₁₀: f(T) = Q₁₀<sup>(T−T<sub>ref</sub>)/10</sup>, a constant proportional change per 10 °C; simple, but data show Q₁₀ falling as temperature rises. Arrhenius: k = A exp(−E<sub>a</sub>/RT); the apparent Q₁₀ is exp(10E<sub>a</sub>/(R T(T+10))) which declines with T; E<sub>a</sub> ≈ 50–60 kJ mol⁻¹ gives Q₁₀ ≈ 2 near 15 °C. Lloyd–Taylor: k = k₁₀ exp[E₀(1/56.02 − 1/(T − 227.13))], an Arrhenius form with activation energy increasing at low temperatures; it fits soil respiration from arctic to tropical sites with a single E₀ = 308.56 K and predicts Q₁₀ ≈ 4 near 0 °C falling to ~1.6 at 30 °C. Davidson &amp; Janssens: by Arrhenius kinetics, substrates requiring higher activation energy (complex or recalcitrant compounds) have higher intrinsic temperature sensitivity, so the slow pools should respond more strongly to warming than fast pools (carbon-quality–temperature hypothesis). But observed, apparent sensitivity is lower when environmental constraints (substrate diffusion in dry soil, sorption, aggregate occlusion, O₂ limitation, freezing) cap the rate: the enzyme–substrate reaction is not the rate-limiting step, so its temperature dependence is masked. Warming can also relax some constraints (thaw, drying of wet soils), producing apparent sensitivities above the intrinsic value. Models that apply a single Q₁₀ to all pools conflate these; the correct sensitivity of protected carbon is an open question, which is why whole-soil warming experiments (Hicks Pries et al. 2017) matter.</p></div></details>
+    <details class="q"><summary>6. Explain what "spin-up" is, why it is necessary in a pool model, and what problems it creates for projecting soil carbon.</summary><div class="a"><p>Pool models carry state variables (active, slow, passive) that are not measurable, so they cannot be initialised from observations. Spin-up runs the model under pre-industrial forcing until dC<sub>i</sub>/dt ≈ 0 for all pools; for a linear system this is C* = −A⁻¹I, where A is the matrix of rates and transfers, and can be computed analytically or by accelerated decomposition. Problems: (i) it presumes a steady state in the reference year, false where land use, post-glacial soil development, peat accumulation or erosion were ongoing, so the model starts with the wrong stock and wrong disequilibrium; (ii) the initial stock inherits every bias of the simulated NPP and turnover (Todd-Brown 2013: CMIP5 soil C of 510–3040 Pg C explained largely by NPP and turnover differences), so stocks can match observations by compensating errors; (iii) equifinality: many parameter sets give the same stock, but they differ in the fraction held in slow pools and therefore in the century-scale response to warming or input changes; (iv) the simulated response to perturbation depends on the pool distribution set during spin-up rather than on measured fractions. Remedies: initialise from measurable fractions (Zimmermann scheme for RothC; MAOM/POM in Millennial), constrain with radiocarbon and incubation data, treat initial disequilibrium explicitly, and evaluate transient behaviour against long-term experiments rather than against stocks alone.</p></div></details>
+    <details class="q"><summary>7. Why do Earth system models disagree about the sign of the soil carbon change by 2100, and what observational constraints could narrow the spread?</summary><div class="a"><p>Soil carbon change is the difference between changed inputs and changed decomposition. Models differ in the CO₂-fertilisation and N-limitation of NPP (hence inputs), in baseline turnover times (hence how quickly added carbon is lost), in temperature sensitivity (Q₁₀ ≈ 1.5–2.5 and its form), in moisture responses, in whether permafrost thaw and depth are represented, and in land-use histories. Todd-Brown et al. (2014) found 2100 changes from −72 to +253 Pg C across CMIP5, dominated by NPP differences, with turnover changes acting second. Models with short turnover times lose carbon fast under warming but also gain fast under increased inputs. Constraints: (a) present-day stocks (HWSD, SoilGrids), though stocks alone are equifinal; (b) radiocarbon age distributions (Shi et al. 2020: mean age 4800 yr implies much more carbon is in slow pools than models hold, so models overestimate the responsiveness of the bulk stock); (c) spatial temperature gradients of turnover as emergent constraints (Varney et al. 2020: 232 ± 52 Pg C loss per °C through turnover); (d) long-term experiments and warming experiments for transient responses; (e) measurable fractions to initialise pool distributions; (f) priming and microbial responses from FACE and litter manipulation experiments. The deeper issue is structural: first-order models cannot represent priming, microbial acclimation or mineral saturation, so the spread may be a floor rather than a ceiling on uncertainty.</p></div></details>
+    <details class="q"><summary>8. An agronomist proposes to raise SOC by returning crop residues. Using pool concepts, estimate the trajectory and explain why gains are slow, saturate, and are easily reversed.</summary><div class="a"><p>Suppose residues add 150 g C m⁻² yr⁻¹ to a soil at steady state. In a Century-type model about 70% enters active and metabolic litter where ~55–75% is respired within a year; roughly 25–45% of the added carbon passes into the slow pool and a few percent reaches passive. The slow pool (τ ≈ 30 yr) approaches its new steady state C* = I<sub>slow</sub>/k<sub>slow</sub> exponentially, 63% of the gain after ~30 yr and 95% after ~90 yr; measurable gains in the first decade are therefore mostly in POM/active carbon, perhaps 10–20 g C m⁻² yr⁻¹, declining with time as the new equilibrium is approached. Saturation enters twice: through the first-order steady state (the stock rises only in proportion to inputs) and through finite mineral capacity (Hassink 1997), which limits the fraction that can be stabilised as mineral-associated carbon in a given texture, so sandy soils with low capacity respire a larger share. Reversibility follows from the same kinetics: if residues are withdrawn, the slow pool declines at the same k, and the active/POM gains are lost in years; the passive pool barely moved in either direction. This is why "additionality" and "permanence" are contested in soil carbon credits and why the 4 per 1000 target depends on sustained management rather than one-off practices.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Parton WJ, Schimel DS, Cole CV, Ojima DS (1987). Analysis of factors controlling soil organic matter levels in Great Plains grasslands. <em>Soil Science Society of America Journal</em> 51: 1173–1179. <a href="https://doi.org/10.2136/sssaj1987.03615995005100050015x">doi:10.2136/sssaj1987.03615995005100050015x</a><span class="why">The Century paper: pool definitions, lignin:N split, texture controls, turnover times.</span></li>
+      <li>Parton WJ, Stewart JWB, Cole CV (1988). Dynamics of C, N, P and S in grassland soils: a model. <em>Biogeochemistry</em> 5: 109–131. <a href="https://doi.org/10.1007/BF02180320">doi:10.1007/BF02180320</a><span class="why">Extends Century to coupled nutrient cycles with fixed pool stoichiometry.</span></li>
+      <li>Jenkinson DS, Rayner JH (1977). The turnover of soil organic matter in some of the Rothamsted classical experiments. <em>Soil Science</em> 123: 298–305. <span class="why">Origin of the RothC pool structure fitted to a century of plot data and radiocarbon.</span></li>
+      <li>Coleman K, Jenkinson DS (1996). RothC-26.3: a model for the turnover of carbon in soil. In Powlson DS, Smith P, Smith JU (eds) <em>Evaluation of Soil Organic Matter Models</em>, NATO ASI Series I 38, Springer, pp 237–246. <span class="why">The operational RothC description: rate constants, modifiers, clay function, DPM/RPM ratios.</span></li>
+      <li>Jenkinson DS (1990). The turnover of organic carbon and nitrogen in soil. <em>Philosophical Transactions of the Royal Society B</em> 329: 361–368. <span class="why">Clear account of why several pools are needed and how radiocarbon constrains them.</span></li>
+      <li>Schmidt MWI, Torn MS, Abiven S, et al. (2011). Persistence of soil organic matter as an ecosystem property. <em>Nature</em> 478: 49–56. <a href="https://doi.org/10.1038/nature10386">doi:10.1038/nature10386</a><span class="why">The paper that replaced recalcitrance with accessibility and microbial processing as the controls on persistence.</span></li>
+      <li>Lehmann J, Kleber M (2015). The contentious nature of soil organic matter. <em>Nature</em> 528: 60–68. <a href="https://doi.org/10.1038/nature16069">doi:10.1038/nature16069</a><span class="why">Humic substances as extraction artefacts; the soil continuum model.</span></li>
+      <li>Trumbore S (2009). Radiocarbon and soil carbon dynamics. <em>Annual Review of Earth and Planetary Sciences</em> 37: 47–66. <a href="https://doi.org/10.1146/annurev.earth.36.031207.124300">doi:10.1146/annurev.earth.36.031207.124300</a><span class="why">How bomb and pre-bomb ¹⁴C constrain turnover, and why one pool cannot fit both.</span></li>
+      <li>Davidson EA, Janssens IA (2006). Temperature sensitivity of soil carbon decomposition and feedbacks to climate change. <em>Nature</em> 440: 165–173. <a href="https://doi.org/10.1038/nature04514">doi:10.1038/nature04514</a><span class="why">Intrinsic versus apparent temperature sensitivity; the carbon-quality–temperature hypothesis.</span></li>
+      <li>Shi Z, Allison SD, He Y, et al. (2020). The age distribution of global soil carbon inferred from radiocarbon measurements. <em>Nature Geoscience</em> 13: 555–559. <a href="https://doi.org/10.1038/s41561-020-0596-z">doi:10.1038/s41561-020-0596-z</a><span class="why">Mean SOC age ~4800 yr to 1 m; models underestimate age and so overestimate responsiveness.</span></li>
+      <li>Sierra CA, Müller M, Metzler H, Manzoni S, Trumbore SE (2017). The muddle of ages, turnover, transit, and residence times in the carbon cycle. <em>Global Change Biology</em> 23: 1763–1773. <a href="https://doi.org/10.1111/gcb.13556">doi:10.1111/gcb.13556</a><span class="why">Definitions and formulas for age and transit time in multi-pool systems.</span></li>
+      <li>Lloyd J, Taylor JA (1994). On the temperature dependence of soil respiration. <em>Functional Ecology</em> 8: 315–323. <a href="https://doi.org/10.2307/2389824">doi:10.2307/2389824</a><span class="why">The Lloyd–Taylor function and the case against constant Q₁₀.</span></li>
+      <li>Zimmermann M, Leifeld J, Schmidt MWI, Smith P, Fuhrer J (2007). Measured soil organic matter fractions can be related to pools in the RothC model. <em>European Journal of Soil Science</em> 58: 658–667. <a href="https://doi.org/10.1111/j.1365-2389.2006.00855.x">doi:10.1111/j.1365-2389.2006.00855.x</a><span class="why">The fractionation scheme used to initialise RothC pools from measurements.</span></li>
+      <li>Elliott ET, Paustian K, Frey SD (1996). Modeling the measurable or measuring the modelable: a hierarchical approach to isolating meaningful soil organic matter fractionations. In Powlson DS, Smith P, Smith JU (eds) <em>Evaluation of Soil Organic Matter Models</em>, Springer, pp 161–179. <span class="why">The phrase that framed two decades of work on matching pools to fractions.</span></li>
+      <li>Kuzyakov Y (2010). Priming effects: interactions between living and dead organic matter. <em>Soil Biology and Biochemistry</em> 42: 1363–1371. <a href="https://doi.org/10.1016/j.soilbio.2010.04.003">doi:10.1016/j.soilbio.2010.04.003</a><span class="why">Mechanisms and magnitudes of priming, which first-order models cannot represent.</span></li>
+      <li>Hicks Pries CE, Castanha C, Porras RC, Torn MS (2017). The whole-soil carbon flux in response to warming. <em>Science</em> 355: 1420–1423. <a href="https://doi.org/10.1126/science.aal1319">doi:10.1126/science.aal1319</a><span class="why">Deep soil respiration is as temperature-sensitive as the surface; Q₁₀ ≈ 2.4 to 1 m.</span></li>
+      <li>Todd-Brown KEO, Randerson JT, Post WM, et al. (2013). Causes of variation in soil carbon simulations from CMIP5 Earth system models and comparison with observations. <em>Biogeosciences</em> 10: 1717–1736. <a href="https://doi.org/10.5194/bg-10-1717-2013">doi:10.5194/bg-10-1717-2013</a><span class="why">Model soil C spread explained by NPP and a single effective turnover time. The 2014 companion (Biogeosciences 11: 2341) covers projected changes.</span></li>
+      <li>Varney RM, Chadburn SE, Friedlingstein P, et al. (2020). A spatial emergent constraint on the sensitivity of soil carbon to global warming. <em>Nature Communications</em> 11: 5544. <a href="https://doi.org/10.1038/s41467-020-19208-8">doi:10.1038/s41467-020-19208-8</a><span class="why">232 ± 52 Pg C lost per °C through turnover changes.</span></li>
+      <li>Jobbágy EG, Jackson RB (2000). The vertical distribution of soil organic carbon and its relation to climate and vegetation. <em>Ecological Applications</em> 10: 423–436. <a href="https://doi.org/10.1890/1051-0761(2000)010[0423:TVDOSO]2.0.CO;2">doi:10.1890/1051-0761(2000)010[0423:TVDOSO]2.0.CO;2</a><span class="why">Global stocks by biome and depth; vegetation controls vertical distribution.</span></li>
+      <li>Luo Y, Ahlström A, Allison SD, et al. (2016). Toward more realistic projections of soil carbon dynamics by Earth system models. <em>Global Biogeochemical Cycles</em> 30: 40–56. <a href="https://doi.org/10.1002/2015GB005239">doi:10.1002/2015GB005239</a><span class="why">The agenda for improving soil modules: measurable pools, transient tests, microbial and mineral controls, data assimilation.</span></li>
+      <li>Manzoni S, Porporato A (2009). Soil carbon and nitrogen mineralization: theory and models across scales. <em>Soil Biology and Biochemistry</em> 41: 1355–1379. <a href="https://doi.org/10.1016/j.soilbio.2009.02.031">doi:10.1016/j.soilbio.2009.02.031</a><span class="why">Review of ~250 models: kinetic forms, pool numbers, and how they scale.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="root-microbe-interactions.html">← Previous: Root–microbe interactions</a><a href="microbial-explicit-models.html">Next: Microbial-explicit models →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#what">What SOM is</a></li>
+      <li><a href="#io">Inputs and outputs</a></li>
+      <li><a href="#kinetics">First-order kinetics</a></li>
+      <li><a href="#pools">Multi-pool models</a></li>
+      <li><a href="#modifiers">Rate modifiers</a></li>
+      <li><a href="#persistence">Humus to persistence</a></li>
+      <li><a href="#radiocarbon">Radiocarbon</a></li>
+      <li><a href="#measure">Measurement</a></li>
+      <li><a href="#datamodel">Data–model issues</a></li>
+      <li><a href="#connections">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (independent first-order pools, Century-style modifiers, pre-bomb steady-state radiocarbon) chosen for intuition. Pool constants follow Parton et al. 1987 and Coleman &amp; Jenkinson 1996.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function $(id) { return document.getElementById(id); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function bindOut(ids, fn) { ids.forEach(function (id) { var e = $(id); if (!e) return; e.addEventListener(e.tagName === 'SELECT' ? 'change' : 'input', fn); }); }
+  function showOuts(ids, d) { ids.forEach(function (id) { var o = $(id + 'O'), i = $(id); if (o && i) o.textContent = (d && d[id] !== undefined) ? fmt(i.value, d[id]) : i.value; }); }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(10)); return t; }
+
+  // Generic chart frame: returns scale helpers and draws axes/grid.
+  function frame(svg, o) {
+    var W = o.W, H = o.H, mL = o.mL || 58, mR = o.mR || 90, mT = o.mT || 18, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var sx = o.logx ? function (x) { return mL + (Math.log10(x) - Math.log10(o.x0)) / (Math.log10(o.x1) - Math.log10(o.x0)) * pw; } : function (x) { return mL + (x - o.x0) / (o.x1 - o.x0) * pw; };
+    var sy = function (y) { return mT + (o.y1 - y) / (o.y1 - o.y0) * ph; };
+    var yt = o.yTicks || niceTicks(o.y0, o.y1, 6);
+    yt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    var xt = o.xTicks || niceTicks(o.x0, o.x1, 6);
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xlab));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylab));
+    return { sx: sx, sy: sy, mL: mL, mR: mR, mT: mT, mB: mB, pw: pw, ph: ph, W: W, H: H, y0: o.y0, y1: o.y1, x0: o.x0, x1: o.x1, logx: !!o.logx };
+  }
+  function pathFrom(f, xs, fn) { var d = ''; for (var i = 0; i < xs.length; i++) { var y = Math.max(f.y0, Math.min(f.y1, fn(xs[i]))); d += (i === 0 ? 'M' : 'L') + f.sx(xs[i]).toFixed(1) + ',' + f.sy(y).toFixed(1); } return d; }
+  function series(svg, f, xs, fn, col, cls) { svg.appendChild(el('path', { 'class': 'ser ' + (cls || ''), d: pathFrom(f, xs, fn), stroke: col })); }
+  function rightLabels(svg, f, labs) {
+    labs.forEach(function (L) { L.y = f.sy(Math.max(f.y0, Math.min(f.y1, L.v))); });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: f.mL + f.pw + 6, y: L.y + 4, fill: L.col }, L.t)); });
+  }
+  function hover(svg, f, tip, info) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: f.mT, y2: f.mT + f.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: f.mL, y: f.mT, width: f.pw, height: f.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var fr = Math.max(0, Math.min(1, (p.x - f.mL) / f.pw));
+      var x = f.logx ? Math.pow(10, Math.log10(f.x0) + fr * (Math.log10(f.x1) - Math.log10(f.x0))) : f.x0 + fr * (f.x1 - f.x0);
+      xh.setAttribute('x1', f.sx(x)); xh.setAttribute('x2', f.sx(x)); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = info(x); tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab (a): one pool vs three pools ---------- */
+  (function () {
+    var ids = ['pI', 'pKa', 'pKs', 'pKp', 'pYrs', 'pStep'];
+    var svg = $('poolSvg'), tip = $('poolTip');
+    var fa = 0.70, fs = 0.29, fp = 0.01, tAS = 0.20, tSP = 0.02; // input fractions and transfers
+    function run() {
+      showOuts(['pI', 'pKa', 'pKs', 'pKp', 'pYrs'], { pKa: 2, pKs: 3, pKp: 4, pI: 0, pYrs: 0 });
+      var I = +$('pI').value, ka = +$('pKa').value, ks = +$('pKs').value, kp = +$('pKp').value, yrs = +$('pYrs').value, step = $('pStep').value;
+      function ss(I, ka, ks, kp) { var A = I * fa / ka; var S = (I * fs + tAS * ka * A) / ks; var P = (I * fp + tSP * ks * S) / kp; return [A, S, P]; }
+      var s0 = ss(I, ka, ks, kp), C0 = s0[0] + s0[1] + s0[2], k1 = I / C0;
+      var I2 = I, m = 1;
+      if (step === 'in-50') I2 = 0.5 * I; else if (step === 'in+30') I2 = 1.3 * I; else if (step === 'in0') I2 = 0; else if (step === 't+3') m = Math.pow(2, 0.3);
+      var s1 = ss(I2, ka * m, ks * m, kp * m), C1 = s1[0] + s1[1] + s1[2];
+      var dt = 0.05, n = Math.round(yrs / dt), A = s0[0], S = s0[1], P = s0[2], C1p = C0, out = [], t63 = null;
+      for (var i = 0; i <= n; i++) {
+        var t = i * dt;
+        if (i % Math.round(1 / dt) === 0) out.push({ t: t, A: A, S: S, P: P, T: A + S + P, one: C1p });
+        if (t63 === null && t > 20 && Math.abs((A + S + P) - C0) >= 0.63 * Math.abs(C1 - C0) && Math.abs(C1 - C0) > 1e-6) t63 = t - 20;
+        var on = t >= 20, Ii = on ? I2 : I, mm = on ? m : 1;
+        var dA = Ii * fa - ka * mm * A, dS = Ii * fs + tAS * ka * mm * A - ks * mm * S, dP = Ii * fp + tSP * ks * mm * S - kp * mm * P;
+        var d1 = Ii - k1 * mm * C1p;
+        A += dA * dt; S += dS * dt; P += dP * dt; C1p += d1 * dt;
+      }
+      var ymax = 0; out.forEach(function (r) { ymax = Math.max(ymax, r.T, r.one); });
+      ymax = Math.ceil(ymax / 1000) * 1000 || 1000;
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 380, x0: 0, x1: yrs, y0: 0, y1: ymax, xlab: 'Years', ylab: 'Carbon stock (g C m⁻²)', mR: 100 });
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(20), x2: f.sx(20), y1: f.mT, y2: f.mT + f.ph }));
+      svg.appendChild(el('text', { 'class': 'tick', x: f.sx(20) + 4, y: f.mT + f.ph * 0.55 }, 'step'));
+      var xs = out.map(function (r) { return r.t; });
+      function g(key) { return function (t) { return out[Math.round(t)][key]; }; }
+      series(svg, f, xs, g('A'), 'var(--series-1)'); series(svg, f, xs, g('S'), 'var(--series-2)'); series(svg, f, xs, g('P'), 'var(--series-3)');
+      series(svg, f, xs, g('one'), 'var(--muted)', 'pot'); svg.lastChild.setAttribute('stroke-dasharray', '5 4');
+      series(svg, f, xs, g('T'), 'var(--fg)', 'net');
+      var last = out[out.length - 1];
+      rightLabels(svg, f, [{ t: 'Total', v: last.T, col: 'var(--fg)' }, { t: '1-pool', v: last.one, col: 'var(--muted)' }, { t: 'Active', v: last.A, col: 'var(--series-1)' }, { t: 'Slow', v: last.S, col: 'var(--series-2)' }, { t: 'Passive', v: last.P, col: 'var(--series-3)' }]);
+      hover(svg, f, tip, function (x) { var r = out[Math.round(x)]; return 'Year <b>' + fmt(r.t, 0) + '</b><br>Total <b>' + fmt(r.T, 0) + '</b> · 1-pool <b>' + fmt(r.one, 0) + '</b><br>A <b>' + fmt(r.A, 0) + '</b> · S <b>' + fmt(r.S, 0) + '</b> · P <b>' + fmt(r.P, 0) + '</b> g C m⁻²'; });
+      $('pTau').textContent = fmt(1 / ka, 1) + ' · ' + fmt(1 / ks, 0) + ' · ' + fmt(1 / kp, 0) + ' yr';
+      $('pCss').textContent = fmt(C1, 0) + ' (from ' + fmt(C0, 0) + ') g C m⁻²';
+      $('pT63').textContent = t63 === null ? '> ' + (yrs - 20) + ' yr' : fmt(t63, 1) + ' yr';
+      $('pTau1').textContent = fmt(1 / k1, 1) + ' yr';
+      var html = '<thead><tr><th class="num">Year</th><th class="num">Active</th><th class="num">Slow</th><th class="num">Passive</th><th class="num">Total</th><th class="num">1-pool</th></tr></thead><tbody>';
+      for (var j = 0; j < out.length; j += Math.max(1, Math.round(out.length / 12))) { var r = out[j]; html += '<tr><td class="num">' + r.t + '</td><td class="num">' + fmt(r.A, 0) + '</td><td class="num">' + fmt(r.S, 0) + '</td><td class="num">' + fmt(r.P, 0) + '</td><td class="num">' + fmt(r.T, 0) + '</td><td class="num">' + fmt(r.one, 0) + '</td></tr>'; }
+      $('poolTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (b): Century-style model ---------- */
+  (function () {
+    var ids = ['cIn', 'cLN', 'cClay', 'cSand', 'cT', 'cW', 'cMgmt'];
+    var svg = $('cenSvg'), tip = $('cenTip');
+    function fT(T) { // Parton-type generalised Poisson, normalised so f(30)=1, ~0 below -5
+      var a = 45, b = 35, c = 2.63; var x = (a - T) / (a - b); if (x <= 0) return 1; var v = Math.pow(x, 0.2) * Math.exp(0.076 * (1 - Math.pow(x, c))); return Math.max(0.001, Math.min(1, v)); }
+    function fW(w) { return Math.max(0.05, Math.min(1, 1 / (1 + 30 * Math.exp(-8.5 * w)))); }
+    function step(state, p, dt) {
+      var kmet = 14.8 * p.mod, kstr = 3.9 * Math.exp(-3 * p.lig) * p.mod, ka = 7.3 * p.mod * p.kfac, ks = 0.2 * p.mod * p.kfac * p.slowfac, kp = 0.0045 * p.mod * p.kfac * p.slowfac;
+      var M = state[0], St = state[1], A = state[2], S = state[3], P = state[4];
+      var dM = kmet * M, dSt = kstr * St, dA = ka * A, dS = ks * S, dP = kp * P;
+      var respA = Math.min(0.85, 0.17 + 0.68 * p.sand), toP = Math.min(0.5, 0.003 + 0.032 * p.clay);
+      var n = state.slice();
+      n[0] += (p.I * p.fmet - dM) * dt;
+      n[1] += (p.I * (1 - p.fmet) - dSt) * dt;
+      n[2] += (0.45 * dM + 0.45 * dSt * (1 - p.lig) + 0.42 * dS + 0.45 * dP - dA) * dt;
+      n[3] += (0.7 * dSt * p.lig + dA * (1 - respA - toP) + 0 - dS) * dt;
+      n[4] += (dA * toP + 0.03 * dS - dP) * dt;
+      return n;
+    }
+    function params() {
+      var I = +$('cIn').value, LN = +$('cLN').value, clay = +$('cClay').value / 100, sand = +$('cSand').value / 100, T = +$('cT').value, W = +$('cW').value;
+      var fmet = Math.max(0.2, Math.min(0.85, 0.85 - 0.018 * LN)), lig = Math.max(0.05, Math.min(0.5, LN * 0.012 + 0.05));
+      return { I: I, fmet: fmet, lig: lig, clay: clay, sand: sand, mod: fT(T) * fW(W), kfac: 1, slowfac: 1, T: T, W: W };
+    }
+    function run() {
+      showOuts(['cIn', 'cLN', 'cClay', 'cSand', 'cT', 'cW'], { cW: 2, cT: 1, cIn: 0, cLN: 0, cClay: 0, cSand: 0 });
+      var p0 = params(), mg = $('cMgmt').value;
+      var p1 = JSON.parse(JSON.stringify(p0));
+      if (mg === 'residue') p1.I *= 0.6; else if (mg === 'notill') { p1.slowfac = 0.8; p1.I *= 1.1; } else if (mg === 'warm') p1.mod = fT(p0.T + 4) * fW(p0.W); else if (mg === 'convert') { p1.I *= 0.6; p1.kfac = 1.3; }
+      // spin-up: 3000 years monthly
+      var st = [50, 100, 100, 2000, 2000], dt = 1 / 12;
+      for (var i = 0; i < 3000 * 12; i++) st = step(st, p0, dt);
+      var out = [];
+      for (var y = 0; y <= 200; y++) {
+        out.push({ t: y, L: st[0] + st[1], A: st[2], S: st[3], P: st[4], T: st[2] + st[3] + st[4] });
+        var p = y >= 50 ? p1 : p0;
+        for (var m = 0; m < 12; m++) st = step(st, p, dt);
+      }
+      var ymax = 0; out.forEach(function (r) { ymax = Math.max(ymax, r.T, r.L); }); ymax = Math.ceil(ymax * 1.08 / 500) * 500 || 500;
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 380, x0: 0, x1: 200, y0: 0, y1: ymax, xlab: 'Years', ylab: 'Carbon stock (g C m⁻²)', mR: 100 });
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(50), x2: f.sx(50), y1: f.mT, y2: f.mT + f.ph }));
+      svg.appendChild(el('text', { 'class': 'tick', x: f.sx(50) + 4, y: f.mT + 12 }, mg === 'none' ? 'year 50' : 'management change'));
+      var xs = out.map(function (r) { return r.t; });
+      function g(key) { return function (t) { return out[Math.round(t)][key]; }; }
+      series(svg, f, xs, g('L'), 'var(--accent-2)'); series(svg, f, xs, g('A'), 'var(--series-1)'); series(svg, f, xs, g('S'), 'var(--series-2)'); series(svg, f, xs, g('P'), 'var(--series-3)'); series(svg, f, xs, g('T'), 'var(--fg)', 'net');
+      var last = out[200];
+      rightLabels(svg, f, [{ t: 'Total SOC', v: last.T, col: 'var(--fg)' }, { t: 'Litter', v: last.L, col: 'var(--accent-2)' }, { t: 'Active', v: last.A, col: 'var(--series-1)' }, { t: 'Slow', v: last.S, col: 'var(--series-2)' }, { t: 'Passive', v: last.P, col: 'var(--series-3)' }]);
+      hover(svg, f, tip, function (x) { var r = out[Math.round(x)]; return 'Year <b>' + r.t + '</b><br>SOC <b>' + fmt(r.T, 0) + '</b> · litter <b>' + fmt(r.L, 0) + '</b><br>A <b>' + fmt(r.A, 0) + '</b> · S <b>' + fmt(r.S, 0) + '</b> · P <b>' + fmt(r.P, 0) + '</b> g C m⁻²'; });
+      $('cFmet').textContent = fmt(p0.fmet, 2);
+      $('cDelta').textContent = fmt(out[50].T, 0) + ' → ' + fmt(last.T, 0);
+      $('cResp').textContent = fmt(Math.min(0.85, 0.17 + 0.68 * p0.sand), 2);
+      $('cMod').textContent = fmt(fT(p0.T), 2) + ' × ' + fmt(fW(p0.W), 2) + ' = ' + fmt(p0.mod, 2);
+      var html = '<thead><tr><th class="num">Year</th><th class="num">Litter</th><th class="num">Active</th><th class="num">Slow</th><th class="num">Passive</th><th class="num">Total SOC</th></tr></thead><tbody>';
+      [0, 25, 50, 60, 75, 100, 125, 150, 175, 200].forEach(function (y) { var r = out[y]; html += '<tr><td class="num">' + y + '</td><td class="num">' + fmt(r.L, 0) + '</td><td class="num">' + fmt(r.A, 0) + '</td><td class="num">' + fmt(r.S, 0) + '</td><td class="num">' + fmt(r.P, 0) + '</td><td class="num">' + fmt(r.T, 0) + '</td></tr>'; });
+      $('cenTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (c): rate modifiers ---------- */
+  (function () {
+    var ids = ['mQ', 'mEa', 'mE0', 'mWopt', 'mWsat', 'mT'];
+    var tsvg = $('tSvg'), ttip = $('tTip'), wsvg = $('wSvg'), wtip = $('wTip');
+    var R = 8.314e-3, Tref = 283.15;
+    function run() {
+      showOuts(ids, { mQ: 1, mEa: 0, mE0: 0, mWopt: 2, mWsat: 2, mT: 1 });
+      var Q = +$('mQ').value, Ea = +$('mEa').value, E0 = +$('mE0').value, wopt = +$('mWopt').value, wsat = +$('mWsat').value, Ts = +$('mT').value;
+      function fQ(T) { return Math.pow(Q, (T - 10) / 10); }
+      function fA(T) { var Tk = T + 273.15; return Math.exp(Ea / R * (1 / Tref - 1 / Tk)); }
+      function fLT(T) { var Tk = T + 273.15; if (Tk <= 227.13 + 1) return 0; return Math.exp(E0 * (1 / 56.02 - 1 / (Tk - 227.13))); }
+      function fW(w) { if (w <= wopt) { var x = w / wopt; return Math.max(0, Math.pow(x, 1.5) * (2.5 - 1.5 * x)); } var y = (w - wopt) / (1 - wopt); return 1 - (1 - wsat) * y * y; }
+      clear(tsvg);
+      var f = frame(tsvg, { W: 640, H: 300, x0: -5, x1: 40, y0: 0, y1: 8, xlab: 'Soil temperature (°C)', ylab: 'f(T), relative to 10 °C', mR: 100, xTicks: [-5, 0, 5, 10, 15, 20, 25, 30, 35, 40] });
+      var xs = []; for (var T = -5; T <= 40.001; T += 0.5) xs.push(T);
+      series(tsvg, f, xs, fQ, 'var(--series-1)'); series(tsvg, f, xs, fA, 'var(--series-2)'); series(tsvg, f, xs, fLT, 'var(--series-3)');
+      tsvg.appendChild(el('line', { 'class': 'ev', x1: f.sx(Ts), x2: f.sx(Ts), y1: f.mT, y2: f.mT + f.ph }));
+      rightLabels(tsvg, f, [{ t: 'Q₁₀', v: fQ(40), col: 'var(--series-1)' }, { t: 'Arrhenius', v: fA(40), col: 'var(--series-2)' }, { t: 'Lloyd–Taylor', v: fLT(40), col: 'var(--series-3)' }]);
+      hover(tsvg, f, ttip, function (x) { return 'T <b>' + fmt(x, 1) + '</b> °C<br>Q₁₀ <b>' + fmt(fQ(x), 2) + '</b> · Arrhenius <b>' + fmt(fA(x), 2) + '</b> · L–T <b>' + fmt(fLT(x), 2) + '</b>'; });
+      clear(wsvg);
+      var fTs = fLT(Ts);
+      var g = frame(wsvg, { W: 640, H: 260, x0: 0, x1: 1, y0: 0, y1: Math.max(1.2, Math.ceil(fTs * 1.1 * 2) / 2), xlab: 'Soil water content (fraction of saturation)', ylab: 'f(W) and f(T)·f(W)', mR: 100 });
+      var ws = []; for (var w = 0; w <= 1.0001; w += 0.01) ws.push(w);
+      series(wsvg, g, ws, fW, 'var(--accent)'); series(wsvg, g, ws, function (w) { return fW(w) * fTs; }, 'var(--fg)', 'net');
+      rightLabels(wsvg, g, [{ t: 'f(W)', v: fW(1), col: 'var(--accent)' }, { t: 'f(T)·f(W)', v: fW(1) * fTs, col: 'var(--fg)' }]);
+      hover(wsvg, g, wtip, function (x) { return 'W <b>' + fmt(x, 2) + '</b><br>f(W) <b>' + fmt(fW(x), 2) + '</b> · f(T)·f(W) at ' + fmt(Ts, 1) + ' °C <b>' + fmt(fW(x) * fTs, 2) + '</b> (Lloyd–Taylor)'; });
+      var Tk = Ts + 273.15;
+      $('mQarr').textContent = fmt(Math.exp(10 * Ea / (R * Tk * (Tk + 10))), 2);
+      $('mQlt').textContent = fmt(fLT(Ts + 5) / fLT(Ts - 5), 2);
+      $('mFt').textContent = fmt(fQ(Ts), 2) + ' · ' + fmt(fA(Ts), 2) + ' · ' + fmt(fLT(Ts), 2);
+      var html = '<thead><tr><th class="num">T (°C)</th><th class="num">Q₁₀ form</th><th class="num">Arrhenius</th><th class="num">Lloyd–Taylor</th><th class="num">Apparent Q₁₀ (L–T)</th></tr></thead><tbody>';
+      [-5, 0, 5, 10, 15, 20, 25, 30, 35, 40].forEach(function (T) { html += '<tr><td class="num">' + T + '</td><td class="num">' + fmt(fQ(T), 2) + '</td><td class="num">' + fmt(fA(T), 2) + '</td><td class="num">' + fmt(fLT(T), 2) + '</td><td class="num">' + fmt(fLT(T + 5) / Math.max(1e-9, fLT(T - 5)), 2) + '</td></tr>'; });
+      $('tTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (d): radiocarbon ---------- */
+  (function () {
+    var ids = ['rTa', 'rTs', 'rTp', 'rFa', 'rFp'];
+    var svg = $('rcSvg'), tip = $('rcTip');
+    var lam = 1 / 8267;
+    function D14(tau) { return -lam * tau / (1 + lam * tau) * 1000; }
+    function tauFromD(D) { var F = 1 + D / 1000; return (1 / F - 1) / lam; }
+    function run() {
+      showOuts(ids, { rTa: 1, rTs: 0, rTp: 0, rFa: 0, rFp: 0 });
+      var ta = +$('rTa').value, ts = +$('rTs').value, tp = +$('rTp').value, fa = +$('rFa').value / 100, fp = +$('rFp').value / 100;
+      if (fa + fp > 0.98) { fp = 0.98 - fa; $('rFp').value = Math.round(fp * 100); $('rFpO').textContent = $('rFp').value; }
+      var fs = 1 - fa - fp;
+      var Db = fa * D14(ta) + fs * D14(ts) + fp * D14(tp);
+      var F = 1 + Db / 1000, age = 8033 * Math.log(1 / F), tauImp = tauFromD(Db);
+      var C = 1, Ia = fa / ta, Is = fs / ts, Ip = fp / tp, I = Ia + Is + Ip;
+      var meanAge = fa * ta + fs * ts + fp * tp;
+      var transit = (Ia * ta + Is * ts + Ip * tp) / I;
+      var med = 0; (function () { var lo = 0, hi = tp * 5; for (var q = 0; q < 80; q++) { var mid = (lo + hi) / 2; var cum = (Ia * (1 - Math.exp(-mid / ta)) + Is * (1 - Math.exp(-mid / ts)) + Ip * (1 - Math.exp(-mid / tp))) / I; if (cum < 0.5) lo = mid; else hi = mid; } med = (lo + hi) / 2; })();
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 340, x0: 1, x1: 20000, y0: -800, y1: 0, logx: true, xTicks: [1, 10, 100, 1000, 10000], xfmt: function (v) { return v >= 1000 ? (v / 1000) + 'k' : v; }, xlab: 'Turnover time τ (yr, log scale)', ylab: 'Δ¹⁴C (‰), pre-bomb steady state', mR: 70, yTicks: [-800, -600, -400, -200, 0] });
+      var xs = []; for (var e = 0; e <= 4.301; e += 0.02) xs.push(Math.pow(10, e));
+      series(svg, f, xs, D14, 'var(--fg)', 'net');
+      [[ta, 'var(--series-1)', 'Active'], [ts, 'var(--series-2)', 'Slow'], [tp, 'var(--series-3)', 'Passive']].forEach(function (p) { svg.appendChild(el('circle', { cx: f.sx(p[0]), cy: f.sy(D14(p[0])), r: 6, fill: p[1], stroke: 'var(--surface)', 'stroke-width': 2 })); svg.appendChild(el('text', { 'class': 'dl', x: f.sx(p[0]) + 9, y: f.sy(D14(p[0])) + 14, fill: p[1] }, p[2])); });
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.mL, x2: f.sx(tauImp), y1: f.sy(Db), y2: f.sy(Db) }));
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(tauImp), x2: f.sx(tauImp), y1: f.sy(Db), y2: f.mT + f.ph }));
+      svg.appendChild(el('rect', { x: f.sx(tauImp) - 6, y: f.sy(Db) - 6, width: 12, height: 12, fill: 'var(--accent-2)', stroke: 'var(--surface)', 'stroke-width': 2, transform: 'rotate(45 ' + f.sx(tauImp) + ' ' + f.sy(Db) + ')' }));
+      svg.appendChild(el('text', { 'class': 'dl', x: f.sx(tauImp) + 10, y: f.sy(Db) + 22, fill: 'var(--accent-2)' }, 'bulk → implied τ ' + fmt(tauImp, 0) + ' yr'));
+      if (f.sx(meanAge) > f.mL) { svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(meanAge), x2: f.sx(meanAge), y1: f.mT, y2: f.mT + f.ph, stroke: 'var(--muted)' })); svg.appendChild(el('text', { 'class': 'tick', x: f.sx(meanAge) + 4, y: f.mT + f.ph - 8 }, 'true mean age ' + fmt(meanAge, 0) + ' yr')); }
+      hover(svg, f, tip, function (x) { return 'τ <b>' + fmt(x, x < 10 ? 1 : 0) + '</b> yr → Δ¹⁴C <b>' + fmt(D14(x), 1) + '</b> ‰<br>conventional age <b>' + fmt(8033 * Math.log(1 / (1 + D14(x) / 1000)), 0) + '</b> yr'; });
+      $('rcBulk').textContent = fmt(Db, 1);
+      $('rcAge').textContent = fmt(age, 0);
+      $('rcTauImp').textContent = fmt(tauImp, 0);
+      $('rcMeanAge').textContent = fmt(meanAge, 0);
+      $('rcTauSys').textContent = fmt(C / I, 1);
+      $('rcTransit').textContent = fmt(med, 1) + ' (mean ' + fmt(transit, 1) + ')';
+      $('rcShare').textContent = fmt(Ia / I * 100, 0) + '%';
+      var html = '<thead><tr><th>Pool</th><th class="num">τ (yr)</th><th class="num">Stock fraction</th><th class="num">Input/respiration fraction</th><th class="num">Δ¹⁴C (‰)</th></tr></thead><tbody>';
+      [['Active', ta, fa, Ia / I], ['Slow', ts, fs, Is / I], ['Passive', tp, fp, Ip / I]].forEach(function (r) { html += '<tr><td>' + r[0] + '</td><td class="num">' + r[1] + '</td><td class="num">' + fmt(r[2] * 100, 0) + '%</td><td class="num">' + fmt(r[3] * 100, 1) + '%</td><td class="num">' + fmt(D14(r[1]), 1) + '</td></tr>'; });
+      html += '<tr><td><b>Bulk</b></td><td class="num">' + fmt(C / I, 1) + ' (C/I)</td><td class="num">100%</td><td class="num">100%</td><td class="num">' + fmt(Db, 1) + '</td></tr>';
+      $('rcTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+})();
+</script>
+</body>
+</html>

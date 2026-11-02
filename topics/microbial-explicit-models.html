@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Microbial-Explicit Models</title>
+<meta name="description" content="Microbial-explicit soil carbon models at comprehensive-exam depth: Michaelis–Menten and reverse kinetics, enzymes, carbon-use efficiency and its temperature and stoichiometric controls, necromass, MIMICS, CORPSE, MEND, DAMM, Millennial, oscillations, and what these models do to warming projections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ev { stroke: var(--muted); stroke-dasharray: 3 4; }
+  .chartbox { position: relative; }
+  .boxes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .box { background: var(--surface-2); border-radius: 8px; padding: 0.4rem 0.7rem; font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); min-width: 110px; }
+  .box b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ctrl select { width: 100%; font: inherit; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .ctrl .seg { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .ctrl .seg button { font: inherit; font-size: 0.78rem; padding: 0.25rem 0.55rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .ctrl .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › Microbial-explicit models</div>
+    <div class="eyebrow">Topic 2 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">Microbial-Explicit Models</h1>
+    <p class="lead">What changes when the decomposer is a state variable: Michaelis–Menten kinetics, enzymes, carbon-use efficiency, necromass, and the family of models (AWB, MIMICS, CORPSE, MEND, DAMM, Millennial) that replaced fixed rate constants with microbial physiology, together with the instabilities and identifiability problems that came with them.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>First-order models treat decomposition as a property of the substrate: dC/dt = −kC, with k modified by climate. Microbial-explicit models treat it as a property of the decomposer: the rate depends on microbial biomass B (or the enzymes it produces), typically through Michaelis–Menten kinetics, V<sub>max</sub>·B·C/(K<sub>m</sub> + C), and the biomass itself grows on the carbon it takes up with a <strong>carbon-use efficiency</strong> (CUE) of 0.2–0.6 and dies at a rate that returns necromass to the soil. Three consequences follow that first-order models cannot produce: fresh inputs stimulate biomass and therefore the decomposition of old carbon (<strong>priming</strong>); the steady-state stock depends on physiology (CUE, turnover) as much as on inputs; and the response to warming depends on whether CUE and biomass acclimate. Because 30–60% of mineral-associated carbon is microbial residue, these models also connect to the mineral-stabilisation story of the next page. The costs are real: the simplest versions oscillate after perturbation, parameters are poorly identifiable from the data normally available, and the extra process detail widens rather than narrows projections of soil carbon. The field's answer has been models of intermediate complexity (MIMICS, Millennial) with measurable pools and traits.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect four moves: (i) write the kinetic forms (first order, forward MM, reverse MM) and say in which limit each applies; (ii) define CUE, give its range, and explain both the temperature debate and the stoichiometric threshold; (iii) draw a 3–4 pool microbial model (AWB or MIMICS) and explain priming, necromass and the oscillation problem from its structure; (iv) say what these models changed in warming projections and why parameter identifiability limits them.</p></div>
+  </section>
+
+  <section id="why">
+    <h2>What first-order models leave out</h2>
+    <p>In Century or RothC the decomposer is implicit: the "active" or "BIO" pool is a carbon reservoir, not an agent, and decomposition of each pool proceeds at k<sub>i</sub>C<sub>i</sub> regardless of how much microbial biomass exists or what it is doing. Three observations contradict this. <strong>Priming</strong>: adding labile carbon (root exudates, glucose, fresh litter) increases the mineralisation of old SOM by 10–100% for days to months, and the magnitude scales with microbial growth, not with the amount of old carbon (Kuzyakov 2010); independent first-order pools cannot interact by construction. <strong>Biomass feedback</strong>: in long-term incubations without inputs, respiration declines faster than substrate because the microbial population shrinks; in fertilised or warmed soils, respiration often returns toward control values within years (thermal "acclimation") because biomass, community composition or CUE adjust. First-order models can only mimic this with ad hoc rate changes. <strong>Physiological efficiency</strong>: how much of a unit of decomposed carbon ends up as new SOM rather than CO₂ is set by microbial CUE and by how necromass is stabilised, not by the fixed "respired fraction" of a pool. The response, beginning with Schimel &amp; Weintraub (2003) [1] and Allison, Wallenstein &amp; Bradford (2010) [2], was to make the microbial biomass a state variable and let it control decomposition.</p>
+    <h3>Microbial biomass as a pool</h3>
+    <p>Microbial biomass carbon (MBC) is 0.5–5% of SOC (typically 1–3% in mineral topsoils; 200–2000 µg C g⁻¹ soil), with a C:N of 6–10. It is measured by <strong>chloroform fumigation–extraction</strong> (the flush of extractable C after lysing cells, divided by a recovery factor k<sub>EC</sub> ≈ 0.45), by <strong>phospholipid fatty acids</strong> (PLFA, which also fingerprint broad groups and turn over within days of cell death so they index living biomass), and by <strong>qPCR</strong> of 16S/ITS gene copies (abundance of bacteria and fungi, though copy number per cell varies). Biomass turns over in weeks to a year (0.5–3 yr⁻¹ in most models, faster for bacteria than fungi); because it is small and fast, it functions as a catalyst and a conduit, not a store. Its ratio to SOC (the microbial quotient, q<sub>mic</sub>) and the respiration per unit biomass (metabolic quotient, qCO₂) are the classic indices of substrate availability and stress.</p>
+  </section>
+
+  <section id="kinetics">
+    <h2>Decomposition kinetics: first order, Michaelis–Menten and its reverse</h2>
+    <p>Think of decomposition as an enzyme-catalysed reaction between a decomposer (biomass B or enzymes E) and a substrate C. Three forms are in use:</p>
+    <div class="eq">$$\text{first order:}\quad \frac{dC}{dt} = -k\,C \qquad\qquad \text{forward MM:}\quad \frac{dC}{dt} = -V_{max}\,B\,\frac{C}{K_m + C}$$</div>
+    <div class="eq">$$\text{reverse MM:}\quad \frac{dC}{dt} = -V_{max}\,C\,\frac{B}{K_B + B}$$</div>
+    <p><strong>Forward Michaelis–Menten</strong> (Schimel &amp; Weintraub 2003; AWB) treats the microbe or its enzymes as the catalyst and the substrate as the thing that saturates: at C ≫ K<sub>m</sub> the rate is V<sub>max</sub>B, independent of C, and proportional to biomass; at C ≪ K<sub>m</sub> the rate is (V<sub>max</sub>/K<sub>m</sub>)·B·C, bilinear. The <strong>reverse</strong> form (Schimel &amp; Weintraub's alternative; used in MEND and in Wieder's MIMICS variants) treats the substrate as abundant and the decomposers as the saturating agent: more biomass yields diminishing returns because enzymes compete for a limited number of accessible binding sites. The two give opposite answers to "what happens if biomass doubles": forward MM doubles decomposition, reverse MM barely changes it when B ≫ K<sub>B</sub>. Tang &amp; Riley (2013, 2015) [20] derived a unifying <strong>equilibrium chemistry approximation</strong> (ECA) that reduces to forward MM when enzymes are scarce and to reverse MM when substrates are scarce, and that handles many substrates competing for many enzymes (and minerals competing with enzymes for substrate); in their land-model implementation it reproduced the acclimation and priming behaviours without the instability of pure forward MM. In the limit where B is constant, forward MM with C ≪ K<sub>m</sub> collapses to first order with k = V<sub>max</sub>B/K<sub>m</sub>, which is why first-order models work in steady, undisturbed soils and fail during transitions.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (a): three kinetic forms versus substrate and versus biomass</h3><span class="small muted">Hover either chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="kSvg" viewBox="0 0 640 300" role="img" aria-label="Decomposition rate as a function of substrate concentration for first-order, forward Michaelis–Menten and reverse Michaelis–Menten kinetics at a fixed biomass"></svg>
+            <div class="chart-tip" id="kTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">First order, k·C</span><span style="--c:var(--series-2)">Forward MM, V<sub>max</sub>·B·C/(K<sub>m</sub>+C)</span><span style="--c:var(--series-3)">Reverse MM, V<sub>max</sub>·C·B/(K<sub>B</sub>+B)</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="kbSvg" viewBox="0 0 640 280" role="img" aria-label="Decomposition rate as a function of microbial biomass for the same three kinetic forms at a fixed substrate concentration"></svg>
+            <div class="chart-tip" id="kbTip" hidden></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="kTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="kV"><span>V<sub>max</sub> (g C g⁻¹ biomass C d⁻¹)</span><output id="kVO">0.02</output></label><input type="range" id="kV" min="0.002" max="0.1" step="0.001" value="0.02"></div>
+          <div class="ctrl"><label for="kKm"><span>K<sub>m</sub> for substrate (g C m⁻²)</span><output id="kKmO">2000</output></label><input type="range" id="kKm" min="100" max="8000" step="50" value="2000"></div>
+          <div class="ctrl"><label for="kKb"><span>K<sub>B</sub> for biomass (g C m⁻²)</span><output id="kKbO">40</output></label><input type="range" id="kKb" min="2" max="300" step="1" value="40"></div>
+          <div class="ctrl"><label for="kB"><span>Biomass for the substrate plot (g C m⁻²)</span><output id="kBO">60</output></label><input type="range" id="kB" min="5" max="300" step="1" value="60"></div>
+          <div class="ctrl"><label for="kC"><span>Substrate for the biomass plot (g C m⁻²)</span><output id="kCO">3000</output></label><input type="range" id="kC" min="200" max="8000" step="50" value="3000"></div>
+          <div class="ctrl"><label for="kK"><span>First-order k (yr⁻¹)</span><output id="kKO">0.10</output></label><input type="range" id="kK" min="0.01" max="0.6" step="0.01" value="0.1"></div>
+          <dl class="readout">
+            <dt>Forward MM at C = 3000, B = 60</dt><dd id="kFwd"></dd>
+            <dt>Equivalent first-order k (yr⁻¹)</dt><dd id="kEq"></dd>
+            <dt>Reverse MM saturation, B/(K<sub>B</sub>+B)</dt><dd id="kSat"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Rates are in g C m⁻² d⁻¹; reverse MM uses the same V<sub>max</sub> scaled by K<sub>m</sub> so the curves cross near the defaults. Suggested experiments: raise biomass on the substrate plot and watch forward MM shift up while reverse MM barely moves; lower K<sub>m</sub> to 300 so forward MM saturates with substrate (decomposition becomes biomass-controlled); on the biomass plot, note that first order ignores biomass entirely, forward MM is linear in it, and reverse MM saturates at V<sub>max</sub>·C.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cue">
+    <h2>Enzymes, carbon-use efficiency and stoichiometry</h2>
+    <h3>Exo-enzymes and the AWB model</h3>
+    <p>Most SOM is polymeric and must be depolymerised outside the cell before uptake, so the real catalyst is the pool of extracellular enzymes. Allison (2005) argued that enzyme production is a costly investment that microbes make in proportion to biomass and expected return, and that enzymes persist for days to months (longer when sorbed to minerals) before being degraded. The <strong>AWB model</strong> (Allison, Wallenstein &amp; Bradford 2010 [2]) has four pools: SOC, dissolved organic carbon (DOC), microbial biomass (MIC) and enzymes (ENZ). Enzymes depolymerise SOC into DOC by forward Michaelis–Menten kinetics (V<sub>max</sub>·ENZ·SOC/(K<sub>m</sub> + SOC)); microbes take up DOC by a second MM term; a fraction CUE of uptake becomes biomass and the rest is respired; biomass dies at a constant rate, returning to SOC and DOC, and produces enzymes at a constant fraction of biomass; enzymes decay to DOC. Temperature acts on V<sub>max</sub> (Arrhenius, E<sub>a</sub> ≈ 47 kJ mol⁻¹), on K<sub>m</sub> (increasing linearly with T, as for many enzymes) and on CUE (declining linearly, −0.016 °C⁻¹ in the original). The headline result was that <strong>if CUE declines with warming, biomass and enzymes shrink and SOC losses are much smaller than a Q<sub>10</sub> model predicts</strong>; if CUE is constant, warming stimulates biomass and losses are large. The structure, not the parameter values, generates this: decomposition is proportional to the decomposer, so anything that limits the decomposer limits the loss.</p>
+    <h3>Carbon-use efficiency</h3>
+    <p>CUE is the fraction of carbon taken up (or assimilated) that becomes microbial biomass:</p>
+    <div class="eq">$$\text{CUE} = \frac{\text{growth}}{\text{growth} + \text{respiration}} = \frac{\text{growth}}{\text{uptake}}$$</div>
+    <div class="eq">$$R_h = (1-\text{CUE})\,U, \qquad \text{necromass production} = \text{CUE}\,U - \frac{dB}{dt}$$</div>
+    <p>Typical values are 0.2–0.6 (Manzoni et al. 2012 [11]); the thermodynamic maximum for aerobic growth on sugars is about 0.6–0.8 because biosynthesis itself requires ATP generated by respiring part of the substrate. CUE is measured by ¹³C-labelled substrate incorporation into biomass versus ¹³CO₂ (substrate-specific and biased toward labile compounds), by ¹⁸O-water incorporation into DNA (growth-based, substrate-independent; Spohn, Geyer et al. 2016 [15] discuss the definitions at cell, population and ecosystem scales and why they differ), and by calorespirometry. Three controls matter for models.</p>
+    <p><strong>Temperature.</strong> Allison et al. (2010) assumed CUE declines with temperature (maintenance respiration rises faster than growth), and experiments with glucose supported a decline of ~0.01–0.02 per °C. Frey et al. (2013) [14] measured CUE in a 20-year warming experiment and found the decline for glucose but no decline for phenol and a smaller one for complex substrates, with evidence of acclimation of the warmed community. Sinsabaugh et al. (2013) [13] argued from meta-analysis that CUE converges on ~0.3 across ecosystems and is controlled by stoichiometry more than by temperature. The practical consequence: whether warming reduces CUE (buffering soil C loss) or not (amplifying it) is a model switch with a large effect, and the data support both answers depending on substrate and acclimation time.</p>
+    <p><strong>Stoichiometry.</strong> Microbes have a narrow C:N (≈ 7–9) and must balance carbon and nitrogen intake. If substrate C:N is above the <strong>threshold element ratio</strong> TER = (C:N)<sub>B</sub>/CUE<sub>max</sub> (roughly 20–30 for N), there is more carbon than the microbes can use with the nitrogen available, so the excess is respired ("overflow") or not taken up, and CUE declines in proportion: CUE ≈ (C:N)<sub>B</sub>/(C:N)<sub>S</sub> × (1 + fraction of N obtained by immobilisation from inorganic pools). Below TER, nitrogen is in surplus, CUE is at its maximum and net N mineralisation occurs. This is the basis of the Manzoni (2012, 2017) and Sinsabaugh "ecoenzymatic stoichiometry" framework, and of the MIMICS-CN and Millennial N schemes; it produces the familiar rule that residues with C:N &gt; 25–30 immobilise N and those below mineralise it.</p>
+    <p><strong>Substrate quality and community.</strong> CUE is higher on labile, reduced substrates (sugars, amino acids: 0.5–0.7) than on aromatic or oxidised ones (lignin, phenols: 0.1–0.3); fungi tend to have higher CUE and slower turnover than bacteria; drought and salinity lower CUE by raising maintenance costs. Because necromass formation is CUE × uptake, these differences propagate to SOM stabilisation: Cotrufo et al. (2013) [18] made this the heart of the <strong>MEMS framework</strong> (Microbial Efficiency–Matrix Stabilisation): labile litter is used with high CUE, generates more necromass, and so contributes more to stable, mineral-associated SOM than recalcitrant litter does, which inverts the old view that lignin-rich litter builds humus.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (d): stoichiometric control of CUE and the threshold element ratio</h3><span class="small muted">Hover either chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="sSvg" viewBox="0 0 640 280" role="img" aria-label="Carbon-use efficiency as a function of substrate carbon to nitrogen ratio, with the threshold element ratio marked"></svg>
+            <div class="chart-tip" id="sTip" hidden></div>
+          </div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="nSvg" viewBox="0 0 640 240" role="img" aria-label="Net nitrogen mineralisation per unit carbon uptake as a function of substrate carbon to nitrogen ratio"></svg>
+            <div class="chart-tip" id="nTip" hidden></div>
+          </div>
+          <div class="boxes">
+            <div class="box">TER (C:N)<b id="sTER"></b></div>
+            <div class="box">CUE at substrate C:N = 40<b id="sC40"></b></div>
+            <div class="box">Net N mineralisation at C:N = 40 (mg N per g C taken up)<b id="sN40"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="sTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sCNB"><span>Microbial C:N</span><output id="sCNBO">8</output></label><input type="range" id="sCNB" min="4" max="15" step="0.5" value="8"></div>
+          <div class="ctrl"><label for="sMax"><span>Maximum CUE</span><output id="sMaxO">0.55</output></label><input type="range" id="sMax" min="0.2" max="0.8" step="0.01" value="0.55"></div>
+          <div class="ctrl"><label for="sImm"><span>Inorganic N immobilised, as a fraction of substrate N</span><output id="sImmO">0.0</output></label><input type="range" id="sImm" min="0" max="2" step="0.1" value="0"></div>
+          <p class="small muted" style="margin:0">CUE = min(CUE<sub>max</sub>, (C:N)<sub>B</sub>/(C:N)<sub>S</sub> × (1 + i)) where i is the inorganic N taken up relative to the N in the substrate; net mineralisation = N in substrate + immobilised N − N retained in new biomass, per unit C uptake. Suggested experiments: with i = 0, TER = (C:N)<sub>B</sub>/CUE<sub>max</sub> ≈ 15 for the defaults; raise i to 1 (ample fertiliser N) and watch TER double and overflow respiration vanish; set microbial C:N to 5 (bacterial) and 12 (fungal) to see why fungal-dominated soils tolerate high C:N litter.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="necromass">
+    <h2>Necromass and the microbial carbon pump</h2>
+    <p>Dead microbial cells, cell-wall fragments, and extracellular products are collectively <strong>necromass</strong>. Amino-sugar biomarkers (glucosamine from fungal chitin, muramic acid from bacterial peptidoglycan) scaled by conversion factors suggest that necromass makes up <strong>30–60% of SOC</strong> in temperate grassland and cropland topsoils and 20–40% in forests, most of it in the mineral-associated fraction (Liang, Schimel &amp; Jastrow 2017 [16]; Liang et al. 2019 [17]). Liang's <strong>microbial carbon pump</strong> is the idea that microbes transform labile plant carbon into stable soil carbon through two routes: the <em>in vivo turnover</em> pathway (uptake → biomass → necromass → stabilisation on minerals, controlled by CUE and turnover) and the <em>ex vivo modification</em> pathway (extracellular enzymes partially transform plant compounds that are then sorbed without passing through a cell). The entombing effect (necromass is preserved by mineral association faster than it is decomposed) explains why soils with high clay and high CUE accumulate microbial carbon, and why the MEMS prediction holds: labile litter, high CUE, more necromass, more MAOM. The counter-argument is that necromass is also the most accessible SOM (C:N ≈ 8, soluble fragments), so its persistence depends entirely on the mineral matrix and not on anything microbial; the two views are reconciled on the MAOM page by treating stabilisation as sorption with finite capacity.</p>
+  </section>
+
+  <section id="models">
+    <h2>The model family</h2>
+    <p>The models below differ in how many pools they carry, which kinetics they use, and what they represent explicitly; the table is the exam shorthand.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Model</th><th>Pools and structure</th><th>Kinetics</th><th>Distinctive feature</th></tr></thead>
+      <tbody>
+        <tr><td>AWB (Allison et al. 2010)</td><td>SOC, DOC, MIC, ENZ</td><td>Forward MM for depolymerisation and uptake</td><td>CUE declines with T; warming response hinges on CUE</td></tr>
+        <tr><td>MEND (Wang, Post &amp; Mayes 2013)</td><td>Particulate, mineral-associated, active (DOC), dormant and active biomass, two enzyme classes, adsorbed DOC</td><td>MM depolymerisation; Langmuir adsorption</td><td>Explicit sorption; dormancy added in later versions</td></tr>
+        <tr><td>CORPSE (Sulman et al. 2014)</td><td>Three chemical classes of unprotected SOM, protected SOM, biomass; separate rhizosphere and bulk soil</td><td>Forward MM with biomass</td><td>Rhizosphere priming vs protection trade-off under elevated CO₂</td></tr>
+        <tr><td>MIMICS (Wieder et al. 2014, 2015)</td><td>Metabolic and structural litter; two microbial groups (r, copiotroph; K, oligotroph); SOM available, physically protected, chemically recalcitrant</td><td>Forward MM with biomass; V<sub>max</sub> and K<sub>m</sub> by litter quality and clay; density-dependent turnover in later versions</td><td>Functional groups with trait trade-offs (CUE, turnover, kinetics); clay protects; MIMICS-CN adds N (Kyker-Snowman 2020)</td></tr>
+        <tr><td>DAMM (Davidson et al. 2012)</td><td>Flux model, not pools: R<sub>h</sub> from soluble substrate and O₂</td><td>Dual Arrhenius–Michaelis–Menten: V<sub>max</sub>(T) × [S]/(K<sub>M</sub>+[S]) × [O₂]/(K<sub>O₂</sub>+[O₂]), with diffusion of substrate (increases with water) and O₂ (decreases with water)</td><td>Explains the humped moisture response and apparent Q<sub>10</sub> from substrate diffusion, with constant intrinsic E<sub>a</sub></td></tr>
+        <tr><td>ORCHIMIC (Huang et al. 2018)</td><td>Litter, SOC, DOC, enzymes, bacterial and fungal biomass with dormancy; for ORCHIDEE</td><td>Forward MM with enzymes; substrate-specific enzymes</td><td>Microbial competition and dormancy in a land-surface model</td></tr>
+        <tr><td>Millennial (Abramoff et al. 2018, 2022)</td><td>POM, LMWC (dissolved), aggregate C, MAOM, microbial biomass: all measurable</td><td>MM uptake; Langmuir sorption for MAOM; pH and texture controls</td><td>Pools defined by fractionation; version 2 fitted to global data</td></tr>
+        <tr><td>CLM-Microbe, JSM, RothC-micro and others</td><td>Vertically resolved microbial pools in land models</td><td>Mostly forward MM</td><td>Still experimental at CMIP scale</td></tr>
+      </tbody></table></div>
+    <p><strong>MIMICS</strong> deserves the most detail because it is the microbial model most often run in land-surface frameworks (CLM, E3SM tests, the TRENDY-style comparisons). Litter is split into metabolic and structural pools by lignin:N as in Century. Two microbial pools represent copiotrophs (r strategists: fast growth, high V<sub>max</sub>, low CUE on structural litter, fast turnover) and oligotrophs (K strategists: slow growth, high affinity, higher CUE on structural litter, slow turnover). Each decomposes each litter and the available SOM pool with forward MM kinetics (V<sub>max</sub> and K<sub>m</sub> temperature-dependent, scaled by litter quality and by clay for the SOM pools). Dead microbes are partitioned among the three SOM pools (physically protected, chemically recalcitrant, available) with fractions that depend on clay (protected) and litter chemistry (recalcitrant); the protected pool desorbs slowly back to the available pool, which is the only one microbes can consume. Wieder et al. (2015) showed MIMICS reproduces global litter-decomposition data and the spatial pattern of SOC as well as Century-like models while producing distinctly different responses to warming and to changes in inputs; its weakness, shared by all the family, is that the functional-group parameters are not directly measurable and were tuned.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (b): an AWB-style four-pool microbial model (SOC, DOC, biomass, enzymes)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="aSvg" viewBox="0 0 640 380" role="img" aria-label="Trajectories of SOC, DOC, microbial biomass and enzyme pools as a percentage of their pre-disturbance values after a litter pulse or warming, for linear or density-dependent microbial turnover"></svg>
+            <div class="chart-tip" id="aTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">SOC</span><span style="--c:var(--series-1)">Biomass</span><span style="--c:var(--series-2)">Enzymes</span><span style="--c:var(--series-3)">DOC (clamped)</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem">
+            <svg class="ch" id="aSocSvg" viewBox="0 0 640 240" role="img" aria-label="Absolute SOC stock through time for the disturbed run and the undisturbed control"></svg>
+            <div class="chart-tip" id="aSocTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">SOC, disturbed run</span><span style="--c:var(--muted)">SOC, control run (no disturbance)</span></div>
+          <div class="boxes">
+            <div class="box">Pre-disturbance steady state (g C m⁻²): SOC · B · E · DOC<b id="aSS"></b></div>
+            <div class="box">Biomass as % of SOC<b id="aQ"></b></div>
+            <div class="box">SOC vs control after 10 yr (g C m⁻²)<b id="aPrime"></b></div>
+            <div class="box">Extra respiration minus pulse (net priming, g C m⁻²)<b id="aNet"></b></div>
+            <div class="box">Biomass peak / trough (% of initial)<b id="aOsc"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="aTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="aIn"><span>Input (g C m⁻² yr⁻¹, half to DOC)</span><output id="aInO">440</output></label><input type="range" id="aIn" min="100" max="1000" step="10" value="440"></div>
+          <div class="ctrl"><label for="aCUE"><span>CUE at 20 °C</span><output id="aCUEO">0.40</output></label><input type="range" id="aCUE" min="0.1" max="0.7" step="0.01" value="0.4"></div>
+          <div class="ctrl"><label for="aRd"><span>Microbial turnover (d⁻¹)</span><output id="aRdO">0.008</output></label><input type="range" id="aRd" min="0.002" max="0.03" step="0.001" value="0.008"></div>
+          <div class="ctrl"><label for="aV"><span>V<sub>max</sub> for depolymerisation (g C g⁻¹ enzyme d⁻¹)</span><output id="aVO">0.09</output></label><input type="range" id="aV" min="0.02" max="0.4" step="0.01" value="0.09"></div>
+          <div class="ctrl"><label for="aKm"><span>K<sub>m</sub> for SOC (g C m⁻²)</span><output id="aKmO">2000</output></label><input type="range" id="aKm" min="200" max="8000" step="100" value="2000"></div>
+          <div class="ctrl"><label for="aDist"><span>Disturbance at year 20</span></label><select id="aDist"><option value="pulse">Litter pulse: +500 g C to SOC and +500 to DOC</option><option value="warm">Warming +5 °C, constant CUE</option><option value="warmcue">Warming +5 °C, CUE falls 0.016 °C⁻¹</option><option value="double">Inputs doubled (elevated CO₂)</option></select></div>
+          <div class="ctrl"><label><span>Microbial turnover form</span></label><div class="seg"><button type="button" id="aLin" aria-pressed="true">Linear, r·B</button><button type="button" id="aDens" aria-pressed="false">Density-dependent, r·B²/B₀</button></div></div>
+          <p class="small muted" style="margin:0">Quarter-day Euler steps, 100 years of spin-up before the plotted window, Arrhenius E<sub>a</sub> = 47 kJ mol⁻¹ on both V<sub>max</sub> values, K<sub>m</sub> rising 2.5% per °C; enzyme production 0.0053 d⁻¹ of biomass, enzyme loss 0.02 d⁻¹, half of necromass to SOC and half to DOC. Suggested experiments: with the pulse, compare linear turnover (biomass overshoots to ~2× and then dips below its starting value; SOC ends below the control: net priming) with density-dependent turnover (monotonic return, smaller priming); switch to warming with constant CUE (SOC falls ~45% as biomass and enzymes grow) and then with declining CUE (biomass shrinks, SOC barely changes), the Allison 2010 result; double inputs and note that SOC rises much less than 2× because biomass rises too.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stability">
+    <h2>Oscillations, stability and what the models do to projections</h2>
+    <p>Making decomposition proportional to the decomposer creates a predator–prey structure: biomass grows on substrate, substrate is depleted by biomass. Wang et al. (2014) [19] showed analytically that models with forward MM kinetics and linear (first-order) microbial turnover have steady states with complex eigenvalues over much of parameter space, so any perturbation produces damped oscillations with periods of years to decades; some configurations have undamped limit cycles. In a land model, a seasonal litter pulse can excite these oscillations every year, which is unphysical. Three remedies are used: (i) <strong>density-dependent turnover</strong>, death ∝ B<sup>β</sup> with β ≈ 1.5–2 (Georgiou et al. 2017 [21]), which represents predation, viral lysis and competition and which also makes steady-state SOC respond sub-linearly to inputs, matching long-term fertilisation experiments better than linear turnover does; (ii) <strong>reverse MM or ECA kinetics</strong>, which weaken the biomass feedback; (iii) explicit dormancy or substrate-limited enzyme production. The steady state of the simplest two-pool microbial model also illustrates why physiology matters: with dS/dt = I + rB − V<sub>max</sub>BS/(K<sub>m</sub>+S) and dB/dt = CUE·V<sub>max</sub>BS/(K<sub>m</sub>+S) − rB,</p>
+    <div class="eq">$$S^* = \frac{K_m\,r}{\text{CUE}\,V_{max} - r}, \qquad B^* = \frac{I\,\text{CUE}}{r\,(1-\text{CUE})}$$</div>
+    <p>so SOC at steady state <em>does not depend on inputs at all</em> (inputs only change biomass) and <em>decreases</em> with CUE, because efficient microbes build more biomass that decomposes more. This is the Allison (2010) counter-intuition. It disappears when necromass is stabilised in a pool that microbes cannot immediately re-consume (MIMICS protected pool, MAOM): then higher CUE means more necromass transfer to protection and SOC can rise with CUE, which is the Cotrufo/MEMS intuition. Which regime applies depends on mineral capacity and on turnover form; lab (c) lets you switch between them.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab (c): steady-state SOC versus CUE in a two-pool microbial model with optional necromass protection</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="eSvg" viewBox="0 0 640 360" role="img" aria-label="Steady-state carbon stocks as a function of microbial carbon-use efficiency: available SOC, protected necromass pool, biomass and total, for linear or density-dependent turnover"></svg>
+            <div class="chart-tip" id="eTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Total C</span><span style="--c:var(--series-2)">Available SOC, S*</span><span style="--c:var(--series-3)">Protected necromass, M*</span><span style="--c:var(--series-1)">Biomass, B* (×10)</span></div>
+          <div class="boxes">
+            <div class="box">Minimum CUE for a viable population<b id="eMin"></b></div>
+            <div class="box">Total C at CUE = 0.3 · 0.5<b id="eTot"></b></div>
+            <div class="box">Slope of total C with CUE at 0.4<b id="eSlope"></b></div>
+          </div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="eTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="eI"><span>Input (g C m⁻² yr⁻¹)</span><output id="eIO">400</output></label><input type="range" id="eI" min="100" max="1000" step="10" value="400"></div>
+          <div class="ctrl"><label for="eV"><span>V<sub>max</sub> (yr⁻¹ per unit biomass fraction)</span><output id="eVO">20</output></label><input type="range" id="eV" min="2" max="80" step="1" value="20"></div>
+          <div class="ctrl"><label for="eKm"><span>K<sub>m</sub> (g C m⁻²)</span><output id="eKmO">3000</output></label><input type="range" id="eKm" min="300" max="10000" step="100" value="3000"></div>
+          <div class="ctrl"><label for="eR"><span>Microbial turnover r (yr⁻¹)</span><output id="eRO">3.0</output></label><input type="range" id="eR" min="0.5" max="10" step="0.1" value="3"></div>
+          <div class="ctrl"><label for="eFp"><span>Fraction of necromass protected</span><output id="eFpO">0.0</output></label><input type="range" id="eFp" min="0" max="0.6" step="0.02" value="0"></div>
+          <div class="ctrl"><label for="eKp"><span>Protected-pool turnover (yr⁻¹)</span><output id="eKpO">0.02</output></label><input type="range" id="eKp" min="0.005" max="0.1" step="0.005" value="0.02"></div>
+          <div class="ctrl"><label><span>Microbial turnover form</span></label><div class="seg"><button type="button" id="eLin" aria-pressed="true">Linear, r·B</button><button type="button" id="eDens" aria-pressed="false">Density-dependent, r·B²/B₀</button></div></div>
+          <p class="small muted" style="margin:0">Model: dS/dt = I + (1 − f<sub>p</sub>)·death − U, dB/dt = CUE·U − death, dM/dt = f<sub>p</sub>·death − k<sub>p</sub>M, with U = V<sub>max</sub>·B·S/(K<sub>m</sub> + S) and death = r·B (linear) or r·B²/B₀ with B₀ = 50 g C m⁻². Suggested experiments: with f<sub>p</sub> = 0 and linear turnover, S* falls with CUE and is independent of inputs (move the input slider: only biomass changes); set f<sub>p</sub> = 0.3 to see the total become non-monotonic, then rising with CUE; switch to density-dependent turnover and note that S* now depends on inputs, sub-linearly.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Projections</h3>
+    <p>Wieder, Bonan &amp; Allison (2013) [3] put a MIMICS-precursor into a global framework and found it matched present-day SOC as well as the CLM4 Century-type model but projected a very different future: with CUE declining under warming the microbial model lost less carbon, with constant CUE it lost more, and under increased NPP it gained less because biomass rose and primed existing SOM. Sulman et al. (2014) [6] used CORPSE to show that elevated CO₂ could either increase or decrease SOC depending on clay content: in low-clay soils rhizosphere priming dominated and SOC fell, in high-clay soils protection of new inputs dominated and SOC rose. Sulman et al. (2018) [7] compared five models (Century-type, MIMICS, CORPSE, MEND and others) at long-term experimental sites and found that no model class was consistently better, that the microbial models disagreed with each other as much as with the first-order ones, and that the spread of responses to warming and N addition was wider with microbial models. The conclusion has been stated by Luo et al. (2016) and Todd-Brown et al. (2012) [23]: microbial models add structural realism and the right qualitative behaviours (priming, acclimation, saturation), but their benefit for projection depends on constraining their parameters.</p>
+  </section>
+
+  <section id="constraints">
+    <h2>Parameter identifiability, data constraints and scaling</h2>
+    <p>A four-pool microbial model has 10–15 parameters (two V<sub>max</sub>, two K<sub>m</sub>, their temperature sensitivities, CUE and its slope, turnover, enzyme production and loss, partitioning of necromass), and the data usually available (bulk SOC, respiration time series, occasionally biomass) constrain only a few combinations of them. Hararuk, Smith &amp; Luo (2015) [22] fitted a microbial model and a Century-type model to global SOC data with Bayesian calibration and found both could match the stocks, but the microbial model's posterior still spanned a wide range of warming responses; the extra structure was not constrained by the stock data. Marschmann et al. (2024) showed with identifiability analysis that most microbial-model parameters are structurally or practically non-identifiable from incubation data unless biomass, enzymes and isotope-labelled fluxes are all measured, and that different parameter sets fitted equally well while diverging in projection. The remedies are the same as for first-order models (measurable pools, radiocarbon, long-term experiments, isotope tracers) plus trait data: CUE from ¹⁸O methods, growth rates, enzyme kinetics measured at the site, and biomass by fumigation.</p>
+    <p><strong>Scaling from microbes to the globe.</strong> No model simulates taxa. The options are functional groups (MIMICS's r and K strategists; bacteria and fungi in ORCHIMIC) with trait trade-offs (growth rate vs affinity vs CUE vs turnover), continuous trait distributions, or a single aggregated biomass with emergent parameters. Dormancy matters: often more than half of biomass is inactive, so active biomass, not total, should drive kinetics (MEND and ORCHIMIC separate them). <strong>Moisture</strong> enters through diffusion rather than through an empirical curve: in DAMM, substrate supply to enzymes scales with the water-filled pore space (solute diffusion) while O₂ supply scales with air-filled pore space, so the product is humped; Manzoni et al. (2012) [11] (and Manzoni &amp; Katul) showed that the sharp decline of respiration below about −1 MPa matric potential is consistent with the loss of hydraulic connectivity cutting substrate diffusion, and that microbial osmoregulation costs reduce CUE under drought. <strong>Sinsabaugh's ecoenzymatic stoichiometry</strong> uses the ratios of C-, N- and P-acquiring enzyme activities (β-glucosidase : N-acetylglucosaminidase + leucine aminopeptidase : phosphatase ≈ 1:1:1 globally) as a trait-level indicator of which element limits microbial growth, and connects enzyme allocation to CUE via the threshold element ratio.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem models</h2>
+    <ul>
+      <li><strong>CLM</strong> has run MIMICS as an alternative soil module (CLM-MIMICS) alongside the default Century-type CLM5 BGC soil; results differ most in the sign of the response to increased productivity and in high-latitude warming responses.</li>
+      <li><strong>ORCHIDEE</strong>'s ORCHIMIC replaces the Century pools with litter, enzymes, bacteria and fungi; <strong>JULES</strong> and the ECOSSE lineage remain first order with RothC pools; <strong>E3SM</strong> (ELM) includes ECA kinetics for nutrient competition, which is the same mathematics as the decomposition kinetics above.</li>
+      <li><strong>DayCent</strong> and <strong>BioCro</strong> remain first order; their microbial biomass is implicit in the active pool, which is why they cannot represent rhizosphere priming of SOM by root exudates (the Root–microbe page) except by prescribing it.</li>
+      <li><strong>Millennial v2</strong> and <strong>MEMS 2.0</strong> keep a microbial pool but put most of the dynamics into measurable POM and MAOM fractions with sorption; this is the current compromise between microbial realism and identifiability (next page).</li>
+      <li>In any coupled model the microbial module determines three things the first-order module could not: how NPP changes translate into SOC (priming vs stabilisation), how warming affects decomposition after acclimation, and how N limitation of decomposition emerges from stoichiometry rather than from fixed pool C:N.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Microbial biomass C as share of SOC</td><td class="num">0.5–5% (typically 1–3%)</td><td>Fumigation–extraction, k<sub>EC</sub> ≈ 0.45</td></tr>
+        <tr><td>Microbial biomass C:N · C:P</td><td class="num">≈ 7–9 · ≈ 40–60</td><td>Cleveland &amp; Liptzin 2007 global means 8.6 and 60</td></tr>
+        <tr><td>Microbial turnover</td><td class="num">0.5–3 yr⁻¹ (weeks–months)</td><td>Faster for bacteria than fungi</td></tr>
+        <tr><td>CUE, typical range</td><td class="num">0.2–0.6</td><td>Manzoni et al. 2012 [11]; meta-analysis mean ≈ 0.3 (Sinsabaugh 2013 [13])</td></tr>
+        <tr><td>CUE thermodynamic maximum</td><td class="num">≈ 0.6–0.8</td><td>Aerobic growth on glucose</td></tr>
+        <tr><td>CUE temperature slope (AWB)</td><td class="num">−0.016 °C⁻¹</td><td>Allison et al. 2010 [2]; contested by Frey 2013 [14]</td></tr>
+        <tr><td>Threshold element ratio (C:N)</td><td class="num">≈ 20–30</td><td>(C:N)<sub>B</sub>/CUE<sub>max</sub>; residue C:N &gt; 25–30 immobilises N</td></tr>
+        <tr><td>Microbial necromass share of SOC</td><td class="num">30–60% (grassland, cropland); 20–40% (forest)</td><td>Liang et al. 2019 [17], amino-sugar biomarkers</td></tr>
+        <tr><td>Priming magnitude</td><td class="num">+10 to +100% of basal SOM mineralisation</td><td>Kuzyakov 2010; days to months</td></tr>
+        <tr><td>Arrhenius E<sub>a</sub> for V<sub>max</sub> (AWB)</td><td class="num">47 kJ mol⁻¹</td><td>Q₁₀ ≈ 1.9 at 20 °C</td></tr>
+        <tr><td>Density-dependent turnover exponent</td><td class="num">β ≈ 1.5–2</td><td>Georgiou et al. 2017 [21]</td></tr>
+        <tr><td>Ecoenzymatic C:N:P activity ratio</td><td class="num">≈ 1:1:1</td><td>Sinsabaugh et al. 2008/2009 global synthesis</td></tr>
+        <tr><td>MIMICS pools</td><td class="num">2 litter · 2 microbial · 3 SOM</td><td>Wieder et al. 2014, 2015 [4, 5]</td></tr>
+        <tr><td>Respiration cut-off under drought</td><td class="num">≈ −1 MPa matric potential</td><td>Loss of hydraulic connectivity; Manzoni et al. 2012 [11]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Write the first-order, forward Michaelis–Menten and reverse Michaelis–Menten expressions for decomposition, state the limiting cases of each, and explain which behaviours of real soils each can and cannot reproduce.</summary><div class="a"><p>First order: dC/dt = −kC; the rate depends only on substrate and climate scalars. Forward MM: dC/dt = −V<sub>max</sub>B·C/(K<sub>m</sub>+C); at C ≪ K<sub>m</sub> it is bilinear, (V<sub>max</sub>/K<sub>m</sub>)BC, and at C ≫ K<sub>m</sub> it saturates at V<sub>max</sub>B, proportional to biomass. Reverse MM: dC/dt = −V<sub>max</sub>C·B/(K<sub>B</sub>+B); linear in substrate, saturating in biomass, so when B ≫ K<sub>B</sub> it reduces to first order with k = V<sub>max</sub>. First order cannot produce priming (pools are independent), biomass feedback or acclimation, but is stable and parsimonious. Forward MM produces priming (more biomass → more decomposition), input-independent steady-state SOC, and strong sensitivity to CUE; it also produces damped or sustained oscillations after perturbation because of the predator–prey structure. Reverse MM damps the feedback: doubling biomass barely changes decomposition when enzymes saturate accessible sites, so priming is weaker and stability better, and steady-state SOC depends on inputs. ECA kinetics (Tang &amp; Riley 2013) interpolates between them depending on whether enzymes or substrates are scarce. In steady, undisturbed soils with roughly constant biomass all three agree, which is why first-order models fit present-day stocks; they differ during transitions (warming, CO₂, land-use change).</p></div></details>
+    <details class="q"><summary>2. Define carbon-use efficiency, give its typical range and methods of measurement, and explain why its temperature dependence is both important and contested.</summary><div class="a"><p>CUE = growth/(growth + respiration) = growth/uptake, the fraction of assimilated carbon that becomes biomass. Typical range 0.2–0.6, mean around 0.3 in meta-analyses; thermodynamic maximum ~0.6–0.8. Measured by ¹³C-substrate incorporation into biomass (fumigation) versus ¹³CO₂ (substrate-specific, biased to labile compounds), ¹⁸O-water incorporation into DNA to measure growth independent of substrate, and calorespirometry. Importance: necromass production equals CUE × uptake, so CUE sets how much processed carbon can be stabilised; and in microbial models decomposition scales with biomass, so CUE sets decomposer abundance. If CUE declines with warming (maintenance costs rise faster than growth; Allison 2010 assumed −0.016 °C⁻¹), biomass and enzymes shrink and warming-induced SOC losses are buffered, possibly to near zero. If CUE is constant, warming increases decomposition and biomass and losses are amplified. Contested because: glucose-based measurements show declines, but complex substrates show smaller or no declines (Frey 2013); long-term warmed communities acclimate; meta-analysis suggests stoichiometry, not temperature, dominates CUE (Sinsabaugh 2013); and growth-based (¹⁸O) measurements give different values from substrate-based ones. The sign and size of the CUE–temperature slope is therefore one of the largest single sources of structural uncertainty in soil carbon feedback projections.</p></div></details>
+    <details class="q"><summary>3. Derive the steady state of a two-pool microbial model (substrate S, biomass B) with forward MM kinetics and linear turnover, and discuss the two counter-intuitive results.</summary><div class="a"><p>dS/dt = I + rB − V<sub>max</sub>B·S/(K<sub>m</sub>+S); dB/dt = CUE·V<sub>max</sub>B·S/(K<sub>m</sub>+S) − rB. Setting dB/dt = 0 with B &gt; 0 gives CUE·V<sub>max</sub>S/(K<sub>m</sub>+S) = r, hence S* = K<sub>m</sub>r/(CUE·V<sub>max</sub> − r), requiring CUE·V<sub>max</sub> &gt; r for a viable population. Setting dS/dt = 0 and substituting uptake U = rB/CUE: I + rB = rB/CUE → B* = I·CUE/(r(1 − CUE)). Results: (i) S* is independent of input I. More litter produces more biomass, which decomposes faster, until the substrate is drawn down to the level at which growth just balances death. Observed SOC increases with inputs in long-term experiments contradict this, which motivated density-dependent turnover (death ∝ B<sup>β</sup>), for which B* ∝ (I·CUE/(1−CUE))<sup>1/β</sup> and S* then rises with I sub-linearly. (ii) S* decreases with CUE: efficient microbes maintain more biomass per unit substrate, so the substrate is depleted further. This conflicts with the MEMS intuition that high CUE builds SOM; the reconciliation is that necromass in this model returns to the same consumable pool, whereas in reality a fraction is stabilised on minerals where microbes cannot immediately re-consume it. Adding a protected pool M with dM/dt = f<sub>p</sub>rB − k<sub>p</sub>M gives M* = f<sub>p</sub>rB*/k<sub>p</sub>, increasing with CUE, so total carbon can become non-monotonic or increasing in CUE depending on f<sub>p</sub> and k<sub>p</sub>.</p></div></details>
+    <details class="q"><summary>4. Explain the threshold element ratio and use it to predict whether a residue with C:N = 60 will immobilise or mineralise nitrogen, and how its CUE will compare with a residue of C:N = 15.</summary><div class="a"><p>Microbes maintain a biomass C:N of about 8 and grow with a maximum CUE of about 0.5–0.6. Per unit C taken up, they retain CUE<sub>max</sub> units of C and therefore need CUE<sub>max</sub>/(C:N)<sub>B</sub> units of N. The substrate supplies 1/(C:N)<sub>S</sub> units of N per unit C. Equating the two defines the threshold element ratio TER = (C:N)<sub>B</sub>/CUE<sub>max</sub> ≈ 8/0.55 ≈ 15 (20–30 when inorganic N uptake and N-use efficiency are included). For C:N = 15 the substrate supplies exactly the N required: CUE is at its maximum and net mineralisation is near zero. For C:N = 60, the substrate supplies 1/60 N per C but 0.55/8 ≈ 0.069 is needed; either inorganic N must be immobilised from the soil (net immobilisation, the classic "N tie-up" by straw) or, if none is available, growth is N-limited and CUE falls to (C:N)<sub>B</sub>/(C:N)<sub>S</sub> = 8/60 ≈ 0.13 with the surplus carbon respired (overflow) or left undecomposed. The C:N = 60 residue therefore decomposes more slowly, immobilises N, contributes less necromass to SOM, and in models with stoichiometric CUE (MIMICS-CN, Millennial, Manzoni's framework) this emerges without prescribing pool C:N ratios as Century does.</p></div></details>
+    <details class="q"><summary>5. Describe the structure of MIMICS, and explain how it produces responses to warming and to elevated inputs that differ from a Century-type model.</summary><div class="a"><p>MIMICS: metabolic and structural litter pools (split by lignin:N); two microbial functional groups, r (copiotroph: high V<sub>max</sub>, low K<sub>m</sub> affinity trade-off, lower CUE on structural litter, faster turnover) and K (oligotroph: slower, higher CUE on poor substrates, slower turnover); three SOM pools: physically protected (desorbs slowly, fraction set by clay), chemically recalcitrant (fraction set by litter chemistry) and available (the only pool microbes consume). All decomposition fluxes are forward MM in microbial biomass, with V<sub>max</sub> and K<sub>m</sub> temperature-dependent and modified by litter quality and clay. Dead microbes are partitioned among the SOM pools. Warming: V<sub>max</sub> rises, but so does K<sub>m</sub>; biomass responds, and the net SOC change depends on whether increased decomposition is offset by increased necromass flow to protected pools and on the CUE–temperature assumption; outcomes range from loss to little change, and the spatial pattern differs from a Q₁₀ model (largest effects where biomass responds most, not where stocks are largest). Elevated inputs: biomass increases, decomposition of available SOM increases (priming), so SOC rises much less than proportionally and can fall in low-clay soils where little necromass is protected; a Century model would increase SOC in proportion to inputs. These are the Wieder 2013 and Sulman 2014 results. Weaknesses: functional-group parameters are tuned, not measured; the protected pool is conceptual; and early versions oscillated, fixed by density-dependent turnover.</p></div></details>
+    <details class="q"><summary>6. Why do forward-MM microbial models oscillate, and what modifications stabilise them? Relate your answer to the eigenvalues of the linearised system.</summary><div class="a"><p>In a model where substrate is consumed in proportion to biomass and biomass grows in proportion to substrate consumption, the two state variables form a consumer–resource (predator–prey) pair. Linearising around the steady state gives a Jacobian whose off-diagonal terms have opposite signs (substrate reduces biomass growth's limitation, biomass reduces substrate), which produces complex eigenvalues whenever the diagonal damping (substrate loss rate and microbial death rate) is weak relative to the coupling; the real part is negative in most cases (damped oscillation with period set by the geometric mean of the turnover times, years to decades) but can be positive for high CUE and low death rates, giving limit cycles (Wang et al. 2014). Perturbations such as a litter pulse or warming then produce biomass overshoot followed by substrate depletion and biomass collapse, repeating with decaying amplitude. Stabilisers: (i) density-dependent turnover (death ∝ B<sup>β</sup>, β &gt; 1) increases the diagonal damping as biomass grows and removes the oscillations for β ≈ 2 (Georgiou 2017); (ii) reverse MM or ECA kinetics make decomposition insensitive to biomass when biomass is high, weakening the coupling; (iii) a dormant pool that absorbs biomass changes; (iv) explicit enzyme pools with slow turnover add a lag that can worsen or improve damping depending on rates. Beyond stability, density-dependent turnover also fixes the input-independence of steady-state SOC.</p></div></details>
+    <details class="q"><summary>7. A reviewer argues that microbial-explicit models should replace first-order models in Earth system models. Make the case for and against, with evidence.</summary><div class="a"><p>For: first-order models cannot represent priming, acclimation, stoichiometric control of decomposition or CUE-dependent stabilisation, all of which are observed and all of which matter for the response to CO₂, warming and N deposition; microbial models reproduce present-day stocks and litter decomposition as well as first-order models (Wieder 2015) while producing qualitatively correct behaviours in FACE (rhizosphere priming, Sulman 2014) and warming experiments (acclimation, Allison 2010); necromass dominance of stable SOM (Liang 2019) implies the microbial route is the main stabilisation pathway. Against: the parameters (V<sub>max</sub>, K<sub>m</sub>, CUE slopes, turnover, functional-group traits) are mostly non-identifiable from available data (Hararuk 2015; Marschmann 2024), so added structure adds uncertainty rather than skill: Sulman 2018 found microbial models disagreed with each other as much as with first-order models at long-term sites and widened the projection spread; early microbial models oscillate and have input-independent steady states; and computational cost and tuning effort are high for a module whose sign of response to warming depends on one poorly known slope. A balanced position: adopt intermediate-complexity structures with measurable pools and few microbial parameters (MIMICS with density-dependent turnover, Millennial, MEMS 2.0), constrain them with fraction, radiocarbon, ¹⁸O-CUE and warming-experiment data, run them alongside first-order models as a structural ensemble, and report both.</p></div></details>
+    <details class="q"><summary>8. Explain the DAMM model and how it reconciles constant intrinsic activation energy with variable apparent temperature and moisture sensitivities.</summary><div class="a"><p>DAMM (Davidson et al. 2012) computes heterotrophic respiration as a dual Arrhenius–Michaelis–Menten function: R<sub>h</sub> = V<sub>max</sub>(T) × [S<sub>x</sub>]/(K<sub>M,Sx</sub> + [S<sub>x</sub>]) × [O₂]/(K<sub>M,O₂</sub> + [O₂]), with V<sub>max</sub> = α exp(−E<sub>a</sub>/RT) and E<sub>a</sub> constant. The soluble substrate concentration at the enzyme [S<sub>x</sub>] is the product of total soluble carbon, a diffusion coefficient and the water content raised to a power (solute diffusion through water films increases with moisture), and [O₂] is proportional to air-filled porosity raised to 4/3 (gas diffusion decreases with moisture). Consequences: (i) in dry soil respiration is substrate-limited and the apparent temperature sensitivity is low because [S<sub>x</sub>] ≪ K<sub>M</sub> and K<sub>M</sub> itself rises with temperature; (ii) in wet soil O₂ limits, giving the humped moisture response without an empirical curve; (iii) at intermediate moisture the full Arrhenius sensitivity is expressed. Seasonal changes in soil moisture therefore change apparent Q₁₀ even though E<sub>a</sub> is constant, which is Davidson &amp; Janssens's intrinsic–apparent distinction made quantitative. DAMM is a flux model (no explicit pools) and is used as the kinetic core in several microbial models and as a diagnostic for eddy-covariance and chamber data.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Schimel JP, Weintraub MN (2003). The implications of exoenzyme activity on microbial carbon and nitrogen limitation in soil: a theoretical model. <em>Soil Biology and Biochemistry</em> 35: 549–563. <a href="https://doi.org/10.1016/S0038-0717(03)00015-4">doi:10.1016/S0038-0717(03)00015-4</a><span class="why">The origin of enzyme-mediated, forward and reverse MM decomposition and of overflow metabolism in soil models.</span></li>
+      <li>Allison SD, Wallenstein MD, Bradford MA (2010). Soil-carbon response to warming dependent on microbial physiology. <em>Nature Geoscience</em> 3: 336–340. <a href="https://doi.org/10.1038/ngeo846">doi:10.1038/ngeo846</a><span class="why">The AWB model and the CUE-dependence of the warming response; the structure behind lab (b).</span></li>
+      <li>Wieder WR, Bonan GB, Allison SD (2013). Global soil carbon projections are improved by modelling microbial processes. <em>Nature Climate Change</em> 3: 909–912. <a href="https://doi.org/10.1038/nclimate1951">doi:10.1038/nclimate1951</a><span class="why">First global microbial-model projection; shows the divergence from Century-type responses.</span></li>
+      <li>Wieder WR, Grandy AS, Kallenbach CM, Bonan GB (2014). Integrating microbial physiology and physio-chemical principles in soils with the MIcrobial-MIneral Carbon Stabilization (MIMICS) model. <em>Biogeosciences</em> 11: 3899–3917. <a href="https://doi.org/10.5194/bg-11-3899-2014">doi:10.5194/bg-11-3899-2014</a><span class="why">MIMICS structure: functional groups, protected and recalcitrant pools, clay control.</span></li>
+      <li>Wieder WR, Grandy AS, Kallenbach CM, Taylor PG, Bonan GB (2015). Representing life in the Earth system with soil microbial functional traits in the MIMICS model. <em>Geoscientific Model Development</em> 8: 1789–1808. <a href="https://doi.org/10.5194/gmd-8-1789-2015">doi:10.5194/gmd-8-1789-2015</a><span class="why">Global evaluation of MIMICS against litter decomposition and SOC data. (The assignment cited GBC 29:1782; the GMD paper is the one I am confident of.)</span></li>
+      <li>Sulman BN, Phillips RP, Oishi AC, Shevliakova E, Pacala SW (2014). Microbe-driven turnover offsets mineral-mediated storage of soil carbon under elevated CO₂. <em>Nature Climate Change</em> 4: 1099–1102. <a href="https://doi.org/10.1038/nclimate2436">doi:10.1038/nclimate2436</a><span class="why">CORPSE: rhizosphere priming versus mineral protection decides the sign of the CO₂ response.</span></li>
+      <li>Sulman BN, Moore JAM, Abramoff R, et al. (2018). Multiple models and experiments underscore large uncertainty in soil carbon dynamics. <em>Biogeochemistry</em> 141: 109–123. <a href="https://doi.org/10.1007/s10533-018-0509-z">doi:10.1007/s10533-018-0509-z</a><span class="why">Five-model comparison at long-term sites; microbial models do not reduce spread.</span></li>
+      <li>Wang G, Post WM, Mayes MA (2013). Development of microbial-enzyme-mediated decomposition model parameters through steady-state and dynamic analyses. <em>Ecological Applications</em> 23: 255–272. <a href="https://doi.org/10.1890/12-0681.1">doi:10.1890/12-0681.1</a><span class="why">MEND: adsorption, enzymes and steady-state analysis of parameter constraints.</span></li>
+      <li>Davidson EA, Samanta S, Caramori SS, Savage K (2012). The Dual Arrhenius and Michaelis–Menten kinetics model for decomposition of soil organic matter at hourly to seasonal time scales. <em>Global Change Biology</em> 18: 371–384. <a href="https://doi.org/10.1111/j.1365-2486.2011.02546.x">doi:10.1111/j.1365-2486.2011.02546.x</a><span class="why">DAMM: substrate and O₂ diffusion generate apparent temperature and moisture sensitivities.</span></li>
+      <li>Todd-Brown KEO, Hopkins FM, Kivlin SN, Talbot JM, Allison SD (2012). A framework for representing microbial decomposition in coupled climate models. <em>Biogeochemistry</em> 109: 19–33. <a href="https://doi.org/10.1007/s10533-011-9635-6">doi:10.1007/s10533-011-9635-6</a><span class="why">What a microbial module needs to include to be usable in an ESM.</span></li>
+      <li>Manzoni S, Taylor P, Richter A, Porporato A, Ågren GI (2012). Environmental and stoichiometric controls on microbial carbon-use efficiency in soils. <em>New Phytologist</em> 196: 79–91. <a href="https://doi.org/10.1111/j.1469-8137.2012.04225.x">doi:10.1111/j.1469-8137.2012.04225.x</a><span class="why">The CUE review: definitions, ranges, stoichiometric and moisture controls, threshold element ratio.</span></li>
+      <li>Manzoni S, Čapek P, Porada P, et al. (2018). Reviews and syntheses: Carbon use efficiency from organisms to ecosystems – definitions, theories, and empirical evidence. <em>Biogeosciences</em> 15: 5929–5949. <a href="https://doi.org/10.5194/bg-15-5929-2018">doi:10.5194/bg-15-5929-2018</a><span class="why">CUE across scales; why organism and ecosystem CUE differ. (The assignment cited SBB 125:1; this is the synthesis I am confident of.)</span></li>
+      <li>Sinsabaugh RL, Manzoni S, Moorhead DL, Richter A (2013). Carbon use efficiency of microbial communities: stoichiometry, methodology and modelling. <em>Ecology Letters</em> 16: 930–939. <a href="https://doi.org/10.1111/ele.12113">doi:10.1111/ele.12113</a><span class="why">Meta-analysis arguing CUE converges near 0.3 and is stoichiometrically controlled.</span></li>
+      <li>Frey SD, Lee J, Melillo JM, Six J (2013). The temperature response of soil microbial efficiency and its feedback to climate. <em>Nature Climate Change</em> 3: 395–398. <a href="https://doi.org/10.1038/nclimate1796">doi:10.1038/nclimate1796</a><span class="why">Measured CUE–temperature responses by substrate in the Harvard Forest warming experiment.</span></li>
+      <li>Geyer KM, Kyker-Snowman E, Grandy AS, Frey SD (2016). Microbial carbon use efficiency: accounting for population, community, and ecosystem-scale controls over the fate of metabolized organic matter. <em>Biogeochemistry</em> 127: 173–188. <a href="https://doi.org/10.1007/s10533-016-0191-y">doi:10.1007/s10533-016-0191-y</a><span class="why">Clarifies the hierarchy of CUE definitions and measurements.</span></li>
+      <li>Liang C, Schimel JP, Jastrow JD (2017). The importance of anabolism in microbial control over soil carbon storage. <em>Nature Microbiology</em> 2: 17105. <a href="https://doi.org/10.1038/nmicrobiol.2017.105">doi:10.1038/nmicrobiol.2017.105</a><span class="why">The microbial carbon pump: in vivo and ex vivo pathways, entombing effect.</span></li>
+      <li>Liang C, Amelung W, Lehmann J, Kästner M (2019). Quantitative assessment of microbial necromass contribution to soil organic matter. <em>Global Change Biology</em> 25: 3578–3590. <a href="https://doi.org/10.1111/gcb.14781">doi:10.1111/gcb.14781</a><span class="why">Necromass as 30–60% of SOC from amino-sugar biomarkers.</span></li>
+      <li>Cotrufo MF, Wallenstein MD, Boot CM, Denef K, Paul E (2013). The Microbial Efficiency-Matrix Stabilization (MEMS) framework integrates plant litter decomposition with soil organic matter stabilization: do labile plant inputs form stable soil organic matter? <em>Global Change Biology</em> 19: 988–995. <a href="https://doi.org/10.1111/gcb.12113">doi:10.1111/gcb.12113</a><span class="why">High CUE on labile litter → necromass → mineral-associated SOM.</span></li>
+      <li>Wang YP, Chen BC, Wieder WR, et al. (2014). Oscillatory behavior of two nonlinear microbial models of soil carbon decomposition. <em>Biogeosciences</em> 11: 1817–1831. <a href="https://doi.org/10.5194/bg-11-1817-2014">doi:10.5194/bg-11-1817-2014</a><span class="why">Stability analysis showing damped and sustained oscillations in forward-MM models.</span></li>
+      <li>Tang J, Riley WJ (2015). Weaker soil carbon–climate feedbacks resulting from microbial and abiotic interactions. <em>Nature Climate Change</em> 5: 56–60. <a href="https://doi.org/10.1038/nclimate2438">doi:10.1038/nclimate2438</a><span class="why">ECA kinetics with mineral competition in a land model; weaker warming feedback and stable dynamics.</span></li>
+      <li>Georgiou K, Abramoff RZ, Harte J, Riley WJ, Torn MS (2017). Microbial community-level regulation explains soil carbon responses to long-term litter manipulations. <em>Nature Communications</em> 8: 1223. <a href="https://doi.org/10.1038/s41467-017-01116-z">doi:10.1038/s41467-017-01116-z</a><span class="why">Density-dependent microbial turnover: stabilises models and matches DIRT-experiment input responses.</span></li>
+      <li>Hararuk O, Smith MJ, Luo Y (2015). Microbial models with data-driven parameters predict stronger soil carbon responses to climate change. <em>Global Change Biology</em> 21: 2439–2453. <a href="https://doi.org/10.1111/gcb.12827">doi:10.1111/gcb.12827</a><span class="why">Bayesian calibration of a microbial model against global SOC; parameter constraints and projections.</span></li>
+      <li>Abramoff R, Xu X, Hartman M, et al. (2018). The Millennial model: in search of measurable pools and transformations for modeling soil carbon in the new century. <em>Biogeochemistry</em> 137: 51–71. <a href="https://doi.org/10.1007/s10533-017-0409-7">doi:10.1007/s10533-017-0409-7</a><span class="why">Measurable pools (POM, MAOM, aggregate, LMWC, biomass) with MM and Langmuir kinetics.</span></li>
+      <li>Kyker-Snowman E, Wieder WR, Frey SD, Grandy AS (2020). Stoichiometrically coupled carbon and nitrogen cycling in the MIcrobial-MIneral Carbon Stabilization model version 1.0 (MIMICS-CN v1.0). <em>Geoscientific Model Development</em> 13: 4413–4434. <a href="https://doi.org/10.5194/gmd-13-4413-2020">doi:10.5194/gmd-13-4413-2020</a><span class="why">Adds N and stoichiometric CUE to MIMICS.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="som-pools-fluxes.html">← Previous: Soil organic matter pools and fluxes</a><a href="maom-pom.html">Next: Mineral-associated and particulate organic matter →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#why">What first order leaves out</a></li>
+      <li><a href="#kinetics">Decomposition kinetics</a></li>
+      <li><a href="#cue">Enzymes, CUE, stoichiometry</a></li>
+      <li><a href="#necromass">Necromass</a></li>
+      <li><a href="#models">The model family</a></li>
+      <li><a href="#stability">Oscillations and projections</a></li>
+      <li><a href="#constraints">Constraints and scaling</a></li>
+      <li><a href="#connections">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (AWB-type kinetics in daily units, two-pool steady states, a minimal stoichiometric CUE rule) chosen for intuition. Structures follow Allison et al. 2010 and Manzoni et al. 2012.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function $(id) { return document.getElementById(id); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function bindOut(ids, fn) { ids.forEach(function (id) { var e = $(id); if (!e) return; e.addEventListener(e.tagName === 'SELECT' ? 'change' : 'input', fn); }); }
+  function showOuts(ids, d) { ids.forEach(function (id) { var o = $(id + 'O'), i = $(id); if (o && i) o.textContent = (d && d[id] !== undefined) ? fmt(i.value, d[id]) : i.value; }); }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(10)); return t; }
+  function seg(onId, offId, cb) { var a = $(onId), b = $(offId); a.addEventListener('click', function () { a.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-pressed', 'false'); cb(); }); b.addEventListener('click', function () { b.setAttribute('aria-pressed', 'true'); a.setAttribute('aria-pressed', 'false'); cb(); }); }
+  function frame(svg, o) {
+    var W = o.W, H = o.H, mL = o.mL || 58, mR = o.mR || 90, mT = o.mT || 18, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var sx = function (x) { return mL + (x - o.x0) / (o.x1 - o.x0) * pw; };
+    var sy = function (y) { return mT + (o.y1 - y) / (o.y1 - o.y0) * ph; };
+    var yt = o.yTicks || niceTicks(o.y0, o.y1, 6);
+    yt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    var xt = o.xTicks || niceTicks(o.x0, o.x1, 6);
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    if (o.y0 < 0 && o.y1 > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xlab));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.ylab));
+    return { sx: sx, sy: sy, mL: mL, mR: mR, mT: mT, mB: mB, pw: pw, ph: ph, W: W, H: H, y0: o.y0, y1: o.y1, x0: o.x0, x1: o.x1 };
+  }
+  function pathFrom(f, xs, fn) { var d = '', pen = false; for (var i = 0; i < xs.length; i++) { var y = fn(xs[i]); if (!isFinite(y)) { pen = false; continue; } y = Math.max(f.y0, Math.min(f.y1, y)); d += (pen ? 'L' : 'M') + f.sx(xs[i]).toFixed(1) + ',' + f.sy(y).toFixed(1); pen = true; } return d; }
+  function series(svg, f, xs, fn, col, cls) { svg.appendChild(el('path', { 'class': 'ser ' + (cls || ''), d: pathFrom(f, xs, fn), stroke: col })); }
+  function rightLabels(svg, f, labs) {
+    labs.forEach(function (L) { L.y = f.sy(Math.max(f.y0, Math.min(f.y1, L.v))); });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: f.mL + f.pw + 6, y: L.y + 4, fill: L.col }, L.t)); });
+  }
+  function hover(svg, f, tip, info) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: f.mT, y2: f.mT + f.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: f.mL, y: f.mT, width: f.pw, height: f.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = f.x0 + Math.max(0, Math.min(1, (p.x - f.mL) / f.pw)) * (f.x1 - f.x0);
+      xh.setAttribute('x1', f.sx(x)); xh.setAttribute('x2', f.sx(x)); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = info(x); tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab (a): kinetic forms ---------- */
+  (function () {
+    var ids = ['kV', 'kKm', 'kKb', 'kB', 'kC', 'kK'];
+    var s1 = $('kSvg'), t1 = $('kTip'), s2 = $('kbSvg'), t2 = $('kbTip');
+    function run() {
+      showOuts(ids, { kV: 3, kKm: 0, kKb: 0, kB: 0, kC: 0, kK: 2 });
+      var V = +$('kV').value, Km = +$('kKm').value, Kb = +$('kKb').value, B = +$('kB').value, C = +$('kC').value, k = +$('kK').value / 365;
+      var ref = V * 60 * 3000 / (Km + 3000);
+      function fo(c) { return k * c; }
+      function fwd(c, b) { return V * b * c / (Km + c); }
+      function rev(c, b) { return ref * (c / 3000) * (b / (Kb + b)) / (60 / (Kb + 60)); }
+      var ymax = 0; [fo(8000), fwd(8000, B), rev(8000, B)].forEach(function (v) { ymax = Math.max(ymax, v); }); ymax = Math.ceil(ymax * 1.1 * 10) / 10 || 1;
+      clear(s1);
+      var f = frame(s1, { W: 640, H: 300, x0: 0, x1: 8000, y0: 0, y1: ymax, xlab: 'Substrate C (g C m⁻²), biomass fixed at ' + B, ylab: 'Decomposition (g C m⁻² d⁻¹)', mR: 100 });
+      var xs = []; for (var c = 0; c <= 8000; c += 50) xs.push(c);
+      series(s1, f, xs, fo, 'var(--series-1)'); series(s1, f, xs, function (c) { return fwd(c, B); }, 'var(--series-2)'); series(s1, f, xs, function (c) { return rev(c, B); }, 'var(--series-3)');
+      rightLabels(s1, f, [{ t: 'First order', v: fo(8000), col: 'var(--series-1)' }, { t: 'Forward MM', v: fwd(8000, B), col: 'var(--series-2)' }, { t: 'Reverse MM', v: rev(8000, B), col: 'var(--series-3)' }]);
+      hover(s1, f, t1, function (x) { return 'C <b>' + fmt(x, 0) + '</b> g C m⁻²<br>first order <b>' + fmt(fo(x), 2) + '</b> · forward <b>' + fmt(fwd(x, B), 2) + '</b> · reverse <b>' + fmt(rev(x, B), 2) + '</b> g C m⁻² d⁻¹'; });
+      var ymax2 = 0; [fo(C), fwd(C, 300), rev(C, 300)].forEach(function (v) { ymax2 = Math.max(ymax2, v); }); ymax2 = Math.ceil(ymax2 * 1.1 * 10) / 10 || 1;
+      clear(s2);
+      var g = frame(s2, { W: 640, H: 280, x0: 0, x1: 300, y0: 0, y1: ymax2, xlab: 'Microbial biomass (g C m⁻²), substrate fixed at ' + C, ylab: 'Decomposition (g C m⁻² d⁻¹)', mR: 100 });
+      var bs = []; for (var b = 0; b <= 300; b += 2) bs.push(b);
+      series(s2, g, bs, function () { return fo(C); }, 'var(--series-1)'); series(s2, g, bs, function (b) { return fwd(C, b); }, 'var(--series-2)'); series(s2, g, bs, function (b) { return rev(C, b); }, 'var(--series-3)');
+      rightLabels(s2, g, [{ t: 'First order', v: fo(C), col: 'var(--series-1)' }, { t: 'Forward MM', v: fwd(C, 300), col: 'var(--series-2)' }, { t: 'Reverse MM', v: rev(C, 300), col: 'var(--series-3)' }]);
+      hover(s2, g, t2, function (x) { return 'B <b>' + fmt(x, 0) + '</b> g C m⁻²<br>first order <b>' + fmt(fo(C), 2) + '</b> · forward <b>' + fmt(fwd(C, x), 2) + '</b> · reverse <b>' + fmt(rev(C, x), 2) + '</b> g C m⁻² d⁻¹'; });
+      $('kFwd').textContent = fmt(fwd(3000, 60), 2) + ' g C m⁻² d⁻¹';
+      $('kEq').textContent = fmt(fwd(3000, 60) / 3000 * 365, 3);
+      $('kSat').textContent = fmt(B / (Kb + B), 2);
+      var html = '<thead><tr><th class="num">C</th><th class="num">First order</th><th class="num">Forward MM (B = ' + B + ')</th><th class="num">Reverse MM (B = ' + B + ')</th></tr></thead><tbody>';
+      [250, 500, 1000, 2000, 3000, 4000, 6000, 8000].forEach(function (c) { html += '<tr><td class="num">' + c + '</td><td class="num">' + fmt(fo(c), 2) + '</td><td class="num">' + fmt(fwd(c, B), 2) + '</td><td class="num">' + fmt(rev(c, B), 2) + '</td></tr>'; });
+      $('kTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (d): stoichiometric CUE ---------- */
+  (function () {
+    var ids = ['sCNB', 'sMax', 'sImm'];
+    var s1 = $('sSvg'), t1 = $('sTip'), s2 = $('nSvg'), t2 = $('nTip');
+    function run() {
+      showOuts(ids, { sCNB: 1, sMax: 2, sImm: 1 });
+      var cnb = +$('sCNB').value, mx = +$('sMax').value, im = +$('sImm').value;
+      function cue(cns) { return Math.min(mx, cnb / cns * (1 + im)); }
+      function nmin(cns) { return (1 / cns * (1 + im) - cue(cns) / cnb) * 1000; } // mg N per g C uptake
+      var TER = cnb * (1 + im) / mx;
+      clear(s1);
+      var f = frame(s1, { W: 640, H: 280, x0: 5, x1: 100, y0: 0, y1: 0.8, xlab: 'Substrate C:N', ylab: 'Carbon-use efficiency', mR: 90, yTicks: [0, 0.2, 0.4, 0.6, 0.8] });
+      var xs = []; for (var x = 5; x <= 100; x += 0.5) xs.push(x);
+      series(s1, f, xs, cue, 'var(--fg)', 'net');
+      series(s1, f, xs, function () { return mx; }, 'var(--series-1)', 'pot');
+      if (TER >= 5 && TER <= 100) { s1.appendChild(el('line', { 'class': 'ev', x1: f.sx(TER), x2: f.sx(TER), y1: f.mT, y2: f.mT + f.ph })); s1.appendChild(el('text', { 'class': 'tick', x: f.sx(TER) + 4, y: f.mT + 12 }, 'TER = ' + fmt(TER, 1))); }
+      s1.appendChild(el('text', { 'class': 'tick', x: f.sx(TER > 50 ? 20 : 70), y: f.sy(mx) - 6, 'text-anchor': 'middle' }, 'C-limited: CUE = CUEmax'));
+      s1.appendChild(el('text', { 'class': 'tick', x: f.sx(Math.min(95, TER + 25)), y: f.sy(cue(Math.min(95, TER + 25))) + 16, 'text-anchor': 'middle' }, 'N-limited: CUE = (C:N)B/(C:N)S'));
+      rightLabels(s1, f, [{ t: 'CUE', v: cue(100), col: 'var(--fg)' }, { t: 'CUEmax', v: mx, col: 'var(--series-1)' }]);
+      hover(s1, f, t1, function (x) { return 'Substrate C:N <b>' + fmt(x, 1) + '</b><br>CUE <b>' + fmt(cue(x), 2) + '</b> (' + (x > TER ? 'N-limited' : 'C-limited') + ')'; });
+      var nmax = Math.max(Math.abs(nmin(5)), Math.abs(nmin(100))) * 1.1;
+      clear(s2);
+      var g = frame(s2, { W: 640, H: 240, x0: 5, x1: 100, y0: -Math.ceil(nmax / 20) * 20, y1: Math.ceil(nmax / 20) * 20, xlab: 'Substrate C:N', ylab: 'Net N mineralisation (mg N g⁻¹ C)', mR: 90 });
+      series(s2, g, xs, nmin, 'var(--accent)');
+      if (TER >= 5 && TER <= 100) s2.appendChild(el('line', { 'class': 'ev', x1: g.sx(TER), x2: g.sx(TER), y1: g.mT, y2: g.mT + g.ph }));
+      s2.appendChild(el('text', { 'class': 'tick', x: g.mL + g.pw - 6, y: g.sy(0) - 6, 'text-anchor': 'end' }, 'mineralisation ↑'));
+      s2.appendChild(el('text', { 'class': 'tick', x: g.mL + g.pw - 6, y: g.sy(0) + 14, 'text-anchor': 'end' }, 'immobilisation ↓'));
+      rightLabels(s2, g, [{ t: 'net N', v: nmin(100), col: 'var(--accent)' }]);
+      hover(s2, g, t2, function (x) { return 'Substrate C:N <b>' + fmt(x, 1) + '</b><br>net N mineralisation <b>' + fmt(nmin(x), 1) + '</b> mg N per g C taken up'; });
+      $('sTER').textContent = fmt(TER, 1);
+      $('sC40').textContent = fmt(cue(40), 2);
+      $('sN40').textContent = fmt(nmin(40), 1);
+      var html = '<thead><tr><th class="num">Substrate C:N</th><th class="num">CUE</th><th class="num">Net N (mg N g⁻¹ C)</th><th>Regime</th></tr></thead><tbody>';
+      [8, 10, 15, 20, 25, 30, 40, 60, 80, 100].forEach(function (c) { html += '<tr><td class="num">' + c + '</td><td class="num">' + fmt(cue(c), 2) + '</td><td class="num">' + fmt(nmin(c), 1) + '</td><td>' + (c > TER ? 'N-limited' : 'C-limited') + '</td></tr>'; });
+      $('sTable').innerHTML = html + '</tbody>';
+    }
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (b): AWB-style model ---------- */
+  (function () {
+    var ids = ['aIn', 'aCUE', 'aRd', 'aV', 'aKm', 'aDist'];
+    var svg = $('aSvg'), tip = $('aTip'), svg2 = $('aSocSvg'), tip2 = $('aSocTip'); var dens = false;
+    var R = 8.314e-3, Ea = 47;
+    function arr(T) { return Math.exp(Ea / R * (1 / 293.15 - 1 / (T + 273.15))); }
+    function simulate(p, disturb) {
+      var fD = 0.5, KmD = 20, fdS = 0.5, rE = 0.0053, rL = 0.02, B0 = 60, dt = 0.25;
+      var S = 3000, D = 1, B = 60, E = 16, out = [], cumR = 0, cumR0 = 0;
+      var n = Math.round(160 * 365 / dt);
+      for (var i = 0; i <= n; i++) {
+        var t = i * dt / 365 - 100;
+        var on = disturb && t >= 20;
+        var T = (on && (p.dist === 'warm' || p.dist === 'warmcue')) ? 25 : 20;
+        var I = p.I * ((on && p.dist === 'double') ? 2 : 1) / 365;
+        var CUE = (on && p.dist === 'warmcue') ? Math.max(0.05, p.CUE - 0.016 * (T - 20)) : p.CUE;
+        if (on && p.dist === 'pulse' && Math.abs(t - 20) < dt / 365 / 2) { D += 500; S += 500; }
+        var m = arr(T), Km = p.Km * (1 + 0.025 * (T - 20));
+        var dec = p.V * m * E * S / (Km + S);
+        var death = dens ? p.rd * B * B / B0 : p.rd * B;
+        var inD = I * fD + dec + (1 - fdS) * death + rL * E;
+        var Dn = (D + inD * dt) / (1 + dt * 0.5 * m * B / (KmD + D));
+        var up = 0.5 * m * B * Dn / (KmD + Dn);
+        S += (I * (1 - fD) + fdS * death - dec) * dt; D = Dn; B += (CUE * up - death - rE * B) * dt; E += (rE * B - rL * E) * dt;
+        if (t >= 20) cumR += (1 - CUE) * up * dt;
+        if (t >= 0 && i % Math.round(365 / dt / 4) === 0) out.push({ t: t, S: S, D: D, B: B, E: E, R: cumR });
+      }
+      return out;
+    }
+    function params() { return { I: +$('aIn').value, CUE: +$('aCUE').value, rd: +$('aRd').value, V: +$('aV').value, Km: +$('aKm').value, dist: $('aDist').value }; }
+    function run() {
+      showOuts(['aIn', 'aCUE', 'aRd', 'aV', 'aKm'], { aIn: 0, aCUE: 2, aRd: 3, aV: 2, aKm: 0 });
+      var p = params(), out = simulate(p, true), ctl = simulate(p, false);
+      var ref = out[0];
+      function pc(key) { return function (i) { return out[i][key] / ref[key] * 100; }; }
+      var ymax = 100, ymin = 100;
+      out.forEach(function (r) { ['S', 'B', 'E'].forEach(function (k) { var v = r[k] / ref[k] * 100; ymax = Math.max(ymax, v); ymin = Math.min(ymin, v); }); });
+      ymax = Math.min(400, Math.ceil(ymax / 25) * 25 + 25); ymin = Math.max(0, Math.floor(ymin / 25) * 25 - 25);
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 380, x0: 0, x1: 60, y0: ymin, y1: ymax, xlab: 'Years', ylab: 'Pool size (% of pre-disturbance value)', mR: 100 });
+      svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(20), x2: f.sx(20), y1: f.mT, y2: f.mT + f.ph }));
+      svg.appendChild(el('text', { 'class': 'tick', x: f.sx(20) + 4, y: f.mT + 12 }, 'disturbance'));
+      var idx = []; for (var i = 0; i < out.length; i++) idx.push(i);
+      var fi = { sx: function (i) { return f.sx(out[i].t); }, sy: f.sy, y0: f.y0, y1: f.y1 };
+      series(svg, fi, idx, pc('D'), 'var(--series-3)'); series(svg, fi, idx, pc('E'), 'var(--series-2)'); series(svg, fi, idx, pc('B'), 'var(--series-1)'); series(svg, fi, idx, pc('S'), 'var(--fg)', 'net');
+      var last = out.length - 1;
+      rightLabels(svg, f, [{ t: 'SOC', v: pc('S')(last), col: 'var(--fg)' }, { t: 'Biomass', v: pc('B')(last), col: 'var(--series-1)' }, { t: 'Enzymes', v: pc('E')(last), col: 'var(--series-2)' }, { t: 'DOC', v: pc('D')(last), col: 'var(--series-3)' }]);
+      // absolute SOC chart
+      clear(svg2);
+      var smin = 1e9, smax = 0; out.forEach(function (r, i) { smin = Math.min(smin, r.S, ctl[i].S); smax = Math.max(smax, r.S, ctl[i].S); });
+      var pad = Math.max(50, (smax - smin) * 0.15); var s0 = Math.floor((smin - pad) / 100) * 100, s1 = Math.ceil((smax + pad) / 100) * 100;
+      var f2 = frame(svg2, { W: 640, H: 240, x0: 0, x1: 60, y0: s0, y1: s1, xlab: 'Years', ylab: 'SOC (g C m⁻²)', mR: 100 });
+      svg2.appendChild(el('line', { 'class': 'ev', x1: f2.sx(20), x2: f2.sx(20), y1: f2.mT, y2: f2.mT + f2.ph }));
+      var fi2 = { sx: function (i) { return f2.sx(out[i].t); }, sy: f2.sy, y0: f2.y0, y1: f2.y1 };
+      series(svg2, fi2, idx, function (i) { return ctl[i].S; }, 'var(--muted)', 'pot'); series(svg2, fi2, idx, function (i) { return out[i].S; }, 'var(--fg)', 'net');
+      rightLabels(svg2, f2, [{ t: 'disturbed', v: out[last].S, col: 'var(--fg)' }, { t: 'control', v: ctl[last].S, col: 'var(--muted)' }]);
+      hover(svg2, f2, tip2, function (x) { var i = Math.min(last, Math.round(x * 4)); return 'Year <b>' + fmt(out[i].t, 1) + '</b><br>SOC <b>' + fmt(out[i].S, 0) + '</b> · control <b>' + fmt(ctl[i].S, 0) + '</b> · difference <b>' + fmt(out[i].S - ctl[i].S, 0) + '</b> g C m⁻²'; });
+      hover(svg, f, tip, function (x) { var i = Math.min(last, Math.round(x * 4)); var r = out[i]; return 'Year <b>' + fmt(r.t, 1) + '</b><br>SOC <b>' + fmt(r.S, 0) + '</b> · B <b>' + fmt(r.B, 1) + '</b> · E <b>' + fmt(r.E, 1) + '</b> · DOC <b>' + fmt(r.D, 2) + '</b> g C m⁻²<br>SOC <b>' + fmt(r.S / ref.S * 100, 1) + '%</b> · B <b>' + fmt(r.B / ref.B * 100, 0) + '%</b> of initial'; });
+      $('aSS').textContent = fmt(ref.S, 0) + ' · ' + fmt(ref.B, 1) + ' · ' + fmt(ref.E, 1) + ' · ' + fmt(ref.D, 2);
+      $('aQ').textContent = fmt(ref.B / ref.S * 100, 1) + '%';
+      var i30 = Math.min(last, 30 * 4);
+      $('aPrime').textContent = fmt(out[i30].S - ctl[i30].S, 0);
+      var i40 = Math.min(last, 40 * 4);
+      $('aNet').textContent = p.dist === 'pulse' ? fmt((out[i40].R - ctl[i40].R) - 1000, 0) + ' (20 yr after pulse)' : fmt(out[i40].R - ctl[i40].R, 0) + ' extra respiration (20 yr)';
+      var pk = 0, tr = 1e9; out.forEach(function (r) { if (r.t > 20) { pk = Math.max(pk, r.B / ref.B * 100); tr = Math.min(tr, r.B / ref.B * 100); } });
+      $('aOsc').textContent = fmt(pk, 0) + '% / ' + fmt(tr, 0) + '%';
+      var html = '<thead><tr><th class="num">Year</th><th class="num">SOC</th><th class="num">DOC</th><th class="num">Biomass</th><th class="num">Enzymes</th><th class="num">SOC control</th></tr></thead><tbody>';
+      [0, 10, 19, 20, 21, 22, 23, 25, 27, 30, 35, 40, 50, 60].forEach(function (y) { var i = Math.min(last, y * 4); var r = out[i]; html += '<tr><td class="num">' + y + '</td><td class="num">' + fmt(r.S, 0) + '</td><td class="num">' + fmt(r.D, 2) + '</td><td class="num">' + fmt(r.B, 1) + '</td><td class="num">' + fmt(r.E, 1) + '</td><td class="num">' + fmt(ctl[i].S, 0) + '</td></tr>'; });
+      $('aTable').innerHTML = html + '</tbody>';
+    }
+    seg('aLin', 'aDens', function () { dens = $('aDens').getAttribute('aria-pressed') === 'true'; run(); });
+    bindOut(ids, run); run();
+  })();
+
+  /* ---------- Lab (c): steady state vs CUE ---------- */
+  (function () {
+    var ids = ['eI', 'eV', 'eKm', 'eR', 'eFp', 'eKp'];
+    var svg = $('eSvg'), tip = $('eTip'); var dens = false, B0 = 50;
+    function ss(cue, p) {
+      var d = cue * p.I / (1 - cue * (1 - p.fp)); // death flux
+      var B = dens ? Math.sqrt(d * B0 / p.r) : d / p.r;
+      var U = d / cue;
+      var q = U / (p.V * B);
+      if (q >= 1) return null;
+      var S = p.Km * q / (1 - q), M = p.fp * d / p.kp;
+      return { S: S, B: B, M: M, T: S + B + M };
+    }
+    function params() { return { I: +$('eI').value, V: +$('eV').value, Km: +$('eKm').value, r: +$('eR').value, fp: +$('eFp').value, kp: +$('eKp').value }; }
+    function run() {
+      showOuts(ids, { eI: 0, eV: 0, eKm: 0, eR: 1, eFp: 2, eKp: 3 });
+      var p = params();
+      var xs = []; for (var c = 0.05; c <= 0.8001; c += 0.005) xs.push(+c.toFixed(3));
+      var ymax = 0, cmin = null;
+      xs.forEach(function (c) { var s = ss(c, p); if (s) { if (cmin === null) cmin = c; ymax = Math.max(ymax, Math.min(s.T, 40000)); } });
+      var tmid = ss(0.5, p); if (tmid) ymax = Math.min(ymax, 4 * tmid.T); ymax = Math.ceil(ymax * 1.05 / 1000) * 1000 || 1000;
+      clear(svg);
+      var f = frame(svg, { W: 640, H: 360, x0: 0, x1: 0.8, y0: 0, y1: ymax, xlab: 'Carbon-use efficiency', ylab: 'Steady-state stock (g C m⁻², clamped)', mR: 100, xTicks: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] });
+      function g(key, mult) { return function (c) { var s = ss(c, p); return s ? s[key] * (mult || 1) : NaN; }; }
+      series(svg, f, xs, g('S'), 'var(--series-2)'); series(svg, f, xs, g('M'), 'var(--series-3)'); series(svg, f, xs, g('B', 10), 'var(--series-1)'); series(svg, f, xs, g('T'), 'var(--fg)', 'net');
+      if (cmin !== null) { svg.appendChild(el('line', { 'class': 'ev', x1: f.sx(cmin), x2: f.sx(cmin), y1: f.mT, y2: f.mT + f.ph })); svg.appendChild(el('text', { 'class': 'tick', x: f.sx(cmin) + 4, y: f.mT + f.ph - 8 }, 'no viable population below CUE ' + fmt(cmin, 2))); }
+      var sl = ss(0.8, p) || ss(0.75, p) || { S: 0, M: 0, B: 0, T: 0 };
+      rightLabels(svg, f, [{ t: 'Total', v: sl.T, col: 'var(--fg)' }, { t: 'S*', v: sl.S, col: 'var(--series-2)' }, { t: 'M*', v: sl.M, col: 'var(--series-3)' }, { t: 'B* ×10', v: sl.B * 10, col: 'var(--series-1)' }]);
+      hover(svg, f, tip, function (x) { var s = ss(x, p); if (!s) return 'CUE <b>' + fmt(x, 2) + '</b>: no steady state (decomposers cannot persist)'; return 'CUE <b>' + fmt(x, 2) + '</b><br>S* <b>' + fmt(s.S, 0) + '</b> · M* <b>' + fmt(s.M, 0) + '</b> · B* <b>' + fmt(s.B, 1) + '</b> · total <b>' + fmt(s.T, 0) + '</b> g C m⁻²'; });
+      $('eMin').textContent = cmin === null ? 'none' : fmt(cmin, 2);
+      var a = ss(0.3, p), b = ss(0.5, p);
+      $('eTot').textContent = (a ? fmt(a.T, 0) : 'n/a') + ' · ' + (b ? fmt(b.T, 0) : 'n/a');
+      var c1 = ss(0.39, p), c2 = ss(0.41, p);
+      $('eSlope').textContent = (c1 && c2) ? fmt((c2.T - c1.T) / 0.02, 0) + ' g C m⁻² per unit CUE' : 'n/a';
+      var html = '<thead><tr><th class="num">CUE</th><th class="num">S*</th><th class="num">M*</th><th class="num">B*</th><th class="num">Total</th></tr></thead><tbody>';
+      [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8].forEach(function (c) { var s = ss(c, p); html += '<tr><td class="num">' + c + '</td>' + (s ? '<td class="num">' + fmt(s.S, 0) + '</td><td class="num">' + fmt(s.M, 0) + '</td><td class="num">' + fmt(s.B, 1) + '</td><td class="num">' + fmt(s.T, 0) + '</td>' : '<td colspan="4">no steady state</td>') + '</tr>'; });
+      $('eTable').innerHTML = html + '</tbody>';
+    }
+    seg('eLin', 'eDens', function () { dens = $('eDens').getAttribute('aria-pressed') === 'true'; run(); });
+    bindOut(ids, run); run();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Root–Microbe Interactions</title>
+<meta name="description" content="Root–microbe interactions at comprehensive-exam depth: the rhizosphere and rhizodeposition, mycorrhizal symbioses and the mycorrhizal-associated nutrient economy, biological nitrogen fixation, root economics, and how cost-based nutrient acquisition (FUN, ECA, MIMICS-CN) enters land models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .ser.dash { stroke-dasharray: 5 4; opacity: 0.9; }
+  .ch .ser.net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .mark { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .marklbl { font-size: 11px; fill: var(--muted); }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .region { fill: var(--accent-soft); opacity: 0.6; }
+  .chartbox { position: relative; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .ctrl label.chk { justify-content: flex-start; align-items: center; color: var(--fg); }
+  .ctrl label.chk input { accent-color: var(--accent); }
+  .mix { display: flex; height: 22px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); margin-top: 0.5rem; }
+  .mix div { transition: width .2s; }
+  .mixlbl { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-family: var(--font-display); font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+  .mixlbl span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); margin-right: 0.35rem; vertical-align: -1px; }
+  .rootsvg text { font-family: var(--font-display); font-size: 11px; fill: var(--muted); }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Root–microbe interactions</div>
+    <div class="eyebrow">Topic 14 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Root–Microbe Interactions</h1>
+    <p class="lead">Plants spend a fifth or more of their fixed carbon below ground on microbes that return nitrogen and phosphorus: mycorrhizal fungi, nitrogen-fixing bacteria and the rhizosphere community. This page treats those exchanges as an economy with costs, prices and markets, which is exactly how the newest land models represent them.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Roots leak. Between 5 and 20% of the carbon a plant fixes is released into the thin cylinder of soil around each root, the <strong>rhizosphere</strong>, as exudates, mucilage and sloughed cells, and this carbon feeds a microbial community one to two orders of magnitude denser than the bulk soil. Two symbioses dominate the return on that investment. <strong>Mycorrhizal fungi</strong> colonise the roots of roughly 90% of plant species and trade phosphorus (arbuscular mycorrhiza) or nitrogen, including organic nitrogen (ectomycorrhiza), for 10–20% of the plant's photosynthate. <strong>Nitrogen-fixing bacteria</strong>, mostly rhizobia in legume nodules, reduce N<sub>2</sub> to NH<sub>3</sub> at a cost of 6–12 g C per g N, which the plant pays only when soil nitrogen is scarce. Free-living microbes add plant-growth-promoting services such as phosphate solubilisation, siderophore production and hormone signalling, and the carbon that roots release also <em>primes</em> the decomposition of old soil organic matter. Because every one of these processes is a trade of carbon for nutrients, they can be written as costs (g C per g nutrient) and compared, which is the logic of the Fixation and Uptake of Nitrogen (FUN) model in CLM5 and of the mycorrhizal pathways now being added to soil-carbon models.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Examiners want you to move from mechanism (what an arbuscule or a nodule does) to ecosystem consequence (why ectomycorrhizal forests store more soil carbon per unit N, why CO<sub>2</sub> fertilisation depends on mycorrhizal type, why nitrogen fixers are rare in N-rich soils) and then to model representation (how a cost-based scheme decides between uptake, fixation and mycorrhizae). Keep three numbers at hand: 5–20% of fixed C to rhizodeposition, 10–20% to mycorrhizal fungi, 6–12 g C per g N fixed.</p></div>
+  </section>
+
+  <section id="rhizosphere">
+    <h2>The rhizosphere: where plants feed the soil</h2>
+    <p>Lorenz Hiltner coined the term rhizosphere in 1904 to describe the soil under the influence of roots, where he observed bacterial densities far above the bulk soil. The zone is only a few millimetres wide, yet in a grassland or crop root system with 10–50 km of root per m<sup>2</sup> it occupies a substantial share of the topsoil volume. Its chemistry differs from bulk soil in almost every respect: pH can be shifted by 1–2 units by proton or bicarbonate release during cation–anion balance, redox potential is lowered by root and microbial respiration, and the concentrations of nutrients, organic acids and signalling molecules follow steep radial gradients [17].</p>
+    <h3>Rhizodeposition and its components</h3>
+    <p><strong>Rhizodeposition</strong> is the sum of all carbon that leaves living roots: low-molecular-weight <em>exudates</em> (sugars, amino acids, organic acids such as citrate, malate and oxalate), high-molecular-weight <em>mucilage</em> secreted by the root cap, <em>border cells</em> released from the cap, sloughed epidermal and cortical cells, root-hair turnover, and gaseous losses as CO<sub>2</sub> from root respiration. Reviews of isotope labelling studies put total rhizodeposition at <strong>5–21% of photosynthetically fixed carbon</strong>, or roughly 20–40% of the carbon allocated below ground, with the mean around 11% of net fixed C. Exudation is highest just behind the root tip, where young cells have leaky membranes and the cap is active, and is strongly increased by nutrient deficiency, mechanical impedance and, for carboxylates, by P deficiency.</p>
+    <p>The exuded carbon is consumed within hours. Microbial biomass and activity in the rhizosphere are typically 2–20 times those in bulk soil, and the community is strongly filtered: Proteobacteria, Actinobacteria and Bacteroidetes are enriched relative to the bulk soil, and each plant species, and even genotype, selects a partly specific rhizosphere microbiome from the soil pool [18]. This is the basis of the "two-step selection" picture of rhizosphere assembly: soil type sets the available pool, root exudate chemistry and immune signalling filter it.</p>
+    <h3>Rhizosphere priming</h3>
+    <p>Fresh, labile carbon in the rhizosphere changes the decomposition rate of the old soil organic matter around it. This <strong>rhizosphere priming effect</strong> (RPE) is measured by growing plants in a <sup>13</sup>C-labelled or C3/C4-contrasted system so that root-derived CO<sub>2</sub> can be separated from SOM-derived CO<sub>2</sub>. Kuzyakov's synthesis [15] distinguishes <em>real priming</em> (accelerated SOM mineralisation through co-metabolism, microbial activation and enzyme production) from <em>apparent priming</em> (faster turnover of microbial biomass itself). Cheng et al. [14] compiled RPE values from −50% to +380% of the unplanted control, with a typical stimulation of 20–60%, strongest when microbes are N-limited and roots supply the energy to mine N from SOM. Priming has two consequences for carbon budgets: it couples plant productivity to soil-carbon loss, and it means that extra belowground allocation under elevated CO<sub>2</sub> does not translate one-to-one into soil carbon gain.</p>
+    <h3>Plant-growth-promoting rhizobacteria</h3>
+    <p>Many rhizosphere bacteria (<em>Pseudomonas</em>, <em>Bacillus</em>, <em>Azospirillum</em>, <em>Enterobacter</em>) improve plant growth without forming organs. The documented mechanisms are: <strong>phosphate solubilisation</strong> by organic acid secretion (gluconic, citric) and phosphatase release; <strong>siderophore production</strong>, which chelates Fe<sup>3+</sup> and both supplies iron to the plant and starves pathogens of it; <strong>ACC deaminase</strong>, which cleaves the ethylene precursor 1-aminocyclopropane-1-carboxylate and so lowers stress ethylene that would otherwise inhibit root growth; <strong>auxin (IAA) production</strong>, which stimulates root branching and root-hair formation and therefore the absorbing surface; and induced systemic resistance. Field responses are inconsistent because inoculants must compete with the resident community, which is why PGPR appear in agronomy rather than in ecosystem models.</p>
+  </section>
+
+  <section id="mycorrhiza">
+    <h2>Mycorrhizal symbiosis</h2>
+    <p>A mycorrhiza is a structure formed by a fungus and a root in which the fungus delivers soil-derived nutrients to the plant in exchange for carbon. The association is ancient (fossil arbuscules in 400-million-year-old Rhynie chert) and nearly universal. Brundrett &amp; Tedersoo [6] estimate that about 72% of vascular plant species form arbuscular mycorrhizas (AM), about 2% ectomycorrhizas (ECM), 1.5% ericoid mycorrhizas, 10% orchid mycorrhizas, and roughly 8% are non-mycorrhizal (with a further ~7% facultative). Species counts understate ECM importance: the 2% of ECM species include the pines, spruces, firs, oaks, beeches, birches, eucalypts and dipterocarps that dominate most boreal and temperate forests and large tracts of the tropics.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Type</th><th>Fungi</th><th>Structures</th><th>Hosts and biomes</th><th>Main nutrient service</th></tr></thead>
+      <tbody>
+        <tr><td>Arbuscular (AM)</td><td>Glomeromycota (e.g. <em>Rhizophagus</em>, <em>Glomus</em>); obligate biotrophs, no saprotrophic ability</td><td>Hyphae penetrate the cell wall and form branched <strong>arbuscules</strong> inside cortical cells (periarbuscular membrane, the exchange interface); vesicles; extraradical hyphae 2–10 µm diameter</td><td>~72% of species: grasses, most herbs, crops, many tropical trees; grasslands, savannas, tropical forests, agriculture</td><td>Phosphorus (also Zn, Cu, some NH<sub>4</sub><sup>+</sup>); extends P depletion zone; water relations; pathogen protection</td></tr>
+        <tr><td>Ectomycorrhiza (ECM)</td><td>Basidiomycota and Ascomycota (<em>Russula</em>, <em>Cortinarius</em>, <em>Suillus</em>, <em>Cenococcum</em>, truffles); evolved repeatedly from saprotrophs, many retain oxidative enzymes</td><td>Fungal <strong>mantle</strong> around the root tip and a <strong>Hartig net</strong> of hyphae between (not inside) epidermal/cortical cells; rhizomorphs</td><td>~2% of species but dominant in boreal and temperate forests (Pinaceae, Fagaceae, Betulaceae, Myrtaceae, Dipterocarpaceae)</td><td>Nitrogen, including <strong>organic N</strong> via proteases and oxidative enzymes; P; weathering of minerals</td></tr>
+        <tr><td>Ericoid</td><td>Ascomycota (<em>Rhizoscyphus</em>, <em>Oidiodendron</em>)</td><td>Hyphal coils inside the hair-root epidermal cells</td><td>Ericaceae: heathlands, tundra, bogs, boreal understorey</td><td>Organic N and P from recalcitrant litter; tolerance of acidity and metals</td></tr>
+        <tr><td>Orchid</td><td>Basidiomycota (<em>Tulasnella</em>, <em>Ceratobasidium</em>, <em>Sebacina</em>)</td><td>Pelotons inside protocorm and root cells</td><td>Orchidaceae; obligate for seed germination</td><td>Carbon flows <em>to</em> the plant in the achlorophyllous stage (mycoheterotrophy)</td></tr>
+      </tbody></table></div>
+    <h3>The trade and the market</h3>
+    <p>Mycorrhizal fungi receive <strong>10–20% of the host's photosynthate</strong> (up to 30% in some ECM seedlings) as sugars and, in AM, as lipids transferred across the periarbuscular membrane; the fungus cannot make its own fatty acids. In return the plant gains access to the nutrients that hyphae collect from a soil volume the root cannot reach. Because hyphae are 2–10 µm in diameter against 200–1000 µm for fine roots, a gram of carbon invested in hyphae yields 100-fold more length and surface than the same carbon in roots; hyphal length densities of 1–100 m per cm<sup>3</sup> soil are typical.</p>
+    <p>Kiers et al. [5] showed that the exchange is enforced by both partners. Using <sup>13</sup>C and <sup>33</sup>P labelling of <em>Medicago</em> roots and <em>Rhizophagus</em> species that differ in cooperativeness, they found that plants direct more carbon to root compartments colonised by fungi that deliver more phosphorus, and fungi allocate more phosphorus to roots that provide more carbon. The symbiosis therefore behaves as a <strong>biological market</strong> with reciprocal rewards, which stabilises cooperation against cheaters without requiring either partner to recognise the other's identity. The same logic appears later on this page as the resistors-in-parallel allocation in FUN: carbon flows preferentially down the cheapest route to nutrients.</p>
+    <p>Hyphae of a single fungal individual often connect several plants into a <strong>common mycorrhizal network</strong>. Isotope studies show that carbon and nutrients can move between plants through such networks, and that seedlings establishing in the shade of ECM trees benefit from connection. How much of this transfer is ecologically important, as opposed to measurable, is contested; the fungus, not the "mother tree", controls allocation, and recent reviews caution that popular accounts have run ahead of the evidence.</p>
+
+    <h3>Phosphorus: why hyphae matter so much</h3>
+    <p>Phosphate diffuses extremely slowly in soil because most of it is sorbed to Fe/Al oxides and clay edges. The effective diffusion coefficient is the solution diffusivity scaled by water content, tortuosity and the <strong>buffer power</strong> b (the slope of sorbed P versus solution P):</p>
+    <div class="eq">$$D_e = \frac{D_l\,\theta\,f}{b}, \qquad b = \frac{\mathrm{d}C_{\text{total}}}{\mathrm{d}C_l} \approx 10^2\text{–}10^3,$$</div>
+    <p>so that D<sub>e</sub> is of order 10<sup>−13</sup>–10<sup>−12</sup> m<sup>2</sup> s<sup>−1</sup>, and the depletion zone that develops around an absorbing root after time t, roughly \( \sqrt{D_e t} \), is only about <strong>1 mm</strong> after a week. Roots a few millimetres apart exploit nearly all the soil P they can reach within days, while P further away is unavailable. Hyphae extend tens of millimetres beyond the depletion zone, place absorbing surface in pores too small for roots, and also act chemically: they release phosphatases that hydrolyse organic P and, in ECM, organic acids (oxalate) that dissolve Ca-, Fe- and Al-phosphates. The lab below solves the radial diffusion problem around a single root, with and without a hyphal uptake zone.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>P depletion zone around a root, with and without hyphae</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="depSvg" viewBox="0 0 640 360" role="img" aria-label="Relative phosphate concentration in soil solution versus distance from the root surface, for a root alone and for a root with mycorrhizal hyphae"></svg>
+            <div class="chart-tip" id="depTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">root alone (zero sink at surface)</span><span style="--c:var(--series-2)">root + hyphal uptake zone</span><span style="--c:var(--muted)">hyphal zone extent</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="depTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="dD"><span>Solution diffusivity × θ × f, D<sub>l</sub>θf (10⁻¹¹ m² s⁻¹)</span><output id="dDO">8</output></label><input type="range" id="dD" min="2" max="20" step="1" value="8"></div>
+          <div class="ctrl"><label for="dB"><span>Buffer power b (log scale)</span><output id="dBO">200</output></label><input type="range" id="dB" min="1.3" max="3.3" step="0.05" value="2.3"></div>
+          <div class="ctrl"><label for="dL"><span>Hyphal extension beyond root (mm)</span><output id="dLO">10</output></label><input type="range" id="dL" min="0" max="30" step="1" value="10"></div>
+          <div class="ctrl"><label for="dT"><span>Time since uptake began (days)</span><output id="dTO">10</output></label><input type="range" id="dT" min="1" max="30" step="1" value="10"></div>
+          <div class="ctrl"><label for="dC"><span>Initial solution P, C₀ (µM)</span><output id="dCO">5</output></label><input type="range" id="dC" min="0.5" max="30" step="0.5" value="5"></div>
+          <dl class="readout">
+            <dt>Effective D<sub>e</sub></dt><dd id="dDe"></dd>
+            <dt>Depletion zone (C &lt; 0.9 C₀)</dt><dd id="dDz"></dd>
+            <dt>P acquired, root alone</dt><dd id="dPr"></dd>
+            <dt>P acquired, root + hyphae</dt><dd id="dPh"></dd>
+            <dt>of which via hyphae</dt><dd id="dPhh"></dd>
+            <dt>Mycorrhizal gain</dt><dd id="dGain"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model: \( b\,\partial C_l/\partial t = (1/r)\,\partial_r\!\left(r\,D_l\theta f\,\partial_r C_l\right) - k_h(r)\,C_l \), root radius 0.15 mm, zero-sink boundary at the root surface, no flux at 40 mm; the hyphal sink k<sub>h</sub> declines as 1/r out to the hyphal extension, mimicking radial hyphae. Explicit finite differences. P acquired is per metre of root over the chosen period. Suggested experiments: raise b from 20 (sand, low sorption) to 2000 (strongly P-fixing oxisol) and watch the depletion zone collapse to a fraction of a millimetre while hyphae keep delivering; set hyphal extension to 0 and compare 1 vs 30 days (√t growth); note that the hyphal gain is largest exactly when D<sub>e</sub> is smallest, which is why AM responsiveness is highest in P-fixing soils.</p>
+    </div>
+
+    <h3>Biome gradients: Read's hypothesis and the mycorrhizal nutrient economy</h3>
+    <p>Read [2] observed that mycorrhizal types sort along latitudinal and successional gradients of soil organic matter and nutrient limitation: AM in grasslands, savannas and lowland tropical forests where mineral P limits and litter decomposes fast; ECM in temperate and boreal forests where N is locked in slowly decomposing litter; ericoid mycorrhizas in heathlands and tundra where organic matter is most recalcitrant and acidic. The fungal partner's enzymatic repertoire increases along this gradient: AM fungi have essentially no saprotrophic ability, ECM fungi possess proteases and, in some lineages, peroxidases, and ericoid fungi can degrade phenolic complexes.</p>
+    <p>Phillips, Brzostek &amp; Midgley [3] turned this into a testable framework for temperate forests, the <strong>mycorrhizal-associated nutrient economy</strong> (MANE). AM-dominated stands run an <em>inorganic economy</em>: high-quality litter (low C:N, low lignin), fast decomposition, high net N mineralisation and nitrification, nitrate leaching, nutrient cycling through soil microbes rather than plant-controlled fungi. ECM-dominated stands run an <em>organic economy</em>: recalcitrant litter, slow decomposition, high soil C:N, low nitrification, N acquired largely as amino acids and peptides through the fungal partner, and more soil carbon in organic horizons. Because mycorrhizal type is a plant trait that maps onto measurable soil properties, MANE allows forest inventory data to predict soil biogeochemistry, and it motivated the AM/ECM split now used in several land models.</p>
+  </section>
+
+  <section id="soilc">
+    <h2>Mycorrhizae and soil carbon</h2>
+    <p>Three lines of evidence connect mycorrhizal type to soil carbon storage. First, Averill, Turner &amp; Finzi [4] analysed soil profiles across biomes and found that ecosystems dominated by ECM and ericoid plants store about <strong>70% more carbon per unit soil nitrogen</strong> than AM-dominated ecosystems, independent of climate, clay and NPP. Their interpretation is competition: ECM fungi, with direct access to organic N, out-compete free-living decomposers for nitrogen and so slow decomposition of N-poor substrates, a mechanism first proposed by Gadgil &amp; Gadgil (1971), who showed that trenching to exclude ECM roots <em>accelerated</em> litter decomposition in <em>Pinus radiata</em> stands. This <strong>Gadgil effect</strong> is now understood as context-dependent; it is strongest where N is scarce and weak or reversed where priming dominates.</p>
+    <p>Second, Clemmensen et al. [8] used a chronosequence of boreal forested islands and <sup>14</sup>C bomb-spike dating to show that <strong>50–70% of stored soil carbon</strong> in the organic horizons derives from roots and root-associated fungi rather than from aboveground litter, and that mycorrhizal necromass accumulates in the deeper humus. The classic view of soil organic matter as decomposed leaf litter is, for boreal forests, wrong; the carbon enters the soil from below. Third, elevated-CO<sub>2</sub> experiments show that the biomass response to CO<sub>2</sub> depends on mycorrhizal type: Terrer et al. [19] found that under low N availability, ECM plants sustained a CO<sub>2</sub> fertilisation effect while AM plants did not, because only ECM fungi could mine the additional N required. This is one of the few clear empirical constraints on the N-limitation of the land carbon sink and it feeds directly into how models should represent N acquisition.</p>
+    <p>The <strong>glomalin</strong> story illustrates how an attractive mechanism can outrun its evidence. Glomalin, a putative AM-fungal glycoprotein, was proposed in the late 1990s as a major, recalcitrant soil-carbon pool (up to several per cent of soil C) that also stabilised aggregates. The operational measure, "glomalin-related soil protein" extracted by autoclaving in citrate and quantified by a Bradford assay, turned out to be non-specific: it co-extracts humic substances and proteins of any origin and correlates poorly with AM abundance. The consensus now is that AM fungi certainly contribute to aggregation and to necromass inputs, but that GRSP is not a specific marker and glomalin is not a defined compound.</p>
+    <div class="keybox"><h3>Why the AM/ECM split matters for a carbon model</h3>
+      <p>Both pathways cost the plant about the same carbon, but they put it in different places and with different stoichiometric consequences. AM: carbon mostly respired or turned over quickly in fine hyphae; N cycle inorganic and leaky; little effect on decomposition. ECM: carbon enters the soil as chitinous, melanised necromass with slow turnover; organic N withdrawn by the symbiosis reduces N available to saprotrophs, slowing decomposition (Gadgil effect) and raising C:N of what remains. A model that treats "soil" as one box with first-order decay cannot reproduce the 70% difference in C per N found by Averill et al., which is why mycorrhizal pathways appear explicitly in MIMICS-CN-type and FUN-CORPSE-type models [20].</p></div>
+  </section>
+
+  <section id="bnf">
+    <h2>Biological nitrogen fixation</h2>
+    <p>The N<sub>2</sub> triple bond (945 kJ mol<sup>−1</sup>) is broken biologically by one enzyme complex, <strong>nitrogenase</strong>, found only in some prokaryotes. The enzyme has two components: the Fe protein (dinitrogenase reductase), which hydrolyses ATP and delivers electrons one at a time, and the MoFe protein (dinitrogenase), whose FeMo-cofactor binds and reduces N<sub>2</sub>. The minimal stoichiometry is</p>
+    <div class="eq">$$\mathrm{N_2 + 8\,H^+ + 8\,e^- + 16\,ATP \longrightarrow 2\,NH_3 + H_2 + 16\,ADP + 16\,P_i}$$</div>
+    <p>The obligatory evolution of one H<sub>2</sub> per N<sub>2</sub> wastes two of the eight electrons; some rhizobia recover part of this with uptake hydrogenases. Sixteen ATP per N<sub>2</sub> is the theoretical minimum; measured costs including nodule construction and maintenance are <strong>6–12 g C per g N fixed</strong>, compared with roughly 1–3 g C per g N for uptake and assimilation of nitrate or ammonium from soil. Nitrogenase is <strong>irreversibly inactivated by O<sub>2</sub></strong>, yet fixation needs large amounts of ATP, which in aerobes comes from oxidative phosphorylation. Every fixer solves this conflict somehow: cyanobacteria with heterocysts, <em>Azotobacter</em> with extremely high respiration rates, and legume nodules with a cortical diffusion barrier plus <strong>leghemoglobin</strong>, which keeps free O<sub>2</sub> in the infected cells at tens of nanomolar while delivering it fast enough to bacteroid respiration.</p>
+    <h3>Symbiotic fixation</h3>
+    <p>The legume–rhizobia symbiosis (and the <em>Parasponia</em>–rhizobia exception) is initiated by chemical dialogue. Roots release flavonoids; these activate the bacterial regulator NodD, which switches on <em>nod</em> genes producing <strong>Nod factors</strong> (lipochitooligosaccharides). Nod factors are perceived by LysM receptor kinases on root hairs and trigger calcium spiking, root-hair curling, an infection thread that grows inward, and cortical cell division that forms the nodule. Bacteria are released into cells as bacteroids enclosed in a plant symbiosome membrane, where they fix N and export NH<sub>4</sub><sup>+</sup> in exchange for dicarboxylates (malate, succinate). Much of this signalling machinery (the "common symbiosis pathway") is shared with AM fungi, from which it was evolutionarily borrowed. <strong>Actinorhizal</strong> plants (<em>Alnus</em>, <em>Casuarina</em>, <em>Myrica</em>, <em>Ceanothus</em>) form analogous nodules with the actinobacterium <em>Frankia</em>, which protects nitrogenase inside vesicles. Field rates for crop legumes are 50–300 kg N ha<sup>−1</sup> yr<sup>−1</sup>; alder and casuarina stands fix 50–150 kg N ha<sup>−1</sup> yr<sup>−1</sup>.</p>
+    <h3>Free-living and associative fixation</h3>
+    <p>Heterotrophic free-living fixers (<em>Azotobacter</em>, <em>Clostridium</em>) are limited by carbon and typically fix 1–5 kg N ha<sup>−1</sup> yr<sup>−1</sup>. Associative diazotrophs (<em>Azospirillum</em> on grass roots, <em>Gluconacetobacter diazotrophicus</em> inside sugarcane stems, <em>Herbaspirillum</em>) use root exudates and can contribute 10–50 kg N ha<sup>−1</sup> yr<sup>−1</sup> in some tropical grasses and Brazilian sugarcane, although estimates are debated. <strong>Cyanobacteria</strong>, autotrophic and so not carbon-limited, are the main free-living fixers in rice paddies (free-living <em>Anabaena</em>, <em>Nostoc</em>, and the <em>Azolla</em>–<em>Anabaena</em> symbiosis, 20–50 kg N ha<sup>−1</sup> per crop), in biological soil crusts of drylands, in lichens and in moss-associated communities that supply much of the N input to boreal forests (1–3 kg N ha<sup>−1</sup> yr<sup>−1</sup>, but sustained over centuries).</p>
+    <h3>Regulation and limits</h3>
+    <p>Fixation is expensive, so plants shut it down when cheaper N is available. Nitrate and ammonium inhibit nodule initiation, nodule growth and nitrogenase activity; legumes also operate <strong>autoregulation of nodulation</strong>, in which early nodules send root-derived CLE peptides to the shoot, where a LRR receptor kinase triggers a shoot-derived signal that suppresses further nodulation. The down-regulation curve of fixation against soil mineral N is approximately sigmoidal with half-inhibition at 1–3 g N m<sup>−2</sup> of mineral N in the root zone. Fixation is further limited by <strong>phosphorus</strong> (nodules are P-rich and ATP-hungry; P addition stimulates fixation in many tropical and old-soil systems), by <strong>molybdenum</strong> (the FeMo-cofactor; Mo addition raises fixation in Mo-poor tropical forest soils, and some organisms carry vanadium or iron-only alternative nitrogenases), by light (fixers are shade-intolerant because of the carbon cost) and by temperature, which gives the cost function used in FUN its optimum near 25 °C.</p>
+    <h3>Global totals</h3>
+    <p>Estimating terrestrial BNF has been contentious. Cleveland et al. (1999) scaled up plot measurements by biome to 100–290 Tg N yr<sup>−1</sup> (central estimate 195) for natural ecosystems. Vitousek et al. [9] argued that this was inconsistent with the pre-industrial N budget, river N exports and isotope mass balance, and proposed <strong>~58 Tg N yr<sup>−1</sup> (range 40–100)</strong> for natural terrestrial BNF, implying that pre-industrial ecosystems were strongly N-conserving. Davies-Barnard &amp; Friedlingstein [10] compiled a much larger set of field observations and derived <strong>~88 (52–130) Tg N yr<sup>−1</sup></strong>, below Cleveland's figure and overlapping Vitousek's range, with tropical forests contributing most and large residual uncertainty in free-living rates. Agricultural BNF (legume crops, pastures, rice) adds roughly 50–70 Tg N yr<sup>−1</sup>, and industrial fixation (Haber–Bosch) ~120 Tg N yr<sup>−1</sup>: human activity has at least doubled the rate at which N<sub>2</sub> is converted to reactive N.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Nitrogen fixation versus soil mineral N: down-regulation and the cost crossover</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="fixSvg" viewBox="0 0 640 360" role="img" aria-label="Nitrogen fixation, root uptake and plant demand versus soil mineral nitrogen, with the fixation-pays region shaded"></svg>
+            <div class="chart-tip" id="fixTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">root uptake capacity U(N)</span><span style="--c:var(--series-2)">physiological down-regulation: D·g(N)</span><span style="--c:var(--series-3)">economic rule: fix only where cheaper</span><span style="--c:var(--fg)">plant N demand D</span><span style="--c:var(--accent)">shaded: fixation cheaper than uptake</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="fixTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="fD"><span>Plant N demand, D (g N m⁻² yr⁻¹)</span><output id="fDO">12</output></label><input type="range" id="fD" min="3" max="30" step="0.5" value="12"></div>
+          <div class="ctrl"><label for="fU"><span>Root uptake capacity U<sub>max</sub> (g N m⁻² yr⁻¹)</span><output id="fUO">15</output></label><input type="range" id="fU" min="2" max="40" step="0.5" value="15"></div>
+          <div class="ctrl"><label for="fT"><span>Soil temperature (°C)</span><output id="fTO">20</output></label><input type="range" id="fT" min="0" max="40" step="0.5" value="20"></div>
+          <div class="ctrl"><label for="fK"><span>Uptake cost coefficient k<sub>N</sub> (g C m⁻²)</span><output id="fKO">6</output></label><input type="range" id="fK" min="1" max="20" step="0.5" value="6"></div>
+          <div class="ctrl"><label for="fH"><span>Half-inhibition N for nodulation, N₅₀ (g N m⁻²)</span><output id="fHO">1.5</output></label><input type="range" id="fH" min="0.3" max="5" step="0.1" value="1.5"></div>
+          <div class="ctrl"><label for="fN"><span>Soil mineral N for readouts (g N m⁻²)</span><output id="fNO">1.0</output></label><input type="range" id="fN" min="0.05" max="8" step="0.05" value="1"></div>
+          <dl class="readout">
+            <dt>Fixation cost c<sub>fix</sub>(T)</dt><dd id="fCf"></dd>
+            <dt>Uptake cost k<sub>N</sub>/N at this N</dt><dd id="fCu"></dd>
+            <dt>Crossover N* = k<sub>N</sub>/c<sub>fix</sub></dt><dd id="fNs"></dd>
+            <dt>Fixation, physiological</dt><dd id="fFp"></dd>
+            <dt>Fixation, economic</dt><dd id="fFe"></dd>
+            <dt>C spent on fixation</dt><dd id="fCc"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Uptake capacity U(N) = U<sub>max</sub>·N/(N + 1); uptake cost k<sub>N</sub>/N as in FUN; fixation cost c<sub>fix</sub>(T) = −6.25[exp(−3.62 + 0.27T(1 − 0.5T/25.15)) − 2] g C g⁻¹ N (Houlton et al. 2008 temperature function as used in FUN [11]); physiological down-regulation g(N) = 1/(1 + (N/N₅₀)²). The economic rule fixes the deficit D − U(N) only where c<sub>fix</sub> &lt; k<sub>N</sub>/N. Suggested experiments: cool the soil to 5 °C and watch the crossover N* move left (fixation dearer); raise demand and see that the economic rule predicts fixation even at moderate N when roots cannot keep up; compare where the two curves disagree, which is the gap between a physiological and an optimality representation.</p>
+    </div>
+  </section>
+
+  <section id="strategies">
+    <h2>Root traits and acquisition strategies</h2>
+    <p>Roots differ in how much of the acquisition job they outsource. Bergmann et al. [13] analysed traits of ~1800 species and found that the "root economics space" has two independent axes rather than one fast–slow spectrum. The <strong>conservation gradient</strong> (root tissue density versus root N concentration) is the familiar fast–slow trade-off. Orthogonal to it is a <strong>collaboration gradient</strong>: thick-rooted species with low specific root length rely on mycorrhizal fungi to explore soil ("outsourcing"), while thin, high-SRL species explore soil themselves ("do-it-yourself"). Thick roots and high mycorrhizal colonisation co-occur because a large cortex houses more arbuscules; thin roots achieve the same soil contact per unit carbon without the fungus. Magnoliids and many tropical trees sit at the outsourcing end; grasses at the do-it-yourself end.</p>
+    <p>Lambers et al. [16] placed these strategies on a soil-age axis. On young soils N limits and N-fixers are favoured; on intermediate soils mycorrhizal strategies dominate; on very old, severely P-impoverished soils (south-western Australia, the Cape, parts of the tropics) <strong>non-mycorrhizal</strong> species with <strong>cluster roots</strong> (Proteaceae) or dauciform roots (Cyperaceae) take over. These ephemeral, densely branched root structures release bursts of carboxylates (citrate, malate) and phosphatases that mobilise sorbed and organic P by ligand exchange and chelation of Fe and Al, a chemically intensive, carbon-expensive strategy that pays only when P is so scarce that the fungal route fails. Carboxylate exudation is also how white lupin and some brassicas obtain P, and it is the mechanism behind the P-mobilising benefit of intercropping legumes with cereals.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>A simple mycorrhizal market: how much carbon should a plant give its fungus?</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="mktSvg" viewBox="0 0 640 360" role="img" aria-label="Phosphorus acquired through roots, through the fungal partner and in total versus the fraction of belowground carbon allocated to the fungus"></svg>
+            <div class="chart-tip" id="mktTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">P via roots</span><span style="--c:var(--series-2)">P via fungus (after fungal retention)</span><span style="--c:var(--fg)">total P acquired</span><span style="--c:var(--muted)">plant P demand</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="mktTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mP"><span>Soil available P index (relative)</span><output id="mPO">1.0</output></label><input type="range" id="mP" min="0.1" max="5" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="mR"><span>Hyphal cost advantage (soil explored per g C, relative to roots)</span><output id="mRO">10</output></label><input type="range" id="mR" min="1" max="50" step="1" value="10"></div>
+          <div class="ctrl"><label for="mT"><span>Fungal retention τ (share of acquired P kept by fungus)</span><output id="mTO">0.3</output></label><input type="range" id="mT" min="0" max="0.8" step="0.05" value="0.3"></div>
+          <div class="ctrl"><label for="mB"><span>Belowground C budget B (g C m⁻² yr⁻¹)</span><output id="mBO">300</output></label><input type="range" id="mB" min="50" max="800" step="10" value="300"></div>
+          <div class="ctrl"><label for="mD"><span>Plant P demand (g P m⁻² yr⁻¹)</span><output id="mDO">0.5</output></label><input type="range" id="mD" min="0.1" max="3" step="0.05" value="0.5"></div>
+          <dl class="readout">
+            <dt>Optimum f*</dt><dd id="mF"></dd>
+            <dt>P acquired at f*</dt><dd id="mPopt"></dd>
+            <dt>P with no fungus (f = 0)</dt><dd id="mP0"></dd>
+            <dt>Response P(f*)/P(0)</dt><dd id="mMGR"></dd>
+            <dt>C to fungus at f*</dt><dd id="mC"></dd>
+            <dt>Demand met?</dt><dd id="mMet"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Toy model: roots acquire P<sub>r</sub> = A<sub>r</sub>[1 − exp(−(1 − f)B/κ)] and the fungus delivers P<sub>f</sub> = (1 − τ)A<sub>h</sub>[1 − exp(−f·B·ρ/κ)], with κ = 300 g C, ρ the hyphal cost advantage, A<sub>h</sub> the P pool reachable by hyphae and A<sub>r</sub> the (smaller, P-dependent) pool reachable by roots alone: at high soil P roots reach most of what they need, at low P the depletion zones of the previous lab bite. Both saturate, so an interior optimum exists. Suggested experiments: slide soil P from 0.2 to 5 and watch f* fall (the well-known decline in mycorrhizal responsiveness with fertility); raise τ (a less cooperative fungus) and see the plant's optimum shift toward roots, the Kiers et al. result; set ρ = 1 and show that without a cost advantage the fungus is never worth its tax.</p>
+    </div>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p>First-generation carbon–nitrogen land models (CLM4, O-CN, JULES-CN) treated plant N acquisition as a demand-driven draw on a soil mineral N pool, with fixation prescribed as a function of NPP or evapotranspiration (the Cleveland 1999 regression) and no mycorrhizae at all. The <strong>Fixation and Uptake of Nitrogen (FUN) model</strong> of Fisher et al. [11] replaced this with an optimality scheme: the plant has several routes to N, each with a carbon cost in g C per g N, and it spends carbon on N acquisition until the marginal carbon gained by investing N in leaves equals the marginal carbon spent acquiring it. The costs are</p>
+    <div class="eq">$$C_{\text{active}} = \frac{k_N}{N_{\text{soil}}} + \frac{k_C}{C_{\text{root}}}, \qquad C_{\text{fix}} = -6.25\left[\exp\!\left(-3.62 + 0.27\,T\left(1 - \tfrac{0.5\,T}{25.15}\right)\right) - 2\right], \qquad C_{\text{retrans}} = \frac{k_R}{N_{\text{leaf}}},$$</div>
+    <p>so active uptake is cheap when soil N is high and roots are abundant, fixation is cheapest near 25 °C (about 7.5 g C g<sup>−1</sup> N, rising to 12 at 0 °C), and retranslocation from senescing leaves is cheap but limited in quantity. Rather than sending all carbon down the cheapest route, FUN mixes pathways as <strong>resistors in parallel</strong>: the N obtained from route i is proportional to 1/C<sub>i</sub>, and the effective cost of the mixture is</p>
+    <div class="eq">$$\frac{1}{C_{\text{total}}} = \sum_i \frac{1}{C_i}, \qquad f_i = \frac{1/C_i}{\sum_j 1/C_j}.$$</div>
+    <p>Brzostek et al. [12] added <strong>mycorrhizal pathways</strong> (FUN-ECM, later FUN 2.0): AM uptake with a lower root-biomass cost term, and ECM uptake whose cost depends on soil organic as well as mineral N, allowing ECM plants to keep acquiring N where AM plants cannot. This version, with further revisions by Shi et al. (2016), is the N-acquisition scheme in <strong>CLM5</strong>, where the carbon spent on N acquisition is removed from NPP as an explicit flux and N fixation therefore responds to soil N, temperature and NPP rather than being prescribed. Sulman et al. [20] went further in a global model by coupling FUN-style AM and ECM acquisition to the microbe-explicit CORPSE soil model, so that ECM "mining" of organic N and the resulting slowdown of decomposition emerge from the same scheme; the mycorrhizal distribution altered simulated terrestrial carbon storage by tens of Pg C.</p>
+    <p>Other model families take different routes. <strong>ELM (E3SM Land Model)</strong> uses the Equilibrium Chemistry Approximation (ECA) of Zhu et al. (2016), in which plants, microbes and mineral surfaces compete for N and P in proportion to their affinities and abundances, as in a set of simultaneous Michaelis–Menten reactions; mycorrhizae are implicit in the root affinity. <strong>ORCHIDEE-CN</strong> keeps an ET-based or NPP-based fixation function and demand-driven uptake. <strong>MYCOFON</strong> (Meyer et al. 2010) is a stand-scale mycorrhiza model that couples fungal biomass to tree C supply and N return and was used to show that mycorrhizal C costs are a significant NPP sink in temperate forests. <strong>MIMICS-CN</strong> extends the microbial-explicit MIMICS soil model with N, so that microbial N demand controls the fate of litter, and variants with mycorrhizal pathways let plant symbionts compete directly with saprotrophs. The <strong>Terrer et al.</strong> result [19] that CO<sub>2</sub> fertilisation under low N is an ECM phenomenon has become a benchmark these schemes are expected to reproduce.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>FUN-style cost of nitrogen acquisition: which pathway is cheapest?</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="funSvg" viewBox="0 0 640 360" role="img" aria-label="Carbon cost per gram of nitrogen for active uptake, arbuscular and ectomycorrhizal uptake, symbiotic fixation and retranslocation versus soil mineral nitrogen"></svg>
+            <div class="chart-tip" id="funTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">active root uptake</span><span style="--c:var(--series-3)">AM uptake</span><span style="--c:var(--accent-2)">ECM uptake (organic + mineral N)</span><span style="--c:var(--series-2)">symbiotic fixation</span><span style="--c:var(--muted)">retranslocation (limited pool)</span><span style="--c:var(--fg)">effective cost of the parallel mix</span></div>
+          <div class="mix" aria-hidden="true"><div id="mxA" style="background:var(--series-1)"></div><div id="mxM" style="background:var(--series-3)"></div><div id="mxF" style="background:var(--series-2)"></div></div>
+          <div class="mixlbl"><span style="--c:var(--series-1)">active <b id="mxAl"></b></span><span style="--c:var(--series-3)" id="mxMs">mycorrhizal <b id="mxMl"></b></span><span style="--c:var(--series-2)">fixation <b id="mxFl"></b></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="funTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="uN"><span>Soil mineral N (g N m⁻², log scale)</span><output id="uNO">1.0</output></label><input type="range" id="uN" min="-1.3" max="1.3" step="0.02" value="0"></div>
+          <div class="ctrl"><label for="uO"><span>Soil organic N accessible to ECM (g N m⁻²)</span><output id="uOO">20</output></label><input type="range" id="uO" min="0" max="100" step="1" value="20"></div>
+          <div class="ctrl"><label for="uR"><span>Fine-root biomass (g C m⁻²)</span><output id="uRO">300</output></label><input type="range" id="uR" min="30" max="1500" step="10" value="300"></div>
+          <div class="ctrl"><label for="uT"><span>Soil temperature (°C)</span><output id="uTO">20</output></label><input type="range" id="uT" min="-5" max="40" step="0.5" value="20"></div>
+          <div class="ctrl"><label for="uM"><span>Mycorrhizal type of the plant</span></label><select id="uM"><option value="am">Arbuscular (AM)</option><option value="ecm">Ectomycorrhizal (ECM)</option></select></div>
+          <dl class="readout">
+            <dt>Active uptake cost</dt><dd id="uCa"></dd>
+            <dt>Mycorrhizal cost</dt><dd id="uCm"></dd>
+            <dt>Fixation cost</dt><dd id="uCf"></dd>
+            <dt>Retranslocation cost</dt><dd id="uCr"></dd>
+            <dt>Cheapest pathway</dt><dd id="uBest"></dd>
+            <dt>Parallel-mix cost</dt><dd id="uCt"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Costs in g C per g N. Constants are illustrative but keep FUN's forms: active k<sub>N</sub> = 6, k<sub>C</sub> = 600; AM k<sub>N</sub> = 5, k<sub>C</sub> = 200 (hyphae are cheap per unit soil explored); ECM k<sub>N</sub> = 8 applied to mineral N + 0.1 × organic N, k<sub>C</sub> = 250; fixation from the Houlton temperature function; retranslocation fixed at 1.5 but limited to what senescing leaves contain. The mixing bar uses the resistors-in-parallel rule over active, mycorrhizal and fixation pathways. Suggested experiments: at soil N = 0.1 g m⁻² switch between AM and ECM with 50 g m⁻² organic N to see why ECM plants keep growing under N scarcity; reduce root biomass to 50 g C m⁻² and see uptake costs climb while fixation is unaffected; set temperature to 0 °C and note fixation becomes the dearest route everywhere.</p>
+    </div>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Rhizodeposition</td><td class="num">5–21% of net fixed C (~11% mean)</td><td>Isotope labelling syntheses (Jones et al. 2009); ~30–40% of belowground C</td></tr>
+        <tr><td>Rhizosphere width</td><td class="num">~1–3 mm</td><td>Depends on the solute; P depletion ~1 mm, nitrate several cm [17]</td></tr>
+        <tr><td>Microbial density, rhizosphere vs bulk</td><td class="num">2–20×</td><td>Hiltner 1904 onward; "rhizosphere effect"</td></tr>
+        <tr><td>Rhizosphere priming effect</td><td class="num">−50% to +380%; typical +20–60%</td><td>Cheng et al. 2014 [14]</td></tr>
+        <tr><td>Plant species forming AM / ECM / ericoid / orchid / none</td><td class="num">72% / 2% / 1.5% / 10% / ~8%</td><td>Brundrett &amp; Tedersoo 2018 [6]</td></tr>
+        <tr><td>C allocated to mycorrhizal fungi</td><td class="num">10–20% of photosynthate</td><td>Smith &amp; Read 2008 [1]; up to 30% in ECM seedlings</td></tr>
+        <tr><td>Hyphal diameter / fine-root diameter</td><td class="num">2–10 µm / 200–1000 µm</td><td>~100× more length per g C in hyphae</td></tr>
+        <tr><td>Hyphal length density</td><td class="num">1–100 m cm⁻³ soil</td><td>AM extraradical mycelium</td></tr>
+        <tr><td>Effective P diffusion coefficient D<sub>e</sub></td><td class="num">10⁻¹³–10⁻¹² m² s⁻¹</td><td>D<sub>l</sub>θf/b with b = 10²–10³; depletion zone ≈ √(D<sub>e</sub>t) ≈ 1 mm per week</td></tr>
+        <tr><td>Soil C per unit N, ECM vs AM ecosystems</td><td class="num">+70%</td><td>Averill et al. 2014 [4]</td></tr>
+        <tr><td>Root/fungus-derived share of boreal soil C</td><td class="num">50–70%</td><td>Clemmensen et al. 2013 [8]</td></tr>
+        <tr><td>Nitrogenase stoichiometry</td><td class="num">16 ATP, 8 e⁻ per N₂; 1 H₂ evolved</td><td>Theoretical minimum</td></tr>
+        <tr><td>Cost of symbiotic fixation</td><td class="num">6–12 g C g⁻¹ N</td><td>Gutschick 1981; FUN gives 7.5 at 25 °C, 12 at 0 °C [11]</td></tr>
+        <tr><td>Cost of soil N uptake and assimilation</td><td class="num">~1–3 g C g⁻¹ N</td><td>Lower for NH₄⁺ than NO₃⁻ (8 e⁻ to reduce nitrate)</td></tr>
+        <tr><td>Legume crop fixation</td><td class="num">50–300 kg N ha⁻¹ yr⁻¹</td><td>Soybean ~100–200; alfalfa up to 300</td></tr>
+        <tr><td>Free-living / associative fixation</td><td class="num">1–5 / 10–50 kg N ha⁻¹ yr⁻¹</td><td>Cyanobacteria in paddies 20–50 per crop</td></tr>
+        <tr><td>Global natural terrestrial BNF</td><td class="num">58 (40–100) Tg N yr⁻¹</td><td>Vitousek et al. 2013 [9]; Davies-Barnard &amp; Friedlingstein 2020: 88 (52–130) [10]; Cleveland 1999: 195</td></tr>
+        <tr><td>Agricultural BNF / Haber–Bosch</td><td class="num">~50–70 / ~120 Tg N yr⁻¹</td><td>Herridge et al. 2008; Fowler et al. 2013</td></tr>
+        <tr><td>Free O₂ in nodule infected cells</td><td class="num">~10–50 nM</td><td>Leghemoglobin buffering; nitrogenase is O₂-labile</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Define rhizodeposition, list its components, and explain why its magnitude matters for a soil-carbon model.</summary><div class="a"><p>Rhizodeposition is the total release of organic carbon from living roots into soil: soluble exudates (sugars, amino acids, carboxylates), mucilage from the root cap, border cells, sloughed epidermal and cortical cells and root-hair turnover; root respiration is sometimes counted as rhizodeposited C that is immediately lost. Isotope pulse-labelling gives 5–21% of net fixed C, about 11% on average, concentrated near root tips and increased under nutrient deficiency. It matters for three reasons. (i) It is a flux of fresh, labile carbon that is the primary energy source of the rhizosphere microbiome and so controls microbial biomass, enzyme production and nutrient mineralisation. (ii) It primes decomposition of old SOM (rhizosphere priming, typically +20–60%), so an increase in belowground allocation, e.g. under elevated CO<sub>2</sub>, can accelerate soil C loss rather than build soil C. (iii) It is a large carbon input bypassing the litter layer: in boreal forests 50–70% of stored C is root- and mycorrhiza-derived. Models that drive soil C only with litterfall and treat decomposition as first-order with fixed rate constants cannot capture (ii) or (iii); microbial-explicit models with root C inputs can.</p></div></details>
+    <details class="q"><summary>2. Compare arbuscular and ectomycorrhizal symbioses in structure, taxonomy, host range and nutrient function, and explain how these differences lead to the "mycorrhizal-associated nutrient economy".</summary><div class="a"><p>AM fungi (Glomeromycota, obligate biotrophs, ~72% of plant species including grasses, herbs, crops and many tropical trees) penetrate cortical cell walls and form intracellular arbuscules surrounded by a plant membrane; they have essentially no capacity to degrade organic matter and deliver mainly inorganic P (also Zn, Cu, some NH<sub>4</sub><sup>+</sup>) by extending the P depletion zone with fine extraradical hyphae. ECM fungi (Basidio- and Ascomycota evolved repeatedly from saprotrophs, ~2% of species but most boreal and temperate trees) form a mantle around the root tip and a Hartig net between epidermal cells, never entering cells; many retain proteases and oxidative enzymes and deliver N, including amino acids from organic matter, as well as P. Phillips et al. (2013) argued that these functional differences propagate to ecosystem biogeochemistry: AM-dominated stands have high-quality litter, fast decomposition, high mineralisation and nitrification, an inorganic and leaky N cycle, and nutrients cycled by free-living microbes; ECM stands have recalcitrant litter, slow decomposition, high soil C:N, little nitrification, N taken up as organic compounds through the symbiont and more carbon stored in organic horizons. The mycorrhizal type of the dominant trees therefore predicts soil properties, allowing inventory data to parameterise soil N and C models.</p></div></details>
+    <details class="q"><summary>3. Why do ectomycorrhizal ecosystems store more soil carbon per unit nitrogen than arbuscular ones? Give the evidence and the proposed mechanisms, including the Gadgil effect.</summary><div class="a"><p>Averill, Turner &amp; Finzi (2014) compared soil profiles across biomes and found ~70% more C per unit N in ECM- and ericoid-dominated systems than in AM systems, after controlling for climate, clay and productivity. Mechanisms: (1) Competition for N. ECM fungi mine organic N with proteases and oxidative enzymes, leaving saprotrophs N-limited and slowing their decomposition of N-poor substrates; this is the Gadgil effect, demonstrated by Gadgil &amp; Gadgil (1971), who found that trenching to exclude ECM roots accelerated litter decomposition. (2) Input quality and location. ECM-associated trees produce recalcitrant litter, and the symbiosis itself delivers chitinous, melanised hyphal necromass directly into the mineral soil and humus (Clemmensen et al. 2013: 50–70% of boreal soil C is root/fungus-derived). (3) Nitrogen-cycle leakiness. AM systems nitrify and leach N, lowering the N available to build and stabilise SOM, while ECM systems retain N in organic forms. Caveats: the Gadgil effect is context-dependent and can be reversed by priming where N is abundant; the AM/ECM contrast partly covaries with climate and soil type; and the glomalin hypothesis for AM-driven C storage has not survived scrutiny because the assay is non-specific.</p></div></details>
+    <details class="q"><summary>4. Write the nitrogenase reaction, explain why fixation costs 6–12 g C per g N, and describe how a legume nodule reconciles the enzyme's O₂ sensitivity with its ATP demand.</summary><div class="a"><p>N<sub>2</sub> + 8H<sup>+</sup> + 8e<sup>−</sup> + 16 ATP → 2NH<sub>3</sub> + H<sub>2</sub> + 16 ADP + 16 P<sub>i</sub>. Eight electrons are required although only six reduce N<sub>2</sub>, because one H<sub>2</sub> is evolved obligatorily per N<sub>2</sub>; sixteen ATP is the minimum, two per electron delivered by the Fe protein to the MoFe protein. In carbon terms, 16 ATP per 28 g N at ~30 ATP per glucose (180 g, 72 g C) is only ~1.4 g C per g N for the reaction itself, but the plant also pays for nodule construction and maintenance, for respiration that protects nitrogenase from O<sub>2</sub>, for H<sub>2</sub> evolution, and for exporting ammonium as amides or ureides; measured totals are 6–12 g C per g N, compared with 1–3 g C per g N for uptake and assimilation of soil N. Nitrogenase is irreversibly oxidised by O<sub>2</sub>, yet bacteroids generate ATP by aerobic respiration. The nodule solves this with a cortical diffusion barrier that limits O<sub>2</sub> entry, high bacteroid respiration that consumes O<sub>2</sub> at the periphery, and leghemoglobin, which binds O<sub>2</sub> tightly (K<sub>d</sub> ~ nM), keeps free O<sub>2</sub> in infected cells at ~10–50 nM, and shuttles it to the bacteroid membranes fast enough to sustain oxidative phosphorylation. The same conflict is solved by heterocysts in cyanobacteria and vesicles in <em>Frankia</em>.</p></div></details>
+    <details class="q"><summary>5. Explain how the FUN model decides how a plant acquires nitrogen, derive the resistors-in-parallel mixing rule, and state what this changes relative to a demand-driven uptake scheme.</summary><div class="a"><p>FUN (Fisher et al. 2010) assigns each N pathway a carbon cost in g C g<sup>−1</sup> N: active uptake C<sub>act</sub> = k<sub>N</sub>/N<sub>soil</sub> + k<sub>C</sub>/C<sub>root</sub> (cheaper with more soil N and more roots), symbiotic fixation C<sub>fix</sub>(T) = −6.25[exp(−3.62 + 0.27T(1 − 0.5T/25.15)) − 2] (Houlton et al. 2008; ~7.5 at 25 °C, ~12 at 0 °C), retranslocation from senescing leaves C<sub>ret</sub> = k<sub>R</sub>/N<sub>leaf</sub> (cheap but limited to the leaf N pool), and in FUN 2.0/CLM5 mycorrhizal AM and ECM costs with their own k terms, the ECM one depending on soil organic N. The plant spends carbon on N acquisition while the carbon return on the N obtained (through leaf N and photosynthesis) exceeds the cost; the rest of NPP goes to growth. Pathways are combined like electrical resistors in parallel: if each route i has "resistance" C<sub>i</sub> and the N flux through it is N<sub>i</sub> = C<sub>spent</sub>/C<sub>i</sub> for a common carbon "potential", total N = C<sub>spent</sub>Σ(1/C<sub>i</sub>), so the effective cost is 1/C<sub>tot</sub> = Σ 1/C<sub>i</sub> and the fraction from route i is (1/C<sub>i</sub>)/Σ<sub>j</sub>(1/C<sub>j</sub>). Cheap routes dominate without being exclusive. Relative to demand-driven uptake (plant takes what it needs from the mineral N pool, fixation prescribed from NPP or ET), FUN makes N acquisition cost NPP explicitly, makes fixation emerge where and when soil N is scarce and warm, lets ECM plants exploit organic N, and produces a CO<sub>2</sub> fertilisation response that depends on mycorrhizal type, as observed by Terrer et al. (2016).</p></div></details>
+    <details class="q"><summary>6. Phosphate is nearly immobile in soil. Starting from the diffusion equation, explain why a root depletes only a thin cylinder of soil and how mycorrhizal hyphae overcome this. What soil properties make the mycorrhizal benefit largest?</summary><div class="a"><p>In soil the transport equation for a sorbing solute is b ∂C<sub>l</sub>/∂t = ∇·(D<sub>l</sub>θf ∇C<sub>l</sub>) − S, where C<sub>l</sub> is solution concentration, θ volumetric water content, f an impedance (tortuosity) factor, and b = dC<sub>total</sub>/dC<sub>l</sub> the buffer power (10<sup>2</sup>–10<sup>3</sup> for P). Dividing by b gives an effective diffusivity D<sub>e</sub> = D<sub>l</sub>θf/b of order 10<sup>−13</sup>–10<sup>−12</sup> m<sup>2</sup> s<sup>−1</sup>, 10<sup>3</sup>–10<sup>4</sup> times smaller than for nitrate. With a zero-sink root surface (uptake faster than supply, Nye–Tinker), the depletion front advances as roughly √(D<sub>e</sub>t): about 1 mm in a week, a few mm in a season. P more than a few millimetres from a root is effectively unavailable, so uptake is limited by root length density, not by root uptake kinetics. Hyphae overcome this geometrically and chemically: they are 2–10 µm thick, so a gram of carbon buys ~100× the length of roots and places absorbing surface tens of millimetres beyond the root, outside the depletion zone and in pores too fine for roots; their 1/r decline in density is compensated by branching; they transport P as polyphosphate to the arbuscule; and they release phosphatases (organic P) and, in ECM, oxalate (Ca/Fe/Al-P). The benefit is largest where D<sub>e</sub> is smallest (high buffer power: Fe/Al oxide-rich, acidic or calcareous soils; dry soils with low θ and f) and where root length density is low (thick-rooted species, early growth), and smallest in fertilised or sandy soils, which is why mycorrhizal growth responses decline with soil P and why thick-rooted species sit at the "outsourcing" end of the root economics space.</p></div></details>
+    <details class="q"><summary>7. Why are symbiotic nitrogen fixers rare in nitrogen-rich ecosystems and in mature boreal and temperate forests, but common in the tropics and in early succession? Discuss physiological regulation, cost–benefit and other limits.</summary><div class="a"><p>Physiology: mineral N inhibits nodule initiation and nitrogenase activity, and legumes operate autoregulation of nodulation (root CLE peptides, shoot receptor kinase), so fixation is sigmoidally down-regulated with half-inhibition at ~1–3 g N m<sup>−2</sup> of mineral N. Economics: fixation costs 6–12 g C g<sup>−1</sup> N versus 1–3 for soil N, so by the FUN logic the crossover N* = k<sub>N</sub>/C<sub>fix</sub> lies at low soil N; above it a fixer spends carbon a non-fixer does not, loses in competition for light, and is excluded. Temperature: C<sub>fix</sub> rises from ~7.5 g C g<sup>−1</sup> N at 25 °C to ~12 at 0 °C, so fixation is dearer in cold soils; this plus the long-lived N-conserving organic economy of ECM forests (which supply N via the fungal route) explains the scarcity of fixers in boreal and temperate forests, where instead moss–cyanobacteria associations provide small but sustained inputs. Other limits: P and Mo requirements (nodules are P- and Mo-rich; Mo addition raises fixation on tropical soils), shade intolerance because of the carbon cost, and herbivory of N-rich tissue. Early succession (lava flows, glacial forelands, disturbed sites) combines low N, high light and often young P-rich soils, favouring <em>Alnus</em>, <em>Lupinus</em>, <em>Coriaria</em>. Lowland tropical forests are a paradox: legume trees are abundant but mostly do not fix, or fix facultatively in gaps and disturbed patches; the explanation offered by Hedin and Menge is facultative fixation that switches on only where N limits locally, keeping the biome N-rich while maintaining capacity.</p></div></details>
+    <details class="q"><summary>8. Describe the root economics space of Bergmann et al. (2020) and explain how mycorrhizal "outsourcing" relates to the resource-acquisition strategies of Lambers et al. (2008) along a soil-age gradient.</summary><div class="a"><p>Bergmann et al. analysed ~1800 species and found that root traits vary along two independent axes. The conservation gradient runs from fast roots (high N, low tissue density, short lifespan) to slow roots (low N, dense tissue, long lifespan) and mirrors the leaf economics spectrum. The collaboration gradient runs from thin, high-specific-root-length roots that explore soil cheaply themselves ("do-it-yourself") to thick, low-SRL roots with large cortices that house many arbuscules and rely on mycorrhizal fungi for exploration ("outsourcing"); mycorrhizal colonisation increases with root diameter. The two axes are orthogonal, so a species can be any combination of fast/slow and DIY/outsourcing, and whole-plant root economics cannot be collapsed to one axis. Lambers et al. place acquisition strategies along soil age: young soils are N-limited and favour N-fixing symbioses (lots of P, little N); intermediate soils are N- and P-co-limited and favour mycorrhizal strategies (outsourcing, especially AM for P and ECM for N); the oldest, most P-impoverished soils (Western Australian kwongan, Cape fynbos) favour non-mycorrhizal species with cluster or dauciform roots that release carboxylates and phosphatases to mobilise sorbed and organic P, a carbon-expensive DIY chemical strategy that works only when P is so scarce that hyphae find nothing to collect. Both schemes are statements about marginal carbon return per unit nutrient: outsourcing pays when fungi explore soil more cheaply than roots and when the nutrient is diffusion-limited; DIY chemistry pays when the limiting nutrient is chemically locked rather than spatially distant; fixation pays when N, not P, is scarce.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Smith SE, Read DJ (2008). <em>Mycorrhizal Symbiosis</em>, 3rd ed. Academic Press, London. <span class="why">The standard text: structure, physiology and ecology of AM, ECM, ericoid and orchid mycorrhizas; carbon costs and P transport.</span></li>
+      <li>Read DJ (1991). Mycorrhizas in ecosystems. <em>Experientia</em> 47: 376–391. <a href="https://doi.org/10.1007/BF01972080">doi:10.1007/BF01972080</a><span class="why">The biome-gradient hypothesis linking mycorrhizal type to soil organic matter and nutrient limitation.</span></li>
+      <li>Phillips RP, Brzostek E, Midgley MG (2013). The mycorrhizal-associated nutrient economy: a new framework for predicting carbon–nutrient couplings in temperate forests. <em>New Phytologist</em> 199: 41–51. <a href="https://doi.org/10.1111/nph.12221">doi:10.1111/nph.12221</a><span class="why">MANE: AM inorganic vs ECM organic nutrient economies and their testable predictions.</span></li>
+      <li>Averill C, Turner BL, Finzi AC (2014). Mycorrhiza-mediated competition between plants and decomposers drives soil carbon storage. <em>Nature</em> 505: 543–545. <a href="https://doi.org/10.1038/nature12901">doi:10.1038/nature12901</a><span class="why">The 70% more C per unit N in ECM/ericoid ecosystems and the competition mechanism.</span></li>
+      <li>Kiers ET, Duhamel M, Beesetty Y, et al. (2011). Reciprocal rewards stabilize cooperation in the mycorrhizal symbiosis. <em>Science</em> 333: 880–882. <a href="https://doi.org/10.1126/science.1208473">doi:10.1126/science.1208473</a><span class="why">The biological-market experiment: both partners reward the more cooperative trading partner.</span></li>
+      <li>Brundrett MC, Tedersoo L (2018). Evolutionary history of mycorrhizal symbioses and global host plant diversity. <em>New Phytologist</em> 220: 1108–1115. <a href="https://doi.org/10.1111/nph.14976">doi:10.1111/nph.14976</a><span class="why">Source of the 72% AM, 2% ECM, 1.5% ericoid, 10% orchid, 8% non-mycorrhizal species shares.</span></li>
+      <li>Tedersoo L, Bahram M, Zobel M (2020). How mycorrhizal associations drive plant population and community biology. <em>Science</em> 367: eaba1223. <a href="https://doi.org/10.1126/science.aba1223">doi:10.1126/science.aba1223</a><span class="why">Review of mycorrhizal effects on plant communities, networks and feedbacks, with a critical view of popular claims.</span></li>
+      <li>Clemmensen KE, Bahr A, Ovaskainen O, et al. (2013). Roots and associated fungi drive long-term carbon sequestration in boreal forest. <em>Science</em> 339: 1615–1618. <a href="https://doi.org/10.1126/science.1231923">doi:10.1126/science.1231923</a><span class="why">50–70% of boreal soil C derives from roots and mycorrhizal fungi, not aboveground litter.</span></li>
+      <li>Vitousek PM, Menge DNL, Reed SC, Cleveland CC (2013). Biological nitrogen fixation: rates, patterns and ecological controls in terrestrial ecosystems. <em>Philosophical Transactions of the Royal Society B</em> 368: 20130119. <a href="https://doi.org/10.1098/rstb.2013.0119">doi:10.1098/rstb.2013.0119</a><span class="why">The ~58 Tg N yr⁻¹ constraint on natural terrestrial BNF and the controls on fixation.</span></li>
+      <li>Davies-Barnard T, Friedlingstein P (2020). The global distribution of biological nitrogen fixation in terrestrial natural ecosystems. <em>Global Biogeochemical Cycles</em> 34: e2019GB006387. <a href="https://doi.org/10.1029/2019GB006387">doi:10.1029/2019GB006387</a><span class="why">Observation-based BNF synthesis giving ~88 (52–130) Tg N yr⁻¹ and biome-level maps used to benchmark land models.</span></li>
+      <li>Fisher JB, Sitch S, Malhi Y, et al. (2010). Carbon cost of plant nitrogen acquisition: a mechanistic, globally applicable model of plant nitrogen uptake, retranslocation, and fixation. <em>Global Biogeochemical Cycles</em> 24: GB1014. <a href="https://doi.org/10.1029/2009GB003621">doi:10.1029/2009GB003621</a><span class="why">The FUN model: cost functions, the Houlton temperature dependence of fixation, and resistors-in-parallel mixing.</span></li>
+      <li>Brzostek ER, Fisher JB, Phillips RP (2014). Modeling the carbon cost of plant nitrogen acquisition: mycorrhizal trade-offs and multipath resistance uptake improve predictions of retranslocation. <em>Journal of Geophysical Research: Biogeosciences</em> 119: 1684–1697. <a href="https://doi.org/10.1002/2014JG002660">doi:10.1002/2014JG002660</a><span class="why">FUN 2.0 with AM and ECM pathways; basis of the scheme in CLM5.</span></li>
+      <li>Bergmann J, Weigelt A, van der Plas F, et al. (2020). The fungal collaboration gradient dominates the root economics space in plants. <em>Science Advances</em> 6: eaba3756. <a href="https://doi.org/10.1126/sciadv.aba3756">doi:10.1126/sciadv.aba3756</a><span class="why">The two-dimensional root economics space: conservation and collaboration (outsourcing vs do-it-yourself) gradients.</span></li>
+      <li>Cheng W, Parton WJ, Gonzalez-Meler MA, et al. (2014). Synthesis and modeling perspectives of rhizosphere priming. <em>New Phytologist</em> 201: 31–44. <a href="https://doi.org/10.1111/nph.12440">doi:10.1111/nph.12440</a><span class="why">Range and controls of the rhizosphere priming effect and how to represent it in models.</span></li>
+      <li>Kuzyakov Y (2010). Priming effects: interactions between living and dead organic matter. <em>Soil Biology and Biochemistry</em> 42: 1363–1371. <a href="https://doi.org/10.1016/j.soilbio.2010.04.003">doi:10.1016/j.soilbio.2010.04.003</a><span class="why">Real vs apparent priming and the mechanisms behind each.</span></li>
+      <li>Lambers H, Raven JA, Shaver GR, Smith SE (2008). Plant nutrient-acquisition strategies change with soil age. <em>Trends in Ecology &amp; Evolution</em> 23: 95–103. <a href="https://doi.org/10.1016/j.tree.2007.10.008">doi:10.1016/j.tree.2007.10.008</a><span class="why">N-fixers on young soils, mycorrhizas in the middle, cluster roots and carboxylates on old P-impoverished soils.</span></li>
+      <li>Hinsinger P, Bengough AG, Vetterlein D, Young IM (2009). Rhizosphere: biophysics, biogeochemistry and ecological relevance. <em>Plant and Soil</em> 321: 117–152. <a href="https://doi.org/10.1007/s11104-008-9885-9">doi:10.1007/s11104-008-9885-9</a><span class="why">Comprehensive review of rhizosphere gradients, scales and processes.</span></li>
+      <li>Philippot L, Raaijmakers JM, Lemanceau P, van der Putten WH (2013). Going back to the roots: the microbial ecology of the rhizosphere. <em>Nature Reviews Microbiology</em> 11: 789–799. <a href="https://doi.org/10.1038/nrmicro3109">doi:10.1038/nrmicro3109</a><span class="why">Rhizosphere microbiome assembly, plant–microbe feedbacks and PGPR mechanisms.</span></li>
+      <li>Terrer C, Vicca S, Hungate BA, Phillips RP, Prentice IC (2016). Mycorrhizal association as a primary control of the CO₂ fertilization effect. <em>Science</em> 353: 72–74. <a href="https://doi.org/10.1126/science.aaf4610">doi:10.1126/science.aaf4610</a><span class="why">Under low N, ECM plants but not AM plants sustain biomass gains under elevated CO₂.</span></li>
+      <li>Sulman BN, Shevliakova E, Brzostek ER, et al. (2019). Diverse mycorrhizal associations enhance terrestrial C storage in a global model. <em>Global Biogeochemical Cycles</em> 33: 501–523. <a href="https://doi.org/10.1029/2018GB005973">doi:10.1029/2018GB005973</a><span class="why">AM and ECM acquisition pathways coupled to a microbe-explicit soil model (CORPSE) in a global land model.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="nutrients.html">← Previous: Macro- and Micronutrients</a><a href="som-pools-fluxes.html">Next: Soil Organic Matter Pools and Fluxes →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#rhizosphere">The rhizosphere</a></li>
+      <li><a href="#mycorrhiza">Mycorrhizal symbiosis</a></li>
+      <li><a href="#soilc">Mycorrhizae &amp; soil carbon</a></li>
+      <li><a href="#bnf">Nitrogen fixation</a></li>
+      <li><a href="#strategies">Root traits &amp; strategies</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (illustrative FUN cost constants, a single-root radial diffusion model, toy market functions) chosen for intuition rather than prediction. Fixation cost follows Houlton et al. 2008 as implemented in FUN.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function out(id, v) { var o = document.getElementById(id); if (o) o.textContent = v; }
+
+  /* ---------- generic chart ---------- */
+  // cfg: svg, tip, x:{min,max,log,label,ticks}, y:{min,max,label,ticks}, series:[{pts,color,label,cls}], vlines:[{x,label}], hlines:[{y,label}], region:{x0,x1}, hover(x)->html
+  function chart(cfg) {
+    var svg = cfg.svg, tip = cfg.tip;
+    var W = 640, H = 360, mL = 58, mR = 100, mT = 16, mB = 48;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var X = cfg.x, Y = cfg.y;
+    function tx(x) { return X.log ? Math.log10(x) : x; }
+    var xa = tx(X.min), xb = tx(X.max);
+    function sx(x) { return mL + (tx(x) - xa) / (xb - xa) * pw; }
+    function sy(y) { return mT + (Y.max - y) / (Y.max - Y.min) * ph; }
+    function ix(px) { var v = xa + (px - mL) / pw * (xb - xa); return X.log ? Math.pow(10, v) : v; }
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (cfg.region) {
+      var r0 = clamp(sx(cfg.region.x0), mL, mL + pw), r1 = clamp(sx(cfg.region.x1), mL, mL + pw);
+      if (r1 > r0) svg.appendChild(el('rect', { 'class': 'region', x: r0, y: mT, width: r1 - r0, height: ph }));
+    }
+    Y.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(t), y2: sy(t) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(t) + 4, 'text-anchor': 'end' }, Y.fmt ? Y.fmt(t) : t)); });
+    X.ticks.forEach(function (t) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(t), x2: sx(t), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(t), y: mT + ph + 18, 'text-anchor': 'middle' }, X.fmt ? X.fmt(t) : t)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, X.label));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, Y.label));
+    (cfg.hlines || []).forEach(function (h) { svg.appendChild(el('line', { 'class': 'mark', x1: mL, x2: mL + pw, y1: sy(h.y), y2: sy(h.y) })); if (h.label) svg.appendChild(el('text', { 'class': 'marklbl', x: mL + 6, y: sy(h.y) - 5 }, h.label)); });
+    (cfg.vlines || []).forEach(function (v) { if (v.x < X.min || v.x > X.max) return; svg.appendChild(el('line', { 'class': 'mark', x1: sx(v.x), x2: sx(v.x), y1: mT, y2: mT + ph })); if (v.label) svg.appendChild(el('text', { 'class': 'marklbl', x: sx(v.x) + 5, y: v.bottom ? mT + ph - 6 : mT + 12 }, v.label)); });
+    var labs = [];
+    cfg.series.forEach(function (s) {
+      var d = '', last = null;
+      s.pts.forEach(function (p, i) { var yv = clamp(p[1], Y.min, Y.max); d += (i === 0 ? 'M' : 'L') + sx(p[0]).toFixed(1) + ',' + sy(yv).toFixed(1); last = yv; });
+      var path = el('path', { 'class': 'ser' + (s.cls ? ' ' + s.cls : ''), d: d }); if (s.color) path.setAttribute('stroke', s.color); svg.appendChild(path);
+      if (s.label) labs.push({ t: s.label, y: sy(last), col: s.color || 'var(--fg)' });
+    });
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    if (labs.length) { if (labs[labs.length - 1].y > mT + ph) labs[labs.length - 1].y = mT + ph; for (var j = labs.length - 2; j >= 0; j--) if (labs[j + 1].y - labs[j].y < 14) labs[j].y = labs[j + 1].y - 14; }
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    (cfg.points || []).forEach(function (p) { svg.appendChild(el('circle', { 'class': 'op', cx: sx(p.x), cy: sy(clamp(p.y, Y.min, Y.max)), r: 5 })); if (p.label) svg.appendChild(el('text', { 'class': 'tick', x: sx(p.x) + 9, y: sy(clamp(p.y, Y.min, Y.max)) - 8 }, p.label)); });
+    // hover
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var xv = ix(clamp(p.x, mL, mL + pw));
+      xh.setAttribute('x1', sx(xv)); xh.setAttribute('x2', sx(xv)); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = cfg.hover(xv); tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function interp(pts, x) { // linear interpolation on sorted pts
+    if (x <= pts[0][0]) return pts[0][1]; var n = pts.length; if (x >= pts[n - 1][0]) return pts[n - 1][1];
+    var lo = 0, hi = n - 1; while (hi - lo > 1) { var m = (lo + hi) >> 1; if (pts[m][0] <= x) lo = m; else hi = m; }
+    var t = (x - pts[lo][0]) / (pts[hi][0] - pts[lo][0]); return pts[lo][1] + t * (pts[hi][1] - pts[lo][1]);
+  }
+  function tableHTML(id, head, rows) { var h = '<thead><tr>' + head.map(function (c) { return '<th class="num">' + c + '</th>'; }).join('') + '</tr></thead><tbody>'; rows.forEach(function (r) { h += '<tr>' + r.map(function (c) { return '<td class="num">' + c + '</td>'; }).join('') + '</tr>'; }); document.getElementById(id).innerHTML = h + '</tbody>'; }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) { e.addEventListener('input', fn); e.addEventListener('change', fn); } }); }
+  function costFix(T) { return -6.25 * (Math.exp(-3.62 + 0.27 * T * (1 - 0.5 * T / 25.15)) - 2); }
+
+  /* ---------- Lab: P depletion zone ---------- */
+  function depletion(Dlf, b, Lh, days, withH) {
+    var r0 = 0.15e-3, R = 40e-3, dr = 0.2e-3, n = Math.round((R - r0) / dr) + 1, k0 = 2e-4;
+    var De = Dlf / b, t = days * 86400, dt = Math.min(0.4 * dr * dr / De, t / 60); var steps = Math.ceil(t / dt); dt = t / steps;
+    var C = new Array(n), r = new Array(n), kh = new Array(n), i;
+    for (i = 0; i < n; i++) { r[i] = r0 + i * dr; C[i] = 1; kh[i] = (withH && Lh > 0 && r[i] < r0 + Lh) ? k0 * (r0 / r[i]) / b : 0; }
+    C[0] = 0; var hyph = 0;
+    for (var s = 0; s < steps; s++) {
+      var Cn = C.slice();
+      for (i = 1; i < n - 1; i++) {
+        var lap = (C[i + 1] - 2 * C[i] + C[i - 1]) / (dr * dr) + (C[i + 1] - C[i - 1]) / (2 * dr * r[i]);
+        var sink = kh[i] * C[i];
+        Cn[i] = C[i] + dt * (De * lap - sink);
+        hyph += sink * b * 2 * Math.PI * r[i] * dr * dt;
+      }
+      Cn[n - 1] = Cn[n - 2]; Cn[0] = 0; C = Cn;
+    }
+    var tot = 0, dz = 0; for (i = 0; i < n; i++) { tot += (1 - C[i]) * b * 2 * Math.PI * r[i] * dr; if (C[i] < 0.9) dz = r[i] - r0; }
+    return { r: r, C: C, tot: tot * 1000, hyph: hyph * 1000, dz: dz * 1000, De: De }; // tot in umol per m root per uM of C0
+  }
+  var depSvg = document.getElementById('depSvg'), depTip = document.getElementById('depTip');
+  function drawDep() {
+    var Dlf = +document.getElementById('dD').value * 1e-11, b = Math.pow(10, +document.getElementById('dB').value), Lh = +document.getElementById('dL').value, days = +document.getElementById('dT').value, C0 = +document.getElementById('dC').value;
+    out('dDO', document.getElementById('dD').value); out('dBO', fmt(b, 0)); out('dLO', Lh); out('dTO', days); out('dCO', C0);
+    var a = depletion(Dlf, b, Lh * 1e-3, days, false), h = depletion(Dlf, b, Lh * 1e-3, days, true);
+    var pa = [], phh = []; for (var i = 0; i < a.r.length; i++) { var x = (a.r[i] - 0.15e-3) * 1000; pa.push([x, a.C[i]]); phh.push([x, h.C[i]]); }
+    var series = [{ pts: pa, color: 'var(--series-1)', label: 'root alone' }];
+    if (Lh > 0) series.push({ pts: phh, color: 'var(--series-2)', label: 'root + hyphae' });
+    var xm = Lh > 0 ? Math.min(40, Math.max(10, Lh + 5)) : Math.max(5, Math.min(40, Math.ceil(a.dz * 3 + 2))); var xt = []; var xs = xm > 20 ? 5 : (xm > 10 ? 2 : 1); for (var xx = 0; xx <= xm; xx += xs) xt.push(xx);
+    chart({ svg: depSvg, tip: depTip,
+      x: { min: 0, max: xm, label: 'Distance from root surface (mm)', ticks: xt },
+      y: { min: 0, max: 1.05, label: 'Solution P relative to initial, C / C₀', ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], fmt: function (t) { return fmt(t, 1); } },
+      series: series, vlines: Lh > 0 ? [{ x: Lh, label: 'hyphal extent' }] : [],
+      hover: function (x) { return 'distance <b>' + fmt(x, 1) + '</b> mm<br>root alone C/C₀ <b>' + fmt(interp(pa, x), 2) + '</b>' + (Lh > 0 ? ' · with hyphae <b>' + fmt(interp(phh, x), 2) + '</b>' : ''); } });
+    out('dDe', (a.De).toExponential(2) + ' m² s⁻¹');
+    out('dDz', fmt(a.dz, 1) + ' mm');
+    out('dPr', fmt(a.tot * C0, 2) + ' µmol m⁻¹');
+    out('dPh', fmt(h.tot * C0, 2) + ' µmol m⁻¹');
+    out('dPhh', fmt(h.hyph * C0, 2) + ' µmol m⁻¹ (' + fmt(100 * h.hyph / Math.max(h.tot, 1e-9), 0) + '%)');
+    out('dGain', fmt(h.tot / a.tot, 2) + '×');
+    var rows = []; [0, 0.2, 0.5, 1, 2, 3, 5, 10, 15, 20, 30, 40].forEach(function (x) { if (x <= xm) rows.push([x, fmt(interp(pa, x), 3), fmt(interp(phh, x), 3)]); });
+    tableHTML('depTable', ['Distance (mm)', 'C/C₀ root alone', 'C/C₀ with hyphae'], rows);
+  }
+  bind(['dD', 'dB', 'dL', 'dT', 'dC'], drawDep); drawDep();
+
+  /* ---------- Lab: N fixation vs soil N ---------- */
+  var fixSvg = document.getElementById('fixSvg'), fixTip = document.getElementById('fixTip');
+  function drawFix() {
+    var D = +document.getElementById('fD').value, Umax = +document.getElementById('fU').value, T = +document.getElementById('fT').value, kN = +document.getElementById('fK').value, N50 = +document.getElementById('fH').value, Nr = +document.getElementById('fN').value;
+    out('fDO', D); out('fUO', Umax); out('fTO', T); out('fKO', kN); out('fHO', fmt(N50, 1)); out('fNO', fmt(Nr, 2));
+    var cf = costFix(T), Ns = kN / cf;
+    function U(N) { return Umax * N / (N + 1); }
+    function g(N) { return 1 / (1 + Math.pow(N / N50, 2)); }
+    function Fp(N) { return D * g(N); }
+    function Fe(N) { return (kN / N > cf) ? Math.max(0, D - U(N)) : 0; }
+    var pu = [], pp = [], pe = [], pd = [];
+    for (var N = 0.02; N <= 8.0001; N += 0.02) { pu.push([N, U(N)]); pp.push([N, Fp(N)]); pe.push([N, Fe(N)]); pd.push([N, D]); }
+    // make the economic step sharp
+    pe.sort(function (a, b) { return a[0] - b[0]; });
+    var ymax = Math.max(D, Umax) * 1.1; var step = ymax > 25 ? 10 : 5; var yt = []; for (var y = 0; y <= ymax; y += step) yt.push(y);
+    chart({ svg: fixSvg, tip: fixTip,
+      x: { min: 0, max: 8, label: 'Soil mineral N in root zone (g N m⁻²)', ticks: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+      y: { min: 0, max: ymax, label: 'N flux (g N m⁻² yr⁻¹)', ticks: yt, fmt: function (t) { return fmt(t, 0); } },
+      region: { x0: 0, x1: Ns },
+      series: [
+        { pts: pd, cls: 'net', label: 'demand D' },
+        { pts: pu, color: 'var(--series-1)', label: 'uptake U(N)' },
+        { pts: pp, color: 'var(--series-2)', label: 'fixation (phys.)' },
+        { pts: pe, color: 'var(--series-3)', cls: 'dash', label: 'fixation (econ.)' }],
+      vlines: [{ x: Ns, label: 'N* = ' + fmt(Ns, 2) }, { x: Nr, label: 'readout N', bottom: true }],
+      hover: function (x) { return 'soil N <b>' + fmt(x, 2) + '</b> g m⁻²<br>uptake <b>' + fmt(U(x), 1) + '</b> · fix (phys.) <b>' + fmt(Fp(x), 1) + '</b> · fix (econ.) <b>' + fmt(Fe(x), 1) + '</b> g N m⁻² yr⁻¹<br>uptake cost <b>' + fmt(kN / x, 1) + '</b> vs fixation <b>' + fmt(cf, 1) + '</b> g C g⁻¹ N'; } });
+    out('fCf', fmt(cf, 2) + ' g C g⁻¹ N');
+    out('fCu', fmt(kN / Nr, 2) + ' g C g⁻¹ N');
+    out('fNs', fmt(Ns, 2) + ' g N m⁻²');
+    out('fFp', fmt(Fp(Nr), 2) + ' g N m⁻² yr⁻¹');
+    out('fFe', fmt(Fe(Nr), 2) + ' g N m⁻² yr⁻¹');
+    out('fCc', fmt(Fe(Nr) * cf, 0) + ' g C m⁻² yr⁻¹');
+    var rows = []; [0.1, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8].forEach(function (N) { rows.push([N, fmt(U(N), 1), fmt(Fp(N), 1), fmt(Fe(N), 1), fmt(kN / N, 1)]); });
+    tableHTML('fixTable', ['Soil N (g m⁻²)', 'Uptake', 'Fix. phys.', 'Fix. econ.', 'Uptake cost (g C g⁻¹ N)'], rows);
+  }
+  bind(['fD', 'fU', 'fT', 'fK', 'fH', 'fN'], drawFix); drawFix();
+
+  /* ---------- Lab: mycorrhizal market ---------- */
+  var mktSvg = document.getElementById('mktSvg'), mktTip = document.getElementById('mktTip');
+  function drawMkt() {
+    var P = +document.getElementById('mP').value, rho = +document.getElementById('mR').value, tau = +document.getElementById('mT').value, B = +document.getElementById('mB').value, Pd = +document.getElementById('mD').value;
+    out('mPO', fmt(P, 1)); out('mRO', rho); out('mTO', fmt(tau, 2)); out('mBO', B); out('mDO', fmt(Pd, 2));
+    var kap = 300, Ar = P * (0.35 + 0.5 * P / (P + 2)), Ah = P * 0.85;
+    function Pr(f) { return Ar * (1 - Math.exp(-(1 - f) * B / kap)); }
+    function Pf(f) { return (1 - tau) * Ah * (1 - Math.exp(-f * B * rho / kap)); }
+    function Pt(f) { return Pr(f) + Pf(f); }
+    var pr = [], pf = [], pt = [], best = 0, bestV = -1;
+    for (var f = 0; f <= 1.00001; f += 0.01) { pr.push([f, Pr(f)]); pf.push([f, Pf(f)]); var v = Pt(f); pt.push([f, v]); if (v > bestV) { bestV = v; best = f; } }
+    var ymax = Math.max(Pt(best), Pd) * 1.15; var step = ymax > 4 ? 1 : (ymax > 2 ? 0.5 : (ymax > 0.8 ? 0.2 : 0.1)); var yt = []; for (var y = 0; y <= ymax + 1e-9; y += step) yt.push(+y.toFixed(2));
+    chart({ svg: mktSvg, tip: mktTip,
+      x: { min: 0, max: 1, label: 'Fraction of belowground C allocated to the fungus, f', ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], fmt: function (t) { return fmt(t, 1); } },
+      y: { min: 0, max: ymax, label: 'P acquired (g P m⁻² yr⁻¹)', ticks: yt, fmt: function (t) { return fmt(t, 2); } },
+      series: [
+        { pts: pr, color: 'var(--series-1)', label: 'roots' },
+        { pts: pf, color: 'var(--series-2)', label: 'fungus' },
+        { pts: pt, cls: 'net', label: 'total' }],
+      hlines: [{ y: Pd, label: 'plant P demand' }],
+      points: [{ x: best, y: bestV, label: 'optimum f* = ' + fmt(best, 2) }],
+      hover: function (x) { return 'f <b>' + fmt(x, 2) + '</b><br>roots <b>' + fmt(Pr(x), 3) + '</b> · fungus <b>' + fmt(Pf(x), 3) + '</b> · total <b>' + fmt(Pt(x), 3) + '</b> g P m⁻² yr⁻¹'; } });
+    out('mF', fmt(best, 2));
+    out('mPopt', fmt(bestV, 3) + ' g P m⁻² yr⁻¹');
+    out('mP0', fmt(Pt(0), 3) + ' g P m⁻² yr⁻¹');
+    out('mMGR', fmt(bestV / Pt(0), 2) + '×');
+    out('mC', fmt(best * B, 0) + ' g C · ' + fmt(best * 100, 0) + '%');
+    out('mMet', bestV >= Pd ? 'yes (surplus ' + fmt(bestV - Pd, 2) + ')' : 'no (deficit ' + fmt(Pd - bestV, 2) + ')');
+    var rows = []; [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1].forEach(function (f) { rows.push([fmt(f, 1), fmt(Pr(f), 3), fmt(Pf(f), 3), fmt(Pt(f), 3)]); });
+    tableHTML('mktTable', ['f', 'P roots', 'P fungus', 'P total'], rows);
+  }
+  bind(['mP', 'mR', 'mT', 'mB', 'mD'], drawMkt); drawMkt();
+
+  /* ---------- Lab: FUN costs ---------- */
+  var funSvg = document.getElementById('funSvg'), funTip = document.getElementById('funTip');
+  function drawFun() {
+    var N = Math.pow(10, +document.getElementById('uN').value), Norg = +document.getElementById('uO').value, Cr = +document.getElementById('uR').value, T = +document.getElementById('uT').value, typ = document.getElementById('uM').value;
+    out('uNO', fmt(N, 2)); out('uOO', Norg); out('uRO', Cr); out('uTO', T);
+    var cf = costFix(T), cret = 1.5;
+    function cAct(n) { return 6 / n + 600 / Cr; }
+    function cAM(n) { return 5 / n + 200 / Cr; }
+    function cECM(n) { return 8 / (n + 0.1 * Norg) + 250 / Cr; }
+    var pa = [], pm = [], pe = [], pf = [], pr = [], pt = [];
+    function cMyc(n) { return typ === 'am' ? cAM(n) : cECM(n); }
+    function cTot(n) { return 1 / (1 / cAct(n) + 1 / cMyc(n) + 1 / cf); }
+    for (var lg = -1.3; lg <= 1.3001; lg += 0.02) { var n = Math.pow(10, lg); pa.push([n, cAct(n)]); pm.push([n, cAM(n)]); pe.push([n, cECM(n)]); pf.push([n, cf]); pr.push([n, cret]); pt.push([n, cTot(n)]); }
+    chart({ svg: funSvg, tip: funTip,
+      x: { min: 0.05, max: 20, log: true, label: 'Soil mineral N (g N m⁻², log scale)', ticks: [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20] },
+      y: { min: 0, max: 40, label: 'Carbon cost of N (g C g⁻¹ N)', ticks: [0, 10, 20, 30, 40] },
+      series: [
+        { pts: pa, color: 'var(--series-1)', label: 'active' },
+        { pts: pm, color: 'var(--series-3)', label: 'AM', cls: typ === 'am' ? '' : 'dash' },
+        { pts: pe, color: 'var(--accent-2)', label: 'ECM', cls: typ === 'ecm' ? '' : 'dash' },
+        { pts: pf, color: 'var(--series-2)', label: 'fixation' },
+        { pts: pr, color: 'var(--muted)', cls: 'dash', label: 'retrans.' },
+        { pts: pt, cls: 'net', label: 'mix' }],
+      vlines: [{ x: N, label: 'current soil N' }],
+      hover: function (x) { return 'soil N <b>' + fmt(x, 2) + '</b> g m⁻²<br>active <b>' + fmt(cAct(x), 1) + '</b> · AM <b>' + fmt(cAM(x), 1) + '</b> · ECM <b>' + fmt(cECM(x), 1) + '</b> · fixation <b>' + fmt(cf, 1) + '</b><br>parallel mix (' + typ.toUpperCase() + ' plant) <b>' + fmt(cTot(x), 1) + '</b> g C g⁻¹ N'; } });
+    var ca = cAct(N), cm = cMyc(N);
+    var items = [['active root uptake', ca], [typ === 'am' ? 'AM uptake' : 'ECM uptake', cm], ['symbiotic fixation', cf]];
+    items.sort(function (p, q) { return p[1] - q[1]; });
+    out('uCa', fmt(ca, 1) + ' g C g⁻¹ N'); out('uCm', fmt(cm, 1) + ' g C g⁻¹ N'); out('uCf', fmt(cf, 1) + ' g C g⁻¹ N'); out('uCr', fmt(cret, 1) + ' g C g⁻¹ N (limited)');
+    out('uBest', items[0][0] + (cret < items[0][1] ? ' (after retranslocation)' : ''));
+    out('uCt', fmt(cTot(N), 1) + ' g C g⁻¹ N');
+    var S = 1 / ca + 1 / cm + 1 / cf, fa = (1 / ca) / S, fm = (1 / cm) / S, ff = (1 / cf) / S;
+    document.getElementById('mxA').style.width = (fa * 100) + '%'; document.getElementById('mxM').style.width = (fm * 100) + '%'; document.getElementById('mxF').style.width = (ff * 100) + '%';
+    out('mxAl', fmt(fa * 100, 0) + '%'); out('mxMl', fmt(fm * 100, 0) + '%'); out('mxFl', fmt(ff * 100, 0) + '%');
+    document.getElementById('mxMs').firstChild.textContent = (typ === 'am' ? 'AM ' : 'ECM ');
+    var rows = []; [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20].forEach(function (n) { rows.push([n, fmt(cAct(n), 1), fmt(cAM(n), 1), fmt(cECM(n), 1), fmt(cf, 1), fmt(cTot(n), 1)]); });
+    tableHTML('funTable', ['Soil N (g m⁻²)', 'Active', 'AM', 'ECM', 'Fixation', 'Mix'], rows);
+  }
+  bind(['uN', 'uO', 'uR', 'uT', 'uM'], drawFun); drawFun();
+})();
+</script>
+</body>
+</html>

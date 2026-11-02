@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Decision Trees and Random Forests</title>
+<meta name="description" content="CART and random forests at comprehensive-exam depth: impurity measures, greedy splitting, cost-complexity pruning, bagging and the variance of correlated averages, random feature subsets, out-of-bag error, variable importance and its biases, boosting, spatial cross-validation, area of applicability, and ecological applications from SoilGrids to FLUXCOM.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2.2; stroke-linejoin: round; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .pt0 { fill: var(--series-1); stroke: var(--surface); stroke-width: 1; opacity: 0.9; }
+  .ch .pt1 { fill: var(--series-2); stroke: var(--surface); stroke-width: 1; opacity: 0.9; }
+  .ch .ptr { fill: var(--fg); stroke: var(--surface); stroke-width: 1; opacity: 0.8; }
+  .ch .region { stroke: none; }
+  .ch .split { stroke: var(--fg); stroke-width: 1.6; }
+  .ch .split.new { stroke: var(--accent); stroke-width: 2.4; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .cell { stroke: none; }
+  .ch .extrap { fill: var(--accent-2-soft); opacity: 0.55; }
+  .ch .bar { fill: var(--series-1); }
+  .tree text { font-family: var(--font-display); fill: var(--fg); font-size: 10.5px; }
+  .tree .node rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+  .tree .node.leaf rect { stroke-width: 1.5; }
+  .tree .node .sub { font-size: 9.5px; fill: var(--muted); }
+  .tree .edge { fill: none; stroke: var(--line); stroke-width: 1.4; }
+  .tree .elbl { font-size: 9px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .chk { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
+  .chk input { accent-color: var(--accent); }
+  .status { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); min-height: 1.2em; }
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 760px) { .twocol { grid-template-columns: 1fr; } }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Decision trees and random forests</div>
+    <div class="eyebrow">Topic 2 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Decision Trees and Random Forests</h1>
+    <p class="lead">How recursive binary splitting turns a cloud of plot data into an if-then rule, why a single tree is unstable, and how averaging hundreds of decorrelated trees produces the method behind SoilGrids, FLUXCOM and most ecological prediction maps, together with what it cannot do: extrapolate.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>A classification and regression tree (CART) partitions predictor space into rectangles by a sequence of greedy binary splits, each chosen to maximise the decrease in an <strong>impurity</strong> measure (Gini index or entropy for classes, sum of squared errors for a continuous response), and predicts a constant (majority class or mean) in each rectangle. Trees are interpretable, capture interactions and thresholds without being told, and are indifferent to monotone transformations of predictors, but they are <strong>high-variance</strong>: a small change in the data can change the first split and therefore the whole tree. Pruning by cost-complexity, \(R_\alpha(T) = R(T) + \alpha|T|\), trades fit against size. <strong>Bagging</strong> averages trees grown on bootstrap samples, cutting variance by up to a factor \(B\) only if the trees are uncorrelated; <strong>random forests</strong> (Breiman 2001) add a random subset of \(m_{\text{try}}\) candidate predictors at every split to decorrelate the trees, so the ensemble variance \(\rho\sigma^2 + (1-\rho)\sigma^2/B\) falls further. The samples left out of each bootstrap give a free <strong>out-of-bag</strong> error estimate and permutation-based variable importance. Forests rarely overfit with more trees, need little tuning, and dominate ecological prediction tasks, but they predict piecewise-constant surfaces bounded by the training range, so they cannot extrapolate to novel CO₂, climate or management, which is exactly where process models are needed. <strong>Boosting</strong> builds trees sequentially on residuals and reduces bias instead of variance; it is more accurate when tuned and more prone to overfitting.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect four things: define the impurity measures and show why a split reduces them; derive the variance of an average of correlated predictors and explain what \(m_{\text{try}}\) does to \(\rho\); explain out-of-bag error and the two kinds of variable importance with their biases; and, for an ecosystem-modelling student, argue when a random forest should replace, complement or never replace a process model, with spatial autocorrelation and extrapolation as the key words.</p></div>
+  </section>
+
+  <section id="cart">
+    <h2>CART: recursive binary partitioning</h2>
+    <p>Given training data \((\mathbf{x}_i, y_i)\), \(i = 1..n\), with \(p\) predictors, CART (Breiman, Friedman, Olshen &amp; Stone 1984 [1]) starts with all data in a root node and repeatedly asks, for each node: which predictor \(j\) and which cut point \(s\) split the node's observations into \(\{x_j \le s\}\) and \(\{x_j > s\}\) so as to most reduce impurity? The chosen split is applied, and the procedure recurses on the two children until a stopping rule fires. The result is a binary tree whose leaves tile predictor space into axis-aligned rectangles \(R_1, \dots, R_M\), with prediction</p>
+    <div class="eq">$$\hat f(\mathbf{x}) = \sum_{m=1}^{M} c_m\,\mathbb{1}[\mathbf{x} \in R_m], \qquad c_m = \begin{cases}\bar y_{R_m} & \text{regression}\\ \arg\max_k \hat p_{mk} & \text{classification}\end{cases}$$</div>
+    <p>where \(\hat p_{mk}\) is the fraction of class \(k\) in leaf \(m\). The search is <strong>greedy</strong>: each split is best given the splits above it, with no look-ahead, because finding the globally optimal tree is NP-hard. Greedy splitting is why a tree can miss an XOR-type interaction (no single split helps, so none is made) and why a tree built on slightly different data can look completely different.</p>
+
+    <h3>Impurity measures</h3>
+    <p>For a classification node with class proportions \(\hat p_1, \dots, \hat p_K\):</p>
+    <div class="eq">$$\text{Gini: } G = \sum_{k} \hat p_k(1-\hat p_k) = 1 - \sum_k \hat p_k^2, \qquad \text{entropy: } H = -\sum_k \hat p_k \log_2 \hat p_k, \qquad \text{misclassification: } E = 1 - \max_k \hat p_k.$$</div>
+    <p>All three are zero for a pure node and maximal at equal proportions (for two classes: \(G = 0.5\), \(H = 1\) bit, \(E = 0.5\)). Gini and entropy are strictly concave in \(\hat p\), misclassification is only piecewise linear, and that difference matters. The <strong>decrease in impurity</strong> from splitting node \(t\) with \(n_t\) observations into left and right children is</p>
+    <div class="eq">$$\Delta I(s, t) = I(t) - \frac{n_L}{n_t} I(t_L) - \frac{n_R}{n_t} I(t_R),$$</div>
+    <p>which by Jensen's inequality is \(\ge 0\) for any concave \(I\) (the children's proportions average to the parent's). With entropy, \(\Delta I\) is the <strong>information gain</strong>, the mutual information between the split indicator and the class. With misclassification, two splits that both yield children with the same majority class produce \(\Delta E = 0\) even if one of them makes the children far purer, so Gini or entropy is used to grow trees; misclassification is used only when pruning. Gini can be read as the expected error rate when each observation is labelled at random according to the node's class proportions, or as the variance of the class indicator summed over classes.</p>
+    <p>For regression the impurity is the within-node sum of squares, and the split maximises the <strong>variance reduction</strong></p>
+    <div class="eq">$$\Delta \mathrm{SSE} = \sum_{i\in t}(y_i - \bar y_t)^2 - \Big[\sum_{i\in t_L}(y_i-\bar y_{L})^2 + \sum_{i\in t_R}(y_i-\bar y_{R})^2\Big] = \frac{n_L n_R}{n_t}(\bar y_L - \bar y_R)^2,$$</div>
+    <p>the last form showing that the best split maximises the between-child contrast weighted by balance; it is the \(t\)-statistic numerator for a two-group comparison, which is why trees love to split where a step is.</p>
+
+    <h3>The split search and its cost</h3>
+    <p>For a continuous predictor the candidate cut points are the midpoints between consecutive sorted distinct values, so at most \(n_t - 1\) per predictor. Sorting costs \(O(n_t\log n_t)\) and the scan that updates running class counts (or running sums and sums of squares) costs \(O(n_t)\), so one node costs \(O(p\,n_t\log n_t)\) and a balanced tree of depth \(\log n\) costs roughly \(O(p\,n\log^2 n)\). For an unordered categorical predictor with \(q\) levels there are \(2^{q-1}-1\) subsets; for two classes or regression the levels can be ordered by their mean response and only \(q-1\) splits need checking (a theorem in Breiman et al.), but many-level factors still get an unfair number of chances to look good.</p>
+
+    <h3>Stopping and cost-complexity pruning</h3>
+    <p>Growing stops when a node is pure, has fewer than a minimum number of observations (e.g. 5–20 for regression, 1 for the trees inside a forest), has reached a maximum depth, or when no split improves impurity by more than a threshold. The last rule is short-sighted (a useless split may enable a very good one below), so CART grows a large tree \(T_0\) and <strong>prunes</strong>. For each \(\alpha \ge 0\) define the cost-complexity</p>
+    <div class="eq">$$R_\alpha(T) = R(T) + \alpha\,|T|, \qquad R(T) = \sum_{m=1}^{|T|} \sum_{i \in R_m} (y_i - c_m)^2 \;\text{ or } \sum_m n_m\,E_m,$$</div>
+    <p>with \(|T|\) the number of leaves. For every \(\alpha\) there is a unique smallest subtree \(T_\alpha \subseteq T_0\) minimising \(R_\alpha\), and the \(T_\alpha\) are nested as \(\alpha\) increases. <strong>Weakest-link pruning</strong> finds them: for each internal node \(t\) compute \(g(t) = [R(t) - R(T_t)]/(|T_t| - 1)\), the per-leaf improvement its subtree \(T_t\) buys; collapse the node with the smallest \(g(t)\); repeat. This yields a sequence \(\alpha_1 < \alpha_2 < \dots\) and trees \(T_0 \supset T_1 \supset \dots\), and \(\alpha\) is then chosen by \(K\)-fold cross-validation, usually with the <strong>one-standard-error rule</strong> (the simplest tree whose CV error is within one SE of the minimum). In R, <code>rpart</code> reports \(\alpha\) as <code>cp</code>, scaled by the root's error.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · Build a tree: drought mortality vs VPD and soil water</h3><div class="steps"><button class="btn small primary" id="t1Play" type="button">Grow step by step</button><button class="btn small" id="t1Reset" type="button">Reset</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap"><svg class="ch" id="t1Svg" viewBox="0 0 640 420" role="img" aria-label="Partition of the VPD–soil water plane by a CART tree, with surviving and dead trees as points"></svg></div>
+          <div class="legend"><span style="--c:var(--series-2)">died (y = 1)</span><span style="--c:var(--series-1)">survived (y = 0)</span><span style="--c:var(--accent)">most recent split</span></div>
+          <div class="figwrap" style="margin-top:0.75rem"><svg class="tree" id="t1Tree" viewBox="0 0 640 230" role="img" aria-label="Tree diagram of the splits"></svg></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of nodes</summary><div class="tablewrap"><table id="t1Table"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="t1Depth"><span>Maximum depth</span><output id="t1DepthO">3</output></label><input type="range" id="t1Depth" min="0" max="6" step="1" value="3"></div>
+          <div class="ctrl"><label for="t1Min"><span>Minimum leaf size</span><output id="t1MinO">5</output></label><input type="range" id="t1Min" min="1" max="40" step="1" value="5"></div>
+          <div class="chk"><input type="radio" name="t1Crit" id="t1Gini" value="gini" checked><label for="t1Gini">split on Gini</label></div>
+          <div class="chk"><input type="radio" name="t1Crit" id="t1Ent" value="entropy"><label for="t1Ent">split on entropy</label></div>
+          <dl class="readout">
+            <dt>Leaves</dt><dd id="t1Leaves"></dd>
+            <dt>Root Gini · entropy</dt><dd id="t1Root"></dd>
+            <dt>Weighted leaf Gini · entropy</dt><dd id="t1Imp"></dd>
+            <dt>Training error rate</dt><dd id="t1Err"></dd>
+            <dt>Newest split</dt><dd id="t1Last"></dd>
+            <dt>Its ΔGini</dt><dd id="t1DG"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Three hundred trees (seeded synthetic data) whose mortality depends on VPD, soil water and their interaction. Each step adds one depth level; every region is coloured by its majority class with opacity proportional to purity. Suggested experiments: compare the first split under Gini and entropy (usually identical); push depth to 6 with leaf size 1 and watch the tree carve out single points (overfitting); then raise the minimum leaf size to 25 and see which splits survive. Note that every boundary is vertical or horizontal even though the true boundary is diagonal: the tree approximates a slope with a staircase.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Impurity functions for a two-class node</h3><span class="small muted">Hover to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="ch" id="t2Svg" viewBox="0 0 640 300" role="img" aria-label="Gini index, entropy and misclassification rate as functions of the class-1 proportion"></svg><div class="chart-tip" id="t2Tip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--series-1)">Gini 2p(1−p)</span><span style="--c:var(--series-2)">entropy (bits)</span><span style="--c:var(--series-3)">misclassification min(p, 1−p)</span><span style="--c:var(--fg)">chord for the split you set</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="t2pL"><span>Left child p₁</span><output id="t2pLO">0.20</output></label><input type="range" id="t2pL" min="0" max="1" step="0.01" value="0.2"></div>
+          <div class="ctrl"><label for="t2pR"><span>Right child p₁</span><output id="t2pRO">0.70</output></label><input type="range" id="t2pR" min="0" max="1" step="0.01" value="0.7"></div>
+          <div class="ctrl"><label for="t2w"><span>Fraction of cases going left</span><output id="t2wO">0.50</output></label><input type="range" id="t2w" min="0.05" max="0.95" step="0.01" value="0.5"></div>
+          <dl class="readout">
+            <dt>Parent p₁</dt><dd id="t2pP"></dd>
+            <dt>ΔGini</dt><dd id="t2dG"></dd>
+            <dt>Information gain (bits)</dt><dd id="t2dH"></dd>
+            <dt>ΔMisclassification</dt><dd id="t2dE"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">The chord joins the two children's impurities; the parent sits on the curve above the chord at the weighted mean proportion, and the gap is the impurity decrease. Suggested experiments: set the children to p₁ = 0.2 and 0.45 with equal weights: Gini and entropy reward the split, misclassification gives exactly zero because both children are still majority-0. Set them to 0 and 1 for the largest possible gains.</p>
+    </div>
+
+    <h3>What trees do well and badly</h3>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Strength</th><th>Why</th><th>Weakness</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Interpretable</td><td>A tree is a flow chart a field ecologist can apply</td><td>High variance</td><td>Greedy, hierarchical: an early split change propagates; bootstrap replicates give different trees</td></tr>
+        <tr><td>Nonlinear, with interactions</td><td>Thresholds and interactions emerge from nested splits without being specified</td><td>Axis-aligned boundaries</td><td>A diagonal boundary needs many steps; rotated or oblique trees exist but lose interpretability</td></tr>
+        <tr><td>Mixed predictor types</td><td>Continuous, ordinal and categorical splits are all "left/right"</td><td>Piecewise-constant predictions</td><td>No smooth response; poor at approximating a gentle gradient such as GPP vs temperature</td></tr>
+        <tr><td>Invariant to monotone transforms</td><td>Only the order of values matters, so log-transforming a predictor changes nothing</td><td>No extrapolation</td><td>Outside the training hull the prediction is the value of the nearest edge leaf: flat, whatever the true trend</td></tr>
+        <tr><td>Missing values via surrogates</td><td>CART stores backup splits correlated with the primary one</td><td>Selection bias toward many-valued predictors</td><td>More candidate cut points means more chances to win by luck (Hothorn et al. 2006 [6])</td></tr>
+      </tbody></table></div>
+    <p>The selection bias deserves a sentence: a continuous predictor with 300 distinct values is tested at 299 cut points, a binary one at a single point, so under the null the continuous one more often achieves the best apparent gain, and importance measures inherit this. <strong>Conditional inference trees</strong> (Hothorn, Hornik &amp; Zeileis 2006 [6]) separate variable selection from cut-point selection: first test the association of each predictor with the response by a permutation test, pick the predictor with the smallest adjusted p-value, and only then search its cut point; stop when no test is significant. This removes the bias and gives a statistically motivated stopping rule, at the cost of some predictive accuracy.</p>
+    <p>The <strong>extrapolation failure</strong> is the most consequential for climate work. A tree trained on 1980–2020 temperatures predicts the same value for 2100 as for the warmest training year, and a forest of such trees does the same. A random-forest map of soil carbon or tree mortality under a 4 °C warmer climate is a map of the edge of the training data, not a projection.</p>
+  </section>
+
+  <section id="ensembles">
+    <h2>Bagging and random forests</h2>
+    <h3>Why averaging helps: the variance of a mean of correlated predictors</h3>
+    <p>Let \(\hat f_1, \dots, \hat f_B\) be predictors at a fixed \(\mathbf{x}\), each with variance \(\sigma^2\) and pairwise correlation \(\rho\) (over the randomness of the training sample and the algorithm). Their average has variance</p>
+    <div class="eq">$$\operatorname{Var}\Big(\frac1B\sum_b \hat f_b\Big) = \frac{1}{B^2}\Big[\sum_b \operatorname{Var}(\hat f_b) + \sum_{b\ne b'}\operatorname{Cov}(\hat f_b,\hat f_{b'})\Big] = \frac{1}{B^2}\big[B\sigma^2 + B(B-1)\rho\sigma^2\big] = \rho\sigma^2 + \frac{1-\rho}{B}\sigma^2.$$</div>
+    <p>As \(B \to \infty\) the second term vanishes but the first, \(\rho\sigma^2\), remains: averaging cannot remove the variance that the predictors share. Averaging the same tree \(B\) times (\(\rho = 1\)) does nothing; averaging independent trees (\(\rho = 0\)) divides variance by \(B\). Everything in ensemble design is about making \(\rho\) small without making \(\sigma^2\) or the bias large.</p>
+    <p><strong>Bagging</strong> (bootstrap aggregating; Breiman 1996 [2]) draws \(B\) bootstrap samples (size \(n\), with replacement; each omits about \(1 - (1-1/n)^n \approx e^{-1} \approx 37\%\) of the observations), grows a deep, unpruned tree on each, and averages the predictions (regression) or votes (classification). Deep trees have low bias and high variance, exactly what averaging fixes. The bias of the bagged predictor equals the bias of a single tree; bagging is a pure variance-reduction device and can only help a high-variance learner. Bagged trees remain correlated because every tree sees a strong predictor and tends to split on it first, so \(\rho\) is typically 0.3–0.6.</p>
+
+    <h3>Random forests</h3>
+    <p>Breiman (2001 [3]) adds a second randomisation: at each split only a random subset of \(m_{\text{try}}\) of the \(p\) predictors is considered. Defaults are \(m_{\text{try}} = \sqrt{p}\) for classification and \(p/3\) for regression, with a minimum leaf size of 1 and 5 respectively and trees grown to full depth. A small \(m_{\text{try}}\) forces trees to use different predictors, lowering \(\rho\); it also makes each tree slightly worse (higher \(\sigma^2\) and bias), so there is an optimum, usually flat and well approximated by the default. With \(m_{\text{try}} = p\) the forest is just bagging. Key properties:</p>
+    <ul>
+      <li><strong>Out-of-bag (OOB) error.</strong> Each observation is out of the bootstrap sample for about \(B/e\) of the trees; predicting it with only those trees gives an honest error estimate without a hold-out set, essentially a free leave-one-out cross-validation. OOB error stabilises as \(B\) grows and is used to choose \(m_{\text{try}}\) and to judge whether more trees help.</li>
+      <li><strong>Hyperparameters.</strong> \(B\) (ntree, 500–2000; more never hurts accuracy, only time), \(m_{\text{try}}\), minimum node size (larger = smoother, faster), and sometimes maximum depth or sample fraction. Random forests are famously insensitive to these, which is a large part of their appeal to ecologists (Cutler et al. 2007 [9]).</li>
+      <li><strong>Variable importance.</strong> <em>Mean decrease in impurity</em> (MDI, "Gini importance") sums the impurity reductions attributed to each predictor over all splits and trees. It is cheap but biased toward continuous and many-level predictors (the cut-point selection bias above) and toward correlated groups (Strobl et al. 2007 [7]). <em>Permutation importance</em> (MDA) permutes predictor \(j\) in the OOB data of each tree and records the increase in OOB error: a predictor that matters cannot be scrambled without cost. It is less biased but still inflates correlated predictors (permuting one while leaving its twin intact creates unrealistic combinations), hence the <em>conditional</em> permutation importance of Strobl et al. 2008 [8], which permutes within strata of the correlated predictors. Importance is relative, has no units, and says nothing about the direction of an effect.</li>
+      <li><strong>Partial dependence</strong> \(\mathrm{PD}_j(x) = \frac1n\sum_i \hat f(x, \mathbf{x}_{i,-j})\) shows the average effect of predictor \(j\) with the others at their observed values; <strong>ICE curves</strong> plot the individual \(\hat f(x, \mathbf{x}_{i,-j})\) lines and reveal interactions hidden by the average. Both evaluate the model at combinations that may never occur (a cold, high-VPD site), so they also extrapolate.</li>
+      <li><strong>Proximity.</strong> The fraction of trees in which two observations share a leaf is a data-driven similarity used for clustering, outlier detection and imputation.</li>
+      <li><strong>Quantile regression forests</strong> (Meinshausen 2006 [13]) keep all the \(y\) values in each leaf rather than their mean, so the forest estimates the full conditional distribution and prediction intervals, not just the mean, which is how uncertainty maps for SoilGrids are produced.</li>
+      <li><strong>Theory, briefly.</strong> Forests are consistent (converge to the true regression function) under conditions on how leaves shrink with \(n\), proved first for simplified "purely random" forests and later for versions closer to Breiman's (Biau &amp; Scornet 2016 [21]). Scornet et al. showed consistency for additive models; the general case remains open, as does a satisfying account of why forests resist overfitting with fully grown trees. The practical picture: a random forest is an adaptive nearest-neighbour method whose neighbourhoods are shaped by the response.</li>
+    </ul>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · A random forest in the browser</h3><button class="btn small" id="t3Retrain" type="button">Re-draw bootstrap samples</button></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap"><svg class="ch" id="t3Svg" viewBox="0 0 640 420" role="img" aria-label="Random forest decision surface over VPD and soil water with training points"></svg></div>
+          <div class="legend"><span style="--c:var(--series-2)">died</span><span style="--c:var(--series-1)">survived</span><span style="--c:var(--fg)">vote fraction = 0.5</span></div>
+          <div class="twocol" style="margin-top:0.75rem">
+            <div class="figwrap"><svg class="ch" id="t3Oob" viewBox="0 0 320 220" role="img" aria-label="Out-of-bag error rate against number of trees"></svg></div>
+            <div class="figwrap"><svg class="ch" id="t3Imp" viewBox="0 0 320 220" role="img" aria-label="Permutation variable importance bars"></svg></div>
+          </div>
+          <div class="status" id="t3Status"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="t3B"><span>Number of trees B</span><output id="t3BO">25</output></label><input type="range" id="t3B" min="1" max="60" step="1" value="25"></div>
+          <div class="ctrl"><label for="t3M"><span>m<sub>try</sub> (of 5 features)</span><output id="t3MO">2</output></label><input type="range" id="t3M" min="1" max="5" step="1" value="2"></div>
+          <div class="ctrl"><label for="t3Leaf"><span>Minimum leaf size</span><output id="t3LeafO">1</output></label><input type="range" id="t3Leaf" min="1" max="30" step="1" value="1"></div>
+          <div class="chk"><input type="checkbox" id="t3Single"><label for="t3Single">show tree 1 alone instead of the forest</label></div>
+          <p class="small muted" style="margin:0">Features: VPD, soil water, their product, the contrast VPD − 10·θ (an oblique "engineered" feature), and a pure-noise feature.</p>
+          <dl class="readout">
+            <dt>OOB error (all B trees)</dt><dd id="t3OobErr"></dd>
+            <dt>Training error</dt><dd id="t3Train"></dd>
+            <dt>Mean single-tree OOB error</dt><dd id="t3Tree1"></dd>
+            <dt>Mean leaves per tree</dt><dd id="t3Leaves"></dd>
+            <dt>Vote correlation ρ̂ (pairwise)</dt><dd id="t3Rho"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Same 300 trees as Lab 1. Each forest tree is grown to the minimum leaf size on a bootstrap sample using m<sub>try</sub> random candidate features per split. The surface shows the fraction of trees voting "died". Suggested experiments: set B = 1 and toggle "tree 1 alone", then raise B and watch the staircase soften into a near-diagonal boundary; compare m<sub>try</sub> = 5 (bagging; ρ̂ higher) with m<sub>try</sub> = 1 or 2; look at the OOB curve flattening after ~20 trees; and note the permutation importance of the noise feature stays near zero while the engineered oblique feature often beats the raw ones. Leaf size 20 gives a smoother, higher-bias surface.</p>
+    </div>
+
+    <h3>Boosting, for contrast</h3>
+    <p>Where bagging grows trees in parallel and averages to cut variance, <strong>boosting</strong> grows them in sequence, each one fitted to what the previous ensemble got wrong, and adds them with a small weight; it reduces bias. <strong>AdaBoost</strong> (Freund &amp; Schapire 1997) reweights misclassified observations and combines weak classifiers (stumps) by weighted vote; it is gradient descent on the exponential loss. <strong>Gradient boosting machines</strong> (Friedman 2001 [11]) generalise this: for any differentiable loss \(L\), at stage \(m\) compute the negative gradient \(r_{im} = -\partial L(y_i, f)/\partial f\big|_{f = f_{m-1}(\mathbf{x}_i)}\) (the residuals for squared error), fit a small tree \(h_m\) to \(r_{im}\), and update \(f_m = f_{m-1} + \nu\,h_m\) with learning rate \(\nu \in (0.001, 0.1)\). Small \(\nu\) and many trees (thousands) with shallow depth (interaction depth 2–6), subsampling (stochastic gradient boosting) and early stopping on a validation set give the best results. <strong>XGBoost</strong> (Chen &amp; Guestrin 2016 [12]) adds a second-order Taylor expansion of the loss, explicit L1/L2 regularisation on leaf values, and sparsity-aware, parallel split finding; <strong>LightGBM</strong> adds histogram-based splits and leaf-wise growth. In ecology this family appears as <strong>boosted regression trees</strong> (Elith, Leathwick &amp; Hastie 2008 [10]), with the number of trees chosen by cross-validation.</p>
+    <p>The contrast an examiner wants: random forests are hard to overfit with more trees because each added tree is an independent draw from the same distribution and averaging only reduces variance; boosting <em>can</em> overfit because each added tree deliberately fits residual structure, including noise, so the number of trees is a regularisation parameter that must be tuned. Boosting usually wins on accuracy when tuned carefully; forests win on robustness, parallelism and absence of tuning. Both are piecewise constant and both fail to extrapolate.</p>
+  </section>
+
+  <section id="regression">
+    <h2>Regression trees, smoothness and extrapolation</h2>
+    <p>A regression tree predicts the leaf mean, so its fitted function is a staircase. Averaging many staircases with different step positions gives a smoother function, which is why a forest's partial-dependence curve looks like a gentle sigmoid even though no tree contains one. Outside the training range, however, every tree's last step is horizontal and so is their average. The same applies to boosting. For a response such as soil respiration vs temperature, which rises roughly exponentially (\(R = R_{10}\,Q_{10}^{(T-10)/10}\)), a forest trained on 5–25 °C predicts the 25 °C value at 35 °C; a process model or a parametric fit extrapolates the exponential. Which is right at 35 °C is an open question (enzymes denature, substrate runs out), but only the process model gives a hypothesis that can be tested.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 4 · Regression tree vs forest: soil respiration against temperature</h3><span class="small muted">Shaded band = outside the training range</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="ch" id="t4Svg" viewBox="0 0 640 360" role="img" aria-label="Soil respiration against temperature with a regression-tree fit, a forest fit and the true Q10 curve, extrapolated beyond the training range"></svg><div class="chart-tip" id="t4Tip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--series-1)">single regression tree</span><span style="--c:var(--series-2)">bagged forest (B = 60)</span><span style="--c:var(--muted)">true Q₁₀ function</span><span style="--c:var(--series-3)">parametric Q₁₀ fit (log-linear)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="t4Table"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="t4Leaf"><span>Minimum leaf size</span><output id="t4LeafO">8</output></label><input type="range" id="t4Leaf" min="1" max="40" step="1" value="8"></div>
+          <div class="ctrl"><label for="t4Depth"><span>Maximum depth (single tree)</span><output id="t4DepthO">4</output></label><input type="range" id="t4Depth" min="1" max="8" step="1" value="4"></div>
+          <div class="ctrl"><label for="t4Noise"><span>Noise SD (µmol m⁻² s⁻¹)</span><output id="t4NoiseO">0.4</output></label><input type="range" id="t4Noise" min="0" max="1.2" step="0.05" value="0.4"></div>
+          <dl class="readout">
+            <dt>RMSE vs truth (tree · forest · Q₁₀)</dt><dd id="t4Rmse"></dd>
+            <dt>At 32 °C: tree · forest</dt><dd id="t4Ext"></dd>
+            <dt>At 32 °C: truth · Q₁₀ fit</dt><dd id="t4True"></dd>
+            <dt>Leaves (single tree)</dt><dd id="t4Leaves"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">One hundred and twenty measurements (seeded) between 4 and 24 °C from R = 1.5 · 2.2^((T−10)/10) plus noise. Suggested experiments: lower the leaf size to 1 and the tree chases noise while the forest stays smooth; raise the noise and compare how the three fits degrade; whatever you do, both tree-based predictions are flat beyond 24 °C, while the log-linear fit extrapolates the exponential (and is only right because the generating function really is exponential).</p>
+    </div>
+  </section>
+
+  <section id="ecology">
+    <h2>Forests in ecology: imbalance, space, and the limits of prediction</h2>
+    <p><strong>Class imbalance.</strong> With 3% mortality a forest's majority vote almost never predicts "dead", because leaves are dominated by survivors and the 0.5 vote threshold is arbitrary. Remedies: use the vote fraction as a score and choose the threshold by cost (see the <a href="logistic-regression.html">logistic regression page</a>), down-sample the majority class within each bootstrap (balanced random forest), up-weight the minority class in the impurity, or use quantile/probability forests and recalibrate. Report AUC or precision–recall, not accuracy.</p>
+    <p><strong>Spatial autocorrelation and over-optimistic validation.</strong> Ecological data are clustered in space and time: plots within a landscape, pixels in a scene, years at a flux tower. Random \(K\)-fold or OOB validation then puts near-neighbours of every test point in the training set, so the forest "predicts" by interpolating its neighbours and the error estimate is far too low. Roberts et al. (2017 [14]) make the case for <strong>blocked cross-validation</strong>: hold out spatial blocks, time blocks or whole groups, sized to exceed the autocorrelation range, so that validation mimics the intended prediction task (new sites, new years). Ploton et al. (2020 [15]) showed with tropical forest biomass maps that random CV reported excellent accuracy while spatial CV revealed the forest had learned almost nothing transferable; the random-forest maps were, in effect, smoothed versions of the training points. If the goal is a map of unsampled regions, the validation must hold out regions.</p>
+    <p><strong>Extrapolation and the area of applicability.</strong> Meyer &amp; Pebesma (2021 [16]) define a <strong>dissimilarity index</strong>: the distance of a new location in predictor space (weighted by variable importance) to the nearest training point, scaled by the typical within-training distance obtained from cross-validation. Locations whose index exceeds the range seen during CV are outside the <em>area of applicability</em>, and predictions there should be masked or flagged. For global maps built from a few thousand sites this often excludes large parts of the tropics, high latitudes and mountains. The same logic applies through time: future climate combinations outside the training hull are outside the AOA.</p>
+    <p><strong>Applications you should be able to describe.</strong> <em>SoilGrids</em> (Hengl et al. 2017 [17]) predicts soil properties (organic carbon, pH, texture, bulk density) at 250 m globally from ~150,000 profiles and >150 covariates (climate, terrain, lithology, land cover, MODIS) with random forests and gradient boosting, with quantile forests for uncertainty. <em>FLUXCOM</em> (Jung et al. 2020 [18]) upscales eddy-covariance GPP, NEE and energy fluxes from ~200 towers to global grids with an ensemble of machine-learning methods (random forests, MARS, neural networks) driven by remote sensing and meteorology; its global GPP (~120 Pg C yr⁻¹) and the weak NEE trend it finds are reference products for benchmarking land-surface models, with the explicit caveat that the data-driven product cannot represent CO₂ fertilisation because the towers span too short a CO₂ range. <em>Tree mortality</em> models from inventory data use forests to find the interactions (size × drought × competition) that logistic models must specify. <em>Species distribution models</em> with random forests or BRT typically have the best AUC in comparisons (Elith et al. 2006) but the worst transferability. <em>Trait imputation</em> (Schrodt et al. 2015 [19]) fills gaps in TRY with Bayesian hierarchical and forest-based methods using phylogeny and correlated traits, supplying the trait maps used to parameterise V<sub>cmax</sub> in models. <em>Gap-filling</em> of flux-tower time series uses tree ensembles on meteorology and time-of-day, competing with the marginal distribution sampling standard.</p>
+    <p><strong>Interpretation tools.</strong> Beyond importance and partial dependence, <strong>SHAP values</strong> (Lundberg &amp; Lee 2017 [20]) decompose each individual prediction into additive contributions of each predictor using Shapley values from cooperative game theory; TreeSHAP computes them exactly for tree ensembles in polynomial time. Summed over observations they give a global importance; plotted against predictor values they give dependence curves with interactions visible as vertical spread. They are explanations of the model, not of nature, and inherit any extrapolation the model performs.</p>
+    <p><strong>When a forest beats a process model, and when it cannot.</strong> Within the training distribution and with dense data, a forest usually predicts better than a process model because it fits the data directly rather than through imperfect mechanism and parameters; for mapping soil carbon today, FLUXCOM-style upscaling, or gap-filling, use it. It has no mechanism, so it cannot say why, cannot be transported to novel CO₂, management, species composition or disturbance regimes, and cannot conserve mass or energy. Reichstein et al. (2019 [22]) argue for <strong>hybrid modelling</strong>: process models provide structure and physical constraints, machine learning replaces the parts that are poorly understood or poorly parameterised (e.g. a stomatal or mortality function learned from data inside a land-surface model), and the result can be evaluated on both prediction and physical consistency. For a comprehensive exam, the defensible position is: forests for interpolation, process models for extrapolation and understanding, hybrids where the two can be made to share a loss function.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Benchmark products are forests.</strong> SoilGrids and FLUXCOM, both tree-ensemble products, are the targets against which CLM, JULES and ORCHIDEE soil carbon and GPP are evaluated; their spatial CV errors and AOA masks define how much of a model–data mismatch is signal.</li>
+      <li><strong>Emulation and sensitivity analysis.</strong> Random forests and boosted trees emulate expensive process models over parameter space; permutation importance and SHAP on the emulator give a global sensitivity analysis, and partial dependence shows parameter response curves.</li>
+      <li><strong>Hybrid modules.</strong> Learned components inside process models (a tree-ensemble stomatal conductance, mortality or decomposition rate function trained on observations) must be constrained to the AOA or regularised toward a process form; the extrapolation lab above is the cautionary case.</li>
+      <li><strong>Parameter and trait maps.</strong> Forest-based trait imputation and upscaling supply the V<sub>cmax</sub>, SLA and rooting-depth maps that replace plant-functional-type lookup tables in trait-based models.</li>
+      <li><strong>Forcing data.</strong> Land-cover, disturbance and burned-area products are classifier outputs (often forests); their errors are spatially structured and should be propagated.</li>
+      <li><strong>Model diagnosis.</strong> Fitting a tree to the residuals of a process model against site covariates is a quick way to find which conditions the model gets wrong, with the splits suggesting a missing process.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Expression / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Gini index</td><td class="num">1 − Σ p̂ₖ²; max 0.5 (two classes)</td><td>Expected error of random labelling</td></tr>
+        <tr><td>Entropy</td><td class="num">−Σ p̂ₖ log₂ p̂ₖ; max 1 bit (two classes)</td><td>Gain = mutual information</td></tr>
+        <tr><td>Misclassification</td><td class="num">1 − max p̂ₖ</td><td>Not concave enough to grow trees; use for pruning</td></tr>
+        <tr><td>Impurity decrease</td><td class="num">I(t) − (n_L/n_t) I(t_L) − (n_R/n_t) I(t_R) ≥ 0</td><td>Jensen; equality possible for misclassification</td></tr>
+        <tr><td>Regression split gain</td><td class="num">(n_L n_R / n_t)(ȳ_L − ȳ_R)²</td><td>Favours balanced, contrasting children</td></tr>
+        <tr><td>Split search cost</td><td class="num">O(p n log n) per node</td><td>Sort each predictor, scan running counts</td></tr>
+        <tr><td>Cost-complexity</td><td class="num">R_α(T) = R(T) + α|T|</td><td>Nested T_α; choose α by CV, 1-SE rule</td></tr>
+        <tr><td>Weakest link</td><td class="num">g(t) = [R(t) − R(T_t)]/(|T_t| − 1)</td><td>Collapse smallest g first</td></tr>
+        <tr><td>Variance of an average</td><td class="num">ρσ² + (1 − ρ)σ²/B</td><td>ρσ² floor; mtry lowers ρ</td></tr>
+        <tr><td>Bootstrap omission</td><td class="num">(1 − 1/n)ⁿ → e⁻¹ ≈ 0.368</td><td>≈ 37% OOB per tree; OOB uses ≈ B/e trees</td></tr>
+        <tr><td>Default mtry</td><td class="num">√p (classification), p/3 (regression)</td><td>min leaf 1 / 5; B = 500–2000</td></tr>
+        <tr><td>Gradient boosting update</td><td class="num">f_m = f_{m−1} + ν h_m, ν ≈ 0.001–0.1</td><td>h_m fits negative gradient; trees 1,000–10,000</td></tr>
+        <tr><td>Partial dependence</td><td class="num">PD_j(x) = (1/n) Σᵢ f̂(x, x_{i,−j})</td><td>Average over other predictors; may extrapolate</td></tr>
+        <tr><td>SoilGrids</td><td class="num">250 m, ~150k profiles, &gt;150 covariates</td><td>Hengl et al. 2017 [17]</td></tr>
+        <tr><td>FLUXCOM GPP</td><td class="num">≈ 120 Pg C yr⁻¹</td><td>No CO₂ fertilisation in the product; Jung et al. 2020 [18]</td></tr>
+        <tr><td>Two-class entropy at p</td><td class="num">H(0.1) = 0.47, H(0.25) = 0.81, H(0.5) = 1</td><td>Gini: 0.18, 0.375, 0.5</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Define the Gini index and entropy for a node, show that any split cannot increase them on average, and explain why misclassification error is not used to grow trees.</summary><div class="a"><p>With class proportions \(\hat p_k\), Gini \(G = 1 - \sum_k \hat p_k^2\) and entropy \(H = -\sum_k \hat p_k\log_2\hat p_k\); both are 0 for a pure node and maximal at uniform proportions. Both are strictly concave functions of the proportion vector. A split sends fractions \(w_L = n_L/n_t\) and \(w_R\) of the node to the children, and the parent proportions are the weighted average of the children's: \(\hat{\mathbf p}_t = w_L\hat{\mathbf p}_L + w_R\hat{\mathbf p}_R\). Jensen's inequality for a concave \(I\) gives \(I(\hat{\mathbf p}_t) \ge w_L I(\hat{\mathbf p}_L) + w_R I(\hat{\mathbf p}_R)\), i.e. \(\Delta I \ge 0\), with strict inequality whenever the children differ, for strictly concave \(I\). Misclassification \(E = 1 - \max_k\hat p_k\) is concave but piecewise linear: on the segment where both children keep the same majority class, \(E\) is linear and Jensen holds with equality, so \(\Delta E = 0\). Example: parent (400, 400); split A gives (300, 100) and (100, 300); split B gives (200, 400) and (200, 0). Both have \(\Delta E = 0.25\) (same 200 errors), but Gini: parent 0.5; A gives 0.375, B gives \(0.75\times0.444 + 0.25\times0 = 0.333\), so B is preferred because it creates a pure node that needs no further splitting. Trees are grown with Gini or entropy, which reward purity, and pruned with misclassification, which is what the user cares about.</p></div></details>
+    <details class="q"><summary>2. Derive the variance of the average of B predictors with pairwise correlation ρ. What does this say about bagging, and what does the random feature subset in a random forest change?</summary><div class="a"><p>\(\operatorname{Var}(\bar f) = B^{-2}[\sum_b\operatorname{Var}(\hat f_b) + \sum_{b\ne b'}\operatorname{Cov}(\hat f_b,\hat f_{b'})] = B^{-2}[B\sigma^2 + B(B-1)\rho\sigma^2] = \rho\sigma^2 + (1-\rho)\sigma^2/B\). The second term vanishes as \(B\to\infty\); the first does not. Bagging grows deep trees (low bias, high \(\sigma^2\)) on bootstrap samples; averaging removes the \((1-\rho)\) share of their variance but leaves \(\rho\sigma^2\), and bagged trees are substantially correlated (\(\rho \approx 0.3\)–0.6) because they all split on the dominant predictors first. The bias is unchanged. A random forest restricts each split to a random subset of \(m_{\text{try}}\) predictors, so different trees are forced to use different variables and \(\rho\) falls; each tree becomes individually somewhat worse (larger \(\sigma^2\) and bias), so there is an optimum \(m_{\text{try}}\), typically near \(\sqrt p\) or \(p/3\), where the product \(\rho\sigma^2\) is smallest. Adding trees never increases variance, which is why ntree is not a tuning parameter beyond "enough". Boosting, by contrast, changes the bias term and so can overfit.</p></div></details>
+    <details class="q"><summary>3. Explain out-of-bag error, mean-decrease-in-impurity importance and permutation importance, with the biases of each importance measure and how to fix them.</summary><div class="a"><p>Each bootstrap sample omits about 37% of observations. For each observation, aggregate the votes of only those trees in whose bootstrap it was absent (about \(B/e\) trees); the error of these predictions is the OOB error, an almost unbiased estimate of test error obtained without a hold-out set, essentially a leave-one-out CV that costs nothing. It is slightly pessimistic because it uses fewer trees than the full forest. MDI importance sums, over all splits on predictor \(j\) in all trees, the impurity decrease weighted by node size. Biases: predictors with more possible cut points (continuous, many-level factors) win more splits by chance and so look important even under the null; correlated predictors share and dilute importance; it is computed on training data so it reflects overfitting. Permutation importance randomly permutes predictor \(j\) in the OOB data of each tree, re-predicts, and records the increase in OOB error averaged over trees: it is computed on out-of-sample data and is not biased by the number of cut points. It is still inflated for correlated predictors, because permuting one creates impossible combinations the model has never seen, and it spreads importance across a correlated group. Fixes: conditional inference forests (unbiased selection), conditional permutation importance (permute within strata of correlated predictors; Strobl et al. 2008), grouping correlated predictors before permutation, or dropping one of each correlated pair. In all cases importance is relative and directionless; partial dependence or SHAP supplies the direction.</p></div></details>
+    <details class="q"><summary>4. A colleague fits a random forest of tree mortality to 2,000 inventory plots using climate and stand variables, validates with 10-fold random cross-validation (AUC 0.92), and projects mortality under a 2080 climate scenario. Critique the design.</summary><div class="a"><p>Two main faults. (1) Validation: plots are spatially clustered and share climate, soils and disturbance history, so random folds place each test plot's near-neighbours in the training set; the forest interpolates and the AUC is inflated (Roberts et al. 2017; Ploton et al. 2020). Validation should hold out spatial blocks larger than the autocorrelation range, or whole ecoregions, matching the use case of predicting unsampled areas, and the AUC will fall. If plots are re-measured, time blocks are needed too. (2) Extrapolation: 2080 temperature and VPD combinations lie outside the training hull for most plots; a forest predicts the leaf value at the edge of the data, so the "projection" is the current mortality at the warmest sites, not a response to warming. The area-of-applicability index of Meyer &amp; Pebesma (2021) would show most of the future domain outside the AOA. Further: with low mortality the vote threshold must be cost-based rather than 0.5; MDI importance will favour continuous climate variables over stand factors; correlated climate variables will share importance; partial-dependence plots will extrapolate into unobserved combinations. The constructive recommendation is to use the forest to describe present-day patterns and interactions, and to project with a process-based or at least parametric model (e.g. a logistic mortality model with hydraulic covariates), possibly in a hybrid where the forest is constrained to the AOA.</p></div></details>
+    <details class="q"><summary>5. Describe cost-complexity pruning. Why prune rather than stop early, and how is α chosen?</summary><div class="a"><p>Grow a large tree \(T_0\) (e.g. until leaves have 5 observations). For \(\alpha \ge 0\) define \(R_\alpha(T) = R(T) + \alpha|T|\), where \(R(T)\) is the training SSE or misclassification count and \(|T|\) the number of leaves. For each \(\alpha\) there is a unique smallest minimising subtree \(T_\alpha\), and the family is nested in \(\alpha\). Weakest-link pruning computes, for each internal node, \(g(t) = [R(t) - R(T_t)]/(|T_t| - 1)\), the reduction in error per extra leaf that its subtree provides, collapses the node with the smallest \(g\), and repeats; the collapse values are the breakpoints \(\alpha_1 < \alpha_2 < \dots\). Pruning is preferred to early stopping because a split that gains little may enable a child split that gains a lot (an interaction), which a stopping rule would never see; growing fully and cutting back lets the tree discover such structure and then remove what did not pay off. \(\alpha\) is chosen by \(K\)-fold cross-validation: for each fold grow and prune a tree, evaluate each \(T_\alpha\) on the held-out fold, average, and pick the \(\alpha\) with minimum CV error or, by the one-standard-error rule, the largest \(\alpha\) whose CV error is within one SE of the minimum, giving a simpler tree. Random forests do not prune; variance is handled by averaging instead.</p></div></details>
+    <details class="q"><summary>6. Compare random forests with gradient boosting in terms of how they are built, what they reduce, their tuning parameters and their failure modes.</summary><div class="a"><p>Random forests build \(B\) deep trees independently on bootstrap samples with random feature subsets and average them: they reduce variance (\(\rho\sigma^2 + (1-\rho)\sigma^2/B\)), leave bias unchanged, are embarrassingly parallel, and have few parameters (\(m_{\text{try}}\), node size) to which they are insensitive; more trees never hurt. Boosting builds shallow trees sequentially, each fitted to the negative gradient of the loss at the current ensemble (the residuals for squared error, \(y_i - \hat p_i\) for log-loss), and adds them with learning rate \(\nu\): \(f_m = f_{m-1} + \nu h_m\). It reduces bias by progressively fitting what is left, can represent additive structure efficiently with stumps and interactions with deeper trees, and usually attains lower error when tuned. Its parameters interact: tree depth (interaction order), \(\nu\), number of trees \(M\) (chosen by early stopping on validation or CV; the only parameter that controls overfitting directly), subsampling fraction, and in XGBoost explicit L1/L2 penalties on leaf weights with second-order gradients. Failure modes: boosting overfits if \(M\) is too large for the chosen \(\nu\), is sensitive to label noise and outliers (it keeps chasing them), and is sequential; forests underfit smooth additive signals slightly, give compressed probabilities, and cannot be tuned much further. Both produce piecewise-constant, non-extrapolating predictions and need spatial CV in ecology. Elith et al. (2008) recommend BRT with \(\nu \le 0.01\), depth 2–5 and at least 1,000 trees.</p></div></details>
+    <details class="q"><summary>7. Why does a random forest predict a flat response outside the training range, and what are the implications for using FLUXCOM-type products to evaluate CO₂ fertilisation in land-surface models?</summary><div class="a"><p>Each tree partitions predictor space into rectangles and predicts a constant inside each. The rectangles at the edge of the data extend to infinity in the outward direction, so for any \(x\) beyond the largest training value the tree returns the mean of the outermost leaf; averaging trees averages constants, still a constant. There is no slope to extrapolate because the model never represents a slope, only steps. Boosting is the same. For FLUXCOM, the training data are eddy-covariance towers over roughly 2000–2015, during which atmospheric CO₂ varied by about 30 ppm and CO₂ is not even an input predictor (fluxes are learned as functions of remote sensing and meteorology). The product therefore cannot contain a CO₂ fertilisation response: its GPP trend reflects greening and climate as seen through the predictors, and its interannual variability is driven by meteorology. Using it to evaluate a land-surface model's GPP trend over 1980–2020 would penalise the model for including fertilisation that the benchmark structurally cannot show; Jung et al. (2020) state this explicitly. The appropriate use is to evaluate spatial patterns, seasonal cycles and meteorological sensitivities within the training domain, with AOA masks where the predictor combinations are novel, and to treat long-term trends as outside the product's competence.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Breiman L, Friedman JH, Olshen RA, Stone CJ (1984). <em>Classification and Regression Trees</em>. Wadsworth, Belmont. <span class="why">The CART book: impurity, surrogate splits, cost-complexity pruning and the cross-validation argument.</span></li>
+      <li>Breiman L (1996). Bagging predictors. <em>Machine Learning</em> 24: 123–140. <a href="https://doi.org/10.1007/BF00058655">doi:10.1007/BF00058655</a><span class="why">Bootstrap aggregation and why it helps unstable learners.</span></li>
+      <li>Breiman L (2001). Random forests. <em>Machine Learning</em> 45: 5–32. <a href="https://doi.org/10.1023/A:1010933404324">doi:10.1023/A:1010933404324</a><span class="why">Random feature subsets, OOB error, permutation importance, proximities, and the strength–correlation bound.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer, New York. Chapters 9, 10 and 15. <span class="why">Trees and pruning (ch 9), boosting (ch 10), random forests including the variance-of-correlated-averages derivation (ch 15).</span></li>
+      <li>James G, Witten D, Hastie T, Tibshirani R (2013). <em>An Introduction to Statistical Learning</em>. Springer, New York. Chapter 8. <span class="why">The gentlest complete account of trees, bagging, forests and boosting.</span></li>
+      <li>Hothorn T, Hornik K, Zeileis A (2006). Unbiased recursive partitioning: a conditional inference framework. <em>Journal of Computational and Graphical Statistics</em> 15: 651–674. <a href="https://doi.org/10.1198/106186006X133933">doi:10.1198/106186006X133933</a><span class="why">Selection bias of CART and the permutation-test alternative (ctree, cforest).</span></li>
+      <li>Strobl C, Boulesteix A-L, Zeileis A, Hothorn T (2007). Bias in random forest variable importance measures: illustrations, sources and a solution. <em>BMC Bioinformatics</em> 8: 25. <a href="https://doi.org/10.1186/1471-2105-8-25">doi:10.1186/1471-2105-8-25</a><span class="why">Why Gini importance favours many-valued predictors and bootstrap sampling adds bias.</span></li>
+      <li>Strobl C, Boulesteix A-L, Kneib T, Augustin T, Zeileis A (2008). Conditional variable importance for random forests. <em>BMC Bioinformatics</em> 9: 307. <a href="https://doi.org/10.1186/1471-2105-9-307">doi:10.1186/1471-2105-9-307</a><span class="why">Permutation importance under correlated predictors and the conditional fix.</span></li>
+      <li>Cutler DR, Edwards TC Jr, Beard KH, et al. (2007). Random forests for classification in ecology. <em>Ecology</em> 88: 2783–2792. <a href="https://doi.org/10.1890/07-0539.1">doi:10.1890/07-0539.1</a><span class="why">The paper that introduced forests to ecologists, with invasive species, nest sites and lichen examples.</span></li>
+      <li>Elith J, Leathwick JR, Hastie T (2008). A working guide to boosted regression trees. <em>Journal of Animal Ecology</em> 77: 802–813. <a href="https://doi.org/10.1111/j.1365-2656.2008.01390.x">doi:10.1111/j.1365-2656.2008.01390.x</a><span class="why">Practical settings for BRT in ecology: learning rate, tree complexity, bag fraction, number of trees.</span></li>
+      <li>Friedman JH (2001). Greedy function approximation: a gradient boosting machine. <em>Annals of Statistics</em> 29: 1189–1232. <a href="https://doi.org/10.1214/aos/1013203451">doi:10.1214/aos/1013203451</a><span class="why">Gradient boosting as functional gradient descent, with partial dependence plots.</span></li>
+      <li>Chen T, Guestrin C (2016). XGBoost: a scalable tree boosting system. <em>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</em>, 785–794. <a href="https://doi.org/10.1145/2939672.2939785">doi:10.1145/2939672.2939785</a><span class="why">Second-order boosting, regularised objective, and the systems tricks that made it standard.</span></li>
+      <li>Meinshausen N (2006). Quantile regression forests. <em>Journal of Machine Learning Research</em> 7: 983–999. <span class="why">Forests as estimators of the full conditional distribution; the basis of forest prediction intervals.</span></li>
+      <li>Roberts DR, Bahn V, Ciuti S, et al. (2017). Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure. <em>Ecography</em> 40: 913–929. <a href="https://doi.org/10.1111/ecog.02881">doi:10.1111/ecog.02881</a><span class="why">Why random CV is over-optimistic for structured data and how to block.</span></li>
+      <li>Ploton P, Mortier F, Réjou-Méchain M, et al. (2020). Spatial validation reveals poor predictive performance of large-scale ecological mapping models. <em>Nature Communications</em> 11: 4540. <a href="https://doi.org/10.1038/s41467-020-18321-y">doi:10.1038/s41467-020-18321-y</a><span class="why">Biomass maps that looked excellent under random CV and failed under spatial CV.</span></li>
+      <li>Meyer H, Pebesma E (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. <em>Methods in Ecology and Evolution</em> 12: 1620–1633. <a href="https://doi.org/10.1111/2041-210X.13650">doi:10.1111/2041-210X.13650</a><span class="why">The dissimilarity index and AOA for masking extrapolated predictions.</span></li>
+      <li>Hengl T, Mendes de Jesus J, Heuvelink GBM, et al. (2017). SoilGrids250m: global gridded soil information based on machine learning. <em>PLoS ONE</em> 12: e0169748. <a href="https://doi.org/10.1371/journal.pone.0169748">doi:10.1371/journal.pone.0169748</a><span class="why">The global soil property maps built with random forests and gradient boosting.</span></li>
+      <li>Jung M, Schwalm C, Migliavacca M, et al. (2020). Scaling carbon fluxes from eddy covariance sites to globe: synthesis and evaluation of the FLUXCOM approach. <em>Biogeosciences</em> 17: 1343–1365. <a href="https://doi.org/10.5194/bg-17-1343-2020">doi:10.5194/bg-17-1343-2020</a><span class="why">Machine-learning upscaling of tower fluxes, its ensemble design, and the explicit caveat on CO₂ effects.</span></li>
+      <li>Schrodt F, Kattge J, Shan H, et al. (2015). BHPMF – a hierarchical Bayesian approach to gap-filling and trait prediction for macroecology and functional biogeography. <em>Global Ecology and Biogeography</em> 24: 1510–1521. <a href="https://doi.org/10.1111/geb.12335">doi:10.1111/geb.12335</a><span class="why">Trait imputation for TRY, the data behind trait-based model parameterisations.</span></li>
+      <li>Lundberg SM, Lee S-I (2017). A unified approach to interpreting model predictions. <em>Advances in Neural Information Processing Systems</em> 30: 4765–4774. <span class="why">SHAP values; TreeSHAP for exact Shapley attributions in tree ensembles.</span></li>
+      <li>Biau G, Scornet E (2016). A random forest guided tour. <em>TEST</em> 25: 197–227. <a href="https://doi.org/10.1007/s11749-016-0481-7">doi:10.1007/s11749-016-0481-7</a><span class="why">What is proved about forests (consistency, rates) and what is not.</span></li>
+      <li>Reichstein M, Camps-Valls G, Stevens B, et al. (2019). Deep learning and process understanding for data-driven Earth system science. <em>Nature</em> 566: 195–204. <a href="https://doi.org/10.1038/s41586-019-0912-1">doi:10.1038/s41586-019-0912-1</a><span class="why">The case for hybrid process–machine-learning models and the limits of pure data-driven prediction.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="hypothesis-testing-ci.html">← Previous: Hypothesis testing and confidence intervals</a><a href="closed-form-convex-loss.html">Next: Closed-form solutions and convex loss →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#cart">CART: splitting &amp; pruning</a></li>
+      <li><a href="#ensembles">Bagging &amp; random forests</a></li>
+      <li><a href="#regression">Regression &amp; extrapolation</a></li>
+      <li><a href="#ecology">Forests in ecology</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas &amp; numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use seeded synthetic data (mulberry32) and grow CART trees and forests in the browser; n = 300 and B ≤ 60 keep every update under a few tens of milliseconds.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function $(id) { return document.getElementById(id); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function drawAxes(svg, box, xr, yr, xt, yt, xlab, ylab, fx, fy) {
+    var sx = function (x) { return box.l + (x - xr[0]) / (xr[1] - xr[0]) * box.w; };
+    var sy = function (y) { return box.t + (yr[1] - y) / (yr[1] - yr[0]) * box.h; };
+    yt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: box.l, x2: box.l + box.w, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: box.l - 7, y: sy(v) + 4, 'text-anchor': 'end' }, fy ? fy(v) : v)); });
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: box.t + box.h, y2: box.t + box.h + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: box.t + box.h + 17, 'text-anchor': 'middle' }, fx ? fx(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.l, x2: box.l + box.w, y1: box.t + box.h, y2: box.t + box.h }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.l, x2: box.l, y1: box.t, y2: box.t + box.h }));
+    if (xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: box.l + box.w / 2, y: box.t + box.h + 36, 'text-anchor': 'middle' }, xlab));
+    if (ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(' + (box.l - 42) + ',' + (box.t + box.h / 2) + ') rotate(-90)' }, ylab));
+    return { sx: sx, sy: sy };
+  }
+  function tipFollow(tip, evt, html) { var e = evt.touches ? evt.touches[0] : evt; var host = tip.parentNode.getBoundingClientRect(); tip.innerHTML = html; tip.hidden = false; var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; }
+  function svgPoint(svg, evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+  function marching(g, nx, ny, level, gx, gy) {
+    var segs = [];
+    function interp(a, b, va, vb) { var t = (level - va) / (vb - va); return [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]; }
+    for (var i = 0; i < nx; i++) for (var j = 0; j < ny; j++) {
+      var c = [[gx[i], gy[j]], [gx[i + 1], gy[j]], [gx[i + 1], gy[j + 1]], [gx[i], gy[j + 1]]], val = [g[i][j], g[i + 1][j], g[i + 1][j + 1], g[i][j + 1]];
+      var idx = (val[0] > level ? 1 : 0) | (val[1] > level ? 2 : 0) | (val[2] > level ? 4 : 0) | (val[3] > level ? 8 : 0);
+      if (idx === 0 || idx === 15) continue;
+      var pts = []; [[0, 1], [1, 2], [2, 3], [3, 0]].forEach(function (e) { var a = e[0], b = e[1]; if ((val[a] > level) !== (val[b] > level)) pts.push(interp(c[a], c[b], val[a], val[b])); });
+      if (pts.length === 2) segs.push([pts[0], pts[1]]); else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+    }
+    return segs;
+  }
+
+  /* ---------- impurity + CART ---------- */
+  function gini2(c) { var n = c[0] + c[1]; if (!n) return 0; var p = c[1] / n; return 2 * p * (1 - p); }
+  function ent2(c) { var n = c[0] + c[1]; if (!n) return 0; var p = c[1] / n, q = 1 - p, h = 0; if (p > 0) h -= p * Math.log2(p); if (q > 0) h -= q * Math.log2(q); return h; }
+  // Classification tree. X: array of feature arrays per observation; y: 0/1. opts: {maxDepth, minLeaf, mtry, feats, crit, rng}
+  function growClass(X, y, idx, opts, depth) {
+    var counts = [0, 0]; idx.forEach(function (i) { counts[y[i]]++; });
+    var I = opts.crit === 'entropy' ? ent2 : gini2;
+    var node = { n: idx.length, counts: counts, depth: depth, gini: gini2(counts), ent: ent2(counts), p: counts[1] / idx.length, leaf: true };
+    if (depth >= opts.maxDepth || counts[0] === 0 || counts[1] === 0 || idx.length < 2 * opts.minLeaf) return node;
+    var feats = opts.feats.slice();
+    if (opts.mtry && opts.mtry < feats.length) { for (var k = feats.length - 1; k > 0; k--) { var j = Math.floor(opts.rng() * (k + 1)); var tmp = feats[k]; feats[k] = feats[j]; feats[j] = tmp; } feats = feats.slice(0, opts.mtry); }
+    var parentI = I(counts), best = { gain: 1e-12 };
+    feats.forEach(function (f) {
+      var s = idx.slice().sort(function (a, b) { return X[a][f] - X[b][f]; });
+      var L = [0, 0], R = counts.slice();
+      for (var k2 = 0; k2 < s.length - 1; k2++) {
+        L[y[s[k2]]]++; R[y[s[k2]]]--;
+        var nl = k2 + 1, nr = s.length - nl;
+        if (nl < opts.minLeaf || nr < opts.minLeaf) continue;
+        if (X[s[k2]][f] === X[s[k2 + 1]][f]) continue;
+        var gain = parentI - (nl / s.length) * I(L) - (nr / s.length) * I(R);
+        if (gain > best.gain) best = { gain: gain, f: f, thr: (X[s[k2]][f] + X[s[k2 + 1]][f]) / 2 };
+      }
+    });
+    if (best.f === undefined) return node;
+    var li = [], ri = []; idx.forEach(function (i) { if (X[i][best.f] <= best.thr) li.push(i); else ri.push(i); });
+    node.leaf = false; node.f = best.f; node.thr = best.thr; node.gain = best.gain;
+    node.left = growClass(X, y, li, opts, depth + 1); node.right = growClass(X, y, ri, opts, depth + 1);
+    return node;
+  }
+  function predictNode(node, x) { while (!node.leaf) node = x[node.f] <= node.thr ? node.left : node.right; return node; }
+  function countLeaves(node) { return node.leaf ? 1 : countLeaves(node.left) + countLeaves(node.right); }
+  function gaussian(rng) { var u = 1 - rng(), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  /* ---------- shared classification data ---------- */
+  var DATA = (function () {
+    var rng = mulberry32(31415), n = 300, X = [], y = [];
+    for (var i = 0; i < n; i++) {
+      var v = 0.5 + 3.5 * rng(), s = 0.05 + 0.35 * rng(), dv = v - 2.25, ds = s - 0.225;
+      var eta = -1.1 + 2.0 * dv - 15 * ds - 7 * dv * ds;
+      var p = 1 / (1 + Math.exp(-eta));
+      X.push([v, s, v * s, v - 10 * s, rng() * 2 - 1]); y.push(rng() < p ? 1 : 0);
+    }
+    return { X: X, y: y, n: n, names: ['VPD', 'soil water θ', 'VPD × θ', 'VPD − 10θ', 'noise'], xr: [0.5, 4], yr: [0.05, 0.4] };
+  })();
+  function featVec(v, s) { return [v, s, v * s, v - 10 * s, 0]; }
+
+  /* ================= Lab 1: build a tree ================= */
+  (function () {
+    var svg = $('t1Svg'), tsvg = $('t1Tree'), dS = $('t1Depth'), mS = $('t1Min');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 420 - 16 - 50 };
+    var anim = null;
+    function crit() { return $('t1Ent').checked ? 'entropy' : 'gini'; }
+    function draw() {
+      var depth = +dS.value, minLeaf = +mS.value; $('t1DepthO').textContent = depth; $('t1MinO').textContent = minLeaf;
+      var idx = []; for (var i = 0; i < DATA.n; i++) idx.push(i);
+      var root = growClass(DATA.X, DATA.y, idx, { maxDepth: depth, minLeaf: minLeaf, mtry: 0, feats: [0, 1], crit: crit() }, 0);
+      clear(svg);
+      var sc = drawAxes(svg, box, DATA.xr, DATA.yr, [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4], [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], 'Growing-season mean VPD (kPa)', 'Soil water, θ (m³ m⁻³)', function (q) { return fmt(q, 1); }, function (q) { return fmt(q, 2); });
+      var regions = el('g', {}), lines = el('g', {}); svg.appendChild(regions); svg.appendChild(lines);
+      var nodes = [], last = null, maxDepthSeen = 0;
+      (function rec(node, bx, id) {
+        node.id = id; nodes.push(node); maxDepthSeen = Math.max(maxDepthSeen, node.depth);
+        if (node.leaf) { regions.appendChild(el('rect', { 'class': 'region', x: sc.sx(bx[0]), y: sc.sy(bx[3]), width: sc.sx(bx[1]) - sc.sx(bx[0]), height: sc.sy(bx[2]) - sc.sy(bx[3]), fill: node.p >= 0.5 ? 'var(--series-2)' : 'var(--series-1)', opacity: (0.06 + Math.abs(node.p - 0.5) * 0.9).toFixed(3) })); return; }
+        var isNew = node.depth === depth - 1; if (isNew) last = node;
+        if (node.f === 0) { lines.appendChild(el('line', { 'class': 'split' + (isNew ? ' new' : ''), x1: sc.sx(node.thr), x2: sc.sx(node.thr), y1: sc.sy(bx[2]), y2: sc.sy(bx[3]) })); rec(node.left, [bx[0], node.thr, bx[2], bx[3]], id + 'L'); rec(node.right, [node.thr, bx[1], bx[2], bx[3]], id + 'R'); }
+        else { lines.appendChild(el('line', { 'class': 'split' + (isNew ? ' new' : ''), x1: sc.sx(bx[0]), x2: sc.sx(bx[1]), y1: sc.sy(node.thr), y2: sc.sy(node.thr) })); rec(node.left, [bx[0], bx[1], bx[2], node.thr], id + 'L'); rec(node.right, [bx[0], bx[1], node.thr, bx[3]], id + 'R'); }
+      })(root, [DATA.xr[0], DATA.xr[1], DATA.yr[0], DATA.yr[1]], 'root');
+      for (var q = 0; q < DATA.n; q++) svg.appendChild(el('circle', { 'class': DATA.y[q] ? 'pt1' : 'pt0', cx: sc.sx(DATA.X[q][0]), cy: sc.sy(DATA.X[q][1]), r: 3.6 }));
+      // readouts
+      var leaves = nodes.filter(function (nd) { return nd.leaf; }), wg = 0, we = 0, err = 0;
+      leaves.forEach(function (nd) { wg += nd.n / DATA.n * nd.gini; we += nd.n / DATA.n * nd.ent; err += Math.min(nd.counts[0], nd.counts[1]); });
+      $('t1Leaves').textContent = leaves.length;
+      $('t1Root').textContent = fmt(root.gini, 3) + ' · ' + fmt(root.ent, 3);
+      $('t1Imp').textContent = fmt(wg, 3) + ' · ' + fmt(we, 3);
+      $('t1Err').textContent = fmt(100 * err / DATA.n, 1) + '%';
+      $('t1Last').textContent = last ? ((last.f === 0 ? 'VPD' : 'θ') + ' ≤ ' + fmt(last.thr, last.f ? 3 : 2) + ', n=' + last.n) : 'none yet';
+      $('t1DG').textContent = last ? fmt(last.gini - (last.left.n / last.n) * last.left.gini - (last.right.n / last.n) * last.right.gini, 4) : '–';
+      // tree diagram
+      clear(tsvg);
+      var nLeaf = leaves.length, slot = 620 / nLeaf, rowH = 36, H = 24 + (maxDepthSeen + 1) * rowH; tsvg.setAttribute('viewBox', '0 0 640 ' + H);
+      var cursor = 0;
+      (function layout(node) { if (node.leaf) { node.x = 10 + (cursor + 0.5) * slot; node.span = 1; cursor++; return; } layout(node.left); layout(node.right); node.x = (node.left.x + node.right.x) / 2; node.span = node.left.span + node.right.span; })(root);
+      (function drawNode(node, parent) {
+        var y = 14 + node.depth * rowH, w = Math.min(104, node.span * slot - 4), h = 26;
+        if (parent) { tsvg.appendChild(el('path', { 'class': 'edge', d: 'M' + parent.x + ',' + (14 + parent.depth * rowH + h) + ' C' + parent.x + ',' + (y - 10) + ' ' + node.x + ',' + (y - 16) + ' ' + node.x + ',' + y })); }
+        var g = el('g', { 'class': 'node' + (node.leaf ? ' leaf' : ''), transform: 'translate(' + node.x + ',' + y + ')' });
+        g.appendChild(el('rect', { x: -w / 2, y: 0, width: w, height: h, rx: 5, stroke: node.leaf ? (node.p >= 0.5 ? 'var(--series-2)' : 'var(--series-1)') : 'var(--line)' }));
+        if (w >= 60) { g.appendChild(el('text', { x: 0, y: 11, 'text-anchor': 'middle' }, node.leaf ? (node.p >= 0.5 ? 'died' : 'survived') : (node.f === 0 ? 'VPD ≤ ' + fmt(node.thr, 2) : 'θ ≤ ' + fmt(node.thr, 3)))); g.appendChild(el('text', { 'class': 'sub', x: 0, y: 22, 'text-anchor': 'middle' }, node.counts[0] + '/' + node.counts[1] + ' · G ' + fmt(node.gini, 2))); }
+        else if (w >= 30) { g.appendChild(el('text', { 'class': 'sub', x: 0, y: 17, 'text-anchor': 'middle' }, node.counts[0] + '/' + node.counts[1])); }
+        tsvg.appendChild(g);
+        if (!node.leaf) { drawNode(node.left, node); drawNode(node.right, node); }
+      })(root, null);
+      // table
+      var html = '<thead><tr><th>Node</th><th class="num">Depth</th><th class="num">n</th><th class="num">survived / died</th><th class="num">Gini</th><th class="num">Entropy</th><th>Split</th><th class="num">ΔI</th></tr></thead><tbody>';
+      nodes.forEach(function (nd) { html += '<tr><td>' + nd.id + '</td><td class="num">' + nd.depth + '</td><td class="num">' + nd.n + '</td><td class="num">' + nd.counts[0] + ' / ' + nd.counts[1] + '</td><td class="num">' + fmt(nd.gini, 3) + '</td><td class="num">' + fmt(nd.ent, 3) + '</td><td>' + (nd.leaf ? 'leaf → ' + (nd.p >= 0.5 ? 'died' : 'survived') : DATA.names[nd.f] + ' ≤ ' + fmt(nd.thr, nd.f ? 3 : 2)) + '</td><td class="num">' + (nd.leaf ? '–' : fmt(nd.gain, 4)) + '</td></tr>'; });
+      $('t1Table').innerHTML = html + '</tbody>';
+    }
+    [dS, mS, $('t1Gini'), $('t1Ent')].forEach(function (c) { c.addEventListener('input', function () { if (anim) { clearTimeout(anim); anim = null; } draw(); }); });
+    $('t1Reset').addEventListener('click', function () { if (anim) { clearTimeout(anim); anim = null; } dS.value = 0; draw(); });
+    $('t1Play').addEventListener('click', function () {
+      if (anim) { clearTimeout(anim); anim = null; }
+      if (reduced) { dS.value = +dS.max; draw(); return; }
+      dS.value = 0; draw();
+      function step() { if (+dS.value >= +dS.max) { anim = null; return; } dS.value = +dS.value + 1; draw(); anim = setTimeout(step, 800); }
+      anim = setTimeout(step, 500);
+    });
+    draw();
+  })();
+
+  /* ================= Lab 2: impurity functions ================= */
+  (function () {
+    var svg = $('t2Svg'), tip = $('t2Tip'), pL = $('t2pL'), pR = $('t2pR'), wS = $('t2w');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 300 - 16 - 50 };
+    function G(p) { return 2 * p * (1 - p); } function H(p) { var h = 0; if (p > 0) h -= p * Math.log2(p); if (p < 1) h -= (1 - p) * Math.log2(1 - p); return h; } function E(p) { return Math.min(p, 1 - p); }
+    function draw() {
+      var a = +pL.value, b = +pR.value, w = +wS.value, pp = w * a + (1 - w) * b;
+      $('t2pLO').textContent = fmt(a, 2); $('t2pRO').textContent = fmt(b, 2); $('t2wO').textContent = fmt(w, 2);
+      clear(svg);
+      var sc = drawAxes(svg, box, [0, 1], [0, 1], [0, 0.25, 0.5, 0.75, 1], [0, 0.25, 0.5, 0.75, 1], 'Proportion of class 1 in the node, p', 'Impurity', function (q) { return fmt(q, 2); }, function (q) { return fmt(q, 2); });
+      [[G, 'var(--series-1)', 'Gini'], [H, 'var(--series-2)', 'entropy'], [E, 'var(--series-3)', 'misclassification']].forEach(function (f) {
+        var d = ''; for (var k = 0; k <= 100; k++) { var p = k / 100; d += (k ? 'L' : 'M') + sc.sx(p).toFixed(1) + ',' + sc.sy(f[0](p)).toFixed(1); } svg.appendChild(el('path', { 'class': 'ser', d: d, stroke: f[1] }));
+        svg.appendChild(el('line', { x1: sc.sx(a), y1: sc.sy(f[0](a)), x2: sc.sx(b), y2: sc.sy(f[0](b)), stroke: f[1], 'stroke-dasharray': '4 3', 'stroke-width': 1.2, opacity: 0.8 }));
+        var chord = w * f[0](a) + (1 - w) * f[0](b);
+        svg.appendChild(el('line', { x1: sc.sx(pp), y1: sc.sy(f[0](pp)), x2: sc.sx(pp), y2: sc.sy(chord), stroke: 'var(--fg)', 'stroke-width': 2 }));
+      });
+      svg.appendChild(el('text', { 'class': 'dl', x: sc.sx(0.5), y: sc.sy(1) - 6, 'text-anchor': 'middle', fill: 'var(--series-2)' }, 'entropy'));
+      svg.appendChild(el('text', { 'class': 'dl', x: sc.sx(0.5), y: sc.sy(0.5) - 6, 'text-anchor': 'middle', fill: 'var(--series-1)' }, 'Gini'));
+      svg.appendChild(el('text', { 'class': 'dl', x: sc.sx(0.3), y: sc.sy(0.3) + 14, 'text-anchor': 'middle', fill: 'var(--series-3)' }, 'misclassification'));
+      svg.appendChild(el('text', { 'class': 'tick', x: sc.sx(pp), y: box.t + box.h - 4, 'text-anchor': 'middle' }, 'parent p = ' + fmt(pp, 2)));
+      var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.t, y2: box.t + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+      var hit = el('rect', { x: box.l, y: box.t, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+      hit.addEventListener('mousemove', function (evt) { var q = svgPoint(svg, evt); var p = Math.max(0, Math.min(1, (q.x - box.l) / box.w)); xh.setAttribute('x1', sc.sx(p)); xh.setAttribute('x2', sc.sx(p)); xh.setAttribute('visibility', 'visible'); tipFollow(tip, evt, 'p <b>' + fmt(p, 2) + '</b><br>Gini <b>' + fmt(G(p), 3) + '</b> · entropy <b>' + fmt(H(p), 3) + '</b> · misclass <b>' + fmt(E(p), 3) + '</b>'); });
+      hit.addEventListener('mouseleave', function () { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+      $('t2pP').textContent = fmt(pp, 3);
+      $('t2dG').textContent = fmt(G(pp) - w * G(a) - (1 - w) * G(b), 4);
+      $('t2dH').textContent = fmt(H(pp) - w * H(a) - (1 - w) * H(b), 4);
+      $('t2dE').textContent = fmt(E(pp) - w * E(a) - (1 - w) * E(b), 4);
+    }
+    [pL, pR, wS].forEach(function (c) { c.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ================= Lab 3: random forest ================= */
+  (function () {
+    var svg = $('t3Svg'), osvg = $('t3Oob'), isvg = $('t3Imp'), BS = $('t3B'), MS = $('t3M'), LS = $('t3Leaf'), single = $('t3Single');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 420 - 16 - 50 };
+    var seedBase = 2024;
+    function train(B, mtry, minLeaf) {
+      var rng = mulberry32(seedBase), n = DATA.n, trees = [], oobVotes = [], oobCnt = [], oobCurve = [];
+      for (var i = 0; i < n; i++) { oobVotes.push(0); oobCnt.push(0); }
+      for (var b = 0; b < B; b++) {
+        var inBag = new Array(n).fill(false), idx = [];
+        for (var k = 0; k < n; k++) { var j = Math.floor(rng() * n); idx.push(j); inBag[j] = true; }
+        var tree = growClass(DATA.X, DATA.y, idx, { maxDepth: 14, minLeaf: minLeaf, mtry: mtry, feats: [0, 1, 2, 3, 4], crit: 'gini', rng: rng }, 0);
+        var oob = []; for (var q = 0; q < n; q++) if (!inBag[q]) oob.push(q);
+        var e1 = 0; oob.forEach(function (i2) { var pr = predictNode(tree, DATA.X[i2]).p >= 0.5 ? 1 : 0; if (pr !== DATA.y[i2]) e1++; oobVotes[i2] += pr; oobCnt[i2]++; });
+        trees.push({ tree: tree, oob: oob, err: oob.length ? e1 / oob.length : 0, leaves: countLeaves(tree) });
+        var errB = 0, cnt = 0; for (var r = 0; r < n; r++) if (oobCnt[r]) { cnt++; if ((oobVotes[r] / oobCnt[r] >= 0.5 ? 1 : 0) !== DATA.y[r]) errB++; }
+        oobCurve.push(cnt ? errB / cnt : NaN);
+      }
+      // permutation importance (OOB)
+      var imp = [0, 0, 0, 0, 0];
+      trees.forEach(function (t) {
+        var base = 1 - t.err;
+        for (var f = 0; f < 5; f++) {
+          var vals = t.oob.map(function (i3) { return DATA.X[i3][f]; });
+          for (var k2 = vals.length - 1; k2 > 0; k2--) { var j2 = Math.floor(rng() * (k2 + 1)); var tmp = vals[k2]; vals[k2] = vals[j2]; vals[j2] = tmp; }
+          var correct = 0; t.oob.forEach(function (i4, pos) { var x = DATA.X[i4].slice(); x[f] = vals[pos]; if ((predictNode(t.tree, x).p >= 0.5 ? 1 : 0) === DATA.y[i4]) correct++; });
+          imp[f] += (base - correct / t.oob.length) / trees.length;
+        }
+      });
+      // mean pairwise vote correlation among first 20 trees on training points
+      var m = Math.min(trees.length, 20), votes = [];
+      for (var a = 0; a < m; a++) { votes.push(DATA.X.map(function (x) { return predictNode(trees[a].tree, x).p >= 0.5 ? 1 : 0; })); }
+      var rho = NaN; if (m > 1) { var sum = 0, pairs = 0; for (var a2 = 0; a2 < m; a2++) for (var b2 = a2 + 1; b2 < m; b2++) { var c = corr(votes[a2], votes[b2]); if (!isNaN(c)) { sum += c; pairs++; } } rho = pairs ? sum / pairs : NaN; }
+      return { trees: trees, oobCurve: oobCurve, imp: imp, rho: rho };
+    }
+    function corr(u, v) { var n = u.length, mu = 0, mv = 0; for (var i = 0; i < n; i++) { mu += u[i]; mv += v[i]; } mu /= n; mv /= n; var suv = 0, suu = 0, svv = 0; for (var k = 0; k < n; k++) { suv += (u[k] - mu) * (v[k] - mv); suu += (u[k] - mu) * (u[k] - mu); svv += (v[k] - mv) * (v[k] - mv); } return suu && svv ? suv / Math.sqrt(suu * svv) : NaN; }
+    function forestP(trees, x) { var s = 0; trees.forEach(function (t) { s += predictNode(t.tree, x).p >= 0.5 ? 1 : 0; }); return s / trees.length; }
+    function draw() {
+      var B = +BS.value, mtry = +MS.value, minLeaf = +LS.value; $('t3BO').textContent = B; $('t3MO').textContent = mtry; $('t3LeafO').textContent = minLeaf;
+      var t0 = performance.now(), F = train(B, mtry, minLeaf), used = single.checked ? F.trees.slice(0, 1) : F.trees;
+      clear(svg);
+      var sc = drawAxes(svg, box, DATA.xr, DATA.yr, [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4], [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], 'Growing-season mean VPD (kPa)', 'Soil water, θ (m³ m⁻³)', function (q) { return fmt(q, 1); }, function (q) { return fmt(q, 2); });
+      var nx = 56, ny = 40, gx = [], gy = [], g = [];
+      for (var a = 0; a <= nx; a++) gx.push(DATA.xr[0] + a / nx * (DATA.xr[1] - DATA.xr[0]));
+      for (var b = 0; b <= ny; b++) gy.push(DATA.yr[0] + b / ny * (DATA.yr[1] - DATA.yr[0]));
+      for (var a2 = 0; a2 <= nx; a2++) { g.push([]); for (var b2 = 0; b2 <= ny; b2++) g[a2].push(forestP(used, featVec(gx[a2], gy[b2]))); }
+      var grp = el('g', {}), cw = box.w / nx, chh = box.h / ny;
+      for (var a3 = 0; a3 < nx; a3++) for (var b3 = 0; b3 < ny; b3++) { var pc = (g[a3][b3] + g[a3 + 1][b3] + g[a3][b3 + 1] + g[a3 + 1][b3 + 1]) / 4; var op = Math.abs(pc - 0.5) * 0.8; if (op < 0.02) continue; grp.appendChild(el('rect', { 'class': 'cell', x: sc.sx(gx[a3]), y: sc.sy(gy[b3 + 1]), width: cw + 0.5, height: chh + 0.5, fill: pc > 0.5 ? 'var(--series-2)' : 'var(--series-1)', opacity: op.toFixed(3) })); }
+      svg.appendChild(grp);
+      var segs = marching(g, nx, ny, 0.5, gx, gy), d = ''; segs.forEach(function (sg) { d += 'M' + sc.sx(sg[0][0]).toFixed(1) + ',' + sc.sy(sg[0][1]).toFixed(1) + 'L' + sc.sx(sg[1][0]).toFixed(1) + ',' + sc.sy(sg[1][1]).toFixed(1); });
+      if (d) svg.appendChild(el('path', { d: d, fill: 'none', stroke: 'var(--fg)', 'stroke-width': 1.6 }));
+      for (var q = 0; q < DATA.n; q++) svg.appendChild(el('circle', { 'class': DATA.y[q] ? 'pt1' : 'pt0', cx: sc.sx(DATA.X[q][0]), cy: sc.sy(DATA.X[q][1]), r: 3.4 }));
+      svg.appendChild(el('text', { 'class': 'dl', x: box.l + 8, y: box.t + 14 }, single.checked ? 'tree 1 of ' + B : 'forest of ' + B + ' trees, mtry = ' + mtry));
+      // OOB curve
+      clear(osvg);
+      var ob = { l: 44, t: 14, w: 320 - 44 - 12, h: 220 - 14 - 46 };
+      var maxB = Math.max(10, +BS.max), ymax = 0.5;
+      var so = drawAxes(osvg, ob, [1, maxB], [0, ymax], [1, 10, 20, 30, 40, 50, 60], [0, 0.1, 0.2, 0.3, 0.4, 0.5], 'Number of trees', 'OOB error rate', null, function (v) { return fmt(v, 1); });
+      var dd = ''; F.oobCurve.forEach(function (e, i) { if (isNaN(e)) return; dd += (dd ? 'L' : 'M') + so.sx(i + 1).toFixed(1) + ',' + so.sy(Math.min(ymax, e)).toFixed(1); });
+      osvg.appendChild(el('path', { 'class': 'ser', d: dd, stroke: 'var(--series-1)' }));
+      var e1m = F.trees.reduce(function (s, t) { return s + t.err; }, 0) / F.trees.length;
+      osvg.appendChild(el('line', { 'class': 'ref', x1: ob.l, x2: ob.l + ob.w, y1: so.sy(Math.min(ymax, e1m)), y2: so.sy(Math.min(ymax, e1m)) }));
+      osvg.appendChild(el('text', { 'class': 'tick', x: ob.l + ob.w - 2, y: so.sy(Math.min(ymax, e1m)) - 4, 'text-anchor': 'end' }, 'mean single-tree OOB error'));
+      osvg.appendChild(el('text', { 'class': 'dl', x: ob.l + 4, y: ob.t + 12 }, 'OOB error vs B'));
+      // importance bars
+      clear(isvg);
+      var ib = { l: 92, t: 14, w: 320 - 92 - 14, h: 220 - 14 - 46 };
+      var impMax = Math.max(0.05, Math.max.apply(null, F.imp.map(Math.abs))) * 1.15;
+      var si = drawAxes(isvg, ib, [Math.min(0, Math.min.apply(null, F.imp)) - 0.01, impMax], [0, 5], [0, 0.1, 0.2, 0.3].filter(function (v) { return v <= impMax; }), [], 'Permutation importance (ΔOOB accuracy)', null, function (v) { return fmt(v, 1); });
+      F.imp.forEach(function (v, i) { var y0 = ib.t + i * ib.h / 5 + 5, hh = ib.h / 5 - 10; isvg.appendChild(el('rect', { 'class': 'bar', x: si.sx(Math.min(0, v)), y: y0, width: Math.abs(si.sx(v) - si.sx(0)), height: hh, fill: i === 4 ? 'var(--muted)' : 'var(--series-1)' })); isvg.appendChild(el('text', { 'class': 'tick', x: ib.l - 6, y: y0 + hh / 2 + 4, 'text-anchor': 'end' }, DATA.names[i])); isvg.appendChild(el('text', { 'class': 'tick', x: si.sx(Math.max(0, v)) + 4, y: y0 + hh / 2 + 4 }, fmt(v, 3))); });
+      isvg.appendChild(el('line', { 'class': 'ax', x1: si.sx(0), x2: si.sx(0), y1: ib.t, y2: ib.t + ib.h }));
+      // readouts
+      var trainErr = 0; for (var r = 0; r < DATA.n; r++) if ((forestP(used, DATA.X[r]) >= 0.5 ? 1 : 0) !== DATA.y[r]) trainErr++;
+      $('t3OobErr').textContent = fmt(100 * F.oobCurve[F.oobCurve.length - 1], 1) + '%';
+      $('t3Train').textContent = fmt(100 * trainErr / DATA.n, 1) + '%';
+      $('t3Tree1').textContent = fmt(100 * e1m, 1) + '%';
+      $('t3Leaves').textContent = fmt(F.trees.reduce(function (s, t) { return s + t.leaves; }, 0) / F.trees.length, 1);
+      $('t3Rho').textContent = isNaN(F.rho) ? 'n/a (B = 1)' : fmt(F.rho, 3);
+      $('t3Status').textContent = 'trained ' + B + ' trees in ' + fmt(performance.now() - t0, 0) + ' ms · bootstrap seed ' + seedBase;
+    }
+    [BS, MS, LS, single].forEach(function (c) { c.addEventListener('input', draw); });
+    $('t3Retrain').addEventListener('click', function () { seedBase++; draw(); });
+    draw();
+  })();
+
+  /* ================= Lab 4: regression tree vs forest ================= */
+  (function () {
+    var svg = $('t4Svg'), tip = $('t4Tip'), LS = $('t4Leaf'), DS = $('t4Depth'), NSd = $('t4Noise');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 360 - 16 - 50 };
+    var rng0 = mulberry32(9001), n = 120, T = [], z = [];
+    for (var i = 0; i < n; i++) { T.push(4 + 20 * rng0()); z.push(gaussian(rng0)); }
+    function truth(t) { return 1.5 * Math.pow(2.2, (t - 10) / 10); }
+    function growReg(x, y, idx, maxDepth, minLeaf, depth) {
+      var s = 0; idx.forEach(function (i) { s += y[i]; }); var mean = s / idx.length;
+      var node = { leaf: true, mean: mean, n: idx.length };
+      if (depth >= maxDepth || idx.length < 2 * minLeaf) return node;
+      var so = idx.slice().sort(function (a, b) { return x[a] - x[b]; });
+      var sl = 0, best = { gain: 1e-12 }, tot = s;
+      for (var k = 0; k < so.length - 1; k++) { sl += y[so[k]]; var nl = k + 1, nr = so.length - nl; if (nl < minLeaf || nr < minLeaf) continue; if (x[so[k]] === x[so[k + 1]]) continue; var ml = sl / nl, mr = (tot - sl) / nr; var gain = nl * nr / so.length * (ml - mr) * (ml - mr); if (gain > best.gain) best = { gain: gain, thr: (x[so[k]] + x[so[k + 1]]) / 2 }; }
+      if (best.thr === undefined) return node;
+      var li = [], ri = []; idx.forEach(function (i) { if (x[i] <= best.thr) li.push(i); else ri.push(i); });
+      node.leaf = false; node.thr = best.thr; node.left = growReg(x, y, li, maxDepth, minLeaf, depth + 1); node.right = growReg(x, y, ri, maxDepth, minLeaf, depth + 1);
+      return node;
+    }
+    function predR(node, t) { while (!node.leaf) node = t <= node.thr ? node.left : node.right; return node.mean; }
+    function draw() {
+      var minLeaf = +LS.value, maxDepth = +DS.value, sd = +NSd.value; $('t4LeafO').textContent = minLeaf; $('t4DepthO').textContent = maxDepth; $('t4NoiseO').textContent = fmt(sd, 2);
+      var y = T.map(function (t, i) { return Math.max(0.05, truth(t) + sd * z[i]); });
+      var idx = []; for (var i = 0; i < n; i++) idx.push(i);
+      var tree = growReg(T, y, idx, maxDepth, minLeaf, 0);
+      var rng = mulberry32(777), B = 60, forest = [];
+      for (var b = 0; b < B; b++) { var bi = []; for (var k = 0; k < n; k++) bi.push(Math.floor(rng() * n)); forest.push(growReg(T, y, bi, 12, minLeaf, 0)); }
+      function predF(t) { var s = 0; forest.forEach(function (tr) { s += predR(tr, t); }); return s / B; }
+      // log-linear Q10 fit
+      var sx = 0, sy = 0, sxx = 0, sxy = 0; for (var q = 0; q < n; q++) { var ly = Math.log(y[q]); sx += T[q]; sy += ly; sxx += T[q] * T[q]; sxy += T[q] * ly; }
+      var bq = (n * sxy - sx * sy) / (n * sxx - sx * sx), aq = (sy - bq * sx) / n;
+      function predQ(t) { return Math.exp(aq + bq * t); }
+      clear(svg);
+      var ymax = 20;
+      var sc = drawAxes(svg, box, [0, 36], [0, ymax], [0, 5, 10, 15, 20, 25, 30, 35], [0, 5, 10, 15, 20], 'Soil temperature (°C)', 'Soil respiration (µmol CO₂ m⁻² s⁻¹)', null, null);
+      svg.appendChild(el('rect', { 'class': 'extrap', x: sc.sx(24), y: box.t, width: sc.sx(36) - sc.sx(24), height: box.h }));
+      svg.appendChild(el('rect', { 'class': 'extrap', x: sc.sx(0), y: box.t, width: sc.sx(4) - sc.sx(0), height: box.h }));
+      svg.appendChild(el('text', { 'class': 'tick', x: sc.sx(30), y: box.t + 14, 'text-anchor': 'middle' }, 'extrapolation'));
+      function curve(fn, stroke, dash) { var d = ''; for (var k2 = 0; k2 <= 360; k2++) { var t = k2 / 10; d += (k2 ? 'L' : 'M') + sc.sx(t).toFixed(1) + ',' + sc.sy(Math.min(ymax, fn(t))).toFixed(1); } var p = el('path', { 'class': 'ser', d: d, stroke: stroke }); if (dash) p.setAttribute('stroke-dasharray', dash); svg.appendChild(p); }
+      curve(truth, 'var(--muted)', '5 4'); curve(predQ, 'var(--series-3)'); curve(function (t) { return predR(tree, t); }, 'var(--series-1)'); curve(predF, 'var(--series-2)');
+      for (var r = 0; r < n; r++) svg.appendChild(el('circle', { 'class': 'ptr', cx: sc.sx(T[r]), cy: sc.sy(Math.min(ymax, y[r])), r: 3 }));
+      var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.t, y2: box.t + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+      var hit = el('rect', { x: box.l, y: box.t, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+      hit.addEventListener('mousemove', function (evt) { var p = svgPoint(svg, evt); var t = Math.max(0, Math.min(36, (p.x - box.l) / box.w * 36)); xh.setAttribute('x1', sc.sx(t)); xh.setAttribute('x2', sc.sx(t)); xh.setAttribute('visibility', 'visible'); tipFollow(tip, evt, 'T <b>' + fmt(t, 1) + '</b> °C<br>tree <b>' + fmt(predR(tree, t), 2) + '</b> · forest <b>' + fmt(predF(t), 2) + '</b><br>Q₁₀ fit <b>' + fmt(predQ(t), 2) + '</b> · truth <b>' + fmt(truth(t), 2) + '</b>'); });
+      hit.addEventListener('mouseleave', function () { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+      var e1 = 0, e2 = 0, e3 = 0; for (var m = 0; m < n; m++) { var tr = truth(T[m]); e1 += Math.pow(predR(tree, T[m]) - tr, 2); e2 += Math.pow(predF(T[m]) - tr, 2); e3 += Math.pow(predQ(T[m]) - tr, 2); }
+      $('t4Rmse').textContent = fmt(Math.sqrt(e1 / n), 2) + ' · ' + fmt(Math.sqrt(e2 / n), 2) + ' · ' + fmt(Math.sqrt(e3 / n), 2);
+      $('t4Ext').textContent = fmt(predR(tree, 32), 2) + ' · ' + fmt(predF(32), 2);
+      $('t4True').textContent = fmt(truth(32), 2) + ' · ' + fmt(predQ(32), 2) + ' (Q₁₀ = ' + fmt(Math.exp(10 * bq), 2) + ')';
+      $('t4Leaves').textContent = countLeavesR(tree);
+      var html = '<thead><tr><th class="num">T (°C)</th><th class="num">Truth</th><th class="num">Tree</th><th class="num">Forest</th><th class="num">Q₁₀ fit</th></tr></thead><tbody>';
+      for (var t2 = 0; t2 <= 36; t2 += 4) html += '<tr><td class="num">' + t2 + '</td><td class="num">' + fmt(truth(t2), 2) + '</td><td class="num">' + fmt(predR(tree, t2), 2) + '</td><td class="num">' + fmt(predF(t2), 2) + '</td><td class="num">' + fmt(predQ(t2), 2) + '</td></tr>';
+      $('t4Table').innerHTML = html + '</tbody>';
+    }
+    function countLeavesR(nd) { return nd.leaf ? 1 : countLeavesR(nd.left) + countLeavesR(nd.right); }
+    [LS, DS, NSd].forEach(function (c) { c.addEventListener('input', draw); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

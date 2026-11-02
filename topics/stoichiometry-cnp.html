@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C:N:P Stoichiometry</title>
+<meta name="description" content="Ecological stoichiometry for ecosystem modellers: typical C:N:P ratios of plants, litter, microbes and soil organic matter, homeostasis, the threshold element ratio and critical C:N for net mineralisation, N:P limitation diagnostics, ecoenzymatic stoichiometry, and fixed versus flexible stoichiometry in land models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .chart text { font-family: var(--font-display); fill: var(--fg); }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dash { stroke-dasharray: 5 4; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .band { fill: var(--accent-soft); opacity: 0.55; }
+  .chart .band2 { fill: var(--accent-2-soft); opacity: 0.6; }
+  .chart .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .chart .pt2 { fill: var(--accent-2); stroke: var(--surface); stroke-width: 2; }
+  .chart .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .ratio td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .verdict { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+  .pill-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.5rem 0; }
+  .pill-row span { background: var(--surface-2); border-radius: 999px; padding: 0.15rem 0.6rem; font-family: var(--font-display); font-size: 0.78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › C:N:P stoichiometry</div>
+    <div class="eyebrow">Topic 4 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">C:N:P Stoichiometry</h1>
+    <p class="lead">Why the ratios of carbon to nitrogen to phosphorus in leaves, litter, microbes and soil organic matter are so different, how that mismatch decides whether decomposition releases or consumes nutrients, and how models choose between fixed and flexible stoichiometry.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Organisms build themselves from elements in characteristic proportions. Marine plankton approximate Redfield's 106:16:1 (C:N:P by atoms); soil microbes sit near 60:7:1; leaves and especially litter and wood are far richer in carbon (C:N of 20–60 for leaves, 40–100 or more for litter, 100–500 for wood). <strong>Ecological stoichiometry</strong> is the study of what happens when a consumer with one ratio eats a resource with another. Microbes are nearly <strong>homeostatic</strong> (they hold their C:N:P roughly constant), so when they decompose carbon-rich litter they must scavenge N and P from the soil solution (immobilisation), and only when the substrate's C:N falls below a <strong>threshold element ratio</strong> of about 25:1 do they release N (net mineralisation). That threshold is not magic: it equals the microbial C:N divided by the carbon-use efficiency. The same bookkeeping explains why N:P ratios diagnose which nutrient limits growth, why P-rich ribosomes tie growth rate to P demand, why leaf N:P falls from the tropics toward the poles, why soil C:N:P narrows with depth and soil age, and why land-surface models that allow plant and soil C:N to flex predict a weaker nitrogen brake on CO₂ fertilisation than models with fixed ratios.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Examiners use stoichiometry to test whether you can do mass balance under constraint. Expect to be asked to derive the critical C:N for net mineralisation from microbial C:N and carbon-use efficiency, to explain immobilisation during early litter decay, to interpret a leaf N:P value with appropriate caution, and to say concretely what "flexible stoichiometry" changes in a model such as CLM5 or ORCHIDEE-CNP.</p></div>
+  </section>
+
+  <section id="principles">
+    <h2>Principles: ratios, Redfield, and homeostasis</h2>
+    <p>Sterner and Elser [1] framed ecological stoichiometry around three ideas. First, every organism has an elemental composition that reflects its biochemistry: proteins carry N (about 16% by mass), nucleic acids carry both N and P, phospholipids carry P, and structural carbohydrates and lignin carry only C, H and O. Second, resources and consumers rarely match, so consumption involves an <strong>elemental imbalance</strong> that must be resolved by respiring the excess element, excreting it, or lowering growth. Third, organisms differ in how tightly they regulate their composition, from strictly homeostatic (animals, most bacteria) to flexible (plants, which store nitrate, phosphate, starch and lignify at will).</p>
+    <p>Redfield [2] observed that the dissolved N:P of the deep ocean (16:1 by atoms) matches the average composition of plankton, C:N:P ≈ 106:16:1, and argued that the biota set the ocean's chemistry rather than the reverse. The terrestrial analogue was sought by Cleveland and Liptzin [3], who compiled 186 soils and found a surprisingly constrained atomic C:N:P of <strong>186:13:1 for soil</strong> and <strong>60:7:1 for soil microbial biomass</strong>. Soil N:P was especially tight (13:1), which they attributed to microbial control; C:N:P in plants is far more variable because of structural carbon.</p>
+    <p>Ratios are reported either by atoms (molar) or by mass, and examiners notice when they are mixed. Converting is simple:</p>
+    <div class="eq">$$\begin{aligned}\left(\tfrac{C}{N}\right)_{mass} &= \tfrac{12}{14}\left(\tfrac{C}{N}\right)_{molar} = 0.857\left(\tfrac{C}{N}\right)_{molar},\\ \left(\tfrac{C}{P}\right)_{mass} &= \tfrac{12}{31}\left(\tfrac{C}{P}\right)_{molar} = 0.387\left(\tfrac{C}{P}\right)_{molar},\\ \left(\tfrac{N}{P}\right)_{mass} &= \tfrac{14}{31}\left(\tfrac{N}{P}\right)_{molar} = 0.452\left(\tfrac{N}{P}\right)_{molar}.\end{aligned}$$</div>
+    <p>Redfield 106:16:1 by atoms is therefore 41:7.2:1 by mass, and the microbial 60:7:1 by atoms is about 23:3.2:1 by mass, i.e. a mass C:N near 7 and mass N:P near 3. Most soil and litter literature quotes mass ratios; most oceanographic and microbial-ecology literature quotes molar ratios. On this page ratios are by mass unless stated otherwise.</p>
+    <h3>Homeostasis and the H coefficient</h3>
+    <p>Sterner and Elser quantified stoichiometric regulation by regressing the consumer's ratio y on the resource's ratio x in log space:</p>
+    <div class="eq">$$\log y = \log c + \frac{1}{H}\log x \qquad\Longleftrightarrow\qquad y = c\,x^{1/H}.$$</div>
+    <p>H = 1 means the consumer simply mirrors its food (no regulation); H → ∞ means strict homeostasis. Metazoans and most bacteria have 1/H close to zero (H &gt; 4). Soil microbial communities are only moderately homeostatic in C:N (community shifts between fungi and bacteria move the ratio between about 5 and 15) and more flexible in C:P, because P storage as polyphosphate is common; Mooshammer et al. [10] review the evidence and show that decomposers also adjust their <em>carbon-use efficiency</em> and enzyme allocation to cope with imbalance. Plants have low H: leaf N can double between a shaded understorey leaf and a fertilised crop, and plants accumulate "luxury" nutrients when supply exceeds demand. That asymmetry, homeostatic consumers eating flexible producers, is the heart of the decomposition story below.</p>
+  </section>
+
+  <section id="ratios">
+    <h2>Typical ratios, and why they differ</h2>
+    <p>The table collects values worth memorising. The pattern is a steady narrowing of C:N and C:P from wood and litter through leaves and soil organic matter to microbes, because each step strips carbon by respiration while nutrients are retained and recycled. Mineral-associated organic matter (MAOM) sits closest to microbial composition because much of it is microbial necromass and exudate bound to clay; particulate organic matter (POM) is still recognisably plant.</p>
+    <div class="tablewrap"><table class="ratio">
+      <thead><tr><th>Pool</th><th class="num">C:N (mass)</th><th class="num">C:P (mass)</th><th class="num">N:P (mass)</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Marine plankton (Redfield, molar 106:16:1)</td><td class="num">6.6 molar / 5.7 mass</td><td class="num">106 molar / 41 mass</td><td class="num">16 molar / 7.2 mass</td><td>Protein- and nucleic-acid-rich cells, no structural C</td></tr>
+        <tr><td>Soil microbial biomass</td><td class="num">7–8 (molar 8.6)</td><td class="num">40–60</td><td class="num">3–7</td><td>Cleveland &amp; Liptzin 60:7:1 molar [3]; fungi wider (10–15) than bacteria (4–6)</td></tr>
+        <tr><td>Green leaves</td><td class="num">20–60</td><td class="num">300–1500</td><td class="num">10–20</td><td>Rubisco and chlorophyll N; cell walls and sugars dilute</td></tr>
+        <tr><td>Leaf litter</td><td class="num">40–100+</td><td class="num">500–3000</td><td class="num">10–25</td><td>Resorption removes ~50–65% of N and P before abscission</td></tr>
+        <tr><td>Fine roots</td><td class="num">40–80</td><td class="num">500–1500</td><td class="num">10–20</td><td>Intermediate; lower resorption than leaves</td></tr>
+        <tr><td>Wood</td><td class="num">100–500</td><td class="num">1000–10000</td><td class="num">10–30</td><td>Cellulose and lignin; nutrients in a thin living layer</td></tr>
+        <tr><td>Bulk soil organic matter</td><td class="num">10–14</td><td class="num">50–200 (molar 186)</td><td class="num">5–13</td><td>Cleveland &amp; Liptzin 186:13:1 molar [3]; narrows with depth</td></tr>
+        <tr><td>MAOM</td><td class="num">8–13</td><td class="num">~40–100</td><td class="num">~4–8</td><td>Microbial necromass and N-rich compounds sorbed to minerals</td></tr>
+        <tr><td>POM</td><td class="num">15–40</td><td class="num">200–800</td><td class="num">8–20</td><td>Partially decomposed plant fragments</td></tr>
+      </tbody></table></div>
+    <p>Two cautions. First, "microbial C:N:P" is measured by chloroform fumigation–extraction with conversion factors (k<sub>EC</sub> ≈ 0.45, k<sub>EN</sub> ≈ 0.54, k<sub>EP</sub> ≈ 0.40) whose uncertainty propagates into every ratio; a 60:7:1 is best read as "roughly 50–80 : 6–9 : 1". Second, ratios are averages over communities. A litter layer dominated by fungi (C:N 10–15) immobilises less N per unit growth than a bacterial community (C:N 4–6), which is one reason fungal-dominated systems tolerate recalcitrant, nutrient-poor litter.</p>
+  </section>
+
+  <section id="decomp">
+    <h2>Stoichiometric control of decomposition: the threshold element ratio</h2>
+    <p>Consider a decomposer community with fixed biomass C:N = (C:N)<sub>B</sub> consuming substrate with (C:N)<sub>S</sub>. Let U be the rate of substrate carbon taken up (g C per unit time) and e the carbon-use efficiency (CUE), the fraction of assimilated C that becomes biomass rather than CO₂. Mass balance for N:</p>
+    <div class="eq">$$\underbrace{\frac{U}{(C\!:\!N)_S}}_{\text{N taken up with substrate}} \;-\; \underbrace{\frac{e\,U}{(C\!:\!N)_B}}_{\text{N needed to build biomass}} \;=\; N_{\text{net}} \quad\Rightarrow\quad N_{\text{net}} = U\left[\frac{1}{(C\!:\!N)_S} - \frac{e}{(C\!:\!N)_B}\right].$$</div>
+    <p>If N<sub>net</sub> &gt; 0 the microbes have surplus N and excrete NH₄⁺: <strong>net mineralisation</strong>. If N<sub>net</sub> &lt; 0 they must take mineral N from solution: <strong>net immobilisation</strong>. The crossover defines the <strong>threshold element ratio</strong> (TER):</p>
+    <div class="eq">$$\text{TER}_{C:N} = \frac{(C\!:\!N)_B}{e}.$$</div>
+    <p>With (C:N)<sub>B</sub> ≈ 8 and e ≈ 0.3–0.4, TER ≈ 20–27, which is the textbook "critical C:N of about 25:1" (or "about 2% N") that separates N-releasing from N-consuming residues. Per unit carbon <em>mineralised to CO₂</em> rather than per unit taken up, divide by (1 − e). The same algebra with P gives TER<sub>C:P</sub> = (C:P)<sub>B</sub>/e ≈ 50/0.35 ≈ 140–200 (mass), the critical C:P for net P mineralisation. Manzoni et al. [8, 9] showed from a global litter dataset that the observed critical C:N at which litter begins to release N is not constant but falls with initial litter N, and that this is explained if CUE itself declines as substrate C:N widens: decomposers facing N-poor litter waste carbon through overflow respiration. The flexibility of e is therefore a second lever, alongside immobilisation, by which microbes resolve imbalance (Mooshammer et al. [10]).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · Net mineralisation or immobilisation?</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="terSvg" viewBox="0 0 640 360" role="img" aria-label="Net nitrogen release per gram of carbon decomposed as a function of substrate C to N ratio, with the threshold element ratio where it crosses zero"></svg>
+            <div class="chart-tip" id="terTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">net N release per g C taken up</span><span style="--c:var(--series-2)">your substrate</span><span style="--c:var(--series-1)">TER (zero crossing)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="terTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="tS"><span>Substrate C:N (mass)</span><output id="tSO">50</output></label><input type="range" id="tS" min="5" max="120" step="1" value="50"></div>
+          <div class="ctrl"><label for="tB"><span>Microbial biomass C:N (mass)</span><output id="tBO">8</output></label><input type="range" id="tB" min="4" max="16" step="0.5" value="8"></div>
+          <div class="ctrl"><label for="tE"><span>Carbon-use efficiency, e</span><output id="tEO">0.35</output></label><input type="range" id="tE" min="0.1" max="0.7" step="0.01" value="0.35"></div>
+          <dl class="readout">
+            <dt>TER<sub>C:N</sub> = (C:N)<sub>B</sub>/e</dt><dd id="tTER"></dd>
+            <dt>Critical N concentration (% of C)</dt><dd id="tNc"></dd>
+            <dt>N<sub>net</sub> per g substrate C taken up</dt><dd id="tNet"></dd>
+            <dt>N<sub>net</sub> per g C respired</dt><dd id="tNetR"></dd>
+            <dt>Verdict</dt><dd id="tVerd" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: with microbial C:N = 8 and e = 0.35, slide substrate C:N through 23 and watch the sign change. Make the community fungal (C:N 12) and see TER move to ~34. Lower e to 0.2 (stressed or N-starved microbes) and note that the threshold rises: inefficient microbes need less N per unit substrate, so they release N from poorer litter. This is Manzoni's [8] explanation of why critical C:N varies.</p>
+    </div>
+
+    <h3>Litter quality indices</h3>
+    <p>Before stoichiometry was formalised, decomposition ecologists had found empirical quality indices. Melillo, Aber and Muratore [20] showed that for hardwood leaf litter at Hubbard Brook the first-year decay constant was best predicted by the initial <strong>lignin:N ratio</strong>, better than by N alone or lignin alone: N feeds decomposers while lignin shields cellulose and requires expensive oxidative enzymes. Initial N concentration, C:N, and lignin:N are all used; across broad datasets N concentration and lignin:N predict early decay, whereas lignin content and climate dominate later stages. The two-phase view, a stoichiometric (N-limited) early phase and a chemistry-limited (lignin) late phase, is what two-pool litter models encode.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Litter mass loss and nitrogen: immobilise, then release</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="litSvg" viewBox="0 0 640 380" role="img" aria-label="Remaining litter carbon and remaining litter nitrogen as percentages of initial values over time, showing nitrogen accumulation above 100 percent before release"></svg>
+            <div class="chart-tip" id="litTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">C remaining (% of initial)</span><span style="--c:var(--series-2)">N remaining (% of initial)</span><span style="--c:var(--series-3)">residue C:N (right-hand labels)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="litTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lCN"><span>Initial litter C:N</span><output id="lCNO">60</output></label><input type="range" id="lCN" min="15" max="120" step="1" value="60"></div>
+          <div class="ctrl"><label for="lk"><span>Litter decay constant k (yr⁻¹)</span><output id="lkO">0.6</output></label><input type="range" id="lk" min="0.1" max="3" step="0.05" value="0.6"></div>
+          <div class="ctrl"><label for="lE"><span>Carbon-use efficiency, e</span><output id="lEO">0.35</output></label><input type="range" id="lE" min="0.1" max="0.6" step="0.01" value="0.35"></div>
+          <div class="ctrl"><label for="lB"><span>Microbial C:N</span><output id="lBO">8</output></label><input type="range" id="lB" min="5" max="15" step="0.5" value="8"></div>
+          <div class="ctrl"><label for="lkm"><span>Necromass turnover k<sub>m</sub> (yr⁻¹)</span><output id="lkmO">0.15</output></label><input type="range" id="lkm" min="0.02" max="1" step="0.01" value="0.15"></div>
+          <dl class="readout">
+            <dt>TER (C:N)<sub>B</sub>/e</dt><dd id="lTER"></dd>
+            <dt>Peak N (% of initial)</dt><dd id="lPeak"></dd>
+            <dt>Time of peak N (yr)</dt><dd id="lTpk"></dd>
+            <dt>Time to 50% C loss (yr)</dt><dd id="lHalf"></dd>
+            <dt>Residue C:N at 50% C loss</dt><dd id="lCN50"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model: litter C decays at k; a fraction e of decomposed C becomes microbial biomass/necromass (C:N = microbial C:N) that turns over at k<sub>m</sub>. Litter N = unprocessed litter C/(C:N)₀ + necromass C/(C:N)<sub>B</sub>; the difference from the initial N is drawn from, or released to, the soil solution. Suggested experiments: start at C:N 60 and watch N rise above 100% for a year or two (immobilisation) before falling. Set C:N to 20 (below TER) and the hump disappears. Raise k<sub>m</sub>: the hump shrinks because necromass is recycled quickly. This is the classic Aber–Melillo "N accumulation then release" curve, reproduced from stoichiometry alone.</p>
+    </div>
+  </section>
+
+  <section id="limitation">
+    <h2>N:P ratios, limitation, growth rate and resorption</h2>
+    <h3>N:P as a limitation indicator</h3>
+    <p>Koerselman and Meuleman [6] compiled fertilisation experiments in European wetlands and found that vegetation N:P (mass) below 14 indicated N limitation and above 16 indicated P limitation, with co-limitation between. The rule travelled widely, but Güsewell [7] showed in a Tansley review that the thresholds are community-level averages: for individual species the boundaries are closer to &lt;10 (N-limited) and &gt;20 (P-limited), the N:P at which growth switches depends on growth rate and on the plant's ability to store nutrients, and N:P can shift with plant age, shading, and leaf position without any change in which nutrient limits. Elser et al. [4] meta-analysed 1,100 enrichment experiments and found that N and P addition had similar average effects across freshwater, marine and terrestrial systems, and that adding both produced a <strong>synergistic</strong> response, so co-limitation is the common case rather than the exception. The lesson for an exam answer: N:P is a useful screen, not a verdict; combine it with resorption, soil P fractions, and ideally a fertilisation response.</p>
+    <h3>The Growth Rate Hypothesis</h3>
+    <p>Why should N:P change with growth rate at all? Protein synthesis requires ribosomes, and ribosomal RNA is about 10% P by mass; fast-growing cells allocate more biomass to rRNA and so have lower N:P and C:P. This <strong>Growth Rate Hypothesis</strong> [1] links organismal stoichiometry to life history: fast-growing seedlings, young leaves, bacteria and herbivorous invertebrates have low N:P; slow-growing, long-lived tissue has high N:P. It is also why P limitation of growth can be more severe for fast strategies.</p>
+    <h3>Nutrient resorption</h3>
+    <p>Before leaves senesce, plants hydrolyse proteins and nucleic acids and export the N and P. <strong>Resorption efficiency</strong> is the percentage of the green-leaf nutrient pool withdrawn: Aerts' classic compilation gave about 50% for N and 52% for P; Vergutz et al. [14], correcting for leaf mass loss during senescence, raised the global means to about 62% for N and 65% for P, with higher efficiencies in nutrient-poor and cold sites. <strong>Resorption proficiency</strong> is the absolute concentration left in the litter (complete proficiency is &lt; 0.7% N or &lt; 0.04% P), which is a better indicator of site nutrient status because it is less confounded by green-leaf concentrations. Resorption is why litter C:N is roughly double leaf C:N and why litterfall N:P often exceeds green-leaf N:P when P is scarce.</p>
+    <h3>Global leaf N:P patterns</h3>
+    <p>Reich and Oleksyn [5] assembled leaf N and P for 1,280 species at 452 sites. Both leaf N and leaf P increase from the tropics toward mid and high latitudes (equivalently, decrease with mean annual temperature), but P increases proportionally more, so <strong>leaf N:P declines from about 20 near the equator to about 11 at 60°</strong>. Two hypotheses were offered and both probably contribute. The <strong>Temperature–Plant Physiological hypothesis</strong>: at low temperatures enzyme kinetics are slow and plants compensate with higher concentrations of N-rich enzymes and P-rich RNA. The <strong>soil-age (substrate age) hypothesis</strong>: tropical soils are old and P-depleted (Walker and Syers [15]), while high-latitude soils were rejuvenated by glaciation and are N-poor, so the biogeographic N:P pattern mirrors the pedogenic one.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Diagnosing N or P limitation from leaf chemistry</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="npSvg" viewBox="0 0 640 400" role="img" aria-label="Leaf nitrogen against leaf phosphorus with the N to P equals 14 and 16 threshold lines, the Reich and Oleksyn latitudinal trend, and a movable sample point"></svg>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">N:P = 14</span><span style="--c:var(--series-2)">N:P = 16</span><span style="--c:var(--muted)">N:P = 10 and 20 (Güsewell species-level)</span><span style="--c:var(--series-3)">Reich &amp; Oleksyn latitudinal trend (0–70°)</span><span style="--c:var(--fg)">your sample</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="nN"><span>Leaf N (mg g⁻¹)</span><output id="nNO">20</output></label><input type="range" id="nN" min="5" max="45" step="0.5" value="20"></div>
+          <div class="ctrl"><label for="nP"><span>Leaf P (mg g⁻¹)</span><output id="nPO">1.2</output></label><input type="range" id="nP" min="0.3" max="4" step="0.05" value="1.2"></div>
+          <div class="ctrl"><label for="nLat"><span>Latitude for trend marker (°)</span><output id="nLatO">10</output></label><input type="range" id="nLat" min="0" max="70" step="1" value="10"></div>
+          <dl class="readout">
+            <dt>Sample N:P (mass)</dt><dd id="nRatio"></dd>
+            <dt>Sample N:P (molar)</dt><dd id="nRatioM"></dd>
+            <dt>Community rule (14/16)</dt><dd id="nKM" class="verdict"></dd>
+            <dt>Species rule (10/20)</dt><dd id="nGus" class="verdict"></dd>
+            <dt>Trend N, P, N:P at latitude</dt><dd id="nExp"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Trend line is a smoothed approximation of Reich &amp; Oleksyn's regressions (leaf N rising from ~17 to ~22 mg g⁻¹ and P from ~0.9 to ~2.0 mg g⁻¹ between 0° and 60°). Suggested experiments: place a tropical sample (N 22, P 1.0: N:P 22, P-limited by both rules); a boreal sample (N 15, P 1.6: N:P 9, N-limited); then a sample at N:P 15 and note that the two rule sets disagree, which is Güsewell's point about the grey zone.</p>
+    </div>
+  </section>
+
+  <section id="soils">
+    <h2>Stoichiometry across soil depth, soil age and enzymes</h2>
+    <p><strong>Depth.</strong> C:N and C:P of soil organic matter narrow with depth: a typical profile falls from C:N 15–25 in the litter layer to 10–12 in the A horizon and 8–10 in the B horizon, approaching microbial values. Deep organic matter is dominated by mineral-associated, microbially processed compounds, so this is the MAOM story in vertical form. Enzyme activity per unit C and microbial biomass per unit C also decline with depth, while the relative investment in N- and P-acquiring enzymes often rises.</p>
+    <p><strong>Soil age.</strong> Walker and Syers [15] proposed that total soil P declines monotonically during pedogenesis: apatite weathers, releasing P that is partly taken up (organic P), partly sorbed and then <strong>occluded</strong> inside Fe/Al oxide coatings, and partly lost by leaching; after 10⁵–10⁶ years only occluded and organic P remain and the ecosystem becomes P-limited. Nitrogen, by contrast, accumulates from zero through biological fixation, so young soils are N-limited and old soils P-limited, and soil N:P rises with age. The Hawaiian chronosequence (Crews et al. 1995; Vitousek 2004) is the classic demonstration. This pedogenic trajectory is one explanation for the latitudinal leaf N:P gradient, and it is the subject of the <a href="phosphorus-cycling.html">phosphorus page</a>.</p>
+    <h3>Ecoenzymatic stoichiometry</h3>
+    <p>Microbes acquire C, N and P from organic matter with extracellular enzymes, and the ratio of enzyme activities records the relative investment. Sinsabaugh et al. [11] found across 40 ecosystems that the activities of β-1,4-glucosidase (BG, C acquisition), β-1,4-N-acetylglucosaminidase plus leucine aminopeptidase (NAG + LAP, N acquisition) and acid/alkaline phosphatase (AP, P acquisition) scale as <strong>ln BG : ln(NAG+LAP) : ln AP ≈ 1:1:1</strong>, a Redfield-like regularity in enzymatic effort. In a follow-up [12] they derived from these ratios the threshold element ratios of microbial communities and showed that microbial C:N:P homeostasis constrains enzyme allocation. Moorhead et al. [13] turned the ratios into a <strong>vector analysis</strong>: plot x = BG/(BG + AP) against y = BG/(BG + NAG + LAP); the vector length √(x² + y²) indexes relative C limitation and the vector angle, measured from the x-axis as arctan(y/x), indexes N (angle &lt; 45°, point below the diagonal, N-acquiring enzymes high relative to phosphatase) versus P (angle &gt; 45°, point above the diagonal, phosphatase high) limitation. Deviations from the 1:1 line are read as stoichiometric stress. State the definitions whenever you use the method, because the two axes are easily swapped.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · Ecoenzymatic vector analysis</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="enzSvg" viewBox="0 0 640 400" role="img" aria-label="Vector analysis of ecoenzyme activities: BG over BG plus AP on the x axis and BG over BG plus NAG plus LAP on the y axis, with a 1 to 1 line and a vector from the origin"></svg>
+          </div>
+          <div class="legend"><span style="--c:var(--muted)">1:1 line (angle 45°, balanced N and P investment)</span><span style="--c:var(--accent)">your vector</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="eBG"><span>BG activity (nmol g⁻¹ h⁻¹)</span><output id="eBGO">200</output></label><input type="range" id="eBG" min="10" max="1000" step="5" value="200"></div>
+          <div class="ctrl"><label for="eN"><span>NAG + LAP activity (nmol g⁻¹ h⁻¹)</span><output id="eNO">150</output></label><input type="range" id="eN" min="10" max="1000" step="5" value="150"></div>
+          <div class="ctrl"><label for="eP"><span>AP activity (nmol g⁻¹ h⁻¹)</span><output id="ePO">400</output></label><input type="range" id="eP" min="10" max="2000" step="5" value="400"></div>
+          <dl class="readout">
+            <dt>x = BG/(BG+AP)</dt><dd id="eX"></dd>
+            <dt>y = BG/(BG+NAG+LAP)</dt><dd id="eY"></dd>
+            <dt>Vector length</dt><dd id="eLen"></dd>
+            <dt>Vector angle (°)</dt><dd id="eAng"></dd>
+            <dt>ln BG : ln(NAG+LAP) : ln AP</dt><dd id="eLn"></dd>
+            <dt>Interpretation</dt><dd id="eInt" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: tropical forest soils typically have very high phosphatase relative to BG (set AP 1500, BG 200): the angle exceeds 45°, read as P acquisition pressure. Boreal soils with high NAG (set NAG+LAP 600, AP 150) fall below the diagonal. Equal activities give the 1:1:1 point at (0.5, 0.5) with angle 45° and length 0.71. Remember the caveats: activities are potential rates measured at saturating substrate, phosphatase is also produced by roots, and the log-ratio regularity holds across sites, not necessarily within one.</p>
+    </div>
+  </section>
+
+  <section id="co2">
+    <h2>Stoichiometric plasticity and CO₂ fertilisation</h2>
+    <p>Elevated CO₂ raises photosynthesis per unit leaf N and lets plants build tissue with wider C:N, typically lowering leaf N concentration by 10–15% in FACE experiments. Whether that plasticity sustains the CO₂ response depends on the soil. Luo et al. [16] proposed <strong>progressive nitrogen limitation</strong> (PNL): extra C sequestered in biomass and soil organic matter locks up N in long-lived pools, mineral N availability declines, and the growth stimulation fades unless N inputs (fixation, deposition) rise or losses fall. Evidence from Duke FACE (sustained response with deeper rooting and increased N uptake) and Oak Ridge FACE (response declined as N availability fell) illustrates both outcomes. Terrer et al. [18] combined 138 experiments and found that the CO₂ effect on biomass is largest where soil N is high or where plants associate with ectomycorrhizal fungi able to mine organic N, and that P also constrains the response in P-poor tropical soils; their global estimate of aboveground biomass gain for +250 ppm is about 12%, well below many model projections. Zaehle et al. [17] showed that eleven ecosystem models reproduced FACE NPP responses in the first years mainly by stoichiometric flexibility and increased uptake, but diverged strongly on how much N limitation developed, exposing the N cycle as the main structural uncertainty.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>Fixed versus flexible stoichiometry.</strong> The simplest way to add N to a carbon model is to assign each pool a fixed C:N (CLM4, CLM4.5, early JULES-CN, Century). Then every gram of C allocated to a tissue demands a fixed amount of N, and if mineral N is insufficient the model must either reduce NPP (down-regulation) or let decomposition stall. In CLM4.5 the N down-regulation acted instantaneously on GPP via a scaling factor, producing an unrealistically tight coupling. CLM5 replaced this with the FUN scheme for N acquisition cost, LUNA for leaf N allocation to photosynthetic capacity, and <strong>flexible leaf C:N</strong> that lets plants dilute N under CO₂ enrichment; the N brake on CO₂ fertilisation is weaker and more gradual. ORCHIDEE-CNP (Goll et al. [19]) and QUINCY (Thum et al. 2019) carry flexible C:N:P in plant tissues within bounds and compute nutrient demand from growth; JULES-CN adds a Century-like soil N cycle to JULES with fixed tissue ratios; JSBACH-CNP and CASA-CNP use fixed ratios but include P. Davies-Barnard et al. [21] reviewed N cycles in CMIP6 land models: about six Earth system models now include coupled N, up from two in CMIP5, and their inclusion lowers the simulated CO₂ fertilisation of NPP and shrinks the spread, but biological N fixation and the fate of deposited N remain poorly constrained.</p>
+    <p><strong>Mineralisation–immobilisation turnover (MIT) in models.</strong> Century/DayCent, CLM and JULES-CN implement exactly the mass balance derived above: decomposition of a donor pool with C:N<sub>donor</sub> that transfers a fraction (1 − r) of its C to a receiver pool with C:N<sub>receiver</sub> (r respired) releases N equal to C<sub>flux</sub>[1/C:N<sub>donor</sub> − (1 − r)/C:N<sub>receiver</sub>]. When this is negative the flux immobilises mineral N, and if the mineral N pool cannot supply it the model scales decomposition down: the "<strong>N down-regulation of decomposition</strong>", which makes soil C turnover slower under N scarcity. Because receiver pools (the slow and passive pools) have narrow C:N (10–11 in Century), litter with wide C:N always immobilises in these models, recreating Lab B at ecosystem scale. In the MIMICS family and other microbe-explicit models, microbial biomass C:N and CUE appear explicitly and TER emerges rather than being prescribed.</p>
+    <p><strong>What examiners want you to connect.</strong> Fixed stoichiometry plus a closed N budget yields PNL and a small land sink; flexible stoichiometry delays the limitation; the critical quantities are how fast new N enters (BNF parameterisations range from fixed rates to NPP-scaled to cost-based) and how much is lost. The stoichiometric constants on this page, leaf and litter C:N, microbial C:N, CUE, and TER, are literally parameters in those models.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Redfield ratio (marine plankton)</td><td class="num">C:N:P = 106:16:1 (molar)</td><td>Redfield 1958 [2]; 41:7.2:1 by mass</td></tr>
+        <tr><td>Soil microbial biomass</td><td class="num">60:7:1 (molar)</td><td>Cleveland &amp; Liptzin 2007 [3]; mass C:N ≈ 7–8</td></tr>
+        <tr><td>Bulk soil</td><td class="num">186:13:1 (molar)</td><td>Cleveland &amp; Liptzin 2007 [3]; mass C:N ≈ 10–14</td></tr>
+        <tr><td>Critical C:N for net N mineralisation</td><td class="num">≈ 20–30 (≈ 25)</td><td>TER = (C:N)<sub>B</sub>/CUE = 8/0.35 ≈ 23</td></tr>
+        <tr><td>Critical C:P for net P mineralisation</td><td class="num">≈ 150–200 (mass)</td><td>(C:P)<sub>B</sub> 50–60 / CUE 0.3–0.4</td></tr>
+        <tr><td>Microbial CUE (soil)</td><td class="num">0.3–0.4 (range 0.1–0.7)</td><td>Declines with substrate C:N and temperature; Manzoni et al. 2008 [8]</td></tr>
+        <tr><td>Leaf C:N / litter C:N (mass)</td><td class="num">20–60 / 40–100+</td><td>Resorption roughly doubles the ratio</td></tr>
+        <tr><td>Wood C:N</td><td class="num">100–500</td><td>Hence decades-long N immobilisation in coarse woody debris</td></tr>
+        <tr><td>Community N:P thresholds</td><td class="num">&lt; 14 N-limited; &gt; 16 P-limited (mass)</td><td>Koerselman &amp; Meuleman 1996 [6]; species-level &lt; 10 / &gt; 20, Güsewell 2004 [7]</td></tr>
+        <tr><td>Global mean leaf N, P, N:P</td><td class="num">≈ 20 mg g⁻¹, ≈ 1.8 mg g⁻¹, ≈ 13–14</td><td>Reich &amp; Oleksyn 2004 [5]; N:P ~20 tropics → ~11 at 60°</td></tr>
+        <tr><td>Resorption efficiency</td><td class="num">N ≈ 50% (62%), P ≈ 52% (65%)</td><td>Aerts 1996 (uncorrected); Vergutz et al. 2012 [14] (mass-loss corrected)</td></tr>
+        <tr><td>Resorption proficiency (complete)</td><td class="num">&lt; 0.7% N, &lt; 0.04% P in litter</td><td>Killingbeck 1996</td></tr>
+        <tr><td>Ecoenzyme ratio</td><td class="num">ln BG : ln(NAG+LAP) : ln AP ≈ 1:1:1</td><td>Sinsabaugh et al. 2008 [11]</td></tr>
+        <tr><td>Leaf N decline under elevated CO₂</td><td class="num">≈ −10 to −15%</td><td>FACE syntheses; stoichiometric plasticity</td></tr>
+        <tr><td>CO₂ effect on aboveground biomass, +250 ppm</td><td class="num">≈ +12%</td><td>Terrer et al. 2019 [18], constrained by N and P</td></tr>
+        <tr><td>Homeostasis coefficient</td><td class="num">H = 1 none; H &gt; 4 strong</td><td>Sterner &amp; Elser 2002 [1]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Derive the critical substrate C:N at which decomposition switches from net immobilisation to net mineralisation. State the assumptions and give a numerical value.</summary><div class="a"><p>Let decomposers take up substrate carbon at rate U with substrate ratio (C:N)<sub>S</sub>, retain a fraction e (carbon-use efficiency) in biomass with ratio (C:N)<sub>B</sub>, and respire the rest. N arriving with substrate is U/(C:N)<sub>S</sub>; N required for the new biomass is eU/(C:N)<sub>B</sub>. Net N release N<sub>net</sub> = U[1/(C:N)<sub>S</sub> − e/(C:N)<sub>B</sub>]. Setting N<sub>net</sub> = 0 gives the threshold element ratio TER = (C:N)<sub>B</sub>/e. Assumptions: microbial biomass is homeostatic, all N in the substrate is accessible (not protected in lignin or recalcitrant compounds), and e is constant. With (C:N)<sub>B</sub> = 8 and e = 0.35, TER ≈ 23; the range e = 0.3–0.4 gives 20–27, the textbook 25:1 (roughly 1.7–2% N in a substrate with 45% C). Above TER, decomposers draw mineral N from solution (immobilisation); below it they excrete NH₄⁺. Manzoni et al. (2008) showed the observed critical C:N varies with litter N because e declines for N-poor litter, which raises TER.</p></div></details>
+    <details class="q"><summary>2. Sketch and explain the time course of nitrogen in a decomposing leaf litter bag with initial C:N of 60. How would it differ for legume litter with C:N 15?</summary><div class="a"><p>Mass (carbon) remaining declines roughly exponentially. Absolute N in the bag first <em>rises</em> above 100% of the initial amount for months to a few years, then declines: decomposers colonising the C-rich litter build biomass with C:N ≈ 8 and must import N from the surrounding soil, throughfall and fungal hyphae (immobilisation); as carbon is respired the residue C:N falls toward the threshold (~25) and N is released as the microbial products themselves turn over. Residue N concentration rises throughout. For legume litter at C:N 15, below TER from the start, N is released immediately and N remaining falls monotonically alongside mass. In models (Century, CLM), this is reproduced because litter C flows into receiver pools of narrow C:N; the N demand of that transfer is met from the mineral pool, and if it cannot be met decomposition is slowed.</p></div></details>
+    <details class="q"><summary>3. A tropical forest has leaf N:P of 22 by mass. Is it P-limited? Discuss what else you would want to know.</summary><div class="a"><p>By Koerselman &amp; Meuleman's community thresholds (&gt;16) and even Güsewell's conservative species-level threshold (&gt;20), N:P = 22 suggests P limitation, consistent with old, highly weathered tropical soils that have lost primary P (Walker &amp; Syers) and with Reich &amp; Oleksyn's finding that leaf N:P is highest near the equator. However N:P alone is weak evidence: the ratio changes with leaf age, canopy position, species identity and luxury N uptake; high N:P can reflect abundant N (from fixation) rather than scarce P. Corroborating evidence would include low P resorption proficiency (litter P &lt; 0.04%), high phosphatase relative to glucosidase activity (vector angle &gt; 45°), low resin-extractable and Hedley labile P, and ideally a fertilisation experiment, since Elser et al. (2007) show co-limitation is the norm. The AmazonFACE modelling of Fleischer et al. (2019) illustrates why the diagnosis matters: P limitation could halve the CO₂ fertilisation response.</p></div></details>
+    <details class="q"><summary>4. Explain the Growth Rate Hypothesis and one ecosystem-scale prediction that follows from it.</summary><div class="a"><p>Ribosomal RNA is P-rich (about 10% P), and the number of ribosomes per cell scales with the rate of protein synthesis. Fast-growing organisms or tissues therefore have high RNA content, low C:P and low N:P, and are more sensitive to P supply. Predictions: (i) seedlings, young leaves, bacteria and fast-growing herbivores have lower N:P than mature tissue or slow-growing taxa; (ii) along a gradient of P supply, fast-strategy species should be favoured only where P is abundant, so P limitation shifts community composition toward slow-growing, high-N:P species; (iii) warming, which increases enzyme efficiency, may reduce the P needed per unit growth (one reading of the temperature–plant physiological hypothesis). In models this appears as a lower bound on tissue N:P for fast-growing pools and as a reason why P, not N, often limits early succession on young volcanic substrates once N fixers arrive.</p></div></details>
+    <details class="q"><summary>5. Interpret an ecoenzymatic vector with length 0.85 and angle 62°. What limitations does the method have?</summary><div class="a"><p>Define x = BG/(BG + AP) (C- relative to P-acquiring activity) and y = BG/(BG + NAG + LAP) (C- relative to N-acquiring activity); length = √(x² + y²), angle = arctan(y/x) in degrees, measured from the x-axis (Moorhead et al. 2016). A length of 0.85 (0.71 when all activities are equal; √2 ≈ 1.41 when BG dominates everything) indicates relatively high investment in C acquisition, i.e. the community is more C-limited than at the balanced point. An angle of 62° &gt; 45° means y &gt; x, so BG + AP exceeds BG + NAG + LAP: phosphatase activity is high relative to the N-acquiring enzymes, read as relative P limitation. The combination is typical of P-poor tropical or old-soil systems with abundant labile C demand. Limitations of the method: activities are potential rates at saturating substrate and optimal pH, not in situ rates; acid phosphatase is also produced by roots and mycorrhizal fungi, so AP does not isolate microbial demand; enzymes persist on mineral surfaces after their producers die, decoupling activity from current investment; the 1:1:1 regularity of Sinsabaugh et al. (2008) is a cross-site pattern, so deviation at one site is not a formal test; and the axes are easily swapped, so the definitions must always be stated.</p></div></details>
+    <details class="q"><summary>6. Compare how CLM4.5 and CLM5 represent plant stoichiometry, and explain how the choice affects projected CO₂ fertilisation.</summary><div class="a"><p>CLM4.5 assigns each plant tissue a fixed C:N per plant functional type. Allocation of new C requires a proportional N supply; when mineral N is short, a scalar (f<sub>pg</sub>) instantly down-regulates GPP so that C uptake matches available N. Consequences: an abrupt, strong N limitation of the CO₂ response, no leaf N dilution under elevated CO₂, and a tight dependence of the land sink on N inputs. CLM5 introduced flexible leaf C:N within PFT-specific bounds, the FUN model that charges a carbon cost for acquiring N by root uptake, mycorrhizal uptake, retranslocation or fixation, and LUNA which allocates leaf N to V<sub>cmax</sub> and J<sub>max</sub> based on light and CO₂ so that photosynthetic capacity per unit N responds to environment. Together these let plants respond to CO₂ by diluting N and investing C to obtain more N, so the N brake is gradual and weaker, and progressive N limitation emerges over decades rather than immediately. Both approaches remain sensitive to the BNF parameterisation and N loss formulations, which Davies-Barnard et al. (2020) identify as the largest uncertainty across CMIP6 land models.</p></div></details>
+    <details class="q"><summary>7. Why does soil organic matter C:N narrow with depth and with soil development, and why does soil N:P rise with soil age?</summary><div class="a"><p>Each cycle of decomposition respires carbon and conserves nutrients in microbial biomass and necromass (C:N ~ 8), so repeatedly processed organic matter converges toward microbial stoichiometry. Deeper horizons contain older, more processed, mineral-associated organic matter dominated by microbial products and sorbed N-rich compounds (amino acids, peptides), and receive little fresh plant C, so their C:N falls to 8–10. Along a chronosequence, Walker and Syers (1976) describe total P declining as apatite weathers and P is leached or occluded, while N accumulates from biological fixation starting at zero; the N:P of soil and vegetation therefore rises from very low values on young substrates (N limitation) to high values on old ones (P limitation). The Hawaiian chronosequence (Crews et al. 1995) shows N limitation at 300 years and P limitation at 4 million years. Reich and Oleksyn invoke this soil-age mechanism, together with temperature physiology, to explain high leaf N:P in the old-soil tropics.</p></div></details>
+    <details class="q"><summary>8. What is "progressive nitrogen limitation", what evidence supports or contradicts it, and how do models produce it?</summary><div class="a"><p>Luo et al. (2004) proposed that elevated CO₂ stimulates plant growth, increasing C stored in biomass and soil organic matter; because that C carries N at fixed or weakly flexible ratios, N is sequestered in long-lived pools, mineral N availability declines, and the CO₂ stimulation diminishes over time unless N inputs increase (fixation, deposition) or losses fall. Support: Oak Ridge FACE sweetgum, where the NPP response declined as soil N availability fell; grassland experiments with declining responses. Counter-evidence: Duke FACE, where the response persisted through increased N uptake from deeper soil and priming of decomposition; and meta-analyses showing CO₂-driven N dilution in tissue and increased BNF where P and Mo are sufficient. Models produce PNL whenever tissue and SOM C:N are fixed and the N budget is closed; flexible stoichiometry, priming, and NPP-scaled BNF weaken it. Zaehle et al. (2014) showed model spread at FACE sites traced to these N-cycle assumptions; Terrer et al. (2019) found a global biomass response of only ~12% for +250 ppm, suggesting N and P constraints are already active.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Sterner RW, Elser JJ (2002). <em>Ecological Stoichiometry: The Biology of Elements from Molecules to the Biosphere</em>. Princeton University Press. <span class="why">The founding text: homeostasis, the H coefficient, the Growth Rate Hypothesis, and consumer–resource imbalance.</span></li>
+      <li>Redfield AC (1958). The biological control of chemical factors in the environment. <em>American Scientist</em> 46: 205–221. <span class="why">The 106:16:1 ratio and the argument that biology sets ocean chemistry.</span></li>
+      <li>Cleveland CC, Liptzin D (2007). C:N:P stoichiometry in soil: is there a "Redfield ratio" for the microbial biomass? <em>Biogeochemistry</em> 85: 235–252. <a href="https://doi.org/10.1007/s10533-007-9132-0">doi:10.1007/s10533-007-9132-0</a><span class="why">Source of 186:13:1 (soil) and 60:7:1 (microbial biomass).</span></li>
+      <li>Elser JJ, Bracken MES, Cleland EE, et al. (2007). Global analysis of nitrogen and phosphorus limitation of primary producers in freshwater, marine and terrestrial ecosystems. <em>Ecology Letters</em> 10: 1135–1142. <a href="https://doi.org/10.1111/j.1461-0248.2007.01113.x">doi:10.1111/j.1461-0248.2007.01113.x</a><span class="why">Meta-analysis showing N and P co-limitation is the norm.</span></li>
+      <li>Reich PB, Oleksyn J (2004). Global patterns of plant leaf N and P in relation to temperature and latitude. <em>PNAS</em> 101: 11001–11006. <a href="https://doi.org/10.1073/pnas.0403588101">doi:10.1073/pnas.0403588101</a><span class="why">The latitudinal N:P gradient and the two competing hypotheses.</span></li>
+      <li>Koerselman W, Meuleman AFM (1996). The vegetation N:P ratio: a new tool to detect the nature of nutrient limitation. <em>Journal of Applied Ecology</em> 33: 1441–1450. <a href="https://doi.org/10.2307/2404783">doi:10.2307/2404783</a><span class="why">Origin of the 14/16 thresholds.</span></li>
+      <li>Güsewell S (2004). N:P ratios in terrestrial plants: variation and functional significance. <em>New Phytologist</em> 164: 243–266. <a href="https://doi.org/10.1111/j.1469-8137.2004.01192.x">doi:10.1111/j.1469-8137.2004.01192.x</a><span class="why">The caveats: species-level thresholds of 10 and 20, and why N:P varies for reasons other than limitation.</span></li>
+      <li>Manzoni S, Jackson RB, Trofymow JA, Porporato A (2008). The global stoichiometry of litter nitrogen mineralization. <em>Science</em> 321: 684–686. <a href="https://doi.org/10.1126/science.1159792">doi:10.1126/science.1159792</a><span class="why">Critical C:N varies with litter N because CUE declines for N-poor substrates.</span></li>
+      <li>Manzoni S, Trofymow JA, Jackson RB, Porporato A (2010). Stoichiometric controls on carbon, nitrogen, and phosphorus dynamics in decomposing litter. <em>Ecological Monographs</em> 80: 89–106. <a href="https://doi.org/10.1890/09-0179.1">doi:10.1890/09-0179.1</a><span class="why">Extends the analysis to P and derives threshold ratios from decomposition data.</span></li>
+      <li>Mooshammer M, Wanek W, Zechmeister-Boltenstern S, Richter A (2014). Stoichiometric imbalances between terrestrial decomposer communities and their resources: mechanisms and implications of microbial adaptations to their resources. <em>Frontiers in Microbiology</em> 5: 22. <a href="https://doi.org/10.3389/fmicb.2014.00022">doi:10.3389/fmicb.2014.00022</a><span class="why">How microbes resolve imbalance: CUE adjustment, enzyme allocation, community shifts.</span></li>
+      <li>Sinsabaugh RL, Lauber CL, Weintraub MN, et al. (2008). Stoichiometry of soil enzyme activity at global scale. <em>Ecology Letters</em> 11: 1252–1264. <a href="https://doi.org/10.1111/j.1461-0248.2008.01245.x">doi:10.1111/j.1461-0248.2008.01245.x</a><span class="why">The 1:1:1 ecoenzymatic scaling.</span></li>
+      <li>Sinsabaugh RL, Hill BH, Follstad Shah JJ (2009). Ecoenzymatic stoichiometry of microbial organic nutrient acquisition in soil and sediment. <em>Nature</em> 462: 795–798. <a href="https://doi.org/10.1038/nature08632">doi:10.1038/nature08632</a><span class="why">Links enzyme ratios to microbial threshold element ratios.</span></li>
+      <li>Moorhead DL, Sinsabaugh RL, Hill BH, Weintraub MN (2016). Vector analysis of ecoenzyme activities reveal constraints on coupled C, N and P dynamics. <em>Soil Biology and Biochemistry</em> 93: 1–7. <a href="https://doi.org/10.1016/j.soilbio.2015.10.019">doi:10.1016/j.soilbio.2015.10.019</a><span class="why">Vector length and angle used in Lab D.</span></li>
+      <li>Vergutz L, Manzoni S, Porporato A, Novais RF, Jackson RB (2012). Global resorption efficiencies and concentrations of carbon and nutrients in leaves of terrestrial plants. <em>Ecological Monographs</em> 82: 205–220. <a href="https://doi.org/10.1890/11-0416.1">doi:10.1890/11-0416.1</a><span class="why">Mass-loss-corrected resorption efficiencies (~62% N, ~65% P).</span></li>
+      <li>Walker TW, Syers JK (1976). The fate of phosphorus during pedogenesis. <em>Geoderma</em> 15: 1–19. <a href="https://doi.org/10.1016/0016-7061(76)90066-5">doi:10.1016/0016-7061(76)90066-5</a><span class="why">P decline with soil age and the shift from N to P limitation.</span></li>
+      <li>Luo Y, Su B, Currie WS, et al. (2004). Progressive nitrogen limitation of ecosystem responses to rising atmospheric carbon dioxide. <em>BioScience</em> 54: 731–739. <a href="https://doi.org/10.1641/0006-3568(2004)054[0731:PNLOER]2.0.CO;2">doi:10.1641/0006-3568(2004)054[0731:PNLOER]2.0.CO;2</a><span class="why">The PNL hypothesis.</span></li>
+      <li>Zaehle S, Medlyn BE, De Kauwe MG, et al. (2014). Evaluation of 11 terrestrial carbon–nitrogen cycle models against observations from two temperate Free-Air CO₂ Enrichment studies. <em>New Phytologist</em> 202: 803–822. <a href="https://doi.org/10.1111/nph.12697">doi:10.1111/nph.12697</a><span class="why">Model intercomparison at Duke and ORNL FACE; stoichiometric flexibility as a key difference.</span></li>
+      <li>Terrer C, Jackson RB, Prentice IC, et al. (2019). Nitrogen and phosphorus constrain the CO₂ fertilization of global plant biomass. <em>Nature Climate Change</em> 9: 684–689. <a href="https://doi.org/10.1038/s41558-019-0545-2">doi:10.1038/s41558-019-0545-2</a><span class="why">Global synthesis: ~12% biomass gain per +250 ppm, modulated by N, P and mycorrhizal type.</span></li>
+      <li>Goll DS, Vuichard N, Maignan F, et al. (2017). A representation of the phosphorus cycle for ORCHIDEE (revision 4520). <em>Geoscientific Model Development</em> 10: 3745–3770. <a href="https://doi.org/10.5194/gmd-10-3745-2017">doi:10.5194/gmd-10-3745-2017</a><span class="why">ORCHIDEE-CNP: flexible plant stoichiometry with N and P.</span></li>
+      <li>Melillo JM, Aber JD, Muratore JF (1982). Nitrogen and lignin control of hardwood leaf litter decomposition dynamics. <em>Ecology</em> 63: 621–626. <a href="https://doi.org/10.2307/1936780">doi:10.2307/1936780</a><span class="why">Lignin:N as the predictor of decay rate.</span></li>
+      <li>Davies-Barnard T, Meyerholt J, Zaehle S, et al. (2020). Nitrogen cycling in CMIP6 land surface models: progress and limitations. <em>Biogeosciences</em> 17: 5129–5148. <a href="https://doi.org/10.5194/bg-17-5129-2020">doi:10.5194/bg-17-5129-2020</a><span class="why">Where N cycles stand in current Earth system models.</span></li>
+      <li>Zechmeister-Boltenstern S, Keiblinger KM, Mooshammer M, et al. (2015). The application of ecological stoichiometry to plant–microbial–soil organic matter transformations. <em>Ecological Monographs</em> 85: 133–155. <a href="https://doi.org/10.1890/14-0777.1">doi:10.1890/14-0777.1</a><span class="why">Review tying plant, microbial and SOM stoichiometry together; good for exam synthesis.</span></li>
+      <li>Thum T, Caldararu S, Engel J, et al. (2019). A new model of the coupled carbon, nitrogen, and phosphorus cycles in the terrestrial biosphere (QUINCY v1.0; revision 1996). <em>Geoscientific Model Development</em> 12: 4781–4802. <a href="https://doi.org/10.5194/gmd-12-4781-2019">doi:10.5194/gmd-12-4781-2019</a><span class="why">QUINCY: a modern CNP model with flexible stoichiometry.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="maom-pom.html">← Previous: Mineral-Associated and Particulate Organic Matter</a><a href="nitrogen-cycling.html">Next: Nitrogen Cycling →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#principles">Principles &amp; homeostasis</a></li>
+      <li><a href="#ratios">Typical ratios</a></li>
+      <li><a href="#decomp">Decomposition &amp; TER</a></li>
+      <li><a href="#limitation">N:P, growth rate, resorption</a></li>
+      <li><a href="#soils">Depth, soil age, enzymes</a></li>
+      <li><a href="#co2">CO₂ fertilisation</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use deliberately simple mass-balance models (constant CUE, homeostatic microbes, one necromass pool) chosen for intuition. Ratios are by mass unless marked molar.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function ticks(min, max, step) { var a = []; for (var v = min; v <= max + 1e-9; v += step) a.push(+v.toFixed(6)); return a; }
+  function val(id) { return +document.getElementById(id).value; }
+  function txt(id, t) { document.getElementById(id).textContent = t; }
+  function outs(ids) { ids.forEach(function (id) { var o = document.getElementById(id + 'O'), i = document.getElementById(id); if (o && i) o.textContent = i.value; }); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('input', fn); }); }
+  function mkChart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 380, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 18, mB = o.mB || 48;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var xmin = o.xmin, xmax = o.xmax, ymin = o.ymin, ymax = o.ymax;
+    function sx(x) { var f = (x - xmin) / (xmax - xmin); return mL + Math.max(0, Math.min(1, f)) * pw; }
+    function sy(y) { var f = (ymax - y) / (ymax - ymin); return mT + Math.max(0, Math.min(1, f)) * ph; }
+    (o.yt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    (o.xt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (ymin < 0 && ymax > 0) svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, o.xl));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    return { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax };
+  }
+  function linePath(c, pts) { var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1); }); return d; }
+  function series(c, pts, cls, stroke) { var p = el('path', { 'class': 'ser ' + (cls || ''), d: linePath(c, pts) }); if (stroke) p.setAttribute('stroke', stroke); c.svg.appendChild(p); return p; }
+  function label(c, x, y, t, col, anchor, cls) { c.svg.appendChild(el('text', { 'class': cls || 'dl', x: x, y: y, fill: col || 'var(--fg)', 'text-anchor': anchor || 'start' }, t)); }
+  function hover(c, tip, fn) {
+    var svg = c.svg;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: c.mT, y2: c.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: c.mL, y: c.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var f = Math.max(0, Math.min(1, (p.x - c.mL) / c.pw)); var x = c.xmin + f * (c.xmax - c.xmin);
+      var r = fn(x);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y === null || r.y === undefined || isNaN(r.y)) dot.setAttribute('visibility', 'hidden'); else { dot.setAttribute('cx', c.sx(x)); dot.setAttribute('cy', c.sy(r.y)); dot.setAttribute('visibility', 'visible'); }
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab A: TER calculator ---------- */
+  var terSvg = document.getElementById('terSvg'), terTip = document.getElementById('terTip');
+  function drawTER() {
+    outs(['tS', 'tB', 'tE']);
+    var S = val('tS'), B = val('tB'), e = val('tE');
+    var TER = B / e;
+    function nnet(cn) { return (1 / cn - e / B) * 1000; } // mg N per g C taken up
+    var ymin = -60, ymax = 120;
+    var c = mkChart(terSvg, { W: 640, H: 360, mL: 60, mR: 24, xmin: 5, xmax: 120, ymin: ymin, ymax: ymax, xt: ticks(0, 120, 20).filter(function (v) { return v >= 5; }).concat([5]), yt: ticks(-60, 120, 20), xl: 'Substrate C:N (mass)', yl: 'Net N release (mg N per g substrate C taken up)' });
+    // shaded regions
+    c.svg.appendChild(el('rect', { 'class': 'band', x: c.mL, y: c.sy(ymax), width: Math.max(0, c.sx(Math.min(TER, 120)) - c.mL), height: c.sy(0) - c.sy(ymax) }));
+    c.svg.appendChild(el('rect', { 'class': 'band2', x: c.sx(Math.min(TER, 120)), y: c.sy(0), width: Math.max(0, c.mL + c.pw - c.sx(Math.min(TER, 120))), height: c.sy(ymin) - c.sy(0) }));
+    label(c, c.mL + 10, c.sy(ymax) + 16, 'net mineralisation (N released)', 'var(--accent)', 'start', 'note');
+    label(c, c.mL + c.pw - 8, c.sy(ymin) - 8, 'net immobilisation (N consumed)', 'var(--accent-2)', 'end', 'note');
+    var pts = []; for (var cn = 5; cn <= 120; cn += 0.5) pts.push([cn, Math.max(ymin, Math.min(ymax, nnet(cn)))]);
+    series(c, pts, 'net');
+    if (TER >= 5 && TER <= 120) {
+      c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(TER), x2: c.sx(TER), y1: c.mT, y2: c.mT + c.ph, stroke: 'var(--series-1)' }));
+      label(c, c.sx(TER) + 5, c.mT + c.ph - 8, 'TER = ' + fmt(TER, 1), 'var(--series-1)');
+    }
+    var y0 = Math.max(ymin, Math.min(ymax, nnet(S)));
+    c.svg.appendChild(el('circle', { 'class': 'pt2', cx: c.sx(S), cy: c.sy(y0), r: 6 }));
+    label(c, c.sx(S) + 9, c.sy(y0) - 8, 'C:N ' + S + ' → ' + fmt(nnet(S), 1) + ' mg N g⁻¹ C', 'var(--accent-2)', S > 70 ? 'end' : 'start');
+    hover(c, terTip, function (x) { var v = nnet(x); return { y: Math.max(ymin, Math.min(ymax, v)), html: 'substrate C:N <b>' + fmt(x, 0) + '</b><br>net N <b>' + fmt(v, 1) + '</b> mg N per g C taken up<br>' + (v >= 0 ? 'mineralisation' : 'immobilisation') }; });
+    txt('tTER', fmt(TER, 1));
+    txt('tNc', fmt(100 / TER, 2) + ' g N per 100 g C');
+    txt('tNet', fmt(nnet(S), 1) + ' mg N');
+    txt('tNetR', fmt(nnet(S) / (1 - e), 1) + ' mg N');
+    var vd = document.getElementById('tVerd'); vd.textContent = S > TER ? 'Immobilisation' : (S < TER ? 'Net mineralisation' : 'Balanced'); vd.style.color = S > TER ? 'var(--accent-2)' : 'var(--accent)';
+    var html = '<thead><tr><th class="num">Substrate C:N</th><th class="num">N in (mg g⁻¹ C)</th><th class="num">N needed (mg g⁻¹ C)</th><th class="num">Net (mg g⁻¹ C)</th><th>Outcome</th></tr></thead><tbody>';
+    [10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120].forEach(function (cn) { var v = nnet(cn); html += '<tr><td class="num">' + cn + '</td><td class="num">' + fmt(1000 / cn, 1) + '</td><td class="num">' + fmt(1000 * e / B, 1) + '</td><td class="num">' + fmt(v, 1) + '</td><td>' + (v >= 0 ? 'mineralisation' : 'immobilisation') + '</td></tr>'; });
+    document.getElementById('terTable').innerHTML = html + '</tbody>';
+  }
+  bind(['tS', 'tB', 'tE'], drawTER); drawTER();
+
+  /* ---------- Lab B: litter N dynamics ---------- */
+  var litSvg = document.getElementById('litSvg'), litTip = document.getElementById('litTip');
+  function litterModel() {
+    var CN0 = val('lCN'), k = val('lk'), e = val('lE'), B = val('lB'), km = val('lkm');
+    var tmax = 8, dt = 0.005, n = Math.round(tmax / dt);
+    var L = 100, M = 0, N0 = 100 / CN0, t = 0;
+    var out = [{ t: 0, C: 100, N: 100, CN: CN0 }];
+    for (var i = 1; i <= n; i++) {
+      var dec = k * L;
+      L += dt * (-dec);
+      M += dt * (e * dec - km * M);
+      t = i * dt;
+      var C = L + M, N = L / CN0 + M / B;
+      if (i % 10 === 0) out.push({ t: t, C: C, N: 100 * N / N0, CN: C / N });
+    }
+    return { pts: out, TER: B / e, CN0: CN0 };
+  }
+  function drawLit() {
+    outs(['lCN', 'lk', 'lE', 'lB', 'lkm']);
+    var m = litterModel(), pts = m.pts;
+    var pkN = pts.reduce(function (a, p) { return Math.max(a, p.N); }, 0);
+    var ymax = Math.max(140, Math.ceil((pkN * 1.08) / 20) * 20);
+    var ystep = ymax > 300 ? 50 : 20;
+    var c = mkChart(litSvg, { W: 640, H: 380, mL: 56, mR: 110, xmin: 0, xmax: 8, ymin: 0, ymax: ymax, xt: ticks(0, 8, 1), yt: ticks(0, ymax, ystep), xl: 'Time (years)', yl: 'Remaining (% of initial)' });
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.mL, x2: c.mL + c.pw, y1: c.sy(100), y2: c.sy(100) }));
+    label(c, c.mL + c.pw - 4, c.sy(100) - 5, '100% of initial N', 'var(--muted)', 'end', 'note');
+    series(c, pts.map(function (p) { return [p.t, Math.min(ymax, p.C)]; }), '', 'var(--series-1)');
+    series(c, pts.map(function (p) { return [p.t, Math.min(ymax, p.N)]; }), '', 'var(--series-2)');
+    var last = pts[pts.length - 1];
+    label(c, c.mL + c.pw + 8, c.sy(last.C) + 4, 'C remaining', 'var(--series-1)');
+    var yN = c.sy(Math.min(ymax, last.N)); if (Math.abs(yN - c.sy(last.C)) < 14) yN = c.sy(last.C) + 14;
+    label(c, c.mL + c.pw + 8, yN + 4, 'N remaining', 'var(--series-2)');
+    // peak N
+    var pk = pts.reduce(function (a, p) { return p.N > a.N ? p : a; }, pts[0]);
+    if (pk.N > 100.5) { c.svg.appendChild(el('circle', { 'class': 'pt2', cx: c.sx(pk.t), cy: c.sy(Math.min(ymax, pk.N)), r: 5 })); label(c, c.sx(pk.t) + 8, c.sy(Math.min(ymax, pk.N)) - 8, 'peak N ' + fmt(pk.N, 0) + '% at ' + fmt(pk.t, 1) + ' yr', 'var(--series-2)'); }
+    // C:N labels along curve at a few times
+    [1, 2, 4, 6].forEach(function (tt) { var p = pts[Math.round(tt / 0.05)]; if (p) label(c, c.sx(tt), c.sy(Math.min(ymax, p.C)) - 10, 'C:N ' + fmt(p.CN, 0), 'var(--series-3)', 'middle', 'note'); });
+    hover(c, litTip, function (x) { var p = pts[Math.min(pts.length - 1, Math.round(x / 0.05))]; return { y: Math.min(ymax, p.N), html: 't <b>' + fmt(p.t, 2) + '</b> yr<br>C remaining <b>' + fmt(p.C, 1) + '</b>% · N remaining <b>' + fmt(p.N, 1) + '</b>%<br>residue C:N <b>' + fmt(p.CN, 1) + '</b> (TER ' + fmt(m.TER, 1) + ')' }; });
+    txt('lTER', fmt(m.TER, 1));
+    txt('lPeak', fmt(pk.N, 1) + '%');
+    txt('lTpk', pk.N > 100.5 ? fmt(pk.t, 2) : 'no immobilisation phase');
+    var half = pts.filter(function (p) { return p.C <= 50; })[0];
+    txt('lHalf', half ? fmt(half.t, 2) : '> 8');
+    txt('lCN50', half ? fmt(half.CN, 1) : '–');
+    var html = '<thead><tr><th class="num">t (yr)</th><th class="num">C (%)</th><th class="num">N (%)</th><th class="num">Residue C:N</th></tr></thead><tbody>';
+    [0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8].forEach(function (tt) { var p = pts[Math.min(pts.length - 1, Math.round(tt / 0.05))]; html += '<tr><td class="num">' + tt + '</td><td class="num">' + fmt(p.C, 1) + '</td><td class="num">' + fmt(p.N, 1) + '</td><td class="num">' + fmt(p.CN, 1) + '</td></tr>'; });
+    document.getElementById('litTable').innerHTML = html + '</tbody>';
+  }
+  bind(['lCN', 'lk', 'lE', 'lB', 'lkm'], drawLit); drawLit();
+
+  /* ---------- Lab C: N:P limitation ---------- */
+  var npSvg = document.getElementById('npSvg');
+  function trend(lat) { // approximate Reich & Oleksyn 2004 means vs |latitude|
+    var f = Math.min(1, lat / 60);
+    var N = 17 + 5 * f;
+    var P = 0.9 + 1.1 * Math.pow(f, 1.1);
+    return { N: N, P: P };
+  }
+  function drawNP() {
+    outs(['nN', 'nP', 'nLat']);
+    var N = val('nN'), P = val('nP'), lat = val('nLat');
+    var c = mkChart(npSvg, { W: 640, H: 400, mL: 56, mR: 24, xmin: 0, xmax: 4, ymin: 0, ymax: 45, xt: ticks(0, 4, 0.5), yt: ticks(0, 45, 5), xl: 'Leaf P (mg g⁻¹)', yl: 'Leaf N (mg g⁻¹)', xfmt: function (v) { return fmt(v, 1); } });
+    function ratioLine(r, col, cls, lbl) {
+      var xEnd = Math.min(4, 45 / r);
+      series(c, [[0, 0], [xEnd, r * xEnd]], cls, col);
+      var lx = c.sx(xEnd), ly = c.sy(r * xEnd);
+      label(c, Math.min(lx, c.mL + c.pw - 4), Math.max(ly + 12, c.mT + 12), lbl, col, xEnd >= 4 ? 'end' : 'start');
+    }
+    ratioLine(10, 'var(--muted)', 'dash', 'N:P 10');
+    ratioLine(20, 'var(--muted)', 'dash', 'N:P 20');
+    ratioLine(14, 'var(--series-1)', '', 'N:P 14');
+    ratioLine(16, 'var(--series-2)', '', 'N:P 16');
+    // zones
+    label(c, c.mL + c.pw - 8, c.sy(5), 'N-limited (N:P < 14)', 'var(--series-1)', 'end', 'note');
+    label(c, c.mL + 8, c.sy(43), 'P-limited (N:P > 16)', 'var(--series-2)', 'start', 'note');
+    // trend
+    var tp = []; for (var L = 0; L <= 70; L += 2) { var t = trend(L); tp.push([t.P, t.N]); }
+    series(c, tp, '', 'var(--series-3)');
+    var t0 = trend(0), t60 = trend(70);
+    label(c, c.sx(t0.P) - 6, c.sy(t0.N) + 14, '0° (tropics)', 'var(--series-3)', 'end', 'note');
+    label(c, c.sx(t60.P) + 6, c.sy(t60.N) - 6, '70°', 'var(--series-3)', 'start', 'note');
+    var tl = trend(lat);
+    c.svg.appendChild(el('circle', { cx: c.sx(tl.P), cy: c.sy(tl.N), r: 5, fill: 'var(--series-3)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+    label(c, c.sx(tl.P) + 8, c.sy(tl.N) + 4, lat + '° trend', 'var(--series-3)', 'start', 'note');
+    // sample
+    c.svg.appendChild(el('circle', { 'class': 'pt', cx: c.sx(P), cy: c.sy(N), r: 7 }));
+    label(c, c.sx(P) + 10, c.sy(N) - 10, 'sample N:P ' + fmt(N / P, 1), 'var(--fg)', P > 3 ? 'end' : 'start');
+    var r = N / P;
+    txt('nRatio', fmt(r, 1)); txt('nRatioM', fmt(r * 31 / 14, 1));
+    var km = r < 14 ? 'N-limited' : (r > 16 ? 'P-limited' : 'co-limited / indeterminate');
+    var gu = r < 10 ? 'N-limited' : (r > 20 ? 'P-limited' : 'grey zone: need fertilisation test');
+    var e1 = document.getElementById('nKM'); e1.textContent = km; e1.style.color = r < 14 ? 'var(--series-1)' : (r > 16 ? 'var(--series-2)' : 'var(--muted)');
+    var e2 = document.getElementById('nGus'); e2.textContent = gu; e2.style.color = r < 10 ? 'var(--series-1)' : (r > 20 ? 'var(--series-2)' : 'var(--muted)');
+    txt('nExp', fmt(tl.N, 1) + ', ' + fmt(tl.P, 2) + ' mg g⁻¹, N:P ' + fmt(tl.N / tl.P, 1));
+  }
+  bind(['nN', 'nP', 'nLat'], drawNP); drawNP();
+
+  /* ---------- Lab D: ecoenzymatic vector ---------- */
+  var enzSvg = document.getElementById('enzSvg');
+  function drawEnz() {
+    outs(['eBG', 'eN', 'eP']);
+    var BG = val('eBG'), NL = val('eN'), AP = val('eP');
+    var x = BG / (BG + AP), y = BG / (BG + NL);
+    var len = Math.sqrt(x * x + y * y), ang = Math.atan2(y, x) * 180 / Math.PI; // angle from the x-axis (Moorhead et al. 2016)
+    var c = mkChart(enzSvg, { W: 640, H: 400, mL: 60, mR: 24, mB: 48, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xt: ticks(0, 1, 0.2), yt: ticks(0, 1, 0.2), xl: 'x = BG / (BG + AP)   (C vs P acquisition)', yl: 'y = BG / (BG + NAG + LAP)   (C vs N acquisition)', xfmt: function (v) { return fmt(v, 1); }, yfmt: function (v) { return fmt(v, 1); } });
+    // 1:1 line
+    series(c, [[0, 0], [1, 1]], 'dash', 'var(--muted)');
+    label(c, c.sx(0.9) - 4, c.sy(0.9) + 16, '1:1 (45°)', 'var(--muted)', 'end', 'note');
+    label(c, c.sx(0.98), c.sy(0.1), 'below diagonal: angle < 45°, N-acquisition high (N limitation)', 'var(--muted)', 'end', 'note');
+    label(c, c.sx(0.05), c.sy(0.92), 'above diagonal: angle > 45°, phosphatase high (P limitation)', 'var(--muted)', 'start', 'note');
+    // reference point
+    c.svg.appendChild(el('circle', { cx: c.sx(0.5), cy: c.sy(0.5), r: 4, fill: 'var(--muted)' }));
+    label(c, c.sx(0.5) + 8, c.sy(0.5) + 14, 'equal activities (0.5, 0.5)', 'var(--muted)', 'start', 'note');
+    // arc for angle
+    var r = 0.22;
+    var arc = el('path', { d: 'M' + c.sx(r) + ',' + c.sy(0) + ' A' + (r * c.pw) + ',' + (r * c.ph) + ' 0 0 0 ' + c.sx(r * Math.cos(ang * Math.PI / 180)) + ',' + c.sy(r * Math.sin(ang * Math.PI / 180)), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.5 });
+    c.svg.appendChild(arc);
+    label(c, c.sx(0.25), c.sy(0.06), fmt(ang, 0) + '° from x-axis', 'var(--accent)', 'start');
+    // vector
+    c.svg.appendChild(el('line', { x1: c.sx(0), y1: c.sy(0), x2: c.sx(x), y2: c.sy(y), stroke: 'var(--accent)', 'stroke-width': 2.5 }));
+    c.svg.appendChild(el('circle', { cx: c.sx(x), cy: c.sy(y), r: 7, fill: 'var(--accent)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+    label(c, c.sx(x) + (x > 0.8 ? -10 : 10), c.sy(y) - 10, '(' + fmt(x, 2) + ', ' + fmt(y, 2) + ')  length ' + fmt(len, 2), 'var(--accent)', x > 0.8 ? 'end' : 'start');
+    txt('eX', fmt(x, 3)); txt('eY', fmt(y, 3)); txt('eLen', fmt(len, 3)); txt('eAng', fmt(ang, 1));
+    var lb = Math.log(BG), ln = Math.log(NL), lp = Math.log(AP);
+    txt('eLn', '1 : ' + fmt(ln / lb, 2) + ' : ' + fmt(lp / lb, 2));
+    var interp;
+    if (Math.abs(ang - 45) < 3) interp = 'Balanced N and P acquisition';
+    else if (ang > 45) interp = 'Phosphatase high relative to N enzymes: relative P limitation (angle > 45°)';
+    else interp = 'N-acquiring enzymes high relative to phosphatase: relative N limitation (angle < 45°)';
+    interp += len > 0.9 ? '; strong C acquisition (C-limited)' : (len < 0.5 ? '; weak C acquisition (nutrient-stressed)' : '');
+    txt('eInt', interp);
+  }
+  bind(['eBG', 'eN', 'eP'], drawEnz); drawEnz();
+})();
+</script>
+</body>
+</html>

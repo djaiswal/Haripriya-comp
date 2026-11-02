@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transpiration and Penman–Monteith</title>
+<meta name="description" content="Transpiration and the Penman–Monteith equation at comprehensive-exam depth: leaf and canopy energy balance, aerodynamic and surface resistances, the Penman linearisation, the full Penman–Monteith derivation, decoupling, Priestley–Taylor, FAO-56, two-source models, ET partitioning, energy-balance closure and land-surface model implementations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ptitle { font-size: 12px; font-weight: 600; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .tan { stroke: var(--accent-2); stroke-width: 1.8; stroke-dasharray: 6 4; }
+  .ch .chord { stroke: var(--series-1); stroke-width: 1.6; }
+  .ch .err { stroke: var(--accent-2); stroke-width: 3; }
+  .chartbox { position: relative; }
+  .readout.stack { grid-template-columns: 1fr; gap: 0; }
+  .readout.stack dt { margin-top: 0.45rem; }
+  .readout.stack dd { text-align: left; }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .deriv ol li { margin-bottom: 0.6rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Transpiration and Penman–Monteith</div>
+    <div class="eyebrow">Topic 10 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Transpiration and Penman–Monteith</h1>
+    <p class="lead">How the energy budget of a leaf or canopy sets its evaporation, why one algebraic trick lets us compute latent heat flux without knowing the surface temperature, and what the resulting equation says about which controls on evapotranspiration matter where.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Evaporation needs energy and a way to carry vapour away. The <strong>energy balance</strong> R<sub>n</sub> = H + λE + G says that net radiation is spent on sensible heat H, latent heat λE and ground heat flux G. Both H and λE are diffusive fluxes driven by gradients between the surface and the air: H by the temperature difference through an aerodynamic resistance r<sub>a</sub>, λE by the vapour pressure difference through r<sub>a</sub> plus a <strong>surface resistance</strong> r<sub>s</sub> that for vegetation is the inverse of canopy conductance. Both depend on the surface temperature, which is unknown. <strong>Penman (1948)</strong> eliminated it by linearising the saturation vapour pressure curve around air temperature (slope Δ), and <strong>Monteith (1965)</strong> added r<sub>s</sub>, giving λE = [Δ(R<sub>n</sub> − G) + ρc<sub>p</sub>D/r<sub>a</sub>]/[Δ + γ(1 + r<sub>s</sub>/r<sub>a</sub>)]. The equation has two limits. When r<sub>a</sub> is large (short, smooth canopies, low wind), evaporation approaches the <strong>equilibrium rate</strong> set by available energy; when r<sub>a</sub> is small (tall, rough forests), it approaches the <strong>imposed rate</strong> ρc<sub>p</sub>D/(γr<sub>s</sub>) set by VPD and stomata. The <strong>decoupling coefficient</strong> Ω says where a canopy sits between the two, and therefore how much stomatal control it has over its own water loss. Priestley–Taylor (λE = 1.26 × equilibrium) and FAO-56 reference ET are special cases. The same algebra, applied to a single leaf, gives leaf temperature; applied to two layers (Shuttleworth–Wallace) it partitions transpiration from soil evaporation; and in one form or another it is the latent heat scheme of every land-surface and crop model.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Be able to derive Penman–Monteith on the board from the energy balance and the two flux-gradient equations, naming every assumption. Know the definitions and magnitudes of Δ, γ, r<sub>a</sub>, r<sub>s</sub> and Ω, and be able to say in one sentence why a forest's transpiration responds to stomata while a wet grassland's responds to radiation. Expect follow-ups on the energy-balance closure problem at flux towers and on how ET is partitioned into transpiration and evaporation.</p></div>
+  </section>
+
+  <section id="balance">
+    <h2>The surface energy balance</h2>
+    <p>For a leaf, a canopy or a landscape, conservation of energy over a time step reads</p>
+    <div class="eq">$$R_n = H + \lambda E + G + S, \qquad R_n = (1 - \alpha)\,S_\downarrow + \varepsilon\,L_\downarrow - \varepsilon\sigma T_s^4,$$</div>
+    <p>where R<sub>n</sub> is net radiation (W m⁻²; absorbed shortwave with albedo α ≈ 0.1–0.25 for vegetation, plus absorbed longwave from the sky minus emitted longwave at surface temperature T<sub>s</sub>, emissivity ε ≈ 0.97), H the sensible heat flux, λE the latent heat flux (λ = 2.45 MJ kg⁻¹ at 20 °C, so 1 mm day⁻¹ of evaporation = 28.4 W m⁻²), G the heat conducted into soil (≈ 5–15% of R<sub>n</sub> by day under a canopy, more over bare soil) and S the storage in biomass and canopy air plus the energy used in photosynthesis (small; often neglected except for tall forests on sub-daily scales). Over a day G and S nearly cancel, and R<sub>n</sub> − G is the <strong>available energy</strong>.</p>
+    <p>H and λE are written as flux-gradient relations with resistances (s m⁻¹) or conductances (m s⁻¹; or mol m⁻² s⁻¹, dividing by the molar volume 0.0245 m³ mol⁻¹):</p>
+    <div class="eq">$$H = \rho c_p\,\frac{T_s - T_a}{r_a}, \qquad \lambda E = \frac{\rho c_p}{\gamma}\,\frac{e_s(T_s) - e_a}{r_a + r_s}, \qquad \gamma = \frac{c_p P}{0.622\,\lambda} \approx 0.066\ \text{kPa K}^{-1}.$$</div>
+    <p>ρc<sub>p</sub> ≈ 1200 J m⁻³ K⁻¹ is the volumetric heat capacity of air. The <strong>psychrometric constant</strong> γ converts a vapour pressure difference into the temperature difference that would carry the same energy flux; it appears because λE is written in pressure units rather than in specific humidity (λE = λρ(q<sub>s</sub> − q<sub>a</sub>)/(r<sub>a</sub> + r<sub>s</sub>) with q ≈ 0.622e/P). The vapour source is assumed saturated at T<sub>s</sub>: inside the leaf's substomatal cavities this is true; for a canopy it defines an effective "big-leaf" surface. The <strong>surface resistance</strong> r<sub>s</sub> is the resistance between that saturated surface and the air just outside the leaves. For a closed, dry canopy it is approximately the parallel combination of all leaf stomatal resistances:</p>
+    <div class="eq">$$\frac{1}{r_s} = G_c \approx \sum_{\text{leaves}} g_{s,i}\,\Delta\!L_i \approx \bar g_s\,\mathrm{LAI}_{eff}, \qquad \text{FAO-56: } r_s = \frac{r_l}{0.5\,\mathrm{LAI}} = \frac{100}{0.5 \times 2.88} \approx 70\ \text{s m}^{-1},$$</div>
+    <p>with LAI<sub>eff</sub> the "active" sunlit leaf area, roughly half the total for dense canopies because shaded leaves have low conductance. For a wet canopy or open water r<sub>s</sub> = 0; for partly vegetated or drying soil r<sub>s</sub> includes a soil resistance. Typical magnitudes: r<sub>s</sub> ≈ 30–70 s m⁻¹ for a well-watered crop at midday (G<sub>c</sub> ≈ 15–30 mm s⁻¹), 100–300 s m⁻¹ for forests, rising to &gt; 1000 s m⁻¹ under drought or at night.</p>
+  </section>
+
+  <section id="resist">
+    <h2>Aerodynamic resistance, Δ and γ</h2>
+    <p>Momentum, heat and vapour are carried from the surface to a reference height z by turbulence. For neutral stratification the mean wind profile above a canopy of height h is logarithmic,</p>
+    <div class="eq">$$u(z) = \frac{u_*}{k}\ln\!\left(\frac{z - d}{z_{0m}}\right), \qquad r_a = \frac{\ln\!\left(\dfrac{z_m - d}{z_{0m}}\right)\ln\!\left(\dfrac{z_h - d}{z_{0h}}\right)}{k^2\,u(z_m)},$$</div>
+    <p>with von Kármán's constant k = 0.41, zero-plane displacement d ≈ 0.67h, roughness length for momentum z<sub>0m</sub> ≈ 0.123h, and roughness length for heat and vapour z<sub>0h</sub> ≈ 0.1z<sub>0m</sub> (the "excess resistance" kB⁻¹ ≈ 2, because scalars lack the pressure-drag pathway that momentum has). For the FAO reference grass (h = 0.12 m, measurements at 2 m) this reduces to r<sub>a</sub> = 208/u<sub>2</sub> s m⁻¹, about 100 s m⁻¹ at 2 m s⁻¹; for a 20 m forest at the same wind speed r<sub>a</sub> ≈ 5–15 s m⁻¹. Under unstable (daytime) or stable (night) conditions the profiles depart from logarithmic and Monin–Obukhov stability functions Ψ<sub>m</sub>, Ψ<sub>h</sub> correct the logarithms; unstable conditions reduce r<sub>a</sub>, stable conditions increase it, and land-surface models iterate on this because the stability depends on H.</p>
+    <p>Two thermodynamic quantities complete the toolkit. The <strong>slope of the saturation vapour pressure curve</strong> Δ = de<sub>s</sub>/dT follows from differentiating Tetens,</p>
+    <div class="eq">$$\Delta = \frac{4098\,e_s(T)}{(T + 237.3)^2}\ \text{kPa K}^{-1},$$</div>
+    <div class="eq">$$\Delta(10\,°\text{C}) = 0.082,\quad \Delta(20) = 0.145,\quad \Delta(25) = 0.189,\quad \Delta(30) = 0.243\ \text{kPa K}^{-1},$$</div>
+    <p>and the ratio Δ/γ (0.9 at 5 °C, 2.2 at 20 °C, 3.7 at 30 °C) is the number that decides how available energy is split between H and λE at equilibrium: warm air evaporates more per unit energy because the same temperature excess carries a much larger vapour pressure excess.</p>
+  </section>
+
+  <section id="derivation">
+    <h2>From Penman to Penman–Monteith</h2>
+    <p>The obstacle to computing λE from standard weather data is T<sub>s</sub>: it enters both H and e<sub>s</sub>(T<sub>s</sub>) and is rarely measured. Penman [1], working on open water and wet grass (r<sub>s</sub> = 0), noticed that T<sub>s</sub> can be eliminated by one approximation. Monteith [2] generalised it to a dry vegetated surface. The derivation, as an examiner expects it:</p>
+    <div class="keybox deriv"><h3>Derivation</h3>
+      <ol>
+        <li><strong>Energy balance:</strong> H = R<sub>n</sub> − G − λE.</li>
+        <li><strong>Sensible heat:</strong> T<sub>s</sub> − T<sub>a</sub> = H r<sub>a</sub>/(ρc<sub>p</sub>) = (R<sub>n</sub> − G − λE) r<sub>a</sub>/(ρc<sub>p</sub>).</li>
+        <li><strong>Latent heat:</strong> λE = (ρc<sub>p</sub>/γ)[e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub>]/(r<sub>a</sub> + r<sub>s</sub>).</li>
+        <li><strong>Penman's linearisation:</strong> e<sub>s</sub>(T<sub>s</sub>) ≈ e<sub>s</sub>(T<sub>a</sub>) + Δ(T<sub>s</sub> − T<sub>a</sub>), with Δ evaluated at T<sub>a</sub> (or at the mean of T<sub>a</sub> and T<sub>s</sub>). Then e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub> = D + Δ(T<sub>s</sub> − T<sub>a</sub>), where D = e<sub>s</sub>(T<sub>a</sub>) − e<sub>a</sub> is the VPD of the air.</li>
+        <li><strong>Substitute step 2 into step 4:</strong> e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub> = D + Δ(R<sub>n</sub> − G − λE) r<sub>a</sub>/(ρc<sub>p</sub>).</li>
+        <li><strong>Substitute into step 3 and multiply out:</strong> λE γ (r<sub>a</sub> + r<sub>s</sub>) = ρc<sub>p</sub>D + Δ(R<sub>n</sub> − G) r<sub>a</sub> − Δ λE r<sub>a</sub>.</li>
+        <li><strong>Collect λE:</strong> λE [Δ r<sub>a</sub> + γ(r<sub>a</sub> + r<sub>s</sub>)] = Δ(R<sub>n</sub> − G) r<sub>a</sub> + ρc<sub>p</sub>D. Divide by r<sub>a</sub>:</li>
+      </ol>
+      <div class="eq">$$\lambda E = \frac{\Delta\,(R_n - G) + \rho c_p\,D/r_a}{\Delta + \gamma\left(1 + r_s/r_a\right)} \qquad \text{(Penman–Monteith)}$$</div>
+      <p>With r<sub>s</sub> = 0 this is Penman's equation for a wet surface, λE = [Δ(R<sub>n</sub> − G) + ρc<sub>p</sub>D/r<sub>a</sub>]/(Δ + γ); Penman wrote the second term as a wind function f(u)·D. The surface temperature has disappeared; it can be recovered afterwards from step 2. The only approximation is the linearisation, which is exact as T<sub>s</sub> → T<sub>a</sub> and introduces errors of a few percent when |T<sub>s</sub> − T<sub>a</sub>| exceeds ~5 K (Lab 1). The structural assumptions are: one source height for heat and vapour (the big leaf), the same r<sub>a</sub> for both, a saturated source, steady state, and neutral or corrected stability.</p></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · The Penman linearisation on the saturation curve</h3><span class="small muted">Hover the curve for e<sub>s</sub> and Δ</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="linSvg" viewBox="0 0 640 360" role="img" aria-label="Saturation vapour pressure curve with the tangent at air temperature, the surface temperature point, and the error of the linear approximation"></svg>
+            <div class="chart-tip" id="linTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">e<sub>s</sub>(T)</span><span style="--c:var(--accent-2)">tangent at T<sub>a</sub>, slope Δ</span><span style="--c:var(--series-1)">chord T<sub>a</sub> → T<sub>s</sub> (the slope Penman really needs)</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lTa"><span>Air temperature T<sub>a</sub> (°C)</span><output id="lTaO">25</output></label><input type="range" id="lTa" min="0" max="40" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="lDT"><span>T<sub>s</sub> − T<sub>a</sub> (K)</span><output id="lDTO">4</output></label><input type="range" id="lDT" min="-8" max="12" step="0.5" value="4"></div>
+          <div class="ctrl"><label for="lRH"><span>Relative humidity (%)</span><output id="lRHO">50</output></label><input type="range" id="lRH" min="10" max="100" step="1" value="50"></div>
+          <dl class="readout stack">
+            <dt>Δ at T<sub>a</sub> (kPa K⁻¹) · γ · Δ/γ</dt><dd id="lDel"></dd>
+            <dt>e<sub>s</sub>(T<sub>s</sub>) exact · linearised (kPa)</dt><dd id="lEs"></dd>
+            <dt>Error of linearisation (kPa · % of e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub>)</dt><dd id="lErr"></dd>
+            <dt>Chord slope (e<sub>s</sub>(T<sub>s</sub>) − e<sub>s</sub>(T<sub>a</sub>))/(T<sub>s</sub> − T<sub>a</sub>)</dt><dd id="lChord"></dd>
+            <dt>Δ at (T<sub>a</sub> + T<sub>s</sub>)/2, the usual fix</dt><dd id="lMid"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">The vertical bar at T<sub>s</sub> is the error e<sub>s</sub>(T<sub>s</sub>) − [e<sub>s</sub>(T<sub>a</sub>) + Δ(T<sub>s</sub> − T<sub>a</sub>)]. Because e<sub>s</sub> is convex, the tangent always under-estimates e<sub>s</sub>(T<sub>s</sub>) for a warmer surface and over-estimates it for a cooler one. Suggested experiments: at T<sub>a</sub> = 25 °C set T<sub>s</sub> − T<sub>a</sub> to +2 K (a transpiring crop) and then +10 K (a dry soil at noon); compare the error; move T<sub>a</sub> to 5 °C and see Δ shrink below γ.</p>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2>Equilibrium, imposed evaporation and decoupling</h2>
+    <p>Rearranging Penman–Monteith as a weighted sum of two limiting rates is the most useful thing to know about it. Jarvis and McNaughton [4] wrote</p>
+    <div class="keybox"><h3>Decoupling coefficient</h3>
+      <div class="eq">$$\lambda E = \Omega\,\lambda E_{eq} + (1 - \Omega)\,\lambda E_{imp}, \qquad \Omega = \frac{\Delta/\gamma + 1}{\Delta/\gamma + 1 + r_s/r_a},$$</div>
+      <div class="eq">$$\lambda E_{eq} = \frac{\Delta}{\Delta + \gamma}(R_n - G), \qquad \lambda E_{imp} = \frac{\rho c_p\,D}{\gamma\,r_s}.$$</div>
+      <p style="margin-top:0.75rem">The <strong>equilibrium rate</strong> is what a wet surface would evaporate in a closed box: as the air above it saturates and the surface temperature adjusts, λE tends to Δ(R<sub>n</sub> − G)/(Δ + γ) regardless of r<sub>a</sub>. The <strong>imposed rate</strong> is what the surface would lose if it were perfectly coupled to the free air (r<sub>a</sub> → 0): the air's own D acting through the stomata alone. Ω → 1 when r<sub>a</sub> ≫ r<sub>s</sub> (short, smooth, well-watered canopies in light wind: grass, irrigated crops, Ω ≈ 0.8–0.9), so λE follows radiation and stomata have little influence; Ω → 0 when r<sub>a</sub> ≪ r<sub>s</sub> (tall, rough, aerodynamically well-coupled forests, especially conifers, Ω ≈ 0.1–0.3), so λE follows D and g<sub>s</sub>. The sensitivity of λE to stomata is ∂ln λE/∂ln g<sub>s</sub> = 1 − Ω.</p></div>
+    <p><strong>Priestley–Taylor</strong> [5] found that over large, well-watered surfaces λE ≈ α λE<sub>eq</sub> with α = 1.26, the excess over equilibrium being supplied by entrainment of dry air at the top of the boundary layer; α falls toward 1 and below as soil dries and is ≈ 0.7–0.9 for forests, making the ratio λE/λE<sub>eq</sub> a convenient index of water stress. The <strong>Bowen ratio</strong> β = H/λE is another: for equilibrium evaporation β = γ/Δ (≈ 0.45 at 20 °C); β ≈ 0.1–0.3 over wet crops, 0.5–1 for forests, &gt; 5 over deserts; it is the basis of the Bowen-ratio energy-balance method, which measures ΔT/Δe between two heights and partitions R<sub>n</sub> − G without any resistances. The <strong>evaporative fraction</strong> EF = λE/(R<sub>n</sub> − G) = 1/(1 + β) is roughly constant through the day and is used to scale instantaneous satellite retrievals to daily totals.</p>
+    <p><strong>FAO-56 reference evapotranspiration</strong> [6] applies Penman–Monteith to a hypothetical grass surface (h = 0.12 m, r<sub>s</sub> = 70 s m⁻¹, α = 0.23, r<sub>a</sub> = 208/u<sub>2</sub>), which with daily data in MJ m⁻² day⁻¹ gives the familiar</p>
+    <div class="eq">$$ET_0 = \frac{0.408\,\Delta(R_n - G) + \gamma\,\dfrac{900}{T + 273}\,u_2\,(e_s - e_a)}{\Delta + \gamma(1 + 0.34\,u_2)} \quad \text{mm day}^{-1}.$$</div>
+    <p>Crop evapotranspiration is then ET<sub>c</sub> = K<sub>c</sub> ET<sub>0</sub>, with the <strong>crop coefficient</strong> K<sub>c</sub> (0.3–1.2 through the season) absorbing differences in albedo, roughness, r<sub>s</sub> and ground cover, and a water-stress coefficient K<sub>s</sub> ≤ 1 multiplying it under soil-water deficit. The dual-coefficient form K<sub>c</sub> = K<sub>cb</sub> + K<sub>e</sub> separates transpiration (basal) from soil evaporation. It is the standard in irrigation scheduling and in many crop models.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Penman–Monteith explorer</h3><span class="small muted">Hover to read fluxes</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="pmSvg" viewBox="0 0 640 380" role="img" aria-label="Latent and sensible heat fluxes from the Penman–Monteith equation versus the chosen driver, with the equilibrium rate shown"></svg>
+            <div class="chart-tip" id="pmTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">λE (Penman–Monteith)</span><span style="--c:var(--series-2)">H = R<sub>n</sub> − G − λE</span><span style="--c:var(--series-1)">λE<sub>eq</sub></span><span style="--c:var(--series-3)">λE<sub>imp</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="pmTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="mDrv"><span>x-axis driver</span></label><select id="mDrv"><option value="Gc">Canopy conductance G<sub>c</sub> (mm s⁻¹)</option><option value="D">VPD (kPa, via RH)</option><option value="Rn">Net radiation R<sub>n</sub> (W m⁻²)</option><option value="u">Wind speed u (m s⁻¹)</option></select></div>
+          <div class="ctrl"><label for="mRn"><span>R<sub>n</sub> (W m⁻²)</span><output id="mRnO">500</output></label><input type="range" id="mRn" min="0" max="800" step="10" value="500"></div>
+          <div class="ctrl"><label for="mG"><span>G as fraction of R<sub>n</sub></span><output id="mGO">0.10</output></label><input type="range" id="mG" min="0" max="0.4" step="0.01" value="0.1"></div>
+          <div class="ctrl"><label for="mTa"><span>Air temperature (°C)</span><output id="mTaO">25</output></label><input type="range" id="mTa" min="0" max="40" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="mRH"><span>Relative humidity (%)</span><output id="mRHO">50</output></label><input type="range" id="mRH" min="10" max="100" step="1" value="50"></div>
+          <div class="ctrl"><label for="mU"><span>Wind at h + 2 m (m s⁻¹)</span><output id="mUO">2.0</output></label><input type="range" id="mU" min="0.3" max="10" step="0.1" value="2"></div>
+          <div class="ctrl"><label for="mH"><span>Canopy height (m)</span><output id="mHO">0.5</output></label><input type="range" id="mH" min="0.1" max="40" step="0.1" value="0.5"></div>
+          <div class="ctrl"><label for="mGc"><span>Canopy conductance G<sub>c</sub> (mm s⁻¹)</span><output id="mGcO">15</output></label><input type="range" id="mGc" min="0.5" max="50" step="0.5" value="15"></div>
+          <dl class="readout stack">
+            <dt>r<sub>a</sub> · r<sub>s</sub> (s m⁻¹)</dt><dd id="mRa"></dd>
+            <dt>Δ · γ (kPa K⁻¹) · D (kPa)</dt><dd id="mDel"></dd>
+            <dt>λE · H (W m⁻²) · Bowen ratio</dt><dd id="mLE"></dd>
+            <dt>λE<sub>eq</sub> · λE<sub>imp</sub> · Priestley–Taylor (W m⁻²)</dt><dd id="mEq"></dd>
+            <dt>Ω · evaporative fraction</dt><dd id="mOm"></dd>
+            <dt>ET (mm h⁻¹) · T<sub>s</sub> − T<sub>a</sub> (K)</dt><dd id="mET"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">r<sub>a</sub> from the neutral log profile with d = 0.67h, z<sub>0m</sub> = 0.123h, z<sub>0h</sub> = 0.1z<sub>0m</sub>, measurement height h + 2 m; G<sub>c</sub> in mm s⁻¹ (15 mm s⁻¹ ≈ 0.6 mol m⁻² s⁻¹ ≈ r<sub>s</sub> of 67 s m⁻¹). Suggested experiments: with G<sub>c</sub> on the x-axis, compare a 0.5 m crop (Ω ≈ 0.8) with a 25 m forest (Ω ≈ 0.2) and note how much flatter the crop's curve is; switch to wind and see λE move toward λE<sub>imp</sub> as r<sub>a</sub> falls; raise RH to 100% so D = 0 and confirm λE &lt; λE<sub>eq</sub> only when r<sub>s</sub> &gt; 0; drop G<sub>c</sub> to 2 mm s⁻¹ (drought) and watch T<sub>s</sub> − T<sub>a</sub> climb.</p>
+    </div>
+  </section>
+
+  <section id="leaf">
+    <h2>Leaf temperature and the isothermal form</h2>
+    <p>For a single leaf the same balance is written per unit leaf area with molar conductances, radiation absorbed on both sides, and longwave emitted from both sides:</p>
+    <div class="eq">$$R_{abs} - 2\varepsilon\sigma T_l^4 = c_p\,g_H\,(T_l - T_a) + \lambda\,g_v\,\frac{e_s(T_l) - e_a}{P},$$</div>
+    <p>with c<sub>p</sub> = 29.3 J mol⁻¹ K⁻¹, λ = 44 kJ mol⁻¹, g<sub>H</sub> the boundary-layer conductance for heat summed over both sides (g<sub>Ha</sub> ≈ 0.135√(u/d) mol m⁻² s⁻¹ per side for a leaf of characteristic dimension d in forced convection), and g<sub>v</sub> the series combination of stomatal and boundary-layer conductance for vapour (g<sub>va</sub> ≈ 0.147√(u/d)). Linearising the longwave term about T<sub>a</sub> defines a <strong>radiative conductance</strong> g<sub>r</sub> = 4εσT<sub>a</sub>³/c<sub>p</sub> (≈ 0.2 mol m⁻² s⁻¹ per side at 25 °C) and the <strong>isothermal net radiation</strong> R<sub>ni</sub> = R<sub>abs</sub> − 2εσT<sub>a</sub>⁴, the net radiation the leaf would have if it were at air temperature. Applying Penman's linearisation to e<sub>s</sub>(T<sub>l</sub>) gives the leaf-temperature analogue of Penman–Monteith (Campbell and Norman [9]):</p>
+    <div class="eq">$$T_l - T_a = \frac{\gamma^*}{s + \gamma^*}\left[\frac{R_{ni}}{c_p\,(g_H + g_r)} - \frac{D}{P\,\gamma^*}\right], \qquad \gamma^* = \gamma\,\frac{g_H + g_r}{g_v}, \qquad s = \frac{\Delta}{P}.$$</div>
+    <p>The bracket contains the two competing terms: radiative heating (positive, large for big leaves in still air, since g<sub>H</sub> is small) and evaporative cooling (negative, proportional to D and, through γ*, to g<sub>v</sub>). Leaves are warmer than air when radiation load is high and g<sub>s</sub> or D is low, and cooler than air when stomata are open in dry air; well-watered crops are typically 1–3 K below air temperature at midday, droughted ones several degrees above, which is the basis of the crop water stress index from infrared thermometry. Small leaves (small d, large g<sub>H</sub>) track air temperature closely, which is why desert plants have small leaves. The nonlinear balance is what land-surface models solve, usually by Newton iteration on T<sub>l</sub> jointly with the stomatal model, because D in the stomatal equation depends on T<sub>l</sub>.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · Leaf temperature explorer</h3><span class="small muted">Hover to read T<sub>leaf</sub> − T<sub>air</sub></span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="ltSvg" viewBox="0 0 640 380" role="img" aria-label="Leaf minus air temperature versus stomatal conductance for three wind speeds or three radiation loads"></svg>
+            <div class="chart-tip" id="ltTip" hidden></div>
+          </div>
+          <div class="legend" id="ltLegend"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="tMode"><span>Series</span></label><select id="tMode"><option value="u">Three wind speeds (0.5, 2, 5 m s⁻¹)</option><option value="R">Three radiation loads (R<sub>ni</sub> = 100, 300, 600 W m⁻²)</option></select></div>
+          <div class="ctrl"><label for="tRni"><span>Isothermal net radiation R<sub>ni</sub> (W m⁻²)</span><output id="tRniO">400</output></label><input type="range" id="tRni" min="-100" max="700" step="10" value="400"></div>
+          <div class="ctrl"><label for="tU"><span>Wind speed (m s⁻¹)</span><output id="tUO">2.0</output></label><input type="range" id="tU" min="0.2" max="8" step="0.1" value="2"></div>
+          <div class="ctrl"><label for="tTa"><span>Air temperature (°C)</span><output id="tTaO">30</output></label><input type="range" id="tTa" min="5" max="45" step="0.5" value="30"></div>
+          <div class="ctrl"><label for="tRH"><span>Relative humidity (%)</span><output id="tRHO">40</output></label><input type="range" id="tRH" min="10" max="100" step="1" value="40"></div>
+          <div class="ctrl"><label for="tD"><span>Leaf dimension d (cm)</span><output id="tDO">5</output></label><input type="range" id="tD" min="0.5" max="30" step="0.5" value="5"></div>
+          <div class="ctrl"><label for="tGs"><span>Reference g<sub>sw</sub> for readouts (mol m⁻² s⁻¹)</span><output id="tGsO">0.30</output></label><input type="range" id="tGs" min="0" max="1" step="0.01" value="0.3"></div>
+          <dl class="readout stack">
+            <dt>g<sub>Ha</sub> per side · g<sub>r</sub> per side (mol m⁻² s⁻¹)</dt><dd id="tGh"></dd>
+            <dt>T<sub>leaf</sub> − T<sub>air</sub> at reference g<sub>sw</sub>, for each series (K)</dt><dd id="tDT"></dd>
+            <dt>λE · H at reference g<sub>sw</sub>, middle series (W m⁻²)</dt><dd id="tFl"></dd>
+            <dt>g<sub>sw</sub> at which T<sub>leaf</sub> = T<sub>air</sub>, middle series</dt><dd id="tZero"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Hypostomatous leaf (vapour leaves one side through g<sub>sw</sub> in series with g<sub>va</sub>; heat from both sides), forced convection only, ε = 0.97, full non-linear longwave solved by bisection. Suggested experiments: in still air (0.5 m s⁻¹) with a 20 cm leaf under 600 W m⁻² find the g<sub>s</sub> needed to keep the leaf within 2 K of air; shrink the leaf to 1 cm and note that wind and size nearly erase the temperature excess; set R<sub>ni</sub> = −80 W m⁻² (clear night) and see the leaf fall below air temperature, the condition for dew and frost.</p>
+    </div>
+  </section>
+
+  <section id="partition">
+    <h2>Big leaf versus two sources, partitioning and closure</h2>
+    <p>The big-leaf model collapses the canopy to one source at height d + z<sub>0h</sub>. Raupach and Finnigan [13] summarised the status with their title: single-layer models are incorrect but useful, multilayer models correct but useless. They are incorrect because heat and vapour sources are at different heights (soil evaporation, understory, sunlit upper leaves), because the within-canopy turbulence does not obey gradient-diffusion, and because the "canopy resistance" fitted by inverting Penman–Monteith is a flux-weighted average that depends on conditions. They are useful because at the scale of a flux footprint the errors are small compared with those in r<sub>s</sub> itself, and because the equation is linear enough to invert. <strong>Shuttleworth and Wallace</strong> [7] built the standard <strong>two-source</strong> extension for sparse canopies: a soil source and a canopy source, each with its own surface resistance (r<sub>ss</sub>, r<sub>sc</sub>) and aerodynamic resistance (r<sub>as</sub> soil-to-canopy-air, r<sub>ac</sub> leaf boundary layer), both feeding a canopy air space that exchanges with the reference height through r<sub>aa</sub>. λE = λE<sub>soil</sub> + λE<sub>canopy</sub> is obtained from two coupled Penman–Monteith expressions, and the partitioning between them follows LAI, soil wetness and the resistances. Land-surface models use essentially this structure, with sunlit and shaded leaves as separate canopy sources.</p>
+    <p><strong>ET partitioning.</strong> Transpiration T, soil evaporation E<sub>s</sub> and canopy interception evaporation E<sub>i</sub> sum to ET. Globally the ratio T/ET is now put at roughly 0.6: Jasechko et al. [10] used lake-catchment isotope mass balances to argue for 80–90%, which prompted a re-examination; Schlesinger and Jasechko [11] compiled 81 studies and found T/ET = 61 ± 15%, highest in tropical rainforests (~70%) and temperate grasslands and lowest in deserts and croplands with bare-soil periods, and most land-surface models at the time were lower still (≈ 0.4–0.5), under-estimating transpiration relative to soil evaporation. Methods: isotopes (δ¹⁸O, δ²H, because transpiration is non-fractionating at steady state while evaporation fractionates), sap flow scaled to the stand plus eddy-covariance ET, lysimeters, chambers, and the ratio of GPP-derived to total ET using water-use-efficiency relations (underlying WUE methods). The partition matters because T is coupled to CO₂ uptake and responds to stomata and leaf area, whereas E<sub>s</sub> responds to surface soil moisture and litter; getting T/ET right is a precondition for a model to get the CO₂ and VPD responses of ET right.</p>
+    <p><strong>Energy-balance closure.</strong> At eddy-covariance sites the measured turbulent fluxes typically fall short of the available energy: H + λE ≈ 0.7–0.9 (R<sub>n</sub> − G). Wilson et al. [12] found a mean imbalance of about 20% across 22 FLUXNET sites, worse at night and in stable conditions, and attributed it to sampling-footprint mismatch between R<sub>n</sub> (a few hundred m²) and the flux footprint (hectares), systematic instrument bias, neglected storage terms (canopy air, biomass, soil above the heat-flux plates), and loss of low-frequency and large-eddy (secondary circulation) flux contributions at the half-hour averaging scale. The gap is largely attributed today to the last cause over heterogeneous landscapes. Practical consequences: ET from towers is probably under-estimated unless corrected; corrections either preserve the measured Bowen ratio and scale H and λE together, or assign the residual to one flux; and comparing a model's λE (which closes the balance by construction) with uncorrected tower λE builds in a ~10–20% bias. Inverting Penman–Monteith for canopy conductance from tower data inherits all of this.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem and land-surface models</h2>
+    <p><strong>Land-surface models</strong> do not use the closed-form Penman–Monteith equation. CLM, JULES, Noah-MP, ORCHIDEE and JSBACH solve the leaf and ground energy balances numerically each time step: the canopy (sunlit and shaded big leaves, or multiple layers) exchanges heat and vapour with a canopy air space through leaf boundary-layer conductances; the ground exchanges through a within-canopy aerodynamic resistance and a soil resistance; the canopy air space exchanges with the atmosphere through r<sub>a</sub> from Monin–Obukhov similarity, iterated for stability; and T<sub>l</sub>, T<sub>canopy-air</sub>, T<sub>ground</sub> and the fluxes are solved simultaneously with the stomatal–photosynthesis model, which supplies g<sub>s</sub> as a function of A and D(T<sub>l</sub>). The Penman–Monteith form is what you get when you linearise this system, and it is the right mental model for interpreting the results: a model's ET sensitivity to g<sub>1</sub> depends on its simulated Ω, which depends on its roughness parameterisation; wet-canopy evaporation after rain is computed with r<sub>s</sub> = 0 for the wet fraction; and Noah-MP offers a Jarvis or a Ball–Berry stomatal option behind the same energy balance.</p>
+    <p><strong>Crop and ecosystem models</strong> mostly use the closed form or simpler. DSSAT defaults to Priestley–Taylor for potential ET with FAO-56 Penman–Monteith as an option; APSIM uses a Priestley–Taylor-type potential ET with crop factors; BioCro computes leaf-level transpiration with a Penman–Monteith-style energy balance layer by layer in its canopy, coupled to Collatz photosynthesis and a Ball–Berry conductance; DayCent and Century use a Penman-type potential ET from temperature and radiation and partition it to soil layers and transpiration by water availability; MIMICS and other soil-only models take soil moisture as input. The hierarchy matters when coupling: a soil carbon model driven by a crop model's soil water will inherit whatever that model's ET scheme does under rising VPD and CO₂, which for Priestley–Taylor is nothing (no stomatal term) and for FAO-56 only what a prescribed K<sub>c</sub> allows.</p>
+    <p><strong>Sensitivity summary.</strong> From the equation: ∂λE/∂R<sub>n</sub> = Δ/[Δ + γ(1 + r<sub>s</sub>/r<sub>a</sub>)], near 0.7 for a crop and 0.3 for a forest; ∂λE/∂D = ρc<sub>p</sub>/[r<sub>a</sub>(Δ + γ(1 + r<sub>s</sub>/r<sub>a</sub>))], large for forests, small for crops, and reduced further once g<sub>s</sub> responds to D; ∂ln λE/∂ln g<sub>s</sub> = 1 − Ω; and ∂λE/∂u has either sign, pushing λE toward λE<sub>imp</sub>. Under climate change the leading-order ET changes come from R<sub>n</sub> (cloud, aerosol), D (warming at roughly constant RH), g<sub>s</sub> (CO₂, drought) and LAI (greening), and the equation shows that their relative weights differ by vegetation type and are set by Ω.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Latent heat of vaporisation λ</td><td class="num">2.45 MJ kg⁻¹ (20 °C) · 44 kJ mol⁻¹</td><td>1 mm day⁻¹ = 28.4 W m⁻²; 1 mmol m⁻² s⁻¹ = 44 W m⁻²</td></tr>
+        <tr><td>ρc<sub>p</sub> of air</td><td class="num">≈ 1200 J m⁻³ K⁻¹</td><td>ρ = 1.2 kg m⁻³, c<sub>p</sub> = 1005 J kg⁻¹ K⁻¹; molar c<sub>p</sub> = 29.3 J mol⁻¹ K⁻¹</td></tr>
+        <tr><td>Psychrometric constant γ</td><td class="num">0.066 kPa K⁻¹</td><td>c<sub>p</sub>P/(0.622λ); 0.000665 P</td></tr>
+        <tr><td>Δ at 10 · 20 · 25 · 30 °C</td><td class="num">0.082 · 0.145 · 0.189 · 0.243 kPa K⁻¹</td><td>Δ/γ ≈ 1.2 · 2.2 · 2.9 · 3.7</td></tr>
+        <tr><td>von Kármán constant k</td><td class="num">0.41</td><td></td></tr>
+        <tr><td>d · z<sub>0m</sub> · z<sub>0h</sub></td><td class="num">0.67h · 0.123h · 0.0123h</td><td>FAO-56 conventions; kB⁻¹ ≈ 2</td></tr>
+        <tr><td>r<sub>a</sub>: reference grass · forest</td><td class="num">208/u<sub>2</sub> ≈ 100 · 5–15 s m⁻¹</td><td>At u ≈ 2 m s⁻¹</td></tr>
+        <tr><td>r<sub>s</sub>: wet crop · forest · drought</td><td class="num">30–70 · 100–300 · &gt; 1000 s m⁻¹</td><td>FAO reference: 70 s m⁻¹</td></tr>
+        <tr><td>Ω: grass/crops · forests</td><td class="num">0.8–0.9 · 0.1–0.3</td><td>Jarvis &amp; McNaughton 1986</td></tr>
+        <tr><td>Priestley–Taylor α</td><td class="num">1.26</td><td>0.7–0.9 for forests; falls with drought</td></tr>
+        <tr><td>Bowen ratio β</td><td class="num">0.1–0.3 wet crop · 0.5–1 forest · &gt; 5 desert</td><td>Equilibrium value γ/Δ</td></tr>
+        <tr><td>Global T/ET</td><td class="num">≈ 0.6 (61 ± 15%)</td><td>Schlesinger &amp; Jasechko 2014</td></tr>
+        <tr><td>Energy-balance closure at towers</td><td class="num">H + λE ≈ 0.8 (R<sub>n</sub> − G)</td><td>Wilson et al. 2002; 10–30% gap</td></tr>
+        <tr><td>Daily ET of a well-watered crop in summer</td><td class="num">4–7 mm day⁻¹</td><td>≈ 110–200 W m⁻² daily mean</td></tr>
+        <tr><td>Leaf boundary-layer conductance</td><td class="num">g<sub>Ha</sub> = 0.135√(u/d) mol m⁻² s⁻¹</td><td>Per side, forced convection; g<sub>va</sub> = 0.147√(u/d)</td></tr>
+        <tr><td>Radiative conductance g<sub>r</sub> at 25 °C</td><td class="num">≈ 0.2 mol m⁻² s⁻¹ per side</td><td>4εσT³/c<sub>p</sub></td></tr>
+        <tr><td>Conversion mol m⁻² s⁻¹ ↔ mm s⁻¹</td><td class="num">× 24.5</td><td>At 25 °C, 101.3 kPa</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Derive the Penman–Monteith equation from the surface energy balance, stating each assumption. What was Penman's contribution and what was Monteith's?</summary><div class="a"><p>Start with R<sub>n</sub> − G = H + λE; H = ρc<sub>p</sub>(T<sub>s</sub> − T<sub>a</sub>)/r<sub>a</sub>; λE = (ρc<sub>p</sub>/γ)[e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub>]/(r<sub>a</sub> + r<sub>s</sub>). The unknown T<sub>s</sub> appears in both fluxes. Linearise the saturation curve about air temperature: e<sub>s</sub>(T<sub>s</sub>) ≈ e<sub>s</sub>(T<sub>a</sub>) + Δ(T<sub>s</sub> − T<sub>a</sub>), so e<sub>s</sub>(T<sub>s</sub>) − e<sub>a</sub> = D + Δ(T<sub>s</sub> − T<sub>a</sub>). Replace T<sub>s</sub> − T<sub>a</sub> by Hr<sub>a</sub>/(ρc<sub>p</sub>) = (R<sub>n</sub> − G − λE)r<sub>a</sub>/(ρc<sub>p</sub>). Substituting into the latent heat equation and multiplying through: λEγ(r<sub>a</sub> + r<sub>s</sub>) = ρc<sub>p</sub>D + Δ(R<sub>n</sub> − G)r<sub>a</sub> − ΔλEr<sub>a</sub>; collecting λE and dividing by r<sub>a</sub> gives λE = [Δ(R<sub>n</sub> − G) + ρc<sub>p</sub>D/r<sub>a</sub>]/[Δ + γ(1 + r<sub>s</sub>/r<sub>a</sub>)]. Assumptions: steady state; one effective source height for heat and vapour (big leaf) with the same r<sub>a</sub> for both; the vapour source is saturated at T<sub>s</sub>; Δ is constant between T<sub>a</sub> and T<sub>s</sub> (the linearisation, accurate to a few percent for |T<sub>s</sub> − T<sub>a</sub>| &lt; 5 K); r<sub>a</sub> known (neutral log profile or stability-corrected); G and storage known or negligible. Penman (1948) introduced the linearisation and the combination of the energy-balance and aerodynamic approaches for a wet surface (r<sub>s</sub> = 0), writing the aerodynamic term with an empirical wind function. Monteith (1965) inserted the surface (canopy) resistance in series with r<sub>a</sub> for the vapour path only, turning it into an equation for a transpiring canopy with a physiological control, and showed that r<sub>s</sub> can be interpreted as the parallel sum of stomatal resistances.</p></div></details>
+    <details class="q"><summary>2. Define the decoupling coefficient Ω. Explain why transpiration from a coniferous forest is controlled by stomata while transpiration from irrigated pasture is controlled by net radiation, and give typical values.</summary><div class="a"><p>Rewriting Penman–Monteith as λE = ΩλE<sub>eq</sub> + (1 − Ω)λE<sub>imp</sub>, with λE<sub>eq</sub> = Δ(R<sub>n</sub> − G)/(Δ + γ) and λE<sub>imp</sub> = ρc<sub>p</sub>D/(γr<sub>s</sub>), gives Ω = (Δ/γ + 1)/(Δ/γ + 1 + r<sub>s</sub>/r<sub>a</sub>). Ω measures how far the canopy surface is decoupled from the free atmosphere. A tall, rough conifer forest has very small r<sub>a</sub> (5–10 s m⁻¹) and large r<sub>s</sub> (100–300 s m⁻¹), so r<sub>s</sub>/r<sub>a</sub> ≈ 20–50 and Ω ≈ 0.1–0.2: the canopy air is essentially the free air, the VPD at the leaf is imposed by the atmosphere, and λE ≈ ρc<sub>p</sub>D/(γr<sub>s</sub>) is proportional to canopy conductance; the sensitivity ∂ln λE/∂ln g<sub>s</sub> = 1 − Ω ≈ 0.85. A short, smooth, well-watered pasture has r<sub>a</sub> ≈ 50–100 s m⁻¹ and r<sub>s</sub> ≈ 30–60 s m⁻¹, so r<sub>s</sub>/r<sub>a</sub> ≈ 0.5–1 and Ω ≈ 0.8–0.9: the canopy air humidifies and cools toward the surface, the local VPD adjusts until λE approaches the equilibrium rate set by available energy, and stomatal changes are largely compensated by changes in the local gradient (if stomata close, the canopy air dries and warms, pulling more vapour per unit conductance). Consequences: forests respond to VPD and drought through g<sub>s</sub> and show strong CO₂-induced reductions in transpiration; crops respond to radiation and show weak transpiration responses to g<sub>s</sub> changes; and in models the simulated Ω, set by roughness and LAI, governs how much a stomatal parameter such as g<sub>1</sub> matters for ET.</p></div></details>
+    <details class="q"><summary>3. A well-watered maize canopy (h = 2 m) at midday: R<sub>n</sub> = 600 W m⁻², G = 60 W m⁻², T<sub>a</sub> = 30 °C, RH = 40%, u = 2.5 m s⁻¹ at 4 m, G<sub>c</sub> = 20 mm s⁻¹. Estimate λE, H, the Bowen ratio and Ω.</summary><div class="a"><p>e<sub>s</sub>(30) = 4.24 kPa, e<sub>a</sub> = 1.70 kPa, D = 2.55 kPa. Δ = 4098 × 4.24/267.3² = 0.243 kPa K⁻¹; γ = 0.066 kPa K⁻¹; Δ/γ = 3.7. r<sub>a</sub>: d = 1.34 m, z<sub>0m</sub> = 0.246 m, z<sub>0h</sub> = 0.0246 m; ln((4 − 1.34)/0.246) = ln 10.8 = 2.38; ln((4 − 1.34)/0.0246) = ln 108 = 4.68; r<sub>a</sub> = 2.38 × 4.68/(0.168 × 2.5) = 26.5 s m⁻¹. r<sub>s</sub> = 1/0.020 = 50 s m⁻¹. ρc<sub>p</sub>D/r<sub>a</sub> = 1200 × 2.55/26.5 = 115 W m⁻² kPa⁻¹·kPa, i.e. 115 in the numerator's units. Numerator: 0.243 × 540 + 115 = 131 + 115 = 246; denominator: 0.243 + 0.066 × (1 + 50/26.5) = 0.243 + 0.190 = 0.433. λE = 568 W m⁻² (≈ 0.83 mm h⁻¹), H = 540 − 568 = −28 W m⁻² (slight downward sensible heat: advection-assisted evaporation, the "oasis" condition). Bowen ratio ≈ −0.05. Ω = (3.7 + 1)/(3.7 + 1 + 1.89) = 0.71. Check: λE<sub>eq</sub> = 0.787 × 540 = 425, λE<sub>imp</sub> = 1200 × 2.55/(0.066 × 50) = 927; ΩλE<sub>eq</sub> + (1 − Ω)λE<sub>imp</sub> = 302 + 269 = 571 ✓. Priestley–Taylor would give 1.26 × 425 = 535 W m⁻². The surface is about 0.6 K cooler than the air (T<sub>s</sub> − T<sub>a</sub> = Hr<sub>a</sub>/ρc<sub>p</sub> = −28 × 26.5/1200).</p></div></details>
+    <details class="q"><summary>4. Explain the energy-balance closure problem at eddy-covariance sites: its magnitude, its likely causes, and its consequences for model evaluation and for estimating canopy conductance.</summary><div class="a"><p>At most flux towers the sum of measured turbulent fluxes falls short of the measured available energy: H + λE ≈ 0.7–0.9 (R<sub>n</sub> − G), a mean gap near 20% in the FLUXNET synthesis of Wilson et al. (2002), larger at night and in stable, low-turbulence conditions and over tall or heterogeneous vegetation. Causes: (i) mismatch of source areas, R<sub>n</sub> and G sampling a few metres while the flux footprint covers hectares; (ii) unmeasured storage in the canopy air column, biomass and the soil layer above the heat-flux plates, important at sub-daily scales for forests; (iii) systematic sensor errors (sonic anemometer angle-of-attack, gas-analyser high-frequency attenuation) that reduce covariances; (iv) loss of low-frequency flux contributions from large eddies and secondary circulations that are not captured in 30-min averaging at a single point, now thought to be the main cause over heterogeneous landscapes. Consequences: tower ET is biased low unless corrected, and the correction is ambiguous (scale H and λE preserving the Bowen ratio, the usual choice, or assign the residual to λE); models close the balance by construction, so model–data comparisons carry a 10–20% structural discrepancy; annual ET and water-use-efficiency estimates, and canopy conductance obtained by inverting Penman–Monteith with the measured λE, inherit the bias, which propagates into g<sub>1</sub> estimated from towers (one reason tower g<sub>1</sub> exceeds leaf g<sub>1</sub>). Good practice: report the closure ratio, test sensitivity to both correction methods, and use the Bowen-ratio-preserving correction when comparing with models.</p></div></details>
+    <details class="q"><summary>5. What is the Priestley–Taylor equation, under what conditions does it hold, and why is α = 1.26 greater than 1? When would you expect it to fail?</summary><div class="a"><p>λE = αΔ(R<sub>n</sub> − G)/(Δ + γ) with α = 1.26: evaporation is a fixed multiple of the equilibrium rate, with no explicit humidity, wind or stomatal term. It was derived empirically for extensive, well-watered surfaces (open water, saturated land, well-watered crops) under minimal advection. Equilibrium evaporation is the rate approached by a wet surface under a closed, saturating boundary layer; real boundary layers entrain dry, warm air from the free troposphere at their top, which keeps the surface layer below saturation and sustains an aerodynamic (VPD) contribution; averaged over days this adds ≈ 26% over large wet areas. Failures: it over-predicts as soil dries or stomata close (α falls to 0.7–0.9 for forests and &lt; 0.5 in drought), under conditions of strong regional advection (irrigated fields in deserts, where α can exceed 1.5), for small or rough surfaces with small Ω where λE follows D, and in winter or at high latitude where Δ/γ is small and the aerodynamic term dominates. In models it is used as a potential-ET reference (DSSAT, APSIM, some hydrological models), with soil-water stress functions reducing actual ET; this makes those models insensitive to VPD and CO₂ effects on stomata, which the Penman–Monteith form with a dynamic r<sub>s</sub> can represent.</p></div></details>
+    <details class="q"><summary>6. Describe how a land-surface model such as CLM or JULES actually computes transpiration, and relate it to the Penman–Monteith equation. Why do these models not simply use the closed-form equation?</summary><div class="a"><p>The model solves a coupled system each time step: a leaf energy balance for sunlit and shaded leaves (absorbed shortwave and longwave from the radiative transfer scheme, emission, sensible heat to the canopy air through a leaf boundary-layer conductance, latent heat through stomatal and boundary-layer conductances in series for dry leaves and boundary layer only for the wet fraction); a ground energy balance (with soil resistance to evaporation and heat conduction into the soil column); a canopy-air-space budget that connects leaf and ground fluxes to the atmosphere through an aerodynamic resistance from Monin–Obukhov similarity theory, iterated because stability depends on H; and the photosynthesis–stomatal model (FvCB + Ball–Berry or Medlyn) that gives g<sub>s</sub> as a function of A, C<sub>a</sub> and leaf-to-air D, where D depends on the leaf temperature being solved for. The solution is by Newton or fixed-point iteration on T<sub>l</sub> (and T<sub>canopy-air</sub>, T<sub>ground</sub>). Transpiration is the sum over leaf classes of g<sub>v</sub>(e<sub>s</sub>(T<sub>l</sub>) − e<sub>canopy</sub>)/P; soil water uptake is distributed over layers by root fraction and stress. Linearising this system about air temperature recovers Penman–Monteith with an effective r<sub>s</sub> = 1/ΣG<sub>c</sub> and an r<sub>a</sub> that includes the within-canopy path, so the closed form is a good diagnostic (e.g. for Ω) but is not used because: the model needs leaf temperature itself (for photosynthesis, respiration, D, snow and interception physics); there are multiple sources at different heights with different resistances; the stomatal conductance depends on the solution; the linearisation error matters for hot, dry surfaces; and the fluxes must be consistent with the atmospheric model's stability iteration. Crop and ecosystem models that lack an atmospheric coupling (DSSAT, DayCent) use the closed form or Priestley–Taylor instead.</p></div></details>
+    <details class="q"><summary>7. How is evapotranspiration partitioned into transpiration, soil evaporation and interception, what is the current estimate of T/ET globally, and why does it matter for carbon-cycle modelling?</summary><div class="a"><p>Methods: stable isotopes (transpiration returns soil water unfractionated at steady state, whereas evaporation enriches the residual in ¹⁸O and ²H, so the isotopic composition of vapour, stream or lake water constrains the partition); sap-flow measurements scaled by sapwood area to stand T, compared with eddy-covariance ET; lysimeters and chambers for soil evaporation; interception from throughfall and stemflow gauges; and flux-based methods using water-use efficiency (GPP × √D/ET relations at times when soil evaporation is negligible, extrapolated). Jasechko et al. (2013) used lake-catchment isotope balances to argue T/ET ≈ 0.8–0.9, but reanalysis and the Schlesinger and Jasechko (2014) synthesis of 81 studies gave 61 ± 15%, with tropical forests ≈ 70%, temperate forests and grasslands 55–65%, croplands and deserts lower, and interception 10–25% in wet forests. Most land models at the time simulated T/ET of 0.4–0.5, too low, because of excessive soil evaporation (too little litter/soil resistance), too-low LAI or canopy conductance, or too much interception loss. It matters because only T is coupled to CO₂ uptake: the response of ET to rising CO₂ (stomatal closure), to greening (LAI) and to VPD is a response of T, while soil evaporation responds to surface wetness and radiation. A model with too little T will under-estimate the CO₂ and VPD sensitivity of the water cycle and mis-attribute runoff trends, and water-use efficiency (GPP/T) derived from tower data depends directly on the partition assumed.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Penman HL (1948). Natural evaporation from open water, bare soil and grass. <em>Proceedings of the Royal Society A</em> 193: 120–145. <a href="https://doi.org/10.1098/rspa.1948.0037">doi:10.1098/rspa.1948.0037</a><span class="why">The original combination equation and the linearisation trick; still readable.</span></li>
+      <li>Monteith JL (1965). Evaporation and environment. <em>Symposia of the Society for Experimental Biology</em> 19: 205–234. <span class="why">Introduces the surface resistance and the Penman–Monteith equation for vegetated surfaces.</span></li>
+      <li>Monteith JL, Unsworth MH (2013). <em>Principles of Environmental Physics</em>, 4th ed. Academic Press, Oxford. <span class="why">Chapters on heat and mass transfer, resistances, and the derivation and limits of the combination equation.</span></li>
+      <li>Jarvis PG, McNaughton KG (1986). Stomatal control of transpiration: scaling up from leaf to region. <em>Advances in Ecological Research</em> 15: 1–49. <a href="https://doi.org/10.1016/S0065-2504(08)60119-1">doi:10.1016/S0065-2504(08)60119-1</a><span class="why">The decoupling coefficient Ω and why stomatal control weakens with scale.</span></li>
+      <li>Priestley CHB, Taylor RJ (1972). On the assessment of surface heat flux and evaporation using large-scale parameters. <em>Monthly Weather Review</em> 100: 81–92. <span class="why">The α = 1.26 result and its justification.</span></li>
+      <li>Allen RG, Pereira LS, Raes D, Smith M (1998). <em>Crop Evapotranspiration: Guidelines for Computing Crop Water Requirements</em>. FAO Irrigation and Drainage Paper 56, Rome. <span class="why">Reference ET, resistances for the reference surface, crop coefficients; the operational standard.</span></li>
+      <li>Shuttleworth WJ, Wallace JS (1985). Evaporation from sparse crops: an energy combination theory. <em>Quarterly Journal of the Royal Meteorological Society</em> 111: 839–855. <a href="https://doi.org/10.1002/qj.49711146910">doi:10.1002/qj.49711146910</a><span class="why">The two-source (soil + canopy) extension of Penman–Monteith.</span></li>
+      <li>Bonan GB (2019). <em>Climate Change and Terrestrial Ecosystem Modeling</em>. Cambridge University Press, Cambridge. <span class="why">Chapters on surface energy fluxes, leaf temperature and canopy models as implemented in CLM-type land models.</span></li>
+      <li>Campbell GS, Norman JM (1998). <em>An Introduction to Environmental Biophysics</em>, 2nd ed. Springer, New York. <span class="why">Leaf energy balance in molar units, boundary-layer conductances, radiative conductance and the isothermal form used in Lab 3.</span></li>
+      <li>Jasechko S, Sharp ZD, Gibson JJ, Birks SJ, Yi Y, Fawcett PJ (2013). Terrestrial water fluxes dominated by transpiration. <em>Nature</em> 496: 347–350. <a href="https://doi.org/10.1038/nature11983">doi:10.1038/nature11983</a><span class="why">The isotope-based claim of T/ET = 80–90% that reopened the partitioning debate.</span></li>
+      <li>Schlesinger WH, Jasechko S (2014). Transpiration in the global water cycle. <em>Agricultural and Forest Meteorology</em> 189–190: 115–117. <a href="https://doi.org/10.1016/j.agrformet.2014.01.011">doi:10.1016/j.agrformet.2014.01.011</a><span class="why">Synthesis of 81 studies giving T/ET = 61 ± 15% by biome.</span></li>
+      <li>Wilson K, Goldstein A, Falge E, et al. (2002). Energy balance closure at FLUXNET sites. <em>Agricultural and Forest Meteorology</em> 113: 223–243. <a href="https://doi.org/10.1016/S0168-1923(02)00109-0">doi:10.1016/S0168-1923(02)00109-0</a><span class="why">The ~20% closure gap, its diagnostics and candidate causes.</span></li>
+      <li>Raupach MR, Finnigan JJ (1988). "Single-layer models of evaporation from plant canopies are incorrect but useful, whereas multilayer models are correct but useless": discuss. <em>Australian Journal of Plant Physiology</em> 15: 705–716. <span class="why">The classic appraisal of big-leaf versus multilayer canopy models.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="water-potential-vpd.html">← Water potential and VPD</a><a href="soil-water-dynamics.html">Next: Soil water dynamics →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#balance">Energy balance</a></li>
+      <li><a href="#resist">Resistances, Δ and γ</a></li>
+      <li><a href="#derivation">Penman to Penman–Monteith</a></li>
+      <li><a href="#limits">Equilibrium, imposed, Ω</a></li>
+      <li><a href="#leaf">Leaf temperature</a></li>
+      <li><a href="#partition">Two sources, partitioning, closure</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (neutral stability, Tetens saturation curve, constant ρc<sub>p</sub>, forced convection only) chosen for intuition.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var P0 = 101.3, k = 0.41, cpAir = 1005, Rd = 287.05, lam = 2.45e6, sigma = 5.67e-8, eps = 0.97, cpMol = 29.3, lamMol = 44000;
+  function esat(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }
+  function slope(T) { return 4098 * esat(T) / Math.pow(T + 237.3, 2); }
+  function gamma(P) { return 0.000665 * P; }
+  function rhoAir(T, P) { return P * 1000 / (Rd * (T + 273.15)); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function sfmt(x, d) { var s = fmt(x, d); return s.charAt(0) === '-' ? '−' + s.slice(1) : s; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var kk in attrs) e.setAttribute(kk, attrs[kk]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function setOut(id, v) { var o = document.getElementById(id); if (o) o.textContent = v; }
+  function val(id) { return +document.getElementById(id).value; }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(6)); return t; }
+  function tickLabel(v) { var s = String(+v.toFixed(4)); return s.charAt(0) === '-' ? '−' + s.slice(1) : s; }
+  function panel(svg, box, xr, yr, xlab, ylab, title) {
+    var sx = function (x) { return box.x + (x - xr[0]) / (xr[1] - xr[0]) * box.w; };
+    var sy = function (y) { return box.y + (yr[1] - y) / (yr[1] - yr[0]) * box.h; };
+    niceTicks(yr[0], yr[1], 5).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: box.x, x2: box.x + box.w, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: box.x - 7, y: sy(v) + 4, 'text-anchor': 'end' }, tickLabel(v))); });
+    niceTicks(xr[0], xr[1], 6).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: box.y + box.h, y2: box.y + box.h + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: box.y + box.h + 17, 'text-anchor': 'middle' }, tickLabel(v))); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x + box.w, y1: box.y + box.h, y2: box.y + box.h }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x, y1: box.y, y2: box.y + box.h }));
+    if (yr[0] < 0 && yr[1] > 0) svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x + box.w, y1: sy(0), y2: sy(0) }));
+    if (xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: box.x + box.w / 2, y: box.y + box.h + 34, 'text-anchor': 'middle' }, xlab));
+    if (ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(' + (box.x - 44) + ',' + (box.y + box.h / 2) + ') rotate(-90)' }, ylab));
+    if (title) svg.appendChild(el('text', { 'class': 'ptitle', x: box.x + 6, y: box.y + 13 }, title));
+    return { sx: sx, sy: sy, xr: xr, yr: yr, box: box };
+  }
+  function pathXY(p, pts) { var d = ''; pts.forEach(function (q) { if (q[1] === null || !isFinite(q[1])) return; d += (d === '' ? 'M' : 'L') + p.sx(q[0]).toFixed(1) + ',' + p.sy(clamp(q[1], p.yr[0], p.yr[1])).toFixed(1); }); return d; }
+  function placeTip(tip, e) { var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; }
+  function hoverLayer(svg, tip, box, onX) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.y, y2: box.y + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: box.x, y: box.y, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; var p = pt.matrixTransform(svg.getScreenCTM().inverse()); var fx = clamp((p.x - box.x) / box.w, 0, 1); xh.setAttribute('x1', p.x); xh.setAttribute('x2', p.x); xh.setAttribute('visibility', 'visible'); tip.innerHTML = onX(fx); tip.hidden = false; placeTip(tip, e); }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener(e.tagName === 'SELECT' ? 'change' : 'input', fn); }); }
+  function dedupe(labs) { labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13; return labs; }
+
+  /* ---------- Lab 1: linearisation ---------- */
+  (function () {
+    var svg = document.getElementById('linSvg'), tip = document.getElementById('linTip');
+    if (!svg) return;
+    var ids = ['lTa', 'lDT', 'lRH'];
+    function draw() {
+      setOut('lTaO', fmt(val('lTa'), 1)); setOut('lDTO', sfmt(val('lDT'), 1)); setOut('lRHO', val('lRH'));
+      clear(svg);
+      var Ta = val('lTa'), Ts = Ta + val('lDT'), RH = val('lRH') / 100;
+      var es = esat(Ta), ea = RH * es, D = slope(Ta), g = gamma(P0);
+      var esTs = esat(Ts), lin = es + D * (Ts - Ta), err = esTs - lin;
+      var xmin = 0, xmax = 50, ymax = 12.5;
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 24, h: 360 - 16 - 54 }, [xmin, xmax], [0, ymax], 'Temperature (°C)', 'Vapour pressure (kPa)');
+      var pts = []; for (var t = xmin; t <= xmax + 1e-9; t += 0.5) pts.push([t, esat(t)]);
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p, pts) }));
+      // tangent
+      var t0 = Math.max(xmin, Ta - 14), t1 = Math.min(xmax, Ta + 14);
+      svg.appendChild(el('line', { 'class': 'tan', x1: p.sx(t0), y1: p.sy(clamp(es + D * (t0 - Ta), 0, ymax)), x2: p.sx(t1), y2: p.sy(clamp(es + D * (t1 - Ta), 0, ymax)) }));
+      // chord
+      if (Math.abs(Ts - Ta) > 0.01) svg.appendChild(el('line', { 'class': 'chord', x1: p.sx(Ta), y1: p.sy(es), x2: p.sx(Ts), y2: p.sy(clamp(esTs, 0, ymax)) }));
+      // error bar
+      if (Math.abs(err) > 0.005) svg.appendChild(el('line', { 'class': 'err', x1: p.sx(Ts), x2: p.sx(Ts), y1: p.sy(clamp(lin, 0, ymax)), y2: p.sy(clamp(esTs, 0, ymax)) }));
+      // ea line and D
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.box.x, x2: p.sx(Math.max(Ta, Ts)), y1: p.sy(ea), y2: p.sy(ea) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.box.x + 4, y: p.sy(ea) - 5 }, 'eₐ = ' + fmt(ea, 2) + ' kPa'));
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(Ta), x2: p.sx(Ta), y1: p.sy(ea), y2: p.sy(es) }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Ta), cy: p.sy(es), r: 5 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ta) - 7, y: p.sy(es) - 8, 'text-anchor': 'end' }, 'Tₐ = ' + fmt(Ta, 1) + ', eₛ = ' + fmt(es, 2)));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ta) + 7, y: p.sy((es + ea) / 2) + 4 }, 'D = ' + fmt(es - ea, 2)));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Ts), cy: p.sy(clamp(esTs, 0, ymax)), r: 5, fill: 'var(--series-1)' }));
+      svg.appendChild(el('circle', { cx: p.sx(Ts), cy: p.sy(clamp(lin, 0, ymax)), r: 4, fill: 'var(--accent-2)' }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ts) + 8, y: p.sy(clamp(esTs, 0, ymax)) - 8 }, 'Tₛ = ' + fmt(Ts, 1) + ': exact ' + fmt(esTs, 2) + ', linear ' + fmt(lin, 2)));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ts) + 8, y: p.sy(clamp(esTs, 0, ymax)) + 6, fill: 'var(--accent-2)' }, 'error ' + sfmt(err, 3) + ' kPa'));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(t0) + 4, y: p.sy(clamp(es + D * (t0 - Ta), 0, ymax)) + 15, fill: 'var(--accent-2)' }, 'tangent, slope Δ = ' + fmt(D, 3) + ' kPa K⁻¹'));
+      hoverLayer(svg, tip, p.box, function (fx) { var t = xmin + fx * (xmax - xmin); return 'T <b>' + fmt(t, 1) + '</b> °C · eₛ <b>' + fmt(esat(t), 3) + '</b> kPa<br>Δ <b>' + fmt(slope(t), 3) + '</b> kPa K⁻¹ · Δ/γ <b>' + fmt(slope(t) / g, 2) + '</b>'; });
+      setOut('lDel', fmt(D, 3) + ' · ' + fmt(g, 3) + ' · ' + fmt(D / g, 2));
+      setOut('lEs', fmt(esTs, 3) + ' · ' + fmt(lin, 3));
+      setOut('lErr', sfmt(err, 3) + ' · ' + sfmt(100 * err / (esTs - ea), 1) + '%');
+      setOut('lChord', Math.abs(Ts - Ta) > 0.01 ? fmt((esTs - es) / (Ts - Ta), 3) + ' kPa K⁻¹' : 'undefined (Tₛ = Tₐ)');
+      setOut('lMid', fmt(slope((Ta + Ts) / 2), 3) + ' kPa K⁻¹');
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 2: Penman-Monteith explorer ---------- */
+  (function () {
+    var svg = document.getElementById('pmSvg'), tip = document.getElementById('pmTip');
+    if (!svg) return;
+    var ids = ['mDrv', 'mRn', 'mG', 'mTa', 'mRH', 'mU', 'mH', 'mGc'];
+    function ra(u, h) { var d = 0.67 * h, z0m = 0.123 * h, z0h = 0.1 * z0m, z = h + 2; return Math.log((z - d) / z0m) * Math.log((z - d) / z0h) / (k * k * u); }
+    function pm(s) {
+      var es = esat(s.Ta), ea = s.RH * es, D = es - ea, Dl = slope(s.Ta), g = gamma(P0), rcp = rhoAir(s.Ta, P0) * cpAir;
+      var rA = ra(s.u, s.h), rS = 1000 / s.Gc, A = s.Rn * (1 - s.Gf);
+      var LE = (Dl * A + rcp * D / rA) / (Dl + g * (1 + rS / rA));
+      var H = A - LE, eq = Dl / (Dl + g) * A, imp = rcp * D / (g * rS), om = (Dl / g + 1) / (Dl / g + 1 + rS / rA);
+      return { LE: LE, H: H, eq: eq, imp: imp, pt: 1.26 * eq, om: om, rA: rA, rS: rS, D: D, Dl: Dl, g: g, A: A, beta: LE !== 0 ? H / LE : NaN, ef: A !== 0 ? LE / A : NaN, dT: H * rA / rcp, et: LE * 3600 / lam };
+    }
+    function state() { return { Rn: val('mRn'), Gf: val('mG'), Ta: val('mTa'), RH: val('mRH') / 100, u: val('mU'), h: val('mH'), Gc: val('mGc') }; }
+    function draw() {
+      setOut('mRnO', val('mRn')); setOut('mGO', fmt(val('mG'), 2)); setOut('mTaO', fmt(val('mTa'), 1)); setOut('mRHO', val('mRH')); setOut('mUO', fmt(val('mU'), 1)); setOut('mHO', fmt(val('mH'), 1)); setOut('mGcO', fmt(val('mGc'), 1));
+      clear(svg);
+      var s = state(), drv = document.getElementById('mDrv').value, xr, xlab, setX, getX;
+      if (drv === 'Gc') { xr = [0.5, 50]; xlab = 'Canopy conductance Gᴄ (mm s⁻¹)'; setX = function (st, x) { st.Gc = x; }; getX = function (st) { return st.Gc; }; }
+      else if (drv === 'D') { xr = [0, 5]; xlab = 'Vapour pressure deficit D (kPa)'; setX = function (st, x) { st.RH = clamp(1 - x / esat(st.Ta), 0, 1); }; getX = function (st) { return esat(st.Ta) * (1 - st.RH); }; }
+      else if (drv === 'Rn') { xr = [0, 800]; xlab = 'Net radiation Rₙ (W m⁻²)'; setX = function (st, x) { st.Rn = x; }; getX = function (st) { return st.Rn; }; }
+      else { xr = [0.3, 10]; xlab = 'Wind speed u (m s⁻¹)'; setX = function (st, x) { st.u = x; }; getX = function (st) { return st.u; }; }
+      var N = 100, rows = [], lo = 0, hi = 100;
+      for (var i = 0; i <= N; i++) { var x = xr[0] + (xr[1] - xr[0]) * i / N; var st = state(); setX(st, x); var r = pm(st); rows.push({ x: x, r: r }); lo = Math.min(lo, r.LE, r.H); hi = Math.max(hi, r.LE, r.H, r.eq); }
+      var ymax = Math.ceil(hi * 1.1 / 100) * 100, ymin = Math.floor(lo * 1.1 / 100) * 100;
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 60, h: 380 - 16 - 54 }, xr, [ymin, ymax], xlab, 'Energy flux (W m⁻²)');
+      svg.appendChild(el('path', { 'class': 'ser dash', stroke: 'var(--series-1)', d: pathXY(p, rows.map(function (q) { return [q.x, q.r.eq]; })) }));
+      svg.appendChild(el('path', { 'class': 'ser dash', stroke: 'var(--series-3)', d: pathXY(p, rows.map(function (q) { return [q.x, q.r.imp]; })) }));
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-2)', d: pathXY(p, rows.map(function (q) { return [q.x, q.r.H]; })) }));
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p, rows.map(function (q) { return [q.x, q.r.LE]; })) }));
+      var last = rows[rows.length - 1].r;
+      dedupe([{ t: 'λE', y: p.sy(clamp(last.LE, ymin, ymax)), c: 'var(--fg)' }, { t: 'H', y: p.sy(clamp(last.H, ymin, ymax)), c: 'var(--series-2)' }, { t: 'λEₑq', y: p.sy(clamp(last.eq, ymin, ymax)), c: 'var(--series-1)' }, { t: 'λEᵢmp', y: p.sy(clamp(last.imp, ymin, ymax)), c: 'var(--series-3)' }]).forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: p.box.x + p.box.w + 6, y: L.y + 4, fill: L.c }, L.t)); });
+      var cur = pm(s), cx = getX(s);
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(clamp(cx, xr[0], xr[1])), x2: p.sx(clamp(cx, xr[0], xr[1])), y1: p.box.y, y2: p.box.y + p.box.h }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(clamp(cx, xr[0], xr[1])), cy: p.sy(clamp(cur.LE, ymin, ymax)), r: 5 }));
+      svg.appendChild(el('text', { 'class': 'ptitle', x: p.box.x + 6, y: p.box.y + 13 }, 'h = ' + fmt(s.h, 1) + ' m, rₐ = ' + fmt(cur.rA, 0) + ' s m⁻¹, Ω = ' + fmt(cur.om, 2)));
+      hoverLayer(svg, tip, p.box, function (fx) { var x = xr[0] + fx * (xr[1] - xr[0]); var st = state(); setX(st, x); var r = pm(st); return xlab.split(' (')[0] + ' <b>' + fmt(x, drv === 'D' || drv === 'u' ? 2 : 0) + '</b><br>λE <b>' + fmt(r.LE, 0) + '</b> · H <b>' + fmt(r.H, 0) + '</b> W m⁻² · β <b>' + fmt(r.beta, 2) + '</b><br>λEₑq <b>' + fmt(r.eq, 0) + '</b> · λEᵢmp <b>' + fmt(r.imp, 0) + '</b> · Ω <b>' + fmt(r.om, 2) + '</b> · Tₛ−Tₐ <b>' + sfmt(r.dT, 1) + '</b> K'; });
+      setOut('mRa', fmt(cur.rA, 1) + ' · ' + fmt(cur.rS, 1)); setOut('mDel', fmt(cur.Dl, 3) + ' · ' + fmt(cur.g, 3) + ' · ' + fmt(cur.D, 2));
+      setOut('mLE', fmt(cur.LE, 0) + ' · ' + fmt(cur.H, 0) + ' · ' + fmt(cur.beta, 2)); setOut('mEq', fmt(cur.eq, 0) + ' · ' + fmt(cur.imp, 0) + ' · ' + fmt(cur.pt, 0));
+      setOut('mOm', fmt(cur.om, 2) + ' · ' + fmt(cur.ef, 2)); setOut('mET', fmt(cur.et, 2) + ' · ' + sfmt(cur.dT, 1));
+      var html = '<thead><tr><th class="num">' + xlab.split(' (')[0] + '</th><th class="num">λE</th><th class="num">H</th><th class="num">β</th><th class="num">λEₑq</th><th class="num">λEᵢmp</th><th class="num">Ω</th></tr></thead><tbody>';
+      for (var j = 0; j <= 10; j += 1) { var xx = xr[0] + (xr[1] - xr[0]) * j / 10; var s2 = state(); setX(s2, xx); var rr = pm(s2); html += '<tr><td class="num">' + fmt(xx, drv === 'D' || drv === 'u' ? 2 : 0) + '</td><td class="num">' + fmt(rr.LE, 0) + '</td><td class="num">' + fmt(rr.H, 0) + '</td><td class="num">' + fmt(rr.beta, 2) + '</td><td class="num">' + fmt(rr.eq, 0) + '</td><td class="num">' + fmt(rr.imp, 0) + '</td><td class="num">' + fmt(rr.om, 2) + '</td></tr>'; }
+      document.getElementById('pmTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 3: leaf temperature ---------- */
+  (function () {
+    var svg = document.getElementById('ltSvg'), tip = document.getElementById('ltTip'), leg = document.getElementById('ltLegend');
+    if (!svg) return;
+    var ids = ['tMode', 'tRni', 'tU', 'tTa', 'tRH', 'tD', 'tGs'];
+    function solve(gs, u, Rni, Ta, ea, d) {
+      var gHa = 0.135 * Math.sqrt(u / d), gva = 0.147 * Math.sqrt(u / d);
+      var gv = gs > 0 ? 1 / (1 / gs + 1 / gva) : 0;
+      var TaK = Ta + 273.15;
+      function resid(Tl) { var TlK = Tl + 273.15; return Rni - 2 * eps * sigma * (Math.pow(TlK, 4) - Math.pow(TaK, 4)) - cpMol * 2 * gHa * (Tl - Ta) - lamMol * gv * (esat(Tl) - ea) / P0; }
+      var lo = Ta - 25, hi = Ta + 35;
+      for (var i = 0; i < 60; i++) { var m = (lo + hi) / 2; if (resid(m) > 0) lo = m; else hi = m; }
+      var Tl = (lo + hi) / 2;
+      return { Tl: Tl, dT: Tl - Ta, LE: lamMol * gv * (esat(Tl) - ea) / P0, H: cpMol * 2 * gHa * (Tl - Ta), gHa: gHa, gv: gv };
+    }
+    function draw() {
+      setOut('tRniO', val('tRni')); setOut('tUO', fmt(val('tU'), 1)); setOut('tTaO', fmt(val('tTa'), 1)); setOut('tRHO', val('tRH')); setOut('tDO', fmt(val('tD'), 1)); setOut('tGsO', fmt(val('tGs'), 2));
+      clear(svg);
+      var mode = document.getElementById('tMode').value, Rni = val('tRni'), u = val('tU'), Ta = val('tTa'), ea = val('tRH') / 100 * esat(Ta), d = val('tD') / 100, gref = val('tGs');
+      var series = mode === 'u' ? [{ lab: 'u = 0.5 m s⁻¹', u: 0.5, R: Rni }, { lab: 'u = 2 m s⁻¹', u: 2, R: Rni }, { lab: 'u = 5 m s⁻¹', u: 5, R: Rni }] : [{ lab: 'Rₙᵢ = 100 W m⁻²', u: u, R: 100 }, { lab: 'Rₙᵢ = 300 W m⁻²', u: u, R: 300 }, { lab: 'Rₙᵢ = 600 W m⁻²', u: u, R: 600 }];
+      var cols = ['var(--series-1)', 'var(--series-2)', 'var(--series-3)'];
+      var gmax = 1.0, N = 100, data = [], lo = -1, hi = 1;
+      series.forEach(function (S) { var pts = []; for (var i = 0; i <= N; i++) { var g = gmax * i / N; var r = solve(g, S.u, S.R, Ta, ea, d); pts.push([g, r.dT]); lo = Math.min(lo, r.dT); hi = Math.max(hi, r.dT); } data.push(pts); });
+      var ymin = Math.floor(lo - 0.5), ymax = Math.ceil(hi + 0.5);
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 24, h: 380 - 16 - 54 }, [0, gmax], [ymin, ymax], 'Stomatal conductance gₛᵥ (mol m⁻² s⁻¹)', 'Tₗₑₐᶠ − Tₐᵢᵣ (K)', (mode === 'u' ? 'Rₙᵢ = ' + Rni + ' W m⁻²' : 'u = ' + fmt(u, 1) + ' m s⁻¹') + ', Tₐ = ' + fmt(Ta, 1) + ' °C, d = ' + fmt(d * 100, 1) + ' cm');
+      var labs = [];
+      data.forEach(function (pts, i) { svg.appendChild(el('path', { 'class': 'ser', stroke: cols[i], d: pathXY(p, pts) })); labs.push({ t: series[i].lab, y: p.sy(clamp(pts[pts.length - 1][1], ymin, ymax)), c: cols[i] }); });
+      dedupe(labs).forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: p.box.x + p.box.w - 4, y: L.y - 6, 'text-anchor': 'end', fill: L.c }, L.t)); });
+      svg.appendChild(el('text', { 'class': 'tick', x: p.box.x + 6, y: p.sy(0) - 5 }, 'leaf warmer than air ↑'));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.box.x + 6, y: p.sy(0) + 13 }, 'leaf cooler than air ↓'));
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(gref), x2: p.sx(gref), y1: p.box.y, y2: p.box.y + p.box.h }));
+      series.forEach(function (S, i) { var r = solve(gref, S.u, S.R, Ta, ea, d); svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(gref), cy: p.sy(clamp(r.dT, ymin, ymax)), r: 4.5, fill: cols[i] })); });
+      leg.innerHTML = series.map(function (S, i) { return '<span style="--c:' + cols[i] + '">' + S.lab + '</span>'; }).join('');
+      hoverLayer(svg, tip, p.box, function (fx) { var g = fx * gmax; var out = 'gₛᵥ <b>' + fmt(g, 2) + '</b> mol m⁻² s⁻¹'; series.forEach(function (S) { var r = solve(g, S.u, S.R, Ta, ea, d); out += '<br>' + S.lab + ': ΔT <b>' + sfmt(r.dT, 1) + '</b> K · λE <b>' + fmt(r.LE, 0) + '</b> W m⁻²'; }); return out; });
+      var mid = series[1], rm = solve(gref, mid.u, mid.R, Ta, ea, d);
+      var gr = 4 * eps * sigma * Math.pow(Ta + 273.15, 3) / cpMol;
+      setOut('tGh', fmt(rm.gHa, 2) + ' · ' + fmt(gr, 2));
+      setOut('tDT', series.map(function (S) { return sfmt(solve(gref, S.u, S.R, Ta, ea, d).dT, 1); }).join(' · '));
+      setOut('tFl', fmt(rm.LE, 0) + ' · ' + fmt(rm.H, 0));
+      var zero = null, prev = null; for (var i = 0; i <= 200; i++) { var g = gmax * i / 200; var dT = solve(g, mid.u, mid.R, Ta, ea, d).dT; if (prev !== null && prev > 0 && dT <= 0) { zero = g; break; } prev = dT; }
+      setOut('tZero', zero === null ? (prev > 0 ? 'always warmer in range' : 'always cooler in range') : fmt(zero, 2) + ' mol m⁻² s⁻¹');
+    }
+    bind(ids, draw); draw();
+  })();
+})();
+</script>
+</body>
+</html>

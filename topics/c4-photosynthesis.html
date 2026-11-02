@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C4 Photosynthesis</title>
+<meta name="description" content="C4 photosynthesis at comprehensive-exam depth: Kranz anatomy, PEP carboxylase, the three decarboxylation subtypes, the CO2 pump and its ATP cost, bundle-sheath leakiness and carbon isotopes, the von Caemmerer C4 model, environmental responses, evolution, and how C4 appears in land-surface and crop models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .kranz text, .chart text { font-family: var(--font-display); fill: var(--fg); }
+  .kranz .cell { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.5; }
+  .kranz .cell.bs { fill: var(--accent-soft); stroke: var(--accent); }
+  .kranz .lbl { font-size: 12.5px; font-weight: 600; }
+  .kranz .sub { font-size: 10.5px; fill: var(--muted); }
+  .kranz .enz { font-size: 10.5px; fill: var(--accent); font-style: italic; }
+  .kranz .met { font-size: 12px; }
+  .kranz .wire { fill: none; stroke: var(--muted); stroke-width: 1.6; }
+  .kranz .wire.hot { stroke: var(--accent-2); stroke-width: 2; }
+  .kranz .vein { fill: var(--surface); stroke: var(--line); stroke-dasharray: 3 3; }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .op { stroke: var(--surface); stroke-width: 2; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chartbox { position: relative; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › C4 photosynthesis</div>
+    <div class="eyebrow">Topic 2 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">C4 Photosynthesis</h1>
+    <p class="lead">A biochemical CO₂ pump bolted onto the front of the C3 cycle: how two cell types share the work, what the pump costs in ATP, why it leaks, and why that makes C4 leaves saturate at low C<sub>i</sub>, win in hot bright places, and need a different model in CLM, JULES and BioCro.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>C4 plants fix CO₂ twice. In the <strong>mesophyll</strong>, phospho<em>enol</em>pyruvate carboxylase (PEPC) adds bicarbonate to PEP to form the four-carbon acid oxaloacetate, which is reduced to malate or transaminated to aspartate. The C4 acid diffuses into the <strong>bundle-sheath</strong> cells wrapped around the vein, where it is decarboxylated. The released CO₂ accumulates to roughly 10–20 times the ambient level because the bundle-sheath wall resists its escape, and Rubisco, confined to those cells, fixes it through the ordinary Calvin–Benson–Bassham cycle at near-saturation and with negligible oxygenation. The three-carbon remnant (pyruvate or alanine) returns to the mesophyll, where pyruvate,orthophosphate dikinase (PPDK) remakes PEP at a cost of two ATP equivalents per cycle. The pump therefore trades about 2 extra ATP per CO₂ for the elimination of photorespiration, a steeper initial slope and saturation of the A–C<sub>i</sub> curve by about 150–200 µbar, a CO₂ compensation point near zero, C<sub>i</sub>/C<sub>a</sub> ≈ 0.4 and hence about twice the water-use efficiency of C3, and higher nitrogen-use efficiency because far less Rubisco is needed. Because some CO₂ leaks back out of the bundle sheath (leakiness φ ≈ 0.2), the pump over-cycles, and that leak leaves a fingerprint in the leaf's carbon isotope ratio.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Three threads run through every C4 question: the <em>anatomy–biochemistry match</em> (which reaction happens in which cell and why), the <em>energy and leak budget</em> (2 extra ATP, leakiness, what happens at low light or cool temperatures), and the <em>model consequences</em> (C4 is CO₂-saturated, so land models give it a flat CO₂ response and a different temperature optimum). Be ready to derive the bundle-sheath CO₂ balance and the isotope equation, and to say what Collatz et al. 1992 simplified away.</p></div>
+  </section>
+
+  <section id="anatomy">
+    <h2>Kranz anatomy and the division of labour</h2>
+    <p>Most C4 leaves show <strong>Kranz anatomy</strong> (German for "wreath"): each vascular bundle is enclosed by a ring of large, thick-walled bundle-sheath (BS) cells, which in turn is surrounded by a layer of mesophyll (M) cells, so that no mesophyll cell is more than one or two cells from a bundle sheath. Veins are closely spaced (interveinal distance ~100 µm rather than ~200–300 µm in C3 grasses) and M and BS cells are connected by dense fields of plasmodesmata. The BS wall is often suberised, which lowers its permeability to CO₂. Rubisco, the Calvin cycle and starch synthesis are confined to the BS chloroplasts; PEPC, carbonic anhydrase (CA) and PPDK are confined to the mesophyll cytosol and chloroplasts respectively. Hatch and Slack worked this out in sugarcane in 1966 using ¹⁴CO₂ pulse-chase labelling, which showed malate and aspartate, not 3-PGA, as the first labelled products [1, 2].</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>The C4 cycle across two cells (NADP-ME type)</h3></div>
+      <div class="figwrap">
+      <svg class="kranz" viewBox="0 0 760 300" role="img" aria-label="Schematic of a mesophyll cell and a bundle-sheath cell around a vein showing the NADP-malic enzyme C4 cycle">
+        <rect class="cell" x="20" y="30" width="330" height="240" rx="18"/>
+        <text class="lbl" x="36" y="54">Mesophyll cell</text><text class="sub" x="36" y="69">PEPC, CA, PPDK · no Rubisco</text>
+        <rect class="cell bs" x="400" y="30" width="270" height="240" rx="18"/>
+        <text class="lbl" x="416" y="54">Bundle-sheath cell</text><text class="sub" x="416" y="69">Rubisco, CBB cycle, NADP-ME · PSII poor</text>
+        <ellipse class="vein" cx="715" cy="150" rx="30" ry="90"/><text class="sub" x="715" y="154" text-anchor="middle">vein</text>
+        <!-- plasmodesmata -->
+        <rect x="350" y="105" width="50" height="14" fill="var(--surface)" stroke="var(--line)"/>
+        <rect x="350" y="200" width="50" height="14" fill="var(--surface)" stroke="var(--line)"/>
+        <text class="sub" x="375" y="160" text-anchor="middle">plasmo-</text><text class="sub" x="375" y="172" text-anchor="middle">desmata</text>
+        <!-- CO2 entry -->
+        <text class="met" x="40" y="118">CO₂</text><text class="sub" x="40" y="132">from C<tspan baseline-shift="sub" font-size="8">i</tspan></text>
+        <path class="wire" d="M72,114 L108,114"/><polygon points="108,110 116,114 108,118" fill="var(--muted)"/>
+        <text class="met" x="120" y="118">HCO₃⁻</text><text class="enz" x="76" y="104">CA</text>
+        <path class="wire" d="M172,114 L208,114"/><polygon points="208,110 216,114 208,118" fill="var(--muted)"/>
+        <text class="enz" x="178" y="104">PEPC</text>
+        <text class="met" x="220" y="118">OAA</text>
+        <path class="wire" d="M240,124 L240,150"/><polygon points="236,150 240,158 244,150" fill="var(--muted)"/>
+        <text class="enz" x="248" y="142">NADP-MDH</text>
+        <text class="met" x="222" y="176">malate</text>
+        <path class="wire hot" d="M270,172 L352,112 L400,112"/><polygon points="400,108 408,112 400,116" fill="var(--accent-2)"/>
+        <text class="met" x="420" y="118">malate</text>
+        <path class="wire" d="M470,114 L510,114"/><polygon points="510,110 518,114 510,118" fill="var(--muted)"/>
+        <text class="enz" x="462" y="104">NADP-ME</text>
+        <text class="met" x="522" y="118">CO₂ + NADPH</text>
+        <text class="sub" x="522" y="133">C<tspan baseline-shift="sub" font-size="8">s</tspan> ≈ 1000–3000 µbar</text>
+        <path class="wire" d="M560,138 L560,166"/><polygon points="556,166 560,174 564,166" fill="var(--muted)"/>
+        <text class="enz" x="568" y="158">Rubisco</text>
+        <rect x="492" y="176" width="136" height="36" rx="8" fill="var(--surface)" stroke="var(--accent)"/>
+        <text class="met" x="560" y="192" text-anchor="middle" font-weight="600">CBB cycle</text>
+        <text class="sub" x="560" y="206" text-anchor="middle">3-PGA → triose-P → starch</text>
+        <!-- leak -->
+        <path class="wire" d="M600,106 C640,90 660,70 640,52" stroke-dasharray="3 3"/>
+        <text class="sub" x="660" y="90" text-anchor="end">leak L = g<tspan baseline-shift="sub" font-size="8">bs</tspan>(C<tspan baseline-shift="sub" font-size="8">s</tspan> − C<tspan baseline-shift="sub" font-size="8">m</tspan>)</text>
+        <!-- pyruvate return -->
+        <text class="met" x="420" y="238">pyruvate</text>
+        <path class="wire" d="M418,236 L400,236 L400,207 L352,207"/><polygon points="352,203 344,207 352,211" fill="var(--muted)"/>
+        <text class="met" x="236" y="240">pyruvate</text>
+        <path class="wire" d="M232,236 L140,236"/><polygon points="140,232 132,236 140,240" fill="var(--muted)"/>
+        <text class="enz" x="186" y="256" text-anchor="middle">PPDK</text>
+        <text class="sub" x="186" y="270" text-anchor="middle">ATP + P<tspan baseline-shift="sub" font-size="8">i</tspan> → AMP + PP<tspan baseline-shift="sub" font-size="8">i</tspan> (≈ 2 ATP)</text>
+        <text class="met" x="96" y="240">PEP</text>
+        <path class="wire" d="M110,228 L110,170 L205,124"/><polygon points="203,120 212,120 206,128" fill="var(--muted)"/>
+        <text class="sub" x="150" y="200" text-anchor="middle">regenerated acceptor</text>
+      </svg>
+      </div>
+      <p class="small muted" style="margin:0.5rem 0 0">Carbonic anhydrase converts CO₂ to HCO₃⁻, the true PEPC substrate. Malate carries both carbon and reductant into the bundle sheath, so NADP-ME bundle-sheath chloroplasts need little PSII, which keeps O₂ low where Rubisco works. The dashed leak is bundle-sheath leakiness; the return of pyruvate and its re-phosphorylation by PPDK is where the extra ATP goes.</p>
+    </div>
+
+    <h3>PEP carboxylase: why the first carboxylation does not photorespire</h3>
+    <p>PEPC uses <strong>HCO₃⁻</strong>, not CO₂, as its substrate. Carbonic anhydrase in the mesophyll cytosol keeps CO₂ and bicarbonate at equilibrium, and at cytosolic pH ≈ 7.3 most of the dissolved inorganic carbon is bicarbonate, so the carboxylase sees a substrate pool several-fold larger than dissolved CO₂. O₂ has no structural resemblance to HCO₃⁻, so PEPC has <strong>no oxygenase activity and no O₂ sensitivity</strong>. Its K<sub>m</sub> for bicarbonate is low (the equivalent CO₂ half-saturation K<sub>p</sub> ≈ 80 µbar in the von Caemmerer model), and the maximum activity V<sub>pmax</sub> is typically 1.5–2 times Rubisco's V<sub>cmax</sub>, so the enzyme pulls mesophyll CO₂ down hard. This is why C4 leaves can draw C<sub>i</sub> to ~0.4 C<sub>a</sub> and still saturate. PEPC is regulated by light through phosphorylation by PEPC kinase, which lowers its sensitivity to feedback inhibition by malate; the same regulation reappears, inverted in time, in CAM.</p>
+  </section>
+
+  <section id="subtypes">
+    <h2>Three ways to decarboxylate</h2>
+    <p>C4 plants are grouped by the bundle-sheath decarboxylase, which also fixes the transported acid, the returning C3 compound and the ultrastructure of the BS chloroplasts [2, 3].</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Subtype</th><th>Acid transported in / out</th><th>Decarboxylation site and reaction</th><th>BS chloroplasts</th><th>Example species</th></tr></thead>
+      <tbody>
+        <tr><td>NADP-ME</td><td>Malate in, pyruvate out</td><td>BS chloroplast: malate + NADP⁺ → pyruvate + CO₂ + NADPH</td><td>Centrifugal, agranal, little PSII (NADPH arrives with malate)</td><td>Maize, sorghum, sugarcane, <em>Miscanthus</em>, <em>Setaria</em>, <em>Saccharum</em></td></tr>
+        <tr><td>NAD-ME</td><td>Aspartate in, alanine out</td><td>BS mitochondrion: aspartate → OAA → malate → pyruvate + CO₂ via NAD-ME</td><td>Centripetal, granal, normal PSII; many mitochondria</td><td><em>Panicum miliaceum</em>, <em>Eleusine</em>, <em>Amaranthus</em>, <em>Atriplex</em>, <em>Portulaca</em></td></tr>
+        <tr><td>PEPCK</td><td>Aspartate (and malate) in, PEP and alanine out</td><td>BS cytosol: OAA + ATP → PEP + CO₂; ATP from mitochondrial malate oxidation (NAD-ME)</td><td>Evenly distributed, granal</td><td><em>Megathyrsus (Panicum) maximus</em>, <em>Urochloa</em>, <em>Chloris gayana</em></td></tr>
+      </tbody></table></div>
+    <p>Two refinements examiners like. First, the groups are not pure: maize runs a substantial PEPCK flux alongside NADP-ME, and PEPCK is now seen as a supplementary pathway layered on either malic-enzyme type rather than a third independent design. Second, the subtypes differ ecologically: NADP-ME grasses dominate wet, high-rainfall tropical savannas, while NAD-ME grasses are over-represented in arid regions; NADP-ME species also have the highest quantum yields (≈ 0.065 mol CO₂ per absorbed photon versus ≈ 0.053–0.060 for NAD-ME and PEPCK). The return of PEP rather than pyruvate in PEPCK types saves part of the PPDK cost, which may be why it is added when energy is limiting.</p>
+  </section>
+
+  <section id="pump">
+    <h2>The CO₂ pump: energetics and leakiness</h2>
+    <p>The C4 acid cycle is a pump that moves inorganic carbon from a low concentration in the mesophyll (C<sub>m</sub>) to a high concentration in the bundle sheath (C<sub>s</sub>). The energy is spent regenerating PEP:</p>
+    <div class="rxn">pyruvate + ATP + P<sub>i</sub> → PEP + AMP + PP<sub>i</sub> &nbsp;(PPDK) ;&nbsp; AMP + ATP → 2 ADP ;&nbsp; PP<sub>i</sub> → 2 P<sub>i</sub></div>
+    <p style="margin-top:0.75rem">Because AMP must be re-phosphorylated by adenylate kinase and the pyrophosphate is hydrolysed, each PEP costs <strong>two ATP equivalents</strong>. Added to the 3 ATP + 2 NADPH of the C3 cycle, the minimum C4 bill is <strong>5 ATP and 2 NADPH per CO₂</strong>. In NADP-ME types the NADPH generated in the bundle sheath by malic enzyme is exactly the NADPH consumed in the mesophyll by NADP-malate dehydrogenase, so the reductant books balance and the only net extra is the ATP.</p>
+    <p>The bundle sheath is not gas-tight. CO₂ diffuses back to the mesophyll at a rate L = g<sub>bs</sub>(C<sub>s</sub> − C<sub>m</sub>), where g<sub>bs</sub> ≈ 1–5 mmol m⁻² s⁻¹ bar⁻¹ is the bundle-sheath conductance. <strong>Leakiness</strong> is the fraction of pumped carbon that escapes:</p>
+    <div class="eq">$$\phi = \frac{L}{V_p}, \qquad \text{ATP per net CO}_2 = 3 + \frac{2}{1-\phi}$$</div>
+    <p>Every leaked molecule has been paid for by PPDK and must be pumped again, so at φ = 0.2 the cost rises to 5.5 ATP per CO₂ and at φ = 0.5 to 7. Measured leakiness in maize, sorghum and <em>Miscanthus</em> is typically 0.15–0.25 at high light and rises at low light, where the balance between PEPC and Rubisco activities is harder to hold [11, 12]. Leakiness is why C4 plants have a slightly <em>lower</em> maximum quantum yield than C3 plants when photorespiration is suppressed, and why C4 does not pay off in shade.</p>
+    <div class="keybox"><h3>Why the pump needs a leaky-but-not-too-leaky sheath</h3>
+      <p>If g<sub>bs</sub> were zero, no CO₂ would escape but neither could O₂ escape, and C<sub>s</sub> would rise until Rubisco was saturated and the pump was wasting ATP. If g<sub>bs</sub> were as large as mesophyll conductance, C<sub>s</sub> would collapse to C<sub>m</sub> and there would be no concentrating mechanism. The observed g<sub>bs</sub>, two to three orders of magnitude below mesophyll conductance, gives C<sub>s</sub> of 1000–3000 µbar with φ ≈ 0.2: enough to saturate Rubisco (K<sub>c</sub> ≈ 650 µbar for C4 Rubiscos) and suppress V<sub>o</sub>/V<sub>c</sub> to a few percent, at a modest over-cycling cost [4].</p></div>
+  </section>
+
+  <section id="model">
+    <h2>The von Caemmerer C4 model</h2>
+    <p>von Caemmerer (2000) [3] couples a PEPC rate in the mesophyll to a Rubisco (FvCB) rate in the bundle sheath through the CO₂ balance of the sheath. The PEP carboxylation rate is the lesser of an enzyme-limited and a PEP-regeneration-limited rate:</p>
+    <div class="eq">$$V_p = \min\!\left(\frac{V_{pmax}\,C_m}{C_m + K_p},\; V_{pr}\right)$$</div>
+    <p>with C<sub>m</sub> the mesophyll CO₂ (taken equal to C<sub>i</sub> if mesophyll conductance is ignored), K<sub>p</sub> ≈ 80 µbar and V<sub>pr</sub> ≈ 80 µmol m⁻² s⁻¹ the ceiling set by PPDK. At steady state the carbon entering the sheath equals the carbon fixed there plus the leak, which gives two expressions for net assimilation:</p>
+    <div class="eq">$$A = V_p - L - R_m = \underbrace{V_c - 0.5\,V_o}_{\text{BS Rubisco}} - R_s, \qquad L = g_{bs}\,(C_s - C_m)$$</div>
+    <div class="eq">$$V_c - 0.5V_o = \frac{V_{cmax}\,(C_s - \gamma^* O_s)}{C_s + K_c\,(1 + O_s/K_o)}, \qquad \gamma^* = \frac{0.5}{S_{c/o}}$$</div>
+    <p>Here R<sub>m</sub> is mesophyll mitochondrial respiration (usually set to 0.5 R<sub>d</sub>) and R<sub>s</sub> the bundle-sheath share. Eliminating C<sub>s</sub> = C<sub>m</sub> + (V<sub>p</sub> − R<sub>m</sub> − A)/g<sub>bs</sub> gives a quadratic in A; the smaller root is the <strong>enzyme-limited rate A<sub>c</sub></strong>. Replacing V<sub>pmax</sub> by the ATP available to PPDK (xJ<sub>t</sub>/2, with x ≈ 0.4 the share of electron transport serving the C4 cycle) and V<sub>cmax</sub> by the bundle-sheath electron transport ((1 − x)J<sub>t</sub>/3) gives the <strong>electron-transport-limited rate A<sub>j</sub></strong>; the leaf rate is A = min(A<sub>c</sub>, A<sub>j</sub>). If the bundle sheath has PSII (α &gt; 0) the O₂ there rises above ambient and a further term appears; the explorer below sets α = 0, as is reasonable for NADP-ME grasses.</p>
+    <details class="q"><summary>Derivation of the enzyme-limited quadratic (an examiner may ask for this)</summary><div class="a">
+      <p>Write X = V<sub>p</sub> − R<sub>m</sub> + g<sub>bs</sub>C<sub>m</sub> so that C<sub>s</sub> = (X − A)/g<sub>bs</sub>, and K′ = K<sub>c</sub>(1 + O/K<sub>o</sub>). The bundle-sheath equation A + R<sub>d</sub> = V<sub>cmax</sub>(C<sub>s</sub> − γ*O)/(C<sub>s</sub> + K′) becomes, after multiplying through by g<sub>bs</sub>,
+      (A + R<sub>d</sub>)(X − A + g<sub>bs</sub>K′) = V<sub>cmax</sub>(X − A − g<sub>bs</sub>γ*O). Collecting terms:
+      A² − [X + (V<sub>cmax</sub> − R<sub>d</sub>) + g<sub>bs</sub>K′] A + [(V<sub>cmax</sub> − R<sub>d</sub>)X − V<sub>cmax</sub>g<sub>bs</sub>γ*O − R<sub>d</sub>g<sub>bs</sub>K′] = 0.
+      The physically meaningful root is the smaller one. In the limit g<sub>bs</sub> → 0 it reduces to A = min(V<sub>p</sub> − R<sub>m</sub>, V<sub>cmax</sub> − R<sub>d</sub>): the leaf is either PEPC-limited (steep initial slope, set by V<sub>pmax</sub>/K<sub>p</sub>) or Rubisco-limited (flat plateau, set by V<sub>cmax</sub>). That two-segment shape is exactly what Collatz et al. [5] adopted.</p></div></details>
+
+    <div class="lab">
+      <div class="lab-head"><h3>C4 A–C<sub>i</sub> explorer (von Caemmerer model, α = 0) against a C3 leaf with the same V<sub>cmax</sub></h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="c4Svg" viewBox="0 0 640 380" role="img" aria-label="Net assimilation versus intercellular CO2 for a C4 leaf, enzyme-limited and electron-transport-limited, compared with a C3 leaf of equal Vcmax"></svg>
+            <div class="chart-tip" id="c4Tip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">A<sub>c</sub> C4 enzyme-limited (PEPC + Rubisco)</span><span style="--c:var(--series-2)">A<sub>j</sub> C4 electron-transport-limited</span><span style="--c:var(--fg)">A C4 = min</span><span style="--c:var(--accent-2)">A C3, same V<sub>cmax</sub> and J<sub>max</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="c4Table"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cVp"><span>V<sub>pmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="cVpO">90</output></label><input type="range" id="cVp" min="20" max="240" step="5" value="90"></div>
+          <div class="ctrl"><label for="cVc"><span>V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="cVcO">60</output></label><input type="range" id="cVc" min="15" max="120" step="1" value="60"></div>
+          <div class="ctrl"><label for="cJ"><span>J<sub>max,25</sub> (µmol e⁻ m⁻² s⁻¹)</span><output id="cJO">400</output></label><input type="range" id="cJ" min="80" max="600" step="10" value="400"></div>
+          <div class="ctrl"><label for="cG"><span>g<sub>bs</sub> (mmol m⁻² s⁻¹ bar⁻¹)</span><output id="cGO">5</output></label><input type="range" id="cG" min="0.5" max="30" step="0.5" value="5"></div>
+          <div class="ctrl"><label for="cK"><span>K<sub>p,25</sub> (µbar)</span><output id="cKO">80</output></label><input type="range" id="cK" min="20" max="300" step="5" value="80"></div>
+          <div class="ctrl"><label for="cT"><span>Leaf temperature (°C)</span><output id="cTO">25</output></label><input type="range" id="cT" min="8" max="45" step="0.5" value="25"></div>
+          <dl class="readout">
+            <dt>A<sub>C4</sub> at C<sub>i</sub> = 0.4 C<sub>a</sub></dt><dd id="o4A"></dd>
+            <dt>Limiting process</dt><dd id="o4L"></dd>
+            <dt>C<sub>s</sub> at that point</dt><dd id="o4Cs"></dd>
+            <dt>Leakiness φ = L/V<sub>p</sub></dt><dd id="o4Phi"></dd>
+            <dt>V<sub>o</sub>/V<sub>c</sub> in bundle sheath</dt><dd id="o4Vo"></dd>
+            <dt>Γ (C4) · Γ (C3)</dt><dd id="o4G"></dd>
+            <dt>A<sub>C3</sub> at C<sub>i</sub> = 0.7 C<sub>a</sub></dt><dd id="o3A"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">C4 Rubisco constants K<sub>c</sub> = 650 µbar, K<sub>o</sub> = 450 mbar, γ* = 0.000193 at 25 °C [3]; C3 constants from Bernacchi et al. 2001. V<sub>pr</sub> = 80, R<sub>d</sub> = 0.01 V<sub>cmax</sub>, R<sub>m</sub> = 0.5 R<sub>d</sub>, x = 0.4, Q = 1800 µmol m⁻² s⁻¹, θ = 0.7. Peaked temperature functions with optima near 38–45 °C for the C4 enzymes and 2.1-fold K<sub>p</sub> per 10 °C. Suggested experiments: raise g<sub>bs</sub> to 30 and watch C4 collapse toward C3 (leaky sheath); lower V<sub>pmax</sub> to 40 and see the initial slope, not the plateau, fall (PEPC limitation); set T to 40 °C and compare how the two leaves fare; set J<sub>max</sub> to 150 to make the C4 leaf light-limited and note that the compensation point stays near zero regardless.</p>
+    </div>
+
+    <h3>What the shape tells you</h3>
+    <ul>
+      <li><strong>Initial slope</strong> is set by PEPC (V<sub>pmax</sub>/K<sub>p</sub>), not Rubisco. It is 5–10 times steeper than in C3 and is what Collatz et al. parameterise with a single constant k.</li>
+      <li><strong>Saturation by 150–200 µbar C<sub>i</sub></strong>, well below the operating C<sub>i</sub> of ~170 µbar at today's C<sub>a</sub>. Elevated CO₂ therefore adds little directly; any gain comes through stomatal closure and water savings.</li>
+      <li><strong>Γ ≈ 0–5 µbar.</strong> Because bundle-sheath CO₂ is high even when C<sub>i</sub> is tiny, V<sub>o</sub> is negligible; Γ is set by the small leak plus respiration, not by Rubisco's specificity. A C4 leaf in a closed chamber draws the air down to near zero CO₂, the classic field test.</li>
+      <li><strong>Plateau</strong> equals V<sub>cmax</sub> − R<sub>d</sub> (or the electron-transport ceiling), so a C4 leaf achieves a given A with roughly half the Rubisco of a C3 leaf.</li>
+    </ul>
+  </section>
+
+  <section id="env">
+    <h2>Temperature, light, water and nitrogen</h2>
+    <p><strong>Temperature.</strong> Photorespiration is the main reason C3 photosynthesis declines above 25–30 °C; C4 leaves escape it, so their temperature optimum lies at 30–40 °C and the gap widens with temperature. At the cold end C4 is disadvantaged: PPDK and Rubisco (of which the leaf has little) are both cold-labile, and the pump still costs 2 ATP while C3 photorespiration is small in cool air. The cleanest demonstration is the <strong>quantum yield</strong> of CO₂ uptake. Ehleringer and Björkman (1977) [7] showed that the C3 yield falls with temperature in normal air but is constant (~0.073 per absorbed photon in their plants) at 2% O₂, whereas the C4 yield is constant (~0.054) regardless of O₂ or temperature. The two curves cross near 22–25 °C at the CO₂ of the 1970s, and the crossover moves to higher temperature as CO₂ rises and to lower temperature as it falls, which is the basis of the Ehleringer, Cerling and Helliker (1997) [8] model of C4 distribution and the late-Miocene expansion of C4 grasslands under low CO₂.</p>
+    <p>In FvCB terms, the C3 quantum yield at low light is set by the electron requirement of carboxylation plus oxygenation:</p>
+    <div class="eq">$$\Phi_{C3} = \Phi_0\,\frac{C_c - \Gamma^*}{C_c + 2\Gamma^*}, \qquad \Phi_{C4} \approx \text{const} \approx 0.060\text{–}0.065$$</div>
+    <p>where Φ₀ (≈ 0.093 mol CO₂ per absorbed photon when photorespiration is suppressed) is the yield of the C3 cycle alone and Γ*(T) carries the temperature dependence. Each oxygenation costs the same electrons as a carboxylation and loses half a CO₂, hence the (C<sub>c</sub> − Γ*)/(C<sub>c</sub> + 2Γ*) form.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Quantum-yield crossover: C3 versus C4 as a function of temperature</h3><span class="small muted">Hover to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="qySvg" viewBox="0 0 640 360" role="img" aria-label="Quantum yield of CO2 uptake versus leaf temperature for C3 and C4 leaves"></svg>
+            <div class="chart-tip" id="qyTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">C3, Φ₀ (C<sub>c</sub> − Γ*)/(C<sub>c</sub> + 2Γ*)</span><span style="--c:var(--series-2)">C4, constant</span><span style="--c:var(--muted)">C3 at 2% O₂ (reference)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="qyTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="qCa"><span>Ambient CO₂, C<sub>a</sub> (µbar)</span><output id="qCaO">330</output></label><input type="range" id="qCa" min="150" max="1000" step="10" value="330"></div>
+          <div class="ctrl"><label for="qO"><span>O₂ (mbar)</span><output id="qOO">210</output></label><input type="range" id="qO" min="10" max="400" step="5" value="210"></div>
+          <div class="ctrl"><label for="qPhi4"><span>C4 quantum yield (mol CO₂ / mol photons)</span><output id="qPhi4O">0.062</output></label><input type="range" id="qPhi4" min="0.045" max="0.075" step="0.001" value="0.062"></div>
+          <dl class="readout">
+            <dt>C<sub>c</sub> used (0.85 C<sub>a</sub>, low light)</dt><dd id="oqCc"></dd>
+            <dt>Γ* at 25 °C</dt><dd id="oqG"></dd>
+            <dt>Φ<sub>C3</sub> at 25 °C</dt><dd id="oqP"></dd>
+            <dt>Crossover temperature</dt><dd id="oqX"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: set C<sub>a</sub> = 180 (glacial) and watch the crossover fall below 15 °C; set C<sub>a</sub> = 700 and it rises past 35 °C; set O₂ = 20 mbar and C3 wins at every temperature. Change the C4 yield from 0.065 (NADP-ME) to 0.053 (NAD-ME) and note the shift.</p>
+        </div>
+      </div>
+    </div>
+
+    <p><strong>Light.</strong> Because the C4 pump costs ATP regardless of light, C4 leaves have a slightly lower quantum yield than C3 leaves without photorespiration, and leakiness rises at low light. But C4 leaves rarely light-saturate: with Rubisco saturated by CO₂, A keeps rising to full sunlight (A<sub>max</sub> 40–60 µmol m⁻² s⁻¹ in maize and <em>Miscanthus</em>) while C3 leaves typically saturate at 20–30 µmol m⁻² s⁻¹ in half of full sun. C4 is therefore an open-habitat, high-light syndrome; there are almost no C4 trees and few C4 understorey plants.</p>
+    <p><strong>Water.</strong> Operating at C<sub>i</sub>/C<sub>a</sub> ≈ 0.4 instead of 0.7 doubles the CO₂ gradient across the stomata. Writing A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>) and E = 1.6 g<sub>sc</sub> D/P, the intrinsic water-use efficiency A/E = C<sub>a</sub>(1 − C<sub>i</sub>/C<sub>a</sub>) P/(1.6 D) is about twice the C3 value at the same vapour pressure deficit; transpiration ratios are roughly 250–350 g H₂O per g dry matter for C4 crops versus 450–950 for C3. This does not make C4 plants drought-tolerant in the physiological sense. Ghannoum (2009) [13] showed that C4 assimilation often falls under mild water stress through metabolic, not stomatal, limitation, before C<sub>i</sub> has dropped, and that C4 grasses succeed in dry regions mostly through water saving, deep roots and high growth rates between rains rather than through tolerance of low water potential.</p>
+    <p><strong>Nitrogen.</strong> Rubisco is 25–50% of soluble protein in a C3 leaf and only 10–25% in a C4 leaf, because a saturated enzyme needs fewer copies to deliver the same flux, and C4 Rubiscos have a higher k<sub>cat</sub> (and a higher K<sub>c</sub>, a trade-off that is affordable at high C<sub>s</sub>). Photosynthetic nitrogen-use efficiency is therefore 1.5–2 times higher, and C4 crops reach high yields on relatively low leaf N (1–2 g m⁻² versus 2–3 g m⁻² in C3 crops). Sugarcane and <em>Miscanthus</em> owe much of their bioenergy appeal to this combination of high radiation-use, water-use and nitrogen-use efficiency.</p>
+  </section>
+
+  <section id="isotopes">
+    <h2>Carbon isotopes: measuring leakiness</h2>
+    <p>Plants discriminate against ¹³CO₂. For a C3 leaf, Farquhar, O'Leary and Berry's simple model combines diffusive fractionation a = 4.4‰ with Rubisco fractionation b ≈ 27–29‰, weighted by how much of the supply is used:</p>
+    <div class="eq">$$\Delta_{C3} = a + (b - a)\frac{C_i}{C_a}$$</div>
+    <p>For a C4 leaf Farquhar (1983) [6] showed that the carbon reaching Rubisco has first passed through PEPC, whose effective fractionation b₄ ≈ −5.7‰ (PEPC itself ~2‰, combined with the −9‰ equilibrium enrichment of HCO₃⁻ relative to CO₂) is <em>negative</em>, and that Rubisco's fractionation b₃ ≈ 29–30‰ can only be expressed to the extent that CO₂ leaks back out (with a small leak fractionation s ≈ 1.8‰):</p>
+    <div class="eq">$$\Delta_{C4} = a + \left[\,b_4 + \phi\,(b_3 - s) - a\,\right]\frac{C_i}{C_a}$$</div>
+    <p>The bracket changes sign at a critical leakiness φ = (a − b₄)/(b₃ − s) ≈ (4.4 + 5.7)/(29 − 1.8) ≈ <strong>0.37</strong>. Below it Δ decreases as C<sub>i</sub>/C<sub>a</sub> rises, the opposite of C3; above it Δ increases. Because most C4 leaves have φ ≈ 0.2, their Δ is small (3–5‰), their tissue δ¹³C is −11 to −14‰, and the slope of Δ against C<sub>i</sub>/C<sub>a</sub> is slightly negative. Measuring Δ online (with a gas-exchange system coupled to an isotope-ratio mass spectrometer or laser) together with C<sub>i</sub>/C<sub>a</sub> and inverting the equation is the standard way to estimate φ; refinements add ternary effects, respiration and mesophyll conductance [11, 12].</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Isotope discrimination explorer: Δ¹³C versus C<sub>i</sub>/C<sub>a</sub></h3><span class="small muted">Hover to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="isoSvg" viewBox="0 0 640 360" role="img" aria-label="Carbon isotope discrimination versus the ratio of intercellular to ambient CO2 for C3 and C4 leaves at adjustable leakiness"></svg>
+            <div class="chart-tip" id="isoTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">C3: a + (b − a) C<sub>i</sub>/C<sub>a</sub></span><span style="--c:var(--series-2)">C4 at the chosen φ</span><span style="--c:var(--muted)">C4 at critical φ (flat)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="isoTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="iPhi"><span>Leakiness φ</span><output id="iPhiO">0.20</output></label><input type="range" id="iPhi" min="0" max="1" step="0.01" value="0.2"></div>
+          <div class="ctrl"><label for="iB3"><span>Rubisco fractionation b₃ (‰)</span><output id="iB3O">29</output></label><input type="range" id="iB3" min="27" max="30" step="0.1" value="29"></div>
+          <div class="ctrl"><label for="iR4"><span>C4 operating C<sub>i</sub>/C<sub>a</sub></span><output id="iR4O">0.40</output></label><input type="range" id="iR4" min="0.2" max="0.7" step="0.01" value="0.4"></div>
+          <div class="ctrl"><label for="iR3"><span>C3 operating C<sub>i</sub>/C<sub>a</sub></span><output id="iR3O">0.70</output></label><input type="range" id="iR3" min="0.5" max="0.9" step="0.01" value="0.7"></div>
+          <dl class="readout">
+            <dt>Critical φ = (a − b₄)/(b₃ − s)</dt><dd id="oiCrit"></dd>
+            <dt>C4 slope dΔ/d(C<sub>i</sub>/C<sub>a</sub>)</dt><dd id="oiSlope"></dd>
+            <dt>Δ<sub>C4</sub> · leaf δ¹³C</dt><dd id="oiD4"></dd>
+            <dt>Δ<sub>C3</sub> · leaf δ¹³C</dt><dd id="oiD3"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">a = 4.4‰, b₄ = −5.7‰, s = 1.8‰, C3 b = 27‰, δ¹³C of air −8‰ (leaf δ ≈ δ<sub>air</sub> − Δ). Suggested experiments: move φ through 0.37 and watch the slope change sign; set φ = 1 (everything leaks) and the C4 line nearly reproduces the C3 line; drop the C4 operating C<sub>i</sub>/C<sub>a</sub> under "drought" and note that Δ barely moves, whereas C3 Δ falls strongly, which is why δ¹³C is a drought proxy only in C3 plants.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="evolution">
+    <h2>Evolution of C4</h2>
+    <p>C4 photosynthesis is a textbook case of convergent evolution. Sage (2004) [9] counted at least 45 independent origins; current counts exceed 60 lineages in 19 angiosperm families, with grasses (about 18 origins, ~4,500 species), sedges and the Chenopodiaceae/Amaranthaceae the richest. The first C4 lineages appear in the Oligocene, 30–35 million years ago, shortly after atmospheric CO₂ fell below ~500 µbar, and C4 grasslands expanded dramatically in the late Miocene (8–3 Ma). The selective drivers are all conditions that increase photorespiration or the cost of water: <strong>low CO₂</strong>, <strong>high temperature</strong>, <strong>aridity</strong>, <strong>salinity</strong> and <strong>high light in open habitats</strong>, often with fire and grazing maintaining the openness. Sage, Sage and Kocacinar (2012) [10] describe the evolutionary path through intermediate states: closer veins and enlarged bundle sheaths (proto-Kranz), then relocation of glycine decarboxylase to the bundle sheath so that photorespiratory CO₂ is released there (C2 photosynthesis, a glycine shuttle that concentrates CO₂ by a factor of 2–3), and finally the up-regulation of PEPC and PPDK and the restriction of Rubisco to the sheath. The genus <em>Flaveria</em> displays the whole series and is the standard model system; engineering rice toward C4 attempts to retrace it.</p>
+    <p>Globally, C4 species are only ~3% of vascular plants but contribute roughly a quarter of terrestrial gross primary production, through tropical savannas and grasslands and through maize, sorghum, millet and sugarcane. Any land model that treats grassland must therefore decide, grid cell by grid cell, how much of the grass is C4; the usual rule (Collatz et al. 1998, Still et al. 2003) is a climatology of the crossover temperature, assigning C4 where the warmest-month mean exceeds ~22 °C and there is enough growing-season rain.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>Collatz, Ribas-Carbo and Berry (1992)</strong> [5] distilled the von Caemmerer model into three potential rates, chosen so that a maize leaf could be fitted with a handful of parameters and coupled to the Ball–Berry stomatal model:</p>
+    <div class="eq">$$A_c = V_{max}\,f(T), \qquad A_j = \alpha\,Q_{abs}, \qquad A_p = k\,\frac{C_i}{P}, \qquad A = \text{smooth}\min(A_c, A_j, A_p) - R_d$$</div>
+    <p>A<sub>c</sub> is the Rubisco-saturated plateau (no CO₂ dependence, because the bundle sheath is saturated); A<sub>j</sub> is the light-limited rate with α ≈ 0.05–0.067 mol CO₂ per mol photons; A<sub>p</sub> is the PEPC-limited initial slope with k ≈ 0.7 mol m⁻² s⁻¹ at 25 °C (Q₁₀ = 2). The minimum is smoothed with two quadratic co-limitation steps (θ = 0.83, β = 0.93 in the original). V<sub>max</sub> has a Q₁₀ of 2 with high- and low-temperature inhibition functions, 1/[1 + exp(0.3(T − 36))] and 1/[1 + exp(0.3(13 − T))], which give the C4 optimum of ~35 °C and the cold-sensitivity. This model, essentially unchanged, is the C4 option in <strong>SiB2</strong>, <strong>CLM</strong> (CLM4.5/CLM5 write A<sub>p</sub> = 20000 V<sub>cmax</sub> C<sub>i</sub>/P<sub>atm</sub> and use θ = 0.80, 0.95), <strong>JULES</strong>, <strong>Noah-MP</strong> and <strong>BioCro</strong>, whose C4 leaf routine is Collatz coupled to Ball–Berry and was parameterised for <em>Miscanthus</em> (V<sub>max</sub> ≈ 39, α ≈ 0.04) and later for sugarcane and maize [14]. <strong>ORCHIDEE</strong> instead implements the Yin and Struik (2009) analytical C4 model, and <strong>Agro-IBIS</strong> and <strong>DayCent</strong>-style crop models use Collatz or an empirical radiation-use-efficiency equivalent.</p>
+    <p>Three modelling consequences follow. (i) <em>CO₂ response</em>: a C4 PFT shows almost no direct fertilisation; projected C4 productivity gains under elevated CO₂ come through reduced g<sub>s</sub> and soil water conservation, so the stomatal coupling matters more than the biochemistry. (ii) <em>Temperature</em>: the C4 optimum is 8–10 °C warmer, so warming shifts the C3/C4 balance, and models that use a fixed crossover climatology cannot capture the CO₂-dependence of that crossover. (iii) <em>Nitrogen</em>: C4 V<sub>cmax</sub> per unit N is higher, so N-based V<sub>cmax</sub> schemes need a pathway-specific slope. The simplifications to remember when criticising Collatz are the loss of leakiness (no over-cycling cost, so low-light efficiency is overestimated), the loss of any K<sub>p</sub> (initial slope is linear to the origin, Γ = 0), and the absence of mesophyll conductance.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value (25 °C unless noted)</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>Extra ATP for PEP regeneration</td><td class="num">2 per CO₂ (5 ATP + 2 NADPH total)</td><td>PPDK: ATP → AMP + PP<sub>i</sub>; rises to 3 + 2/(1 − φ) with leakiness</td></tr>
+        <tr><td>Bundle-sheath leakiness φ</td><td class="num">0.15–0.25 (high light)</td><td>Rises to 0.3–0.5 at low light [11, 12]</td></tr>
+        <tr><td>Bundle-sheath conductance g<sub>bs</sub></td><td class="num">1–5 mmol m⁻² s⁻¹ bar⁻¹</td><td>von Caemmerer 2000 [3] default 3</td></tr>
+        <tr><td>Bundle-sheath CO₂, C<sub>s</sub></td><td class="num">1000–3000 µbar</td><td>10–20 × C<sub>m</sub>; V<sub>o</sub>/V<sub>c</sub> ≈ 0.03</td></tr>
+        <tr><td>C4 Rubisco K<sub>c</sub>, K<sub>o</sub>, γ*</td><td class="num">650 µbar, 450 mbar, 0.000193</td><td>Higher K<sub>c</sub> and k<sub>cat</sub> than C3 Rubisco [3]</td></tr>
+        <tr><td>K<sub>p</sub> (PEPC, CO₂ equivalent)</td><td class="num">≈ 80 µbar</td><td>V<sub>pmax</sub>/V<sub>cmax</sub> ≈ 1.5–2 [3]</td></tr>
+        <tr><td>C<sub>i</sub>/C<sub>a</sub></td><td class="num">≈ 0.4</td><td>C3 ≈ 0.7; doubles the gradient for A</td></tr>
+        <tr><td>CO₂ compensation point Γ</td><td class="num">0–5 µbar</td><td>C3: 40–55 µbar</td></tr>
+        <tr><td>A–C<sub>i</sub> saturation</td><td class="num">by 150–200 µbar C<sub>i</sub></td><td>Little direct CO₂ fertilisation</td></tr>
+        <tr><td>Quantum yield (absorbed photons)</td><td class="num">C4 0.053–0.065; C3 0.093 → 0.05 in warm air</td><td>Crossover 22–25 °C at ~330 µbar; CO₂-dependent [7, 8]</td></tr>
+        <tr><td>Temperature optimum of A</td><td class="num">30–40 °C</td><td>C3: 20–30 °C</td></tr>
+        <tr><td>Maximum A (maize, <em>Miscanthus</em>)</td><td class="num">40–60 µmol m⁻² s⁻¹</td><td>C3 crops 20–35</td></tr>
+        <tr><td>Transpiration ratio</td><td class="num">250–350 g H₂O g⁻¹ DM</td><td>C3 450–950; CAM 50–125</td></tr>
+        <tr><td>Rubisco share of soluble protein</td><td class="num">10–25%</td><td>C3: 25–50%; PNUE 1.5–2 × C3</td></tr>
+        <tr><td>Leaf δ¹³C</td><td class="num">−11 to −14‰ (Δ ≈ 3–5‰)</td><td>C3 −22 to −35‰; critical φ ≈ 0.37 [6]</td></tr>
+        <tr><td>Collatz 1992 constants</td><td class="num">k ≈ 0.7 mol m⁻² s⁻¹; θ 0.83; β 0.93</td><td>V<sub>max</sub> Q₁₀ = 2 with inhibition at 13 and 36 °C [5]</td></tr>
+        <tr><td>Independent origins · species · GPP</td><td class="num">&gt; 60 · ~3% · ~25%</td><td>Sage 2004 [9]; Still et al. 2003</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Explain why PEP carboxylase is insensitive to O₂ and what that buys the C4 leaf.</summary><div class="a"><p>PEPC carboxylates PEP with bicarbonate, HCO₃⁻, formed from CO₂ by carbonic anhydrase in the mesophyll cytosol. Its active site binds an ionic substrate with no steric or electronic resemblance to O₂, so there is no competing oxygenase reaction, unlike Rubisco, whose enediol intermediate of RuBP reacts with either CO₂ or O₂. The leaf therefore gains a first carboxylation that is unaffected by atmospheric O₂, that draws on the larger bicarbonate pool (most dissolved inorganic carbon at pH 7.3) and has a low effective K<sub>m</sub> (K<sub>p</sub> ≈ 80 µbar CO₂ equivalent). This lets PEPC deplete mesophyll CO₂ to ~0.4 C<sub>a</sub> while still running near saturation, and it supplies the C4 acid flux that concentrates CO₂ where Rubisco sits. Rubisco itself is unchanged: it still oxygenates, but at C<sub>s</sub> ≈ 2000 µbar the ratio V<sub>o</sub>/V<sub>c</sub> = 2Γ*/C<sub>s</sub> is only a few percent.</p></div></details>
+    <details class="q"><summary>2. Derive the ATP cost of C4 photosynthesis per net CO₂ fixed as a function of leakiness, and comment on what happens at low light.</summary><div class="a"><p>The C3 cycle costs 3 ATP and 2 NADPH per CO₂. Each turn of the C4 cycle regenerates PEP via PPDK (pyruvate + ATP + P<sub>i</sub> → PEP + AMP + PP<sub>i</sub>); restoring AMP to ADP with adenylate kinase consumes a second ATP and the PP<sub>i</sub> is hydrolysed, so each PEP costs 2 ATP equivalents. If a fraction φ of the CO₂ delivered to the bundle sheath leaks back, only (1 − φ)V<sub>p</sub> is fixed, so V<sub>p</sub> = A/(1 − φ) turns of the pump are needed per A molecules fixed. Cost per net CO₂ = 3 + 2/(1 − φ): 5 ATP at φ = 0, 5.5 at φ = 0.2, 7 at φ = 0.5. NADPH is unaffected because the NADP-MDH/NADP-ME pair is reductant-neutral. At low light ATP supply limits both PEPC (through PPDK) and Rubisco; coordination weakens and φ rises toward 0.3–0.5, so the energy cost per CO₂ climbs just when energy is scarce. This is why the C4 quantum yield is below the C3 yield in the absence of photorespiration, and why C4 plants are rare in shade.</p></div></details>
+    <details class="q"><summary>3. Write the bundle-sheath CO₂ balance of the von Caemmerer model and show how it produces an A–Ci curve that saturates at low Ci with a near-zero compensation point.</summary><div class="a"><p>Carbon enters the sheath at the PEP carboxylation rate V<sub>p</sub> = min(V<sub>pmax</sub>C<sub>m</sub>/(C<sub>m</sub> + K<sub>p</sub>), V<sub>pr</sub>) and leaves either by Rubisco net fixation V<sub>c</sub> − 0.5V<sub>o</sub> = V<sub>cmax</sub>(C<sub>s</sub> − γ*O)/(C<sub>s</sub> + K<sub>c</sub>(1 + O/K<sub>o</sub>)) or by leakage L = g<sub>bs</sub>(C<sub>s</sub> − C<sub>m</sub>). At steady state V<sub>p</sub> − R<sub>m</sub> = (V<sub>c</sub> − 0.5V<sub>o</sub>) + L, and A = V<sub>p</sub> − L − R<sub>m</sub> = V<sub>c</sub> − 0.5V<sub>o</sub> − R<sub>s</sub>. Solving for C<sub>s</sub> and substituting yields a quadratic in A whose smaller root is A<sub>c</sub>. Behaviour: at low C<sub>m</sub>, V<sub>p</sub> rises steeply (slope V<sub>pmax</sub>/K<sub>p</sub>) and almost all of it is fixed because Rubisco is far from saturation, so A ≈ V<sub>p</sub> − R<sub>m</sub>, a steep initial slope. As C<sub>m</sub> approaches 150–200 µbar, V<sub>p</sub> exceeds what Rubisco can fix; C<sub>s</sub> rises until the leak absorbs the excess and A plateaus at ≈ V<sub>cmax</sub> − R<sub>d</sub>. The compensation point is where V<sub>p</sub> − R<sub>m</sub> balances L plus respiration; since C<sub>s</sub> remains far above γ*O even as C<sub>m</sub> → 0, photorespiratory loss is negligible and Γ is set only by respiration against a steep PEPC slope, giving 0–5 µbar. With g<sub>bs</sub> large the two cells merge, C<sub>s</sub> → C<sub>m</sub> and the curve degenerates to the C3 form.</p></div></details>
+    <details class="q"><summary>4. The quantum yields of C3 and C4 leaves cross at about 22–25 °C in late-20th-century air. Explain the mechanism and how the crossover depends on CO₂, O₂ and C4 subtype.</summary><div class="a"><p>At low light A is limited by electron transport, so the quantum yield is the inverse of the electron (photon) requirement per net CO₂. In C3 leaves each oxygenation consumes as many electrons as a carboxylation and loses half a CO₂, giving Φ<sub>C3</sub> = Φ₀(C<sub>c</sub> − Γ*)/(C<sub>c</sub> + 2Γ*). Γ* rises roughly exponentially with temperature (S<sub>c/o</sub> falls and CO₂ solubility declines faster than O₂), so Φ<sub>C3</sub> declines with warming; at 2% O₂ Γ* is tiny and Φ<sub>C3</sub> is flat at ≈ 0.09. C4 leaves have no photorespiration but pay a fixed 2 ATP per CO₂ (more with leakiness), so Φ<sub>C4</sub> ≈ 0.06 independent of temperature and O₂. The crossover is where Φ₀(C<sub>c</sub> − Γ*)/(C<sub>c</sub> + 2Γ*) = Φ<sub>C4</sub>. Raising C<sub>a</sub> (and C<sub>c</sub>) reduces Γ*/C<sub>c</sub> and pushes the crossover to warmer temperatures (above 35 °C at 700 µbar); lowering CO₂ to glacial 180–200 µbar brings it below 15 °C, which is the argument for C4 expansion under low Miocene and glacial CO₂. Lower O₂ favours C3 everywhere. Among C4 subtypes, NADP-ME has the highest yield (~0.065) and the lowest crossover; NAD-ME (~0.053) crosses at a warmer temperature, consistent with its distribution in hotter, drier sites.</p></div></details>
+    <details class="q"><summary>5. Starting from the Farquhar (1983) equation, explain how bundle-sheath leakiness is estimated from carbon isotope discrimination and why the slope of Δ against Ci/Ca changes sign at φ ≈ 0.37.</summary><div class="a"><p>Δ = a + [b₄ + φ(b₃ − s) − a] C<sub>i</sub>/C<sub>a</sub>, with a = 4.4‰ (diffusion in air), b₄ ≈ −5.7‰ (PEPC fractionation of ~2‰ combined with the ~−9‰ equilibrium enrichment of HCO₃⁻ over CO₂ at 25 °C), b₃ ≈ 29‰ (Rubisco) and s ≈ 1.8‰ (leak of dissolved CO₂). Only the fraction φ of carbon that re-escapes allows Rubisco's preference for ¹²C to be expressed in the leaf; when φ = 0 every molecule delivered is fixed and Δ is set by diffusion and PEPC alone. The slope coefficient b₄ + φ(b₃ − s) − a is zero when φ = (a − b₄)/(b₃ − s) ≈ 10.1/27.2 ≈ 0.37: below this, more open stomata (higher C<sub>i</sub>/C<sub>a</sub>) expose carbon mostly to the negatively fractionating PEPC step, so Δ falls; above it the Rubisco term dominates and Δ rises, as in C3. To estimate φ, Δ is measured online during gas exchange (CO₂ entering and leaving the cuvette analysed by IRMS or laser spectroscopy) alongside C<sub>i</sub>/C<sub>a</sub>, and the equation is inverted; full treatments add ternary corrections, respiratory and photorespiratory fractionation and mesophyll conductance (Ubierna et al., Kromdijk et al.). Typical results: φ ≈ 0.2 at high light, higher at low light and low temperature.</p></div></details>
+    <details class="q"><summary>6. Compare the direct and indirect responses of C3 and C4 crops to elevated CO₂ and to drought, and state how a land-surface model would represent each.</summary><div class="a"><p>Direct CO₂ response: C3 leaves operate on the steep, Rubisco-limited part of the A–C<sub>i</sub> curve with photorespiration suppressing A, so doubling CO₂ raises A by 30–50% at the leaf scale; C4 leaves are saturated by ~200 µbar C<sub>i</sub>, so direct stimulation is near zero. Indirect: both close stomata (g<sub>s</sub> falls ~20–30%), conserving soil water, so in dry years C4 crops do gain under elevated CO₂ through delayed drought stress (FACE results for sorghum and maize). Drought: C4 has intrinsically higher A/E because of low C<sub>i</sub>/C<sub>a</sub>, but its A is sensitive to mild water stress through metabolic limitation (Ghannoum 2009), and the steep initial slope means that any further C<sub>i</sub> reduction costs little A until stomata nearly close. In a model such as CLM: the C3 PFT uses FvCB, where C<sub>i</sub> enters the Rubisco- and RuBP-limited rates, so CO₂ fertilisation emerges; the C4 PFT uses Collatz 1992, where only A<sub>p</sub> = kC<sub>i</sub> depends on CO₂ and is rarely limiting, so direct fertilisation is absent and the CO₂ effect is carried entirely by the stomatal model (Ball–Berry or Medlyn) and soil-moisture stress factor β. Models that omit the β-dependence of V<sub>max</sub> or treat C4 drought response only through g<sub>s</sub> will miss the metabolic limitation.</p></div></details>
+    <details class="q"><summary>7. What anatomical and biochemical steps are thought to have led from C3 to C4, and which environmental conditions selected for each step?</summary><div class="a"><p>Sage et al. (2012) describe a sequence. (1) Preconditioning: increased vein density and larger bundle-sheath cells (proto-Kranz), favoured in hot, high-light, often saline or arid open habitats, perhaps initially for hydraulic reasons. (2) Relocation of glycine decarboxylase to bundle-sheath mitochondria, so that glycine from photorespiration in the mesophyll is decarboxylated in the sheath: this "C2" or glycine-shuttle photosynthesis raises sheath CO₂ two- to three-fold and lowers Γ to 10–30 µbar. It is selected only when photorespiration is high, i.e. under low atmospheric CO₂ (below ~500 µbar, reached in the Oligocene), heat and drought-induced stomatal closure. (3) Up-regulation of PEPC, PPDK and carbonic anhydrase in the mesophyll and decarboxylases in the sheath, initially to recapture the CO₂ leaking from the C2 shuttle, giving C3–C4 intermediates with partial C4 cycles. (4) Loss of Rubisco from the mesophyll, kinetic optimisation of Rubisco (higher k<sub>cat</sub>, higher K<sub>c</sub>) and PEPC (lower malate sensitivity), and tightening of the sheath wall. Each step has small positive fitness in the right environment, which explains the extraordinary number (&gt; 60) of independent origins concentrated in warm, open, low-CO₂ settings, and why C4 is absent from cool, shaded and aquatic habitats where photorespiration is low or light is scarce.</p></div></details>
+    <details class="q"><summary>8. You are asked to add a C4 bioenergy grass to an ecosystem model that currently has only C3 FvCB. List the minimum set of changes and the parameter values you would start with.</summary><div class="a"><p>(i) Replace the leaf biochemistry with a C4 scheme: either Collatz 1992 (V<sub>max,25</sub> ≈ 30–40 µmol m⁻² s⁻¹ for <em>Miscanthus</em>, 40–60 for maize; α ≈ 0.04–0.06 mol CO₂ mol⁻¹ photons; k ≈ 0.7 mol m⁻² s⁻¹; θ = 0.83, β = 0.93; Q₁₀ = 2 with low- and high-temperature inhibition around 13 and 36 °C; R<sub>d</sub> ≈ 0.01–0.02 V<sub>max</sub>) or the fuller von Caemmerer model (V<sub>pmax</sub> ≈ 120, V<sub>cmax</sub> ≈ 60, g<sub>bs</sub> ≈ 3 mmol m⁻² s⁻¹ bar⁻¹, K<sub>p</sub> ≈ 80 µbar, J<sub>max</sub> ≈ 400) if leakiness or isotopes matter. (ii) Change the stomatal model's slope: in Ball–Berry the C4 slope m ≈ 4 versus 9 for C3, or in Medlyn g₁ ≈ 1.6 versus 4, reflecting C<sub>i</sub>/C<sub>a</sub> ≈ 0.4. (iii) Adjust the N–V<sub>cmax</sub> relationship (higher V<sub>max</sub> per unit N) and the specific leaf area and leaf N targets. (iv) Change the thermal time and phenology (base temperature ~10 °C, high optimum) and the canopy radiation-use efficiency (~ 4 g DM MJ⁻¹ intercepted PAR for <em>Miscanthus</em>, about 1.5 × a C3 crop). (v) Check the CO₂ response: direct leaf stimulation should be near zero, with gains only via water savings. BioCro and Agro-IBIS are examples that followed exactly this route for <em>Miscanthus</em>, maize and sugarcane.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Hatch MD, Slack CR (1966). Photosynthesis by sugar-cane leaves: a new carboxylation reaction and the pathway of sugar formation. <em>Biochemical Journal</em> 101: 103–111. <a href="https://doi.org/10.1042/bj1010103">doi:10.1042/bj1010103</a><span class="why">The discovery paper: ¹⁴C pulse-chase showing malate and aspartate as first products in sugarcane.</span></li>
+      <li>Hatch MD (1987). C4 photosynthesis: a unique blend of modified biochemistry, anatomy and ultrastructure. <em>Biochimica et Biophysica Acta</em> 895: 81–106. <a href="https://doi.org/10.1016/S0304-4173(87)80009-5">doi:10.1016/S0304-4173(87)80009-5</a><span class="why">The classic synthesis of the three decarboxylation subtypes, cell-type enzyme location and energetics.</span></li>
+      <li>von Caemmerer S (2000). <em>Biochemical Models of Leaf Photosynthesis</em>. CSIRO Publishing, Collingwood. Chapter 4. <span class="why">The C4 model used in the explorer: enzyme- and electron-transport-limited quadratics, parameter table, leakiness and isotope sections.</span></li>
+      <li>von Caemmerer S, Furbank RT (2003). The C4 pathway: an efficient CO₂ pump. <em>Photosynthesis Research</em> 77: 191–207. <a href="https://doi.org/10.1023/A:1025830019591">doi:10.1023/A:1025830019591</a><span class="why">Review of the pump's energetics, bundle-sheath conductance and the trade-off between leakiness and CO₂ concentration.</span></li>
+      <li>Collatz GJ, Ribas-Carbo M, Berry JA (1992). Coupled photosynthesis–stomatal conductance model for leaves of C4 plants. <em>Australian Journal of Plant Physiology</em> 19: 519–538. <a href="https://doi.org/10.1071/PP9920519">doi:10.1071/PP9920519</a><span class="why">The C4 leaf model inside SiB, CLM, JULES and BioCro; read for the three-rate structure, temperature functions and Ball–Berry coupling.</span></li>
+      <li>Farquhar GD (1983). On the nature of carbon isotope discrimination in C4 species. <em>Australian Journal of Plant Physiology</em> 10: 205–226. <a href="https://doi.org/10.1071/PP9830205">doi:10.1071/PP9830205</a><span class="why">Derivation of the C4 discrimination equation and the critical leakiness.</span></li>
+      <li>Ehleringer J, Björkman O (1977). Quantum yields for CO₂ uptake in C3 and C4 plants: dependence on temperature, CO₂ and O₂ concentration. <em>Plant Physiology</em> 59: 86–90. <a href="https://doi.org/10.1104/pp.59.1.86">doi:10.1104/pp.59.1.86</a><span class="why">The crossover experiment reproduced in the quantum-yield lab.</span></li>
+      <li>Ehleringer JR, Cerling TE, Helliker BR (1997). C4 photosynthesis, atmospheric CO₂, and climate. <em>Oecologia</em> 112: 285–299. <a href="https://doi.org/10.1007/s004420050311">doi:10.1007/s004420050311</a><span class="why">Crossover-temperature model of C4 distribution through geological CO₂ change.</span></li>
+      <li>Sage RF (2004). The evolution of C4 photosynthesis. <em>New Phytologist</em> 161: 341–370. <a href="https://doi.org/10.1111/j.1469-8137.2004.00974.x">doi:10.1111/j.1469-8137.2004.00974.x</a><span class="why">Counts of independent origins, timing, and the environmental drivers.</span></li>
+      <li>Sage RF, Sage TL, Kocacinar F (2012). Photorespiration and the evolution of C4 photosynthesis. <em>Annual Review of Plant Biology</em> 63: 19–47. <a href="https://doi.org/10.1146/annurev-arplant-042811-105511">doi:10.1146/annurev-arplant-042811-105511</a><span class="why">The proto-Kranz → C2 → C4 evolutionary sequence.</span></li>
+      <li>Kromdijk J, Ubierna N, Cousins AB, Griffiths H (2014). Bundle-sheath leakiness in C4 photosynthesis: a careful balancing act between CO₂ concentration and assimilation. <em>Journal of Experimental Botany</em> 65: 3443–3457. <a href="https://doi.org/10.1093/jxb/eru157">doi:10.1093/jxb/eru157</a><span class="why">Modern review of leakiness estimates, their light and temperature dependence and the isotope method's assumptions.</span></li>
+      <li>Ubierna N, Sun W, Kramer DM, Cousins AB (2013). The efficiency of C4 photosynthesis under low light conditions in <em>Zea mays</em>, <em>Miscanthus × giganteus</em> and <em>Flaveria bidentis</em>. <em>Plant, Cell &amp; Environment</em> 36: 365–381. <span class="why">Leakiness measured across irradiance in bioenergy-relevant species.</span></li>
+      <li>Ghannoum O (2009). C4 photosynthesis and water stress. <em>Annals of Botany</em> 103: 635–644. <a href="https://doi.org/10.1093/aob/mcn093">doi:10.1093/aob/mcn093</a><span class="why">Why C4 assimilation is metabolically, not just stomatally, limited under drought.</span></li>
+      <li>Long SP, Spence AK (2013). Toward cool C4 crops. <em>Annual Review of Plant Biology</em> 64: 701–722. <a href="https://doi.org/10.1146/annurev-arplant-050312-120033">doi:10.1146/annurev-arplant-050312-120033</a><span class="why">C4 bioenergy grasses, their cold limitation and the <em>Miscanthus</em> exception. For the BioCro implementation see Miguez FE, Zhu X, Humphries S, Bollero GA, Long SP (2009) <em>GCB Bioenergy</em> 1: 282–296.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="c3-photosynthesis.html">← Previous: C3 photosynthesis</a><a href="cam-photosynthesis.html">Next: CAM photosynthesis →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#anatomy">Kranz anatomy &amp; PEPC</a></li>
+      <li><a href="#subtypes">Decarboxylation subtypes</a></li>
+      <li><a href="#pump">CO₂ pump &amp; leakiness</a></li>
+      <li><a href="#model">von Caemmerer model</a></li>
+      <li><a href="#env">Temperature, light, water, N</a></li>
+      <li><a href="#isotopes">Carbon isotopes</a></li>
+      <li><a href="#evolution">Evolution</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (C<sub>m</sub> = C<sub>i</sub>, α = 0, fixed x and θ, illustrative temperature functions) chosen for intuition. Constants follow von Caemmerer 2000 and Bernacchi et al. 2001.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var R = 0.008314, T25 = 298.15;
+  function arrN(Ha, Tk) { return Math.exp(Ha * (Tk - T25) / (T25 * R * Tk)); }
+  function peakN(Ha, Hd, dS, Tk) {
+    var num = 1 + Math.exp((T25 * dS - Hd) / (T25 * R));
+    var den = 1 + Math.exp((Tk * dS - Hd) / (Tk * R));
+    return arrN(Ha, Tk) * num / den;
+  }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function bisect(f, lo, hi) { if (f(lo) * f(hi) > 0) return null; for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2; if (f(lo) * f(mid) <= 0) hi = mid; else lo = mid; } return (lo + hi) / 2; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // shared chart scaffold: axes, grid, hover
+  function Chart(svg, tip, W, H, m, xr, yr, xlabel, ylabel, xstep, ystep, xfmt) {
+    this.svg = svg; this.tip = tip; this.W = W; this.H = H; this.m = m; this.xr = xr; this.yr = yr;
+    this.pw = W - m.l - m.r; this.ph = H - m.t - m.b;
+    this.xlabel = xlabel; this.ylabel = ylabel; this.xstep = xstep; this.ystep = ystep; this.xfmt = xfmt || function (v) { return v; };
+  }
+  Chart.prototype.sx = function (x) { return this.m.l + (x - this.xr[0]) / (this.xr[1] - this.xr[0]) * this.pw; };
+  Chart.prototype.sy = function (y) { return this.m.t + (this.yr[1] - y) / (this.yr[1] - this.yr[0]) * this.ph; };
+  Chart.prototype.clear = function () { while (this.svg.firstChild) this.svg.removeChild(this.svg.firstChild); };
+  Chart.prototype.axes = function () {
+    var s = this.svg, m = this.m, y, x;
+    for (y = this.yr[0]; y <= this.yr[1] + 1e-9; y += this.ystep) { s.appendChild(el('line', { 'class': 'gridline', x1: m.l, x2: m.l + this.pw, y1: this.sy(y), y2: this.sy(y) })); s.appendChild(el('text', { 'class': 'tick', x: m.l - 8, y: this.sy(y) + 4, 'text-anchor': 'end' }, this.ystep < 1 ? fmt(y, this.ystep < 0.1 ? 2 : 1) : fmt(y, 0))); }
+    for (x = this.xr[0]; x <= this.xr[1] + 1e-9; x += this.xstep) { s.appendChild(el('text', { 'class': 'tick', x: this.sx(x), y: m.t + this.ph + 18, 'text-anchor': 'middle' }, this.xfmt(x))); s.appendChild(el('line', { 'class': 'ax', x1: this.sx(x), x2: this.sx(x), y1: m.t + this.ph, y2: m.t + this.ph + 4 })); }
+    var y0 = clamp(0, this.yr[0], this.yr[1]);
+    s.appendChild(el('line', { 'class': 'ax', x1: m.l, x2: m.l + this.pw, y1: this.sy(y0), y2: this.sy(y0) }));
+    s.appendChild(el('line', { 'class': 'ax', x1: m.l, x2: m.l, y1: m.t, y2: m.t + this.ph }));
+    s.appendChild(el('text', { 'class': 'axlbl', x: m.l + this.pw / 2, y: this.H - 10, 'text-anchor': 'middle' }, this.xlabel));
+    s.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (m.t + this.ph / 2) + ') rotate(-90)' }, this.ylabel));
+  };
+  Chart.prototype.path = function (fn, cls, stroke, n) {
+    var d = '', N = n || 150, x0 = this.xr[0], x1 = this.xr[1];
+    for (var i = 0; i <= N; i++) { var x = x0 + (x1 - x0) * i / N; var y = clamp(fn(x), this.yr[0], this.yr[1]); d += (i === 0 ? 'M' : 'L') + this.sx(x).toFixed(1) + ',' + this.sy(y).toFixed(1); }
+    var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); this.svg.appendChild(p); return p;
+  };
+  Chart.prototype.hover = function (tipFn, dotFns) {
+    var self = this, s = this.svg, m = this.m;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: m.t, y2: m.t + this.ph, visibility: 'hidden' }); s.appendChild(xh);
+    var dots = dotFns.map(function (df) { var c = el('circle', { r: 4, fill: df.c, visibility: 'hidden' }); s.appendChild(c); return c; });
+    var hit = el('rect', { x: m.l, y: m.t, width: this.pw, height: this.ph, fill: 'transparent' }); s.appendChild(hit);
+    function move(evt) {
+      var pt = s.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(s.getScreenCTM().inverse());
+      var x = clamp(self.xr[0] + (p.x - m.l) / self.pw * (self.xr[1] - self.xr[0]), self.xr[0], self.xr[1]);
+      xh.setAttribute('x1', self.sx(x)); xh.setAttribute('x2', self.sx(x)); xh.setAttribute('visibility', 'visible');
+      dots.forEach(function (c, i) { var v = dotFns[i].f(x); if (v === null || isNaN(v)) { c.setAttribute('visibility', 'hidden'); return; } c.setAttribute('cx', self.sx(x)); c.setAttribute('cy', self.sy(clamp(v, self.yr[0], self.yr[1]))); c.setAttribute('visibility', 'visible'); });
+      self.tip.innerHTML = tipFn(x); self.tip.hidden = false;
+      var host = self.tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + self.tip.offsetWidth > host.width - 4) left = e.clientX - host.left - self.tip.offsetWidth - 14;
+      self.tip.style.left = Math.max(0, left) + 'px'; self.tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dots.forEach(function (c) { c.setAttribute('visibility', 'hidden'); }); self.tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  };
+
+  /* ---------- Lab A: C4 A-Ci explorer ---------- */
+  var ids4 = ['cVp', 'cVc', 'cJ', 'cG', 'cK', 'cT'];
+  var in4 = {}; ids4.forEach(function (id) { in4[id] = document.getElementById(id); });
+  var Ca = 420, O2 = 210, Qabs = 1800 * 0.85 * (1 - 0.15) / 2, theta = 0.7, x4 = 0.4, Vpr = 80;
+  function Jhyp(Jm) { return (Qabs + Jm - Math.sqrt((Qabs + Jm) * (Qabs + Jm) - 4 * theta * Qabs * Jm)) / (2 * theta); }
+  function smallRoot(a, b, c) { var disc = b * b - 4 * a * c; if (disc < 0) disc = 0; return (-b - Math.sqrt(disc)) / (2 * a); }
+  function computeC4() {
+    var Vp25 = +in4.cVp.value, Vc25 = +in4.cVc.value, J25 = +in4.cJ.value, gbs = +in4.cG.value / 1000, Kp25 = +in4.cK.value, T = +in4.cT.value, Tk = T + 273.15;
+    // C4 kinetics (von Caemmerer 2000) with Bernacchi-type activation energies
+    var Kc = 650 * arrN(79.43, Tk), Ko = 450 * arrN(36.38, Tk);
+    var GsO = 0.000193 * arrN(37.83, Tk) * O2 * 1000; // gamma*·O in µbar (O2 in mbar -> µbar)
+    var Kp = Kp25 * Math.pow(2.1, (T - 25) / 10);
+    var Vpmax = Vp25 * peakN(70, 120, 0.38, Tk), Vcmax = Vc25 * peakN(67, 150, 0.48, Tk), Jmax = J25 * peakN(78, 190, 0.60, Tk);
+    var Rd = 0.01 * Vc25 * arrN(46.39, Tk), Rm = 0.5 * Rd;
+    var Jt = Jhyp(Jmax);
+    var Kp_ = Kc * (1 + O2 / Ko);
+    function Vp(Cm) { return Math.min(Vpmax * Cm / (Cm + Kp), Vpr); }
+    function Ac(Cm) { var X = Vp(Cm) - Rm + gbs * Cm; var b = -(X + (Vcmax - Rd) + gbs * Kp_); var c = (Vcmax - Rd) * X - (Vcmax * gbs * GsO + Rd * gbs * Kp_); return smallRoot(1, b, c); }
+    function Aj(Cm) { var Vpj = Math.min(x4 * Jt / 2, Vpr); var Jb = (1 - x4) * Jt; var X = Vpj - Rm + gbs * Cm; var b = -(X + 7 * GsO * gbs / 3 - Rd + Jb / 3); var c = (Jb / 3 - Rd) * X - GsO * gbs * (Jb / 3 + 7 * Rd / 3); return smallRoot(1, b, c); }
+    function A(Cm) { return Math.min(Ac(Cm), Aj(Cm)); }
+    function Cs(Cm) { var a = A(Cm); var vp = (Ac(Cm) <= Aj(Cm)) ? Vp(Cm) : Math.min(x4 * Jt / 2, Vpr); return { Cs: Cm + (vp - Rm - a) / gbs, Vp: vp }; }
+    // C3 comparison (Bernacchi constants, C3 temperature functions)
+    var Kc3 = Math.exp(38.05 - 79.43 / (R * Tk)), Ko3 = Math.exp(20.30 - 36.38 / (R * Tk)), G3 = Math.exp(19.02 - 37.83 / (R * Tk));
+    var Vc3 = Vc25 * peakN(65.33, 200, 0.65, Tk), Jm3 = J25 * peakN(43.9, 152.3, 0.495, Tk), J3 = Jhyp(Jm3), Rd3 = Rd;
+    function A3(C) { var ac = Vc3 * (C - G3) / (C + Kc3 * (1 + O2 / Ko3)) - Rd3; var aj = J3 * (C - G3) / (4 * C + 8 * G3) - Rd3; return Math.min(ac, aj); }
+    return { Vp: Vp, Ac: Ac, Aj: Aj, A: A, Cs: Cs, A3: A3, GsO: GsO, Kc: Kc, Rd: Rd, Vcmax: Vcmax, Vpmax: Vpmax, Jt: Jt, G4: bisect(A, 0.01, 300), G3: bisect(A3, 1, 400), T: T };
+  }
+  var svg4 = document.getElementById('c4Svg'), tip4 = document.getElementById('c4Tip');
+  function draw4() {
+    var m = computeC4();
+    ids4.forEach(function (id) { document.getElementById(id + 'O').textContent = in4[id].value; });
+    var Amax = 0; for (var c = 0; c <= 1000; c += 50) Amax = Math.max(Amax, m.A(c), m.A3(c));
+    Amax = Math.max(20, Math.ceil(Amax * 1.12 / 10) * 10);
+    var ch = new Chart(svg4, tip4, 640, 380, { l: 56, r: 110, t: 18, b: 48 }, [0, 1000], [-5, Amax], 'Intercellular CO₂, Ci (µbar)', 'Net assimilation, A (µmol CO₂ m⁻² s⁻¹)', 100, Amax >= 60 ? 20 : 10);
+    ch.clear(); ch.axes();
+    ch.svg.appendChild(el('line', { 'class': 'ref', x1: ch.sx(Ca), x2: ch.sx(Ca), y1: ch.m.t, y2: ch.m.t + ch.ph }));
+    ch.svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(Ca) + 4, y: ch.m.t + 12 }, 'Ca = 420'));
+    ch.path(m.Ac, 'pot', 'var(--series-1)', 200); ch.path(m.Aj, 'pot', 'var(--series-2)', 200);
+    ch.path(m.A3, '', 'var(--accent-2)', 200); ch.path(m.A, 'net', null, 200);
+    var labs = [{ t: 'Ac (C4)', y: ch.sy(clamp(m.Ac(1000), -5, Amax)), col: 'var(--series-1)' }, { t: 'Aj (C4)', y: ch.sy(clamp(m.Aj(1000), -5, Amax)), col: 'var(--series-2)' }, { t: 'A (C3)', y: ch.sy(clamp(m.A3(1000), -5, Amax)), col: 'var(--accent-2)' }];
+    labs.sort(function (p, q) { return p.y - q.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { ch.svg.appendChild(el('text', { 'class': 'dl', x: ch.m.l + ch.pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    var C4op = 0.4 * Ca, C3op = 0.7 * Ca, A4 = m.A(C4op), A3op = m.A3(C3op);
+    ch.svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(C4op), cy: ch.sy(clamp(A4, -5, Amax)), r: 5, fill: 'var(--fg)' }));
+    ch.svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(C4op) + 8, y: ch.sy(clamp(A4, -5, Amax)) + 16 }, 'C4 operates at Ci = 0.4 Ca'));
+    ch.svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(C3op), cy: ch.sy(clamp(A3op, -5, Amax)), r: 5, fill: 'var(--accent-2)' }));
+    ch.svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(C3op) + 8, y: ch.sy(clamp(A3op, -5, Amax)) + 16 }, 'C3 at 0.7 Ca'));
+    ch.hover(function (C) { var s = m.Cs(C), g = +in4.cG.value / 1000, ph = s.Vp > 0 ? clamp(g * (s.Cs - C) / s.Vp, 0, 1) : 0; return 'Ci <b>' + fmt(C, 0) + '</b> µbar<br>A C4 <b>' + fmt(m.A(C), 1) + '</b> (Ac ' + fmt(m.Ac(C), 1) + ', Aj ' + fmt(m.Aj(C), 1) + ')<br>Cs <b>' + fmt(Math.max(0, s.Cs), 0) + '</b> µbar · φ <b>' + fmt(ph, 2) + '</b><br>A C3 <b>' + fmt(m.A3(C), 1) + '</b>'; },
+      [{ f: m.A, c: 'var(--fg)' }, { f: m.A3, c: 'var(--accent-2)' }]);
+    var s4 = m.Cs(C4op), gbs = +in4.cG.value / 1000, L = gbs * (s4.Cs - C4op), phi = clamp(L / s4.Vp, 0, 1);
+    document.getElementById('o4A').textContent = fmt(A4, 1) + ' µmol m⁻² s⁻¹';
+    document.getElementById('o4L').textContent = m.Ac(C4op) <= m.Aj(C4op) ? 'enzymes (PEPC/Rubisco)' : 'electron transport';
+    document.getElementById('o4Cs').textContent = fmt(Math.max(0, s4.Cs), 0) + ' µbar (' + fmt(s4.Cs / C4op, 1) + ' × Cm)';
+    document.getElementById('o4Phi').textContent = fmt(phi, 2) + ' → ' + fmt(3 + 2 / Math.max(0.01, 1 - phi), 1) + ' ATP/CO₂';
+    document.getElementById('o4Vo').textContent = fmt(2 * m.GsO / Math.max(1, s4.Cs), 3);
+    document.getElementById('o4G').textContent = (m.G4 === null ? '≈0' : fmt(m.G4, 1)) + ' · ' + (m.G3 === null ? 'n/a' : fmt(m.G3, 0)) + ' µbar';
+    document.getElementById('o3A').textContent = fmt(A3op, 1) + ' µmol m⁻² s⁻¹';
+    var html = '<thead><tr><th class="num">Ci</th><th class="num">Ac C4</th><th class="num">Aj C4</th><th class="num">A C4</th><th class="num">Cs</th><th class="num">A C3</th></tr></thead><tbody>';
+    [25, 50, 75, 100, 150, 200, 300, 400, 600, 800, 1000].forEach(function (cc) { var s = m.Cs(cc); html += '<tr><td class="num">' + cc + '</td><td class="num">' + fmt(m.Ac(cc)) + '</td><td class="num">' + fmt(m.Aj(cc)) + '</td><td class="num">' + fmt(m.A(cc)) + '</td><td class="num">' + fmt(Math.max(0, s.Cs), 0) + '</td><td class="num">' + fmt(m.A3(cc)) + '</td></tr>'; });
+    document.getElementById('c4Table').innerHTML = html + '</tbody>';
+  }
+  ids4.forEach(function (id) { in4[id].addEventListener('input', draw4); });
+  draw4();
+
+  /* ---------- Lab B: quantum yield crossover ---------- */
+  var qCa = document.getElementById('qCa'), qO = document.getElementById('qO'), qPhi4 = document.getElementById('qPhi4');
+  var svgQ = document.getElementById('qySvg'), tipQ = document.getElementById('qyTip');
+  function Gstar(T, O) { return Math.exp(19.02 - 37.83 / (R * (T + 273.15))) * (O / 210); }
+  function drawQ() {
+    var Cav = +qCa.value, O = +qO.value, p4 = +qPhi4.value, Phi0 = 0.093, Cc = 0.85 * Cav;
+    document.getElementById('qCaO').textContent = Cav; document.getElementById('qOO').textContent = O; document.getElementById('qPhi4O').textContent = fmt(p4, 3);
+    function p3(T) { return Math.max(0, Phi0 * (Cc - Gstar(T, O)) / (Cc + 2 * Gstar(T, O))); }
+    function p3low(T) { return Phi0 * (Cc - Gstar(T, 20)) / (Cc + 2 * Gstar(T, 20)); }
+    var ch = new Chart(svgQ, tipQ, 640, 360, { l: 60, r: 120, t: 18, b: 48 }, [5, 45], [0, 0.1], 'Leaf temperature (°C)', 'Quantum yield (mol CO₂ mol⁻¹ absorbed photons)', 5, 0.02);
+    ch.clear(); ch.axes();
+    ch.path(p3low, 'pot', 'var(--muted)'); ch.path(p3, '', 'var(--series-1)'); ch.path(function () { return p4; }, '', 'var(--series-2)');
+    var xo = bisect(function (T) { return p3(T) - p4; }, 5, 45);
+    if (xo !== null) { ch.svg.appendChild(el('line', { 'class': 'ref', x1: ch.sx(xo), x2: ch.sx(xo), y1: ch.m.t, y2: ch.m.t + ch.ph })); ch.svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(xo), cy: ch.sy(p4), r: 5, fill: 'var(--fg)' })); ch.svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(xo) + 6, y: ch.m.t + 12 }, 'crossover ' + fmt(xo, 1) + ' °C')); }
+    var labs = [{ t: 'C3 (' + O + ' mbar O₂)', y: ch.sy(clamp(p3(45), 0, 0.1)), col: 'var(--series-1)' }, { t: 'C4', y: ch.sy(p4), col: 'var(--series-2)' }, { t: 'C3, 2% O₂', y: ch.sy(clamp(p3low(45), 0, 0.1)), col: 'var(--muted)' }];
+    labs.sort(function (p, q) { return p.y - q.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { ch.svg.appendChild(el('text', { 'class': 'dl', x: ch.m.l + ch.pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    ch.hover(function (T) { return 'T <b>' + fmt(T, 1) + '</b> °C · Γ* <b>' + fmt(Gstar(T, O), 1) + '</b> µbar<br>Φ C3 <b>' + fmt(p3(T), 3) + '</b> · Φ C4 <b>' + fmt(p4, 3) + '</b><br>' + (p3(T) > p4 ? 'C3 more efficient' : 'C4 more efficient'); }, [{ f: p3, c: 'var(--series-1)' }, { f: function () { return p4; }, c: 'var(--series-2)' }]);
+    document.getElementById('oqCc').textContent = fmt(Cc, 0) + ' µbar';
+    document.getElementById('oqG').textContent = fmt(Gstar(25, O), 1) + ' µbar';
+    document.getElementById('oqP').textContent = fmt(p3(25), 3);
+    document.getElementById('oqX').textContent = xo === null ? (p3(25) > p4 ? 'none: C3 wins at all T' : 'none: C4 wins at all T') : fmt(xo, 1) + ' °C';
+    var html = '<thead><tr><th class="num">T (°C)</th><th class="num">Γ* (µbar)</th><th class="num">Φ C3</th><th class="num">Φ C4</th></tr></thead><tbody>';
+    for (var T = 5; T <= 45; T += 5) html += '<tr><td class="num">' + T + '</td><td class="num">' + fmt(Gstar(T, O), 1) + '</td><td class="num">' + fmt(p3(T), 3) + '</td><td class="num">' + fmt(p4, 3) + '</td></tr>';
+    document.getElementById('qyTable').innerHTML = html + '</tbody>';
+  }
+  [qCa, qO, qPhi4].forEach(function (e) { e.addEventListener('input', drawQ); });
+  drawQ();
+
+  /* ---------- Lab C: isotope discrimination ---------- */
+  var iPhi = document.getElementById('iPhi'), iB3 = document.getElementById('iB3'), iR4 = document.getElementById('iR4'), iR3 = document.getElementById('iR3');
+  var svgI = document.getElementById('isoSvg'), tipI = document.getElementById('isoTip');
+  function drawI() {
+    var phi = +iPhi.value, b3 = +iB3.value, r4 = +iR4.value, r3 = +iR3.value;
+    var a = 4.4, b4 = -5.7, s = 1.8, b = 27, dair = -8;
+    document.getElementById('iPhiO').textContent = fmt(phi, 2); document.getElementById('iB3O').textContent = fmt(b3, 1); document.getElementById('iR4O').textContent = fmt(r4, 2); document.getElementById('iR3O').textContent = fmt(r3, 2);
+    var slope4 = b4 + phi * (b3 - s) - a, crit = (a - b4) / (b3 - s);
+    function D3(r) { return a + (b - a) * r; }
+    function D4(r) { return a + slope4 * r; }
+    function leafD(D) { return (dair - D) / (1 + D / 1000); }
+    var ch = new Chart(svgI, tipI, 640, 360, { l: 56, r: 110, t: 18, b: 48 }, [0, 1], [-6, 30], 'Ci / Ca', 'Discrimination, Δ¹³C (‰)', 0.1, 6, function (v) { return fmt(v, 1); });
+    ch.clear(); ch.axes();
+    ch.path(function () { return a; }, 'pot', 'var(--muted)'); ch.path(D3, '', 'var(--series-1)'); ch.path(D4, '', 'var(--series-2)');
+    ch.svg.appendChild(el('text', { 'class': 'tick', x: ch.m.l + 6, y: ch.sy(a) - 5 }, 'a = 4.4‰ (C4 at critical φ)'));
+    ch.svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(r3), cy: ch.sy(D3(r3)), r: 5, fill: 'var(--series-1)' }));
+    ch.svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(r4), cy: ch.sy(clamp(D4(r4), -6, 30)), r: 5, fill: 'var(--series-2)' }));
+    var labs = [{ t: 'C3', y: ch.sy(D3(1)), col: 'var(--series-1)' }, { t: 'C4, φ = ' + fmt(phi, 2), y: ch.sy(clamp(D4(1), -6, 30)), col: 'var(--series-2)' }];
+    labs.sort(function (p, q) { return p.y - q.y; }); if (labs[1].y - labs[0].y < 14) labs[1].y = labs[0].y + 14;
+    labs.forEach(function (L) { ch.svg.appendChild(el('text', { 'class': 'dl', x: ch.m.l + ch.pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    ch.hover(function (r) { return 'Ci/Ca <b>' + fmt(r, 2) + '</b><br>Δ C3 <b>' + fmt(D3(r), 1) + '</b>‰ (leaf δ ' + fmt(leafD(D3(r)), 1) + ')<br>Δ C4 <b>' + fmt(D4(r), 1) + '</b>‰ (leaf δ ' + fmt(leafD(D4(r)), 1) + ')'; }, [{ f: D3, c: 'var(--series-1)' }, { f: D4, c: 'var(--series-2)' }]);
+    document.getElementById('oiCrit').textContent = fmt(crit, 3);
+    document.getElementById('oiSlope').textContent = (slope4 >= 0 ? '+' : '') + fmt(slope4, 1) + ' ‰';
+    document.getElementById('oiD4').textContent = fmt(D4(r4), 1) + '‰ · ' + fmt(leafD(D4(r4)), 1) + '‰';
+    document.getElementById('oiD3').textContent = fmt(D3(r3), 1) + '‰ · ' + fmt(leafD(D3(r3)), 1) + '‰';
+    var html = '<thead><tr><th class="num">Ci/Ca</th><th class="num">Δ C3 (‰)</th><th class="num">Δ C4 (‰)</th><th class="num">δ leaf C3</th><th class="num">δ leaf C4</th></tr></thead><tbody>';
+    for (var r = 0.1; r <= 0.95; r += 0.1) html += '<tr><td class="num">' + fmt(r, 1) + '</td><td class="num">' + fmt(D3(r)) + '</td><td class="num">' + fmt(D4(r)) + '</td><td class="num">' + fmt(leafD(D3(r))) + '</td><td class="num">' + fmt(leafD(D4(r))) + '</td></tr>';
+    document.getElementById('isoTable').innerHTML = html + '</tbody>';
+  }
+  [iPhi, iB3, iR4, iR3].forEach(function (e) { e.addEventListener('input', drawI); });
+  drawI();
+})();
+</script>
+</body>
+</html>

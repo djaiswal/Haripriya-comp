@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nitrogen Cycling</title>
+<meta name="description" content="The terrestrial nitrogen cycle at comprehensive-exam depth: pools and fluxes, redox chemistry, fixation, depolymerisation and mineralisation, nitrification, denitrification, anammox and DNRA, losses by volatilisation, leaching and N2O, N limitation theory, isotopes, and how models such as DayCent, CLM5 and ORCHIDEE represent it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .chart text, .ncyc text { font-family: var(--font-display); fill: var(--fg); }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dash { stroke-dasharray: 5 4; }
+  .chart .thin { stroke-width: 1.3; opacity: 0.6; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .band { fill: var(--accent-soft); opacity: 0.55; }
+  .chart .band2 { fill: var(--accent-2-soft); opacity: 0.6; }
+  .chart .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .chart .pt2 { fill: var(--accent-2); stroke: var(--surface); stroke-width: 2; }
+  .chart .note { font-size: 11px; fill: var(--muted); }
+  .chart .pulse { stroke: var(--accent-2); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .chartbox { position: relative; }
+  /* N cycle diagram */
+  .ncyc .pool rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; cursor: pointer; transition: fill .2s, stroke .2s; }
+  .ncyc .pool text { font-size: 13px; font-weight: 600; pointer-events: none; }
+  .ncyc .pool .sub { font-size: 10px; font-weight: 400; fill: var(--muted); }
+  .ncyc .pool.on rect, .ncyc .pool:hover rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+  .ncyc .fx path.line { fill: none; stroke: var(--muted); stroke-width: 2; marker-end: url(#ah); transition: stroke .2s; }
+  .ncyc .fx path.hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
+  .ncyc .fx text { font-size: 10.5px; fill: var(--muted); cursor: pointer; }
+  .ncyc .fx.on path.line, .ncyc .fx:hover path.line { stroke: var(--accent); stroke-width: 3; marker-end: url(#ahOn); }
+  .ncyc .fx.on text, .ncyc .fx:hover text { fill: var(--accent); font-weight: 600; }
+  .ncyc .fx.loss path.line { stroke-dasharray: 6 4; }
+  .ncyc .ox { font-size: 10px; fill: var(--accent-2); font-weight: 600; }
+  .infobox { background: var(--surface-2); border-radius: 8px; padding: 0.75rem 1rem; min-height: 14rem; font-size: 0.92rem; }
+  .infobox .eyebrow { color: var(--accent); }
+  .infobox dl { display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.75rem; margin: 0.5rem 0 0; font-size: 0.86rem; }
+  .infobox dt { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.15rem; }
+  .infobox dd { margin: 0; }
+  .infobox p { margin: 0.3rem 0 0; }
+  .redox td:first-child { font-family: var(--font-mono); font-size: 0.85rem; }
+  .verdict { font-family: var(--font-display); font-weight: 600; }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › Nitrogen cycling</div>
+    <div class="eyebrow">Topic 5 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">Nitrogen Cycling</h1>
+    <p class="lead">Nitrogen moves through eight oxidation states, each step run by a different set of microbes with its own enzymes and environmental controls. This page follows N from N₂ to organic matter to ammonium, nitrate and back to the atmosphere, and shows how that chain is compressed into the N submodels of ecosystem and Earth system models.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Almost all nitrogen is in the atmosphere as triple-bonded N₂, inaccessible to most life. Nitrogenase in a few prokaryotes breaks that bond (<strong>biological N fixation</strong>, ~58 Tg N yr⁻¹ on land naturally), and since 1913 the Haber–Bosch process has added roughly twice as much again. In soil, 95–99% of N is organic; the rate-limiting step in supplying plants and microbes is the <strong>depolymerisation</strong> of proteins and chitin into monomers, after which <strong>ammonification</strong> releases NH₄⁺. Ammonium is oxidised to nitrite and nitrate by <strong>nitrifiers</strong> (archaea, bacteria and, since 2015, complete ammonia oxidisers) when oxygen is present, and nitrate is reduced stepwise to N₂ by <strong>denitrifiers</strong> when it is not, leaking the greenhouse gas <strong>N₂O</strong> along the way. Plants and microbes compete for NH₄⁺, NO₃⁻ and amino acids; what escapes is lost as NH₃ gas (at high pH), as leached NO₃⁻ (a mobile anion), or as NO, N₂O and N₂. Terrestrial ecosystems are mostly N-limited because fixation is expensive and losses are leaky; adding N first stimulates growth, then saturates the system and exports nitrate and N₂O. Models represent all of this with a handful of pools and first-order rates modified by temperature, moisture and substrate, and the way they do it decides how much CO₂ fertilisation they allow.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>An examiner will test whether you can name the organisms, enzymes and oxidation-state changes for each transformation; explain which environmental variable controls each one and why; derive a simple consequence (e.g. the NH₃/NH₄⁺ fraction at a given pH, or why N₂O peaks at intermediate moisture); and connect that to a model structure (DayCent's hole-in-the-pipe, CLM5's FUN) and to a global question (does N limitation cap the land carbon sink?).</p></div>
+  </section>
+
+  <section id="pools">
+    <h2>Pools and fluxes, global and local</h2>
+    <p>The atmosphere holds about 3.9 × 10⁹ Tg N as N₂, soils about 95–140 Pg N in the top metre (overwhelmingly organic), and vegetation only 3–4 Pg N. Before humans, terrestrial biological N fixation (BNF) supplied roughly 58 Tg N yr⁻¹ (range 40–100; Vitousek et al. 2013; Fowler et al. [6]) and lightning ~5 Tg. Today Haber–Bosch fixation is ~120 Tg N yr⁻¹, crop BNF ~60 Tg, and fossil-fuel combustion ~30 Tg of NO<sub>x</sub>, so reactive N creation has more than doubled (Galloway et al. [4, 5]). About half of fertiliser N is taken up by the crop; the rest leaches, volatilises or denitrifies. Atmospheric deposition returns ~60–70 Tg N yr⁻¹ to land, much of it to ecosystems that never received deposition before. Rockström and Steffen's planetary-boundary analysis put a safe limit of ~62 Tg N yr⁻¹ for industrial and intentional fixation against ~150 Tg now, which is why N is among the most transgressed boundaries.</p>
+    <p>At the ecosystem scale the numbers are smaller but the structure is the same: a temperate forest cycles 50–100 kg N ha⁻¹ yr⁻¹ through litterfall and mineralisation, receives 5–30 kg in deposition, fixes 1–10 kg, and loses a few kg as nitrate and gases. Internal recycling exceeds inputs by an order of magnitude, which is why mineralisation, not fixation, sets annual plant N supply.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Global pool or flux</th><th class="num">Magnitude</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Atmospheric N₂</td><td class="num">3.9 × 10⁹ Tg N</td><td>78% of air; triple bond 945 kJ mol⁻¹</td></tr>
+        <tr><td>Soil N, 0–1 m</td><td class="num">95–140 Pg N</td><td>95–99% organic; C:N ≈ 10–14</td></tr>
+        <tr><td>Vegetation N</td><td class="num">3–4 Pg N</td><td>Mostly in leaves and fine roots</td></tr>
+        <tr><td>Natural terrestrial BNF</td><td class="num">≈ 58 (40–100) Tg N yr⁻¹</td><td>Fowler et al. 2013 [6]; marine BNF ≈ 140</td></tr>
+        <tr><td>Haber–Bosch</td><td class="num">≈ 120 Tg N yr⁻¹</td><td>~80% to fertiliser; ~1–2% of global energy</td></tr>
+        <tr><td>Crop BNF / combustion NO<sub>x</sub></td><td class="num">≈ 60 / 30 Tg N yr⁻¹</td><td>Legumes, rice paddies; vehicles and power plants</td></tr>
+        <tr><td>N deposition to land</td><td class="num">≈ 60–70 Tg N yr⁻¹</td><td>NH<sub>x</sub> now exceeds NO<sub>y</sub> in many regions</td></tr>
+        <tr><td>Denitrification, terrestrial</td><td class="num">≈ 100–150 Tg N yr⁻¹</td><td>Very uncertain; the least-constrained flux</td></tr>
+        <tr><td>N₂O emission, total</td><td class="num">≈ 17 Tg N yr⁻¹ (≈ 7 anthropogenic)</td><td>Agriculture ≈ 4 Tg; atmospheric growth ~1 ppb yr⁻¹</td></tr>
+        <tr><td>Fertiliser N recovery by crops</td><td class="num">≈ 40–50%</td><td>Global NUE ≈ 47% (Lassaletta et al. 2014)</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="transformations">
+    <h2>The transformations: a redox ladder</h2>
+    <p>Nitrogen's chemistry is a story of electrons. The oxidation state runs from −3 (NH₄⁺, amines) to +5 (NO₃⁻). Oxidations (fixation's reverse, nitrification) require an electron acceptor, usually O₂, and release energy that chemolithoautotrophs live on; reductions (fixation, denitrification, DNRA, assimilatory nitrate reduction) need electron donors, usually organic carbon or H₂, and most run only when O₂ is scarce. Keep this table in your head; it organises everything that follows.</p>
+    <div class="tablewrap"><table class="redox">
+      <thead><tr><th>Species</th><th class="num">N oxidation state</th><th>Produced by</th><th>Consumed by</th></tr></thead>
+      <tbody>
+        <tr><td>NH₄⁺ / R–NH₂</td><td class="num">−3</td><td>Fixation, ammonification, DNRA</td><td>Nitrification, assimilation, anammox, volatilisation (as NH₃)</td></tr>
+        <tr><td>NH₂OH (hydroxylamine)</td><td class="num">−1</td><td>Ammonia monooxygenase (AMO)</td><td>Hydroxylamine oxidoreductase (HAO)</td></tr>
+        <tr><td>N₂</td><td class="num">0</td><td>Denitrification (nosZ), anammox</td><td>Nitrogenase</td></tr>
+        <tr><td>N₂O</td><td class="num">+1</td><td>Denitrification (nor), nitrifier denitrification, HAO side reactions, chemodenitrification</td><td>N₂O reductase (nosZ) only</td></tr>
+        <tr><td>NO</td><td class="num">+2</td><td>Nitrite reductase (nirK/nirS); nitrification side product</td><td>NO reductase (nor)</td></tr>
+        <tr><td>NO₂⁻</td><td class="num">+3</td><td>Ammonia oxidation; nitrate reduction (nar/nap)</td><td>NOB (nxr); nir; anammox; DNRA</td></tr>
+        <tr><td>NO₃⁻</td><td class="num">+5</td><td>Nitrite oxidation (nxr), comammox</td><td>Denitrification, DNRA, plant and microbial assimilation, leaching</td></tr>
+      </tbody></table></div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · The soil nitrogen cycle: click any pool or arrow</h3><span class="small muted">Numbers in orange are N oxidation states</span></div>
+      <div class="lab-grid" style="grid-template-columns:minmax(0,1fr)">
+        <div class="figwrap">
+        <svg class="ncyc" id="ncyc" viewBox="0 0 760 470" role="img" aria-label="Interactive diagram of the soil nitrogen cycle with pools for atmospheric N2, plant N, soil organic N, ammonium, nitrite, nitrate and N gases, and arrows for fixation, litterfall, mineralisation, immobilisation, nitrification, denitrification, uptake, volatilisation, leaching, DNRA and anammox">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+            <marker id="ahOn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+          </defs>
+          <!-- fluxes (drawn first so pools sit on top) -->
+          <g class="fx" data-k="bnf"><path class="line" d="M330,62 C260,90 160,110 120,150"/><path class="hit" d="M330,62 C260,90 160,110 120,150"/><text x="190" y="92" text-anchor="middle">biological N fixation</text></g>
+          <g class="fx" data-k="hb"><path class="line" d="M640,70 C600,120 560,170 520,222"/><path class="hit" d="M640,70 C600,120 560,170 520,222"/><text x="652" y="90" text-anchor="start">fertiliser, deposition</text></g>
+          <g class="fx" data-k="litter"><path class="line" d="M100,196 C100,250 130,300 190,330"/><path class="hit" d="M100,196 C100,250 130,300 190,330"/><text x="60" y="280" text-anchor="start">litterfall, root death</text></g>
+          <g class="fx" data-k="miner"><path class="line" d="M300,330 C330,310 360,290 390,268"/><path class="hit" d="M300,330 C330,310 360,290 390,268"/><text x="326" y="286" text-anchor="end">depolymerisation →</text><text x="326" y="299" text-anchor="end">ammonification</text></g>
+          <g class="fx" data-k="immob"><path class="line" d="M404,268 C404,310 372,340 320,352"/><path class="hit" d="M404,268 C404,310 372,340 320,352"/><text x="410" y="332" text-anchor="start">immobilisation</text></g>
+          <g class="fx" data-k="nit1"><path class="line" d="M480,245 L548,245"/><path class="hit" d="M480,245 L548,245"/><text x="514" y="286" text-anchor="middle">NH₃ oxidation (AOA, AOB)</text></g>
+          <g class="fx" data-k="nit2"><path class="line" d="M612,245 L670,245"/><path class="hit" d="M612,245 L670,245"/><text x="641" y="286" text-anchor="middle">nitrite oxidation (NOB)</text></g>
+          <g class="fx" data-k="denit"><path class="line" d="M700,222 C690,160 640,110 600,80"/><path class="hit" d="M700,222 C690,160 640,110 600,80"/><text x="672" y="140" text-anchor="start" transform="rotate(0)">denitrification</text></g>
+          <g class="fx" data-k="n2on"><path class="line" d="M450,222 C470,150 520,100 560,76"/><path class="hit" d="M450,222 C470,150 520,100 560,76"/><text x="518" y="118" text-anchor="start">nitrifier N₂O</text></g>
+          <g class="fx" data-k="togas"><path class="line" d="M540,42 L470,42"/><path class="hit" d="M540,42 L470,42"/><text x="505" y="13" text-anchor="middle">N₂O → N₂ (nosZ)</text></g>
+          <g class="fx" data-k="uptake"><path class="line" d="M395,252 C330,238 240,216 166,192"/><path class="hit" d="M395,252 C330,238 240,216 166,192"/><text x="300" y="248" text-anchor="middle">NH₄⁺ and organic N uptake</text></g>
+          <g class="fx" data-k="uptake2"><path class="line" d="M672,230 C600,200 320,190 166,178"/><path class="hit" d="M672,230 C600,200 320,190 166,178"/><text x="330" y="172" text-anchor="middle">NO₃⁻ uptake</text></g>
+          <g class="fx loss" data-k="volat"><path class="line" d="M420,222 C400,190 380,160 360,130"/><path class="hit" d="M420,222 C400,190 380,160 360,130"/><text x="352" y="152" text-anchor="end">NH₃ volatilisation</text></g>
+          <g class="fx loss" data-k="leach"><path class="line" d="M700,268 L700,330"/><path class="hit" d="M700,268 L700,330"/><text x="708" y="300" text-anchor="start">leaching</text></g>
+          <g class="fx" data-k="dnra"><path class="line" d="M680,268 C640,338 520,338 460,268"/><path class="hit" d="M680,268 C640,338 520,338 460,268"/><text x="572" y="336" text-anchor="middle">DNRA</text></g>
+          <g class="fx" data-k="anammox"><path class="line" d="M560,222 C520,150 440,90 400,64"/><path class="hit" d="M560,222 C520,150 440,90 400,64"/><text x="452" y="86" text-anchor="start">anammox</text></g>
+          <!-- pools -->
+          <g class="pool" data-k="n2" transform="translate(330,20)"><rect width="140" height="44" rx="8"/><text x="70" y="19" text-anchor="middle">Atmospheric N₂</text><text class="sub" x="70" y="35" text-anchor="middle">3.9 × 10⁹ Tg</text><text class="ox" x="128" y="12" text-anchor="middle">0</text></g>
+          <g class="pool" data-k="gas" transform="translate(540,20)"><rect width="110" height="44" rx="8"/><text x="55" y="19" text-anchor="middle">NO, N₂O</text><text class="sub" x="55" y="35" text-anchor="middle">trace gases</text><text class="ox" x="98" y="12" text-anchor="middle">+2, +1</text></g>
+          <g class="pool" data-k="plant" transform="translate(40,150)"><rect width="124" height="46" rx="8"/><text x="62" y="20" text-anchor="middle">Plant N</text><text class="sub" x="62" y="36" text-anchor="middle">amino acids, Rubisco</text><text class="ox" x="112" y="12" text-anchor="middle">−3</text></g>
+          <g class="pool" data-k="som" transform="translate(190,330)"><rect width="130" height="46" rx="8"/><text x="65" y="20" text-anchor="middle">Soil organic N</text><text class="sub" x="65" y="36" text-anchor="middle">95–99% of soil N</text><text class="ox" x="118" y="12" text-anchor="middle">−3</text></g>
+          <g class="pool" data-k="nh4" transform="translate(395,222)"><rect width="85" height="46" rx="8"/><text x="42" y="20" text-anchor="middle">NH₄⁺</text><text class="sub" x="42" y="36" text-anchor="middle">cation, sorbed</text><text class="ox" x="74" y="12" text-anchor="middle">−3</text></g>
+          <g class="pool" data-k="no2" transform="translate(548,222)"><rect width="64" height="46" rx="8"/><text x="32" y="20" text-anchor="middle">NO₂⁻</text><text class="sub" x="32" y="36" text-anchor="middle">transient</text><text class="ox" x="54" y="12" text-anchor="middle">+3</text></g>
+          <g class="pool" data-k="no3" transform="translate(670,222)"><rect width="75" height="46" rx="8"/><text x="37" y="20" text-anchor="middle">NO₃⁻</text><text class="sub" x="37" y="36" text-anchor="middle">mobile anion</text><text class="ox" x="64" y="12" text-anchor="middle">+5</text></g>
+          <g class="pool" data-k="nh3" transform="translate(300,88)"><rect width="80" height="34" rx="8"/><text x="40" y="22" text-anchor="middle">NH₃ gas</text><text class="ox" x="70" y="10" text-anchor="middle">−3</text></g>
+          <g class="pool" data-k="out" transform="translate(655,336)"><rect width="90" height="34" rx="8"/><text x="45" y="22" text-anchor="middle">groundwater</text></g>
+          <text x="20" y="440" class="sub" style="font-size:11px;fill:var(--muted)">Dashed arrows are losses from the ecosystem. Aerobic steps run left to right along the ladder; anaerobic steps run back.</text>
+          <text x="20" y="456" class="sub" style="font-size:11px;fill:var(--muted)">Inputs: fixation (N₂ → NH₄⁺), fertiliser (NH₄⁺, urea, NO₃⁻), deposition (NH<tspan dy="3" style="font-size:8px">x</tspan><tspan dy="-3">, NO</tspan><tspan dy="3" style="font-size:8px">y</tspan><tspan dy="-3">).</tspan></text>
+        </svg>
+        </div>
+        <div class="infobox" id="ncycInfo"><div class="eyebrow" id="ncycTitle">Select a pool or process</div><p id="ncycText">Click an arrow or box.</p><dl id="ncycDl"></dl></div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: trace the aerobic path from organic N through NH₄⁺ to NO₃⁻ and note that each step needs O₂; then trace the anaerobic return via denitrification and DNRA and note that each needs an electron donor. Find the two arrows that make N₂O. Find the three ways N leaves the ecosystem.</p>
+    </div>
+
+    <h3>Biological N fixation</h3>
+    <p>Nitrogenase, a two-component Fe protein / MoFe protein complex (alternative V and Fe-only forms exist), reduces N₂ at great cost: N₂ + 8 H⁺ + 8 e⁻ + 16 ATP → 2 NH₃ + H₂ + 16 ADP + 16 P<sub>i</sub>. The enzyme is irreversibly inactivated by O₂, so fixers either live anaerobically, separate fixation in time or in heterocysts (cyanobacteria), or, in legume nodules, bathe the bacteroids in leghaemoglobin that keeps free O₂ in the nanomolar range while supplying respiration. <strong>Symbiotic</strong> fixation (rhizobia–legumes, <em>Frankia</em>–actinorhizal plants, cyanobacteria–lichens and cycads) can deliver 50–300 kg N ha⁻¹ yr⁻¹; <strong>associative</strong> fixation on root surfaces and in the rhizosphere (<em>Azospirillum</em>, grasses) and <strong>free-living</strong> fixation (<em>Azotobacter</em>, cyanobacterial crusts, wood-decaying fungi–bacteria consortia) are typically 1–20 kg. Controls: energy (carbon supply, light for phototrophs), O₂, Mo and P availability (nitrogenase and the ATP bill), temperature, and the availability of mineral N, which represses <em>nif</em> gene expression because fixing is pointless when NH₄⁺ is cheap. In models BNF is prescribed as a function of NPP or evapotranspiration (CLM4.5, JULES), computed as a cost-based option within FUN (CLM5), or made responsive to plant N status (ORCHIDEE-CNP, QUINCY).</p>
+
+    <h3>Depolymerisation, mineralisation, immobilisation</h3>
+    <p>For most of the 20th century the paradigm was that mineralisation of NH₄⁺ was the bottleneck of N supply and that plants used only mineral N. Schimel and Bennett [1] reframed it: the rate-limiting step is the <strong>depolymerisation</strong> of proteins, peptides, chitin and nucleic acids by extracellular enzymes (proteases, chitinases, peptidases) into monomers; amino acids are then taken up directly by microbes and by plants and mycorrhizae, and ammonification is the release of NH₄⁺ from amino acids by microbes that have carbon to spare and N in excess (the stoichiometric argument on the <a href="stoichiometry-cnp.html">stoichiometry page</a>). In N-poor systems plants compete for amino acids at the micro-site scale; in N-rich systems microbes are saturated, NH₄⁺ and NO₃⁻ accumulate, and the classic mineral-N view is a fair approximation. The distinction matters for measurements: <strong>net mineralisation</strong> (change in NH₄⁺ + NO₃⁻ in an incubation without plants) is the balance of gross mineralisation and gross immobilisation and can be near zero while gross rates are large. <strong>¹⁵N pool dilution</strong> (Kirkham and Bartholomew 1954) labels the NH₄⁺ pool with ¹⁵NH₄⁺ and follows the decline in enrichment: unlabelled N entering by gross mineralisation dilutes the pool, while consumption (immobilisation, nitrification) removes label and unlabelled N in proportion. Gross mineralisation in forest soils is typically 1–5 mg N kg⁻¹ d⁻¹, often five to ten times the net rate.</p>
+
+    <h3>Nitrification</h3>
+    <p>Nitrification is a two-organism, two-step chemolithoautotrophic oxidation. <strong>Ammonia oxidisers</strong> convert NH₃ (the substrate is the un-ionised form) to hydroxylamine with ammonia monooxygenase (AMO, <em>amoA</em> gene), then to nitrite via hydroxylamine oxidoreductase (HAO) and, in bacteria, a nitric oxide intermediate; the energy yield is small (~270 kJ mol⁻¹), so they fix CO₂ slowly and grow slowly. Ammonia-oxidising archaea (AOA; <em>Nitrososphaera</em>, <em>Nitrosopumilus</em>) usually outnumber ammonia-oxidising bacteria (AOB; <em>Nitrosomonas</em>, <em>Nitrosospira</em>) in soils, especially acidic and low-NH₄⁺ soils, because they have a much higher affinity for NH₃ (Prosser and Nicol [11]); AOB dominate after fertilisation. <strong>Nitrite oxidisers</strong> (NOB; <em>Nitrobacter</em>, <em>Nitrospira</em>) use nitrite oxidoreductase (<em>nxr</em>) to make NO₃⁻. Daims et al. [12] and van Kessel et al. discovered <em>Nitrospira</em> strains that perform <strong>comammox</strong>, complete oxidation of NH₃ to NO₃⁻ in one cell, overturning the century-old two-organism rule. Controls: O₂ (strictly aerobic), NH₄⁺ supply (and hence mineralisation and fertiliser), pH (NH₃ availability falls at low pH; AOA cope better), temperature (optimum 25–35 °C), and moisture (optimum ~60% water-filled pore space, the compromise between substrate diffusion and O₂ supply). Nitrification produces N₂O as a by-product of hydroxylamine oxidation (~0.1–1% of N nitrified) and, at low O₂, through <strong>nitrifier denitrification</strong>, in which AOB reduce their own nitrite to NO and N₂O with <em>nirK</em> and <em>norB</em>.</p>
+
+    <h3>Denitrification</h3>
+    <p>Facultative anaerobes (<em>Pseudomonas</em>, <em>Paracoccus</em>, many others, plus some fungi and archaea) respire NO₃⁻ when O₂ is scarce, reducing it stepwise: NO₃⁻ → NO₂⁻ (nitrate reductase, <em>narG</em> membrane-bound or <em>napA</em> periplasmic) → NO (nitrite reductase, <em>nirK</em> copper or <em>nirS</em> cytochrome cd₁) → N₂O (NO reductase, <em>norB</em>/<em>cnor</em>/<em>qnor</em>) → N₂ (N₂O reductase, <em>nosZ</em>, clades I and II). The pathway is modular: many organisms lack <em>nosZ</em> and stop at N₂O, and the N₂O reductase is the most sensitive enzyme to O₂ and to low pH, so <strong>the N₂O:N₂ ratio rises in acidic, freshly anoxic, nitrate-rich soils</strong>. Controls (in order of importance in most soils): anoxia (water-filled pore space above ~60–70%, aggregate interiors, high respiration), NO₃⁻ supply, labile carbon (the electron donor), pH, and temperature. Denitrification is the least constrained flux in the global N budget, and the hole-in-the-pipe model below is the standard way to think about its gaseous products. Other anaerobic routes: <strong>DNRA</strong> (dissimilatory nitrate reduction to ammonium, <em>nrfA</em>), favoured when labile C is abundant relative to NO₃⁻ and conditions are strongly reducing, conserves N in the ecosystem; <strong>anammox</strong> (anaerobic ammonium oxidation, NH₄⁺ + NO₂⁻ → N₂ + 2 H₂O, via hydrazine, by Planctomycetes such as <em>Candidatus</em> Brocadia and Kuenenia) dominates N₂ production in marine oxygen-minimum zones and sediments and occurs in wetland and paddy soils. Kuypers, Marchant and Kartal [10] give the modern microbial map of all of these.</p>
+  </section>
+
+  <section id="losses">
+    <h2>Losses: gases, volatilisation, leaching</h2>
+    <h3>The hole-in-the-pipe model</h3>
+    <p>Firestone and Davidson [7] pictured N flowing through a pipe: the total flow is the rate of nitrification plus denitrification (set by N supply), and the gases NO and N₂O leak through holes whose size is set by soil conditions, chiefly water content. Davidson et al. [8] added the moisture dependence: as <strong>water-filled pore space</strong> (WFPS) rises, O₂ diffusion falls (D ∝ air-filled porosity), nitrification peaks near 60% WFPS, denitrification takes over above ~70%, and the dominant gas shifts from NO (dry, aerobic) to N₂O (60–80%) to N₂ (&gt;85%, when N₂O reductase is fully active and N₂O cannot escape before being reduced). The model explains the classic pulse of N₂O after rain on dry soil (nitrification burst plus transient anoxia) and the N₂O peak at intermediate moisture seen in incubation studies (Butterbach-Bahl et al. [9]).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Hole-in-the-pipe: which N gas, and how much, versus soil moisture</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="hipSvg" viewBox="0 0 640 380" role="img" aria-label="Production of NO, N2O and N2 as a function of water-filled pore space, with nitrification and denitrification activity curves"></svg>
+            <div class="chart-tip" id="hipTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">NO</span><span style="--c:var(--series-2)">N₂O</span><span style="--c:var(--series-3)">N₂</span><span style="--c:var(--muted)">nitrification and denitrification activity (dashed, scaled)</span><span style="--c:var(--fg)">current WFPS</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="hipTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="hW"><span>Water-filled pore space (%)</span><output id="hWO">60</output></label><input type="range" id="hW" min="10" max="100" step="1" value="60"></div>
+          <div class="ctrl"><label for="hN"><span>Mineral N availability (relative)</span><output id="hNO">1.0</output></label><input type="range" id="hN" min="0.1" max="3" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="hC"><span>Labile C for denitrifiers (relative)</span><output id="hCO">1.0</output></label><input type="range" id="hC" min="0.1" max="3" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="hpH"><span>Soil pH (affects N₂O:N₂)</span><output id="hpHO">6.5</output></label><input type="range" id="hpH" min="4" max="8.5" step="0.1" value="6.5"></div>
+          <dl class="readout">
+            <dt>Nitrification activity (0–1)</dt><dd id="hFn"></dd>
+            <dt>Denitrification activity (0–1)</dt><dd id="hFd"></dd>
+            <dt>NO flux</dt><dd id="hNOv"></dd>
+            <dt>N₂O flux</dt><dd id="hN2Ov"></dd>
+            <dt>N₂ flux</dt><dd id="hN2v"></dd>
+            <dt>N₂O : N₂ (denitrification)</dt><dd id="hRatio"></dd>
+            <dt>Dominant gas</dt><dd id="hDom" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Fluxes are in nominal µg N m⁻² h⁻¹: nitrification activity is a Gaussian centred on 55–60% WFPS, denitrification a logistic rising through 60–85%, and the N₂O reductase fraction increases with WFPS and with pH (nosZ is inhibited below pH ~5.5). Suggested experiments: at 30% WFPS note NO dominates (dry, aerobic, nitrification-derived); at 65–75% N₂O peaks; above 85% N₂ takes over. Raise labile C to see denitrification swamp nitrification at high moisture. Drop pH to 4.5 and watch N₂O:N₂ climb.</p>
+    </div>
+
+    <h3>N₂O as a greenhouse gas</h3>
+    <p>N₂O has a global warming potential of about 273 (AR6; 298 in AR4) over 100 years, an atmospheric lifetime of ~115 years, and is now the dominant ozone-depleting emission. Agricultural soils contribute roughly 4 Tg N₂O-N yr⁻¹ of a 17 Tg total. The IPCC Tier 1 default emission factor is <strong>1% of applied N</strong> emitted directly as N₂O-N (uncertainty 0.3–3%; the 2019 refinement splits it into 1.6% for wet and 0.5% for dry climates), plus indirect emissions from leached and volatilised N. Shcherbak, Millar and Robertson [14] showed from a meta-analysis that the emission factor is not constant: N₂O rises <strong>exponentially with N rate</strong>, so the marginal emission from fertiliser beyond crop demand is far higher than from the first increments, a strong argument for rate-based rather than flat emission accounting and for matching supply to demand.</p>
+
+    <h3>Ammonia volatilisation</h3>
+    <p>NH₄⁺ and NH₃ are in acid–base equilibrium with pK<sub>a</sub> ≈ 9.25 at 25 °C; only the un-ionised NH₃ escapes to the air. The fraction present as NH₃ is</p>
+    <div class="eq">$$f_{NH_3} = \frac{1}{1 + 10^{\,pK_a - pH}}, \qquad pK_a(T) \approx 0.0902 + \frac{2729.9}{T\,[\mathrm{K}]},$$</div>
+    <p>so at pH 7 about 0.6% is NH₃, at pH 8 about 5%, at pH 9 about 36%. Urea hydrolysis by urease raises the pH around the granule to 8–9 and drives large losses (10–40% of applied N on calcareous or dry warm soils); injection, incorporation, urease inhibitors (NBPT) and acidifying fertilisers (ammonium sulphate) reduce them. Flooded rice paddies, feedlots and surface-applied slurry are the big sources. Volatilised NH₃ is re-deposited within tens to hundreds of kilometres, which is why NH<sub>x</sub> deposition now dominates in agricultural regions.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · NH₃ fraction versus pH and temperature</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="nh3Svg" viewBox="0 0 640 360" role="img" aria-label="Fraction of ammoniacal N present as NH3 gas against pH at three temperatures"></svg>
+            <div class="chart-tip" id="nh3Tip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">selected temperature</span><span style="--c:var(--series-1)">5 °C</span><span style="--c:var(--series-2)">35 °C</span><span style="--c:var(--accent-2)">your pH</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="vpH"><span>Soil solution pH</span><output id="vpHO">7.5</output></label><input type="range" id="vpH" min="4" max="11" step="0.05" value="7.5"></div>
+          <div class="ctrl"><label for="vT"><span>Temperature (°C)</span><output id="vTO">25</output></label><input type="range" id="vT" min="0" max="40" step="0.5" value="25"></div>
+          <dl class="readout">
+            <dt>pK<sub>a</sub>(T)</dt><dd id="vpKa"></dd>
+            <dt>NH₃ fraction at your pH</dt><dd id="vF"></dd>
+            <dt>at pH 7 / 8 / 9</dt><dd id="vF789"></dd>
+            <dt>pH at which 50% is NH₃</dt><dd id="vHalf"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: compare pH 6.5 (typical acid soil, &lt;0.2% NH₃) with pH 8.5 around a urea granule (~15%). Warm the soil from 5 to 35 °C at pH 8 and note the fraction triples, because pK<sub>a</sub> falls with temperature. This is why spring urea on cold wet soil loses little and summer surface urea on calcareous soil loses a lot.</p>
+    </div>
+
+    <h3>Leaching</h3>
+    <p>Nitrate is an anion, and most soils have little anion exchange capacity at normal pH, so NO₃⁻ moves with water: concentrations in drainage track the balance between nitrification and uptake, and losses are concentrated in periods with water surplus and no plant demand (autumn and winter in temperate agriculture, snowmelt in boreal systems). Typical losses are 10–60 kg N ha⁻¹ yr⁻¹ from fertilised cropland and &lt;5 kg from intact forests. Dissolved organic N (DON) dominates leaching in unpolluted ecosystems and is a "leak" that does not depend on N saturation (Hedin et al. 1995). NH₄⁺ is held on the cation exchange complex and leaches little, except in sandy, low-CEC soils.</p>
+  </section>
+
+  <section id="plants">
+    <h2>Plants, N limitation and N saturation</h2>
+    <p><strong>Uptake.</strong> Roots take up NH₄⁺ (AMT transporters; cheaper to assimilate, no reduction needed, but toxic at high concentration and acidifying as H⁺ is extruded), NO₃⁻ (NRT1/NRT2 transporters; must be reduced by nitrate reductase and nitrite reductase at a cost of 8 e⁻ per N, but it is the more mobile and often the more abundant form in aerated soils), and amino acids (AAP transporters; important in cold, acidic, organic soils such as tundra and boreal forest). Ectomycorrhizal and ericoid fungi produce proteases and access organic N directly; arbuscular mycorrhizae mostly move NH₄⁺. Species differ in preference: many conifers and ericaceous plants prefer NH₄⁺ or amino acids, many crops and ruderals prefer NO₃⁻, and rice is adapted to NH₄⁺ in flooded soil.</p>
+    <p><strong>Why N limits.</strong> Vitousek and Howarth [2] asked why, with an unlimited atmospheric reservoir and organisms that can tap it, N should limit productivity on land and in the sea. Their answers: fixation is energetically costly and fixers are limited by P, Mo, Fe, light and grazing, so they do not fix enough to remove N limitation; N is lost by pathways (denitrification, leaching, fire) that have no counterpart for P; and the slow release of N from organic matter during succession means ecosystems can be N-limited for centuries after disturbance or glaciation. Vitousek and Field (1999) added the <strong>fixer paradox</strong>: symbiotic fixers are abundant in the tropics, where N is relatively available, and scarce in N-poor temperate and boreal forests, suggesting that fixers lose their advantage once N accumulates and are constrained by cold, shade and P.</p>
+    <p><strong>N saturation and deposition.</strong> Aber et al. [13] described stages as chronic N deposition exceeds biological demand: stage 0 (N-limited, high retention), stage 1 (growth stimulation, foliar N rises, nitrification begins), stage 2 (nitrification and NO₃⁻ leaching increase, Ca and Mg are stripped as counter-ions, Al mobilised), and stage 3 (declining productivity, fine-root and mycorrhizal loss, N₂O emission). Experimental additions at Harvard Forest and in Europe (NITREX) broadly confirmed the sequence but showed large soil retention, mostly through immobilisation into soil organic matter. Deposition also shifts species composition (grasses over heath, nitrophilous mosses), acidifies soil, and in the short term raises forest carbon sequestration by ~20–40 kg C per kg N.</p>
+    <p><strong>Agriculture.</strong> Globally about 47% of N inputs to cropland end up in harvested products; the balance goes to volatilisation (10–20% of surface-applied urea), leaching (10–30% of surplus), denitrification and soil storage. The "4R" prescription (right rate, source, time, place) and enhanced-efficiency fertilisers all target the mismatch between N supply and crop demand that drives Shcherbak's exponential N₂O response and nitrate leaching.</p>
+  </section>
+
+  <section id="dynamics">
+    <h2>Putting the pieces together: a mineral-N simulator</h2>
+    <p>Most soil N models (Century, DayCent, DNDC, the N module of APSIM, CLM) share a skeleton: an organic N pool that mineralises slowly, an NH₄⁺ pool that is nitrified, and a NO₃⁻ pool that is taken up, leached and denitrified, each process first-order in its substrate and modified by temperature and moisture functions. The simulator below is that skeleton with representative rate constants, so you can see which process wins under which conditions.</p>
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Soil mineral N over 120 days</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="simSvg" viewBox="0 0 640 380" role="img" aria-label="Ammonium and nitrate pools in kilograms of N per hectare over 120 days with fertiliser pulses"></svg>
+            <div class="chart-tip" id="simTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">NH₄⁺-N</span><span style="--c:var(--series-2)">NO₃⁻-N</span><span style="--c:var(--series-3)">cumulative plant uptake (÷5)</span><span style="--c:var(--accent-2)">fertiliser pulse</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="simTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sT"><span>Soil temperature (°C)</span><output id="sTO">18</output></label><input type="range" id="sT" min="2" max="35" step="0.5" value="18"></div>
+          <div class="ctrl"><label for="sW"><span>Water-filled pore space (%)</span><output id="sWO">55</output></label><input type="range" id="sW" min="15" max="100" step="1" value="55"></div>
+          <div class="ctrl"><label for="sD"><span>Fertiliser dose per pulse (kg N ha⁻¹)</span><output id="sDO">80</output></label><input type="range" id="sD" min="0" max="200" step="5" value="80"></div>
+          <div class="ctrl"><label for="sDay"><span>Day for next pulse</span><output id="sDayO">60</output></label><input type="range" id="sDay" min="1" max="119" step="1" value="60"></div>
+          <div class="btnrow"><button class="btn small primary" id="sAdd" type="button">Add pulse</button><button class="btn small" id="sClear" type="button">Clear pulses</button><span class="small muted" id="sPulses"></span></div>
+          <dl class="readout">
+            <dt>Mineralised (kg N ha⁻¹)</dt><dd id="sMin"></dd>
+            <dt>Nitrified</dt><dd id="sNit"></dd>
+            <dt>Plant uptake</dt><dd id="sUp"></dd>
+            <dt>Leached NO₃⁻</dt><dd id="sLe"></dd>
+            <dt>Denitrified</dt><dd id="sDe"></dd>
+            <dt>Volatilised NH₃</dt><dd id="sVo"></dd>
+            <dt>Uptake ÷ (fertiliser + mineralised + initial)</dt><dd id="sEff"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model: mineralisation 0.30 kg N ha⁻¹ d⁻¹ at 20 °C scaled by Q₁₀ = 2 and a moisture function; nitrification 0.2 d⁻¹ × NH₄⁺ with a WFPS optimum at 60%; plant uptake Michaelis–Menten in mineral N with a seasonal demand curve peaking at day 60; leaching proportional to NO₃⁻ once WFPS exceeds 65%; denitrification 0.08 d⁻¹ × NO₃⁻ above 60% WFPS; NH₃ loss 1% d⁻¹ of NH₄⁺ for a week after each urea pulse. Suggested experiments: apply 80 kg at day 10 and watch NH₄⁺ convert to NO₃⁻ within 2–3 weeks at 18 °C; set WFPS to 85% to see nitrate vanish into leaching and denitrification; cool to 5 °C and note NH₄⁺ persists; split the dose into two pulses at days 10 and 60 and compare the uptake efficiency readout.</p>
+    </div>
+  </section>
+
+  <section id="isotopes">
+    <h2>Isotopes: δ¹⁵N as an integrator</h2>
+    <p>¹⁵N is 0.3663% of natural N; δ¹⁵N = (R<sub>sample</sub>/R<sub>air</sub> − 1) × 1000‰ with atmospheric N₂ as the zero. Enzymes prefer the light isotope, so every fractionating loss leaves the residual pool heavier. Nitrification fractionates strongly (ε ≈ −15 to −35‰; the NO₃⁻ produced is light, the NH₄⁺ left behind heavy), denitrification too (ε ≈ −10 to −30‰), ammonia volatilisation very strongly (ε ≈ −20 to −40‰), while fixation and plant uptake at low concentration fractionate little (0 to −3‰). Fractionation is only expressed when the reaction is incomplete and the product leaves, which is why δ¹⁵N records the <strong>openness</strong> of the N cycle: ecosystems that lose a large fraction of their N through nitrification–denitrification or volatilisation become enriched (tropical forests, arid soils, fertilised fields with δ¹⁵N of +5 to +15‰), while closed, N-limited systems that recycle N tightly stay near 0 or negative (boreal forests, tundra, −5 to 0‰). Soil δ¹⁵N increases with depth (1–8‰) as microbial processing enriches residual organic N and as mycorrhizal fungi retain ¹⁵N while passing depleted N to plants (Högberg [17]). Houlton and Bai [16] used the global distribution of soil and plant δ¹⁵N to estimate that gaseous losses, mostly denitrification, account for roughly a third of N losses from natural terrestrial ecosystems, a result otherwise unreachable because denitrification is so hard to measure.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>Century and DayCent.</strong> Century (Parton et al. 1987) couples each of its C pools to an N pool with fixed C:N and computes mineralisation and immobilisation from the C flows (the MIT bookkeeping of the stoichiometry page). DayCent added a daily time step and the N-gas submodel of Parton et al. [15, 18] and Del Grosso et al. [19]: nitrification is a function of NH₄⁺, temperature, WFPS and pH, with a fixed fraction (~2%) emitted as N₂O; denitrification is the minimum of nitrate-, carbon- (heterotrophic respiration as a proxy for electron donors) and WFPS-limited rates; the N₂:N₂O ratio rises with WFPS and with the ratio of NO₃⁻ to respiration; NO is scaled from N₂O by a function of gas diffusivity, i.e. the hole-in-the-pipe in code. DayCent underlies the US national greenhouse-gas inventory for agricultural soils.</p>
+    <p><strong>CLM5.</strong> The soil N cycle (decomposition, mineralisation, immobilisation) follows Century-type pools; nitrification and denitrification are taken from the DayCent formulations above. Plant N acquisition uses <strong>FUN</strong> (Fixation and Uptake of Nitrogen; Fisher et al. 2010, Shi et al. 2016): the plant spends carbon on whichever route is cheapest among active root uptake, mycorrhizal uptake, retranslocation and symbiotic fixation, so N limitation appears as a carbon cost rather than an abrupt down-regulation. Leaf C:N is flexible and photosynthetic capacity responds to leaf N through LUNA. Losses include leaching proportional to drainage and the NO₃⁻ concentration, and gaseous losses from nitrification and denitrification.</p>
+    <p><strong>ORCHIDEE-N / -CNP, JULES-CN, JSBACH-CNP, QUINCY.</strong> ORCHIDEE-CN (Vuichard et al. 2019) adopted the Century-style soil N with DayCent gas fluxes and a flexible plant stoichiometry; ORCHIDEE-CNP adds P. JULES-CN (Wiltshire et al. 2021) attaches an N cycle to the RothC-based soil model with fixed tissue ratios and BNF scaled by NPP. JSBACH-CNP (Goll et al. 2012) was among the first to show that adding N and P to an ESM land model reduces projected CO₂ uptake. QUINCY (Thum et al. 2019) builds the N and P cycles in from the start with explicit microbial activity and isotope tracers (¹³C, ¹⁴C, ¹⁵N), designed to be tested against δ¹⁵N patterns.</p>
+    <p><strong>The question that matters.</strong> Does N limit the land carbon sink? Zaehle and Dalmonech [20] and Wieder et al. [21] argue yes: when C–N coupling is added, the projected 21st-century land sink shrinks substantially, and Wieder et al. estimated that achieving the CMIP5 land C gains would require N inputs well beyond plausible fixation and deposition. Zaehle et al. (2014) showed at two FACE sites that models disagree mainly in how N limitation develops over a decade. Davies-Barnard et al. (2020) found that CMIP6 models with N cycles still differ by a factor of two in global BNF and in the fate of deposited N. The uncertain pieces are exactly the processes on this page: BNF response to demand, the openness of losses (denitrification and leaching), and the flexibility of plant and soil stoichiometry.</p>
+  </section>
+
+  <section id="methods">
+    <h2>Measurement methods worth knowing</h2>
+    <ul>
+      <li><strong>Net mineralisation and nitrification</strong>: buried-bag or laboratory incubations of sieved soil; change in KCl-extractable NH₄⁺ + NO₃⁻ over weeks. Cheap, integrative, but excludes plant uptake and disturbs structure.</li>
+      <li><strong>Ion-exchange resin bags or capsules</strong>: capture mineral N moving through the soil in situ over weeks to months; index of availability, not a rate.</li>
+      <li><strong>¹⁵N pool dilution</strong>: gross mineralisation, nitrification, immobilisation over 1–3 days. <strong>¹⁵N tracer additions</strong> (enriched fertiliser or litter) follow the fate of N into plants, soil and losses over years; mass-balance recoveries of 70–90% are typical, with the rest assumed gaseous.</li>
+      <li><strong>Acetylene inhibition</strong>: 10 Pa C₂H₂ blocks ammonia monooxygenase (isolates nitrification); 10 kPa blocks N₂O reductase, so N₂O accumulates and total denitrification can be measured. Underestimates in the presence of NO and in soils where acetylene is decomposed; largely replaced by ¹⁵N-gas flux methods and N₂/Ar ratios.</li>
+      <li><strong>Chamber fluxes</strong>: static chambers with gas chromatography or laser spectroscopy (QCL) for N₂O and NO; automated chambers and eddy covariance for continuous N₂O. Fluxes are spatially and temporally episodic (hot spots and hot moments), so sampling design dominates uncertainty.</li>
+      <li><strong>Molecular markers</strong>: <em>nifH</em> (fixation), <em>amoA</em> (AOA/AOB/comammox), <em>nirK/nirS</em>, <em>nosZ</em> clade I/II, <em>nrfA</em> (DNRA), hydrazine synthase (anammox); abundance and transcript data constrain which pathways are possible, not rates.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>N oxidation states</td><td class="num">−3 (NH₄⁺) to +5 (NO₃⁻)</td><td>N₂ 0, N₂O +1, NO +2, NO₂⁻ +3</td></tr>
+        <tr><td>Nitrogenase stoichiometry</td><td class="num">N₂ + 8 e⁻ + 16 ATP → 2 NH₃ + H₂</td><td>Plus O₂ protection costs; Mo and Fe cofactors</td></tr>
+        <tr><td>Natural terrestrial BNF / Haber–Bosch</td><td class="num">≈ 58 / ≈ 120 Tg N yr⁻¹</td><td>Fowler et al. 2013 [6]</td></tr>
+        <tr><td>Planetary boundary for fixation</td><td class="num">≈ 62 Tg N yr⁻¹ vs ≈ 150 today</td><td>Steffen et al. 2015</td></tr>
+        <tr><td>Soil N that is organic</td><td class="num">95–99%</td><td>Mineral N usually &lt; 2% of total</td></tr>
+        <tr><td>Gross vs net mineralisation</td><td class="num">gross ≈ 5–10 × net</td><td>¹⁵N pool dilution</td></tr>
+        <tr><td>Nitrification optimum WFPS / N₂O peak / N₂ dominance</td><td class="num">≈ 60% / 60–80% / &gt; 85%</td><td>Davidson et al. 2000 [8]</td></tr>
+        <tr><td>pK<sub>a</sub> of NH₄⁺</td><td class="num">9.25 at 25 °C</td><td>NH₃ fraction 0.6% at pH 7, 5% at pH 8, 36% at pH 9</td></tr>
+        <tr><td>N₂O GWP₁₀₀ / lifetime</td><td class="num">273 (AR6), 298 (AR4) / ≈ 115 yr</td><td>Also the dominant ozone-depleting emission</td></tr>
+        <tr><td>IPCC Tier 1 direct N₂O emission factor</td><td class="num">1% of applied N (0.3–3%)</td><td>2019 refinement: 1.6% wet, 0.5% dry climate</td></tr>
+        <tr><td>Fertiliser recovery in crop</td><td class="num">≈ 40–50%</td><td>Global NUE ≈ 47%</td></tr>
+        <tr><td>Nitrate leaching, cropland / forest</td><td class="num">10–60 / &lt; 5 kg N ha⁻¹ yr⁻¹</td><td>Depends on surplus and drainage</td></tr>
+        <tr><td>Fractionation factors ε</td><td class="num">nitrification −15 to −35‰; denitrification −10 to −30‰; volatilisation −20 to −40‰</td><td>Fixation and uptake ≈ 0 to −3‰</td></tr>
+        <tr><td>Ecosystem δ¹⁵N</td><td class="num">boreal −5 to 0‰; tropical, arid +5 to +15‰</td><td>Openness of the N cycle; Houlton &amp; Bai 2009 [16]</td></tr>
+        <tr><td>Acetylene inhibition concentrations</td><td class="num">10 Pa (AMO) / 10 kPa (nosZ)</td><td>Isolates nitrification / total denitrification</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Describe the two steps of nitrification, naming the organisms and enzymes, and explain how comammox changed the picture. Which environmental factors control the rate and why?</summary><div class="a"><p>Step one: ammonia (NH₃, the un-ionised form) is oxidised to hydroxylamine by ammonia monooxygenase (AMO, encoded by <em>amoA</em>), then to nitrite by hydroxylamine oxidoreductase (HAO), in bacteria via NO. This is performed by ammonia-oxidising bacteria (<em>Nitrosomonas</em>, <em>Nitrosospira</em>; β- and γ-proteobacteria) and ammonia-oxidising archaea (Thaumarchaeota such as <em>Nitrososphaera</em>), the archaea having far higher substrate affinity and dominating low-NH₄⁺, acidic and unfertilised soils. Step two: nitrite is oxidised to nitrate by nitrite oxidoreductase (<em>nxr</em>) in nitrite-oxidising bacteria (<em>Nitrobacter</em>, <em>Nitrospira</em>). Both steps are chemolithoautotrophic, with low energy yields and slow growth. Daims et al. (2015) and van Kessel et al. (2015) found <em>Nitrospira</em> strains carrying both AMO and NXR that carry out complete ammonia oxidation (comammox) in one cell, which overturned the assumption that nitrification must be a two-organism process and may explain nitrification in oligotrophic and engineered systems. Controls: O₂ (obligately aerobic; AMO needs O₂ as co-substrate), NH₄⁺/NH₃ supply (substrate; pH dependence through the NH₃/NH₄⁺ equilibrium, with AOA tolerant of low pH), temperature (optimum 25–35 °C), and moisture, with a maximum near 60% WFPS where substrate diffusion in water and O₂ diffusion in air are jointly adequate. N₂O is released as a by-product of HAO chemistry and, under low O₂, by nitrifier denitrification.</p></div></details>
+    <details class="q"><summary>2. Explain the hole-in-the-pipe model and use it to predict how NO, N₂O and N₂ emissions change as a dry soil is wetted to saturation.</summary><div class="a"><p>Firestone and Davidson (1989) represent N flowing through a pipe at a rate set by nitrification plus denitrification (controlled by N availability); gases leak through holes whose sizes depend on soil conditions, chiefly O₂ status set by water-filled pore space (WFPS), plus pH and carbon. Wetting a dry soil: at low WFPS (&lt; 40%) nitrification proceeds where water films allow, O₂ is abundant, and the small gaseous leak is mostly NO, which diffuses out before being consumed. Around 50–60% WFPS nitrification peaks and some N₂O is produced by nitrifiers; as WFPS passes 60–70%, O₂ diffusion falls (gas diffusivity scales with air-filled porosity), anoxic microsites and aggregate interiors appear, denitrification starts on the nitrate the nitrifiers just made, and N₂O production peaks (60–80%) because N₂O reductase is the most O₂-sensitive enzyme and N₂O escapes before being reduced. Above ~85% WFPS the soil is largely anoxic, gas escape is slow, nosZ is fully active and N₂ dominates; total gaseous loss can be large but N₂O flux falls. Hence the classic N₂O pulse after rain on dry fertilised soil and the "Birch-like" burst of mineralisation that accompanies rewetting. DayCent encodes this with WFPS functions for nitrification, denitrification and the N₂:N₂O ratio.</p></div></details>
+    <details class="q"><summary>3. Derive the fraction of ammoniacal N present as NH₃ as a function of pH and compute it at pH 6, 8 and 9.5 at 25 °C. Why do urea applications lose more N than ammonium sulphate?</summary><div class="a"><p>NH₄⁺ ⇌ NH₃ + H⁺ with K<sub>a</sub> = [NH₃][H⁺]/[NH₄⁺]. Then [NH₃]/[NH₄⁺] = K<sub>a</sub>/[H⁺] = 10<sup>pH − pK<sub>a</sub></sup>, and the fraction f = [NH₃]/([NH₃] + [NH₄⁺]) = 1/(1 + 10<sup>pK<sub>a</sub> − pH</sup>). With pK<sub>a</sub> = 9.25: pH 6 → 1/(1 + 10<sup>3.25</sup>) = 0.056%; pH 8 → 1/(1 + 10<sup>1.25</sup>) = 5.3%; pH 9.5 → 1/(1 + 10<sup>−0.25</sup>) = 64%. pK<sub>a</sub> falls with temperature (≈ 0.09 + 2730/T), so warm soils volatilise more. Urea is hydrolysed by urease to NH₃ and CO₂, consuming protons and raising pH in the fertiliser microsite to 8–9 regardless of bulk soil pH, so a large fraction is NH₃ and can escape, especially from the surface of warm, dry or calcareous soils (10–40% loss). Ammonium sulphate is a physiologically acid salt: nitrification and uptake of NH₄⁺ release H⁺, lowering pH and keeping almost all N as NH₄⁺, so losses are small except on calcareous soils. Mitigation: incorporate or inject urea, apply before rain, use urease inhibitors (NBPT) or coated products.</p></div></details>
+    <details class="q"><summary>4. What did Schimel and Bennett (2004) change about how we think of N mineralisation, and what are the implications for measuring N availability and for models?</summary><div class="a"><p>The classical paradigm held that mineralisation (NH₄⁺ production) was the rate-limiting step of plant N supply, that microbes always out-competed plants for mineral N, and that plants used only NH₄⁺ and NO₃⁻ after microbial demand was met. Schimel and Bennett argued that the bottleneck is depolymerisation of N-containing polymers by extracellular enzymes into amino acids and other monomers; that plants, mycorrhizal fungi and free-living microbes compete for these monomers at the microsite scale; and that NH₄⁺ release occurs when microbes are C-limited and have N in excess. They proposed a gradient: in very N-poor systems plants rely on organic N and microsite competition; with increasing N availability microbes become N-saturated, NH₄⁺ accumulates and is nitrified, and the mineral-N view becomes adequate. Implications: net mineralisation incubations underestimate supply and ignore organic N uptake; gross rates (¹⁵N pool dilution) and amino-acid fluxes matter; plant traits such as mycorrhizal type and protease production determine competitive ability; models that supply N to plants only after microbial demand is satisfied and only as NH₄⁺/NO₃⁻ (most land models) misrepresent N-poor systems, which is one motivation for FUN in CLM5 (mycorrhizal and organic N routes) and for microbial-explicit N models.</p></div></details>
+    <details class="q"><summary>5. Why does nitrogen limit productivity in most terrestrial ecosystems when the atmosphere is 78% N₂ and some organisms can fix it?</summary><div class="a"><p>Vitousek and Howarth (1991) gave four groups of reasons. (i) Energetics and constraints on fixers: breaking the N≡N bond costs 16 ATP per N₂ plus the cost of excluding O₂, so fixers are at a competitive disadvantage whenever mineral N is available; they are also limited by P, Mo and Fe, by light (shade in closed forests), by grazing on N-rich tissue, and by cold. (ii) Loss pathways unique to N: denitrification, NH₃ volatilisation, fire, and leaching of the mobile nitrate anion continuously remove N, whereas P is retained by sorption; so ecosystems leak N and must keep fixing to stay even. (iii) Timescales: after disturbance, glaciation or on young substrates, N must accumulate from near zero through fixation (centuries), while P is supplied by weathering of parent material. (iv) Stoichiometric coupling: most N is in organic matter with slow turnover, so supply depends on decomposition. Vitousek and Field (1999) modelled the fixer paradox, showing that fixers are favoured only where N is scarce and other resources (P, light) adequate, explaining their rarity in N-poor temperate forests and abundance in tropical forests. Consequences: added N stimulates growth (fertilisation and deposition experiments), and the long-term CO₂ fertilisation effect depends on whether new N can be acquired.</p></div></details>
+    <details class="q"><summary>6. Compare DayCent and CLM5 in how they compute nitrification, denitrification and plant N uptake. Which features control the simulated N₂O response to fertiliser and the N limitation of CO₂ fertilisation?</summary><div class="a"><p>DayCent: nitrification = f(NH₄⁺) × f(T) × f(WFPS) × f(pH) with a fixed ~2% N₂O yield and NO derived from N₂O via a diffusivity function; denitrification = min of NO₃⁻-, heterotrophic-respiration- (electron donor) and WFPS-limited rates, partitioned into N₂ and N₂O by a ratio that rises with WFPS and with NO₃⁻/CO₂; plant uptake is demand-driven from fixed C:N allocation, taking whatever mineral N is available after microbial immobilisation. CLM5 uses the same DayCent gas formulations for its mineral N pools but Century-style decomposition with vertically resolved soil, and plant acquisition through FUN: N is obtained by active uptake, mycorrhizal uptake, retranslocation or symbiotic fixation, each with a carbon cost depending on root biomass and soil N, with flexible leaf C:N and LUNA linking leaf N to photosynthetic capacity. The N₂O response to fertiliser in both is governed by the WFPS and temperature modifiers, the fixed nitrification yield and the denitrification partitioning; neither reproduces Shcherbak's exponential rate response unless N accumulates beyond uptake. The N limitation of CO₂ fertilisation in CLM5 depends on the FUN cost curves, the BNF option, leaf C:N flexibility, and the leaching and gas loss rates, which together determine how much new N enters relative to the N sequestered in growing biomass and SOM (progressive N limitation).</p></div></details>
+    <details class="q"><summary>7. Explain why soil and plant δ¹⁵N increase along gradients of increasing N loss, and how Houlton and Bai used this to constrain global denitrification.</summary><div class="a"><p>Enzymes discriminate against ¹⁵N, so the products of nitrification, denitrification and volatilisation are depleted and the residual substrate is enriched. Fractionation is expressed only when a reaction is incomplete and the product is removed from the system (Rayleigh distillation): δ<sub>residual</sub> = δ₀ + ε ln f, where f is the fraction remaining. In a closed, tightly cycling ecosystem, N is taken up and recycled almost completely, so little fractionation is expressed and δ¹⁵N stays close to that of the inputs (fixation ~0‰, deposition −5 to +5‰). In open systems, where a large fraction of mineralised N is nitrified and then lost as NO₃⁻ gas or leachate with low δ¹⁵N, the N retained in soil and plants becomes progressively heavier; the enrichment is greatest when the losses are gaseous (large ε) rather than leaching (small ε for NO₃⁻ leaving, but the nitrate is itself depleted). Houlton and Bai (2009) combined a global map of soil and plant δ¹⁵N with an isotope mass balance of inputs and outputs, solving for the gaseous fraction of losses needed to produce the observed enrichment; they concluded that gaseous losses, mostly denitrification, constitute roughly a third of total N losses from unmanaged terrestrial ecosystems, with the highest fractions in tropical and arid regions. This is an integrative constraint that direct flux measurements cannot provide.</p></div></details>
+    <details class="q"><summary>8. A fertilised maize field emits N₂O at 1% of applied N at 150 kg N ha⁻¹. Discuss whether halving the rate halves emissions, and what else changes.</summary><div class="a"><p>Under the IPCC Tier 1 assumption, direct N₂O is linear in applied N, so halving the rate would halve emissions (from 1.5 to 0.75 kg N₂O-N ha⁻¹). Shcherbak, Millar and Robertson (2014) showed from 78 studies that the response is better described as exponential, with the emission factor itself increasing with N rate, especially above the rate at which crop uptake saturates; emissions from the surplus N (N applied beyond crop demand) are disproportionately large. Halving an above-optimum rate therefore cuts emissions by more than half, while halving a below-optimum rate cuts them by less and reduces yield. Other consequences: lower NO₃⁻ leaching and indirect N₂O (IPCC counts 0.75% of leached N and 1% of volatilised N as indirect N₂O), lower NH₃ volatilisation if urea is used, and possibly lower residue N returning to the soil, which affects the following season's mineralisation. Mechanistically, in hole-in-the-pipe terms the rate reduction shrinks the flow through the pipe; the holes (set by WFPS, temperature, C, pH) are unchanged, so the timing of emissions (after rain, at thaw) stays the same. Management levers that act on the holes include drainage, avoiding application before heavy rain, nitrification inhibitors (DCD, DMPP) and controlled-release sources.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Schimel JP, Bennett J (2004). Nitrogen mineralization: challenges of a changing paradigm. <em>Ecology</em> 85: 591–602. <a href="https://doi.org/10.1890/03-8002">doi:10.1890/03-8002</a><span class="why">Depolymerisation as the rate-limiting step and the microsite competition view.</span></li>
+      <li>Vitousek PM, Howarth RW (1991). Nitrogen limitation on land and in the sea: how can it occur? <em>Biogeochemistry</em> 13: 87–115. <a href="https://doi.org/10.1007/BF00002772">doi:10.1007/BF00002772</a><span class="why">The classic explanation of why N limits despite an unlimited atmospheric pool.</span></li>
+      <li>Vitousek PM, Aber JD, Howarth RW, et al. (1997). Human alteration of the global nitrogen cycle: sources and consequences. <em>Ecological Applications</em> 7: 737–750. <span class="why">The first synthesis of anthropogenic N doubling and its cascade of effects.</span></li>
+      <li>Galloway JN, Dentener FJ, Capone DG, et al. (2004). Nitrogen cycles: past, present, and future. <em>Biogeochemistry</em> 70: 153–226. <a href="https://doi.org/10.1007/s10533-004-0370-0">doi:10.1007/s10533-004-0370-0</a><span class="why">Regional and global N budgets for 1860, 1990s and 2050.</span></li>
+      <li>Galloway JN, Townsend AR, Erisman JW, et al. (2008). Transformation of the nitrogen cycle: recent trends, questions, and potential solutions. <em>Science</em> 320: 889–892. <a href="https://doi.org/10.1126/science.1136674">doi:10.1126/science.1136674</a><span class="why">Short global overview and the N cascade.</span></li>
+      <li>Fowler D, Coyle M, Skiba U, et al. (2013). The global nitrogen cycle in the twenty-first century. <em>Philosophical Transactions of the Royal Society B</em> 368: 20130164. <a href="https://doi.org/10.1098/rstb.2013.0164">doi:10.1098/rstb.2013.0164</a><span class="why">Updated flux numbers (BNF 58, Haber–Bosch 120 Tg N yr⁻¹) used in the pools table.</span></li>
+      <li>Firestone MK, Davidson EA (1989). Microbiological basis of NO and N₂O production and consumption in soil. In Andreae MO, Schimel DS (eds) <em>Exchange of Trace Gases between Terrestrial Ecosystems and the Atmosphere</em>, Wiley, pp. 7–21. <span class="why">The original hole-in-the-pipe conceptual model.</span></li>
+      <li>Davidson EA, Keller M, Erickson HE, Verchot LV, Veldkamp E (2000). Testing a conceptual model of soil emissions of nitrous and nitric oxides. <em>BioScience</em> 50: 667–680. <a href="https://doi.org/10.1641/0006-3568(2000)050[0667:TACMOS]2.0.CO;2">doi:10.1641/0006-3568(2000)050[0667:TACMOS]2.0.CO;2</a><span class="why">The WFPS curves for NO, N₂O and N₂ reproduced in Lab B.</span></li>
+      <li>Butterbach-Bahl K, Baggs EM, Dannenmann M, Kiese R, Zechmeister-Boltenstern S (2013). Nitrous oxide emissions from soils: how well do we understand the processes and their controls? <em>Philosophical Transactions of the Royal Society B</em> 368: 20130122. <a href="https://doi.org/10.1098/rstb.2013.0122">doi:10.1098/rstb.2013.0122</a><span class="why">Comprehensive review of all N₂O-producing processes and their controls.</span></li>
+      <li>Kuypers MMM, Marchant HK, Kartal B (2018). The microbial nitrogen-cycling network. <em>Nature Reviews Microbiology</em> 16: 263–276. <a href="https://doi.org/10.1038/nrmicro.2018.9">doi:10.1038/nrmicro.2018.9</a><span class="why">Modern map of organisms, enzymes and genes, including comammox, anammox and DNRA.</span></li>
+      <li>Prosser JI, Nicol GW (2012). Archaeal and bacterial ammonia-oxidisers in soil: the quest for niche specialisation and differentiation. <em>Trends in Microbiology</em> 20: 523–531. <a href="https://doi.org/10.1016/j.tim.2012.08.001">doi:10.1016/j.tim.2012.08.001</a><span class="why">AOA versus AOB niches: substrate affinity, pH and fertiliser.</span></li>
+      <li>Daims H, Lebedeva EV, Pjevac P, et al. (2015). Complete nitrification by <em>Nitrospira</em> bacteria. <em>Nature</em> 528: 504–509. <a href="https://doi.org/10.1038/nature16461">doi:10.1038/nature16461</a><span class="why">Discovery of comammox.</span></li>
+      <li>Aber J, McDowell W, Nadelhoffer K, et al. (1998). Nitrogen saturation in temperate forest ecosystems: hypotheses revisited. <em>BioScience</em> 48: 921–934. <a href="https://doi.org/10.2307/1313296">doi:10.2307/1313296</a><span class="why">The stages of N saturation, updated with a decade of experiments.</span></li>
+      <li>Shcherbak I, Millar N, Robertson GP (2014). Global metaanalysis of the nonlinear response of soil nitrous oxide (N₂O) emissions to fertilizer nitrogen. <em>PNAS</em> 111: 9199–9204. <a href="https://doi.org/10.1073/pnas.1322434111">doi:10.1073/pnas.1322434111</a><span class="why">Exponential N₂O response to N rate; why flat emission factors mislead.</span></li>
+      <li>Parton WJ, Mosier AR, Ojima DS, et al. (1996). Generalized model for N₂ and N₂O production from nitrification and denitrification. <em>Global Biogeochemical Cycles</em> 10: 401–412. <a href="https://doi.org/10.1029/96GB01455">doi:10.1029/96GB01455</a><span class="why">The DayCent N-gas submodel.</span></li>
+      <li>Houlton BZ, Bai E (2009). Imprint of denitrifying bacteria on the global terrestrial biosphere. <em>PNAS</em> 106: 21713–21716. <a href="https://doi.org/10.1073/pnas.0912111106">doi:10.1073/pnas.0912111106</a><span class="why">Global δ¹⁵N mass balance constraining the gaseous fraction of N losses.</span></li>
+      <li>Högberg P (1997). Tansley Review No. 95: ¹⁵N natural abundance in soil–plant systems. <em>New Phytologist</em> 137: 179–203. <a href="https://doi.org/10.1046/j.1469-8137.1997.00808.x">doi:10.1046/j.1469-8137.1997.00808.x</a><span class="why">Fractionation factors and how to read δ¹⁵N patterns.</span></li>
+      <li>Parton WJ, Holland EA, Del Grosso SJ, et al. (2001). Generalized model for NO<sub>x</sub> and N₂O emissions from soils. <em>Journal of Geophysical Research</em> 106: 17403–17419. <a href="https://doi.org/10.1029/2001JD900101">doi:10.1029/2001JD900101</a><span class="why">Adds NO<sub>x</sub> and the diffusivity-based NO:N₂O partitioning.</span></li>
+      <li>Del Grosso SJ, Parton WJ, Mosier AR, et al. (2000). General model for N₂O and N₂ gas emissions from soils due to denitrification. <em>Global Biogeochemical Cycles</em> 14: 1045–1060. <a href="https://doi.org/10.1029/1999GB001225">doi:10.1029/1999GB001225</a><span class="why">The denitrification formulation used in DayCent and CLM.</span></li>
+      <li>Zaehle S, Dalmonech D (2011). Carbon–nitrogen interactions on land at global scales: current understanding in modelling climate biosphere feedbacks. <em>Current Opinion in Environmental Sustainability</em> 3: 311–320. <a href="https://doi.org/10.1016/j.cosust.2011.08.008">doi:10.1016/j.cosust.2011.08.008</a><span class="why">How C–N coupling changes projected land carbon uptake.</span></li>
+      <li>Wieder WR, Cleveland CC, Smith WK, Todd-Brown K (2015). Future productivity and carbon storage limited by terrestrial nutrient availability. <em>Nature Geoscience</em> 8: 441–444. <a href="https://doi.org/10.1038/ngeo2413">doi:10.1038/ngeo2413</a><span class="why">The N (and P) required to sustain CMIP5 land sinks is not available.</span></li>
+      <li>Robertson GP, Groffman PM (2015). Nitrogen transformations. In Paul EA (ed.) <em>Soil Microbiology, Ecology and Biochemistry</em>, 4th ed., Academic Press, pp. 421–446. <span class="why">The best single chapter on the soil N cycle; read it for the organisms and methods.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="stoichiometry-cnp.html">← Previous: C:N:P Stoichiometry</a><a href="phosphorus-cycling.html">Next: Phosphorus Loss and Retention →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#pools">Pools and fluxes</a></li>
+      <li><a href="#transformations">Transformations</a></li>
+      <li><a href="#losses">Losses</a></li>
+      <li><a href="#plants">Plants, limitation, saturation</a></li>
+      <li><a href="#dynamics">Mineral-N simulator</a></li>
+      <li><a href="#isotopes">Isotopes</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#methods">Methods</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified response functions (Gaussian and logistic moisture curves, first-order rates with Q₁₀ = 2) in the spirit of DayCent; they are for intuition, not prediction.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function ticks(min, max, step) { var a = []; for (var v = min; v <= max + 1e-9; v += step) a.push(+v.toFixed(6)); return a; }
+  function val(id) { return +document.getElementById(id).value; }
+  function txt(id, t) { document.getElementById(id).textContent = t; }
+  function outs(ids) { ids.forEach(function (id) { var o = document.getElementById(id + 'O'), i = document.getElementById(id); if (o && i) o.textContent = i.value; }); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('input', fn); }); }
+  function mkChart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 380, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 18, mB = o.mB || 48;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var xmin = o.xmin, xmax = o.xmax, ymin = o.ymin, ymax = o.ymax;
+    function sx(x) { var f = (x - xmin) / (xmax - xmin); return mL + Math.max(0, Math.min(1, f)) * pw; }
+    function sy(y) { var f = (ymax - y) / (ymax - ymin); return mT + Math.max(0, Math.min(1, f)) * ph; }
+    (o.yt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    (o.xt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, o.xl));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    return { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax };
+  }
+  function linePath(c, pts) { var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1); }); return d; }
+  function series(c, pts, cls, stroke) { var p = el('path', { 'class': 'ser ' + (cls || ''), d: linePath(c, pts) }); if (stroke) p.setAttribute('stroke', stroke); c.svg.appendChild(p); return p; }
+  function label(c, x, y, t, col, anchor, cls) { c.svg.appendChild(el('text', { 'class': cls || 'dl', x: x, y: y, fill: col || 'var(--fg)', 'text-anchor': anchor || 'start' }, t)); }
+  function hover(c, tip, fn) {
+    var svg = c.svg;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: c.mT, y2: c.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: c.mL, y: c.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var f = Math.max(0, Math.min(1, (p.x - c.mL) / c.pw)); var x = c.xmin + f * (c.xmax - c.xmin);
+      var r = fn(x);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y === null || r.y === undefined || isNaN(r.y)) dot.setAttribute('visibility', 'hidden'); else { dot.setAttribute('cx', c.sx(x)); dot.setAttribute('cy', c.sy(r.y)); dot.setAttribute('visibility', 'visible'); }
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab A: N cycle diagram ---------- */
+  var info = {
+    n2: { t: 'Atmospheric N₂', p: 'The reservoir: 3.9 × 10⁹ Tg N, 78% of the atmosphere, oxidation state 0. The N≡N triple bond (945 kJ mol⁻¹) makes it inert to everything except nitrogenase, lightning and industrial catalysis at 400–500 °C and 150–300 bar.', d: { 'Enters soil by': 'biological fixation, Haber–Bosch fertiliser, lightning NO<sub>x</sub>', 'Returns by': 'denitrification (nosZ), anammox' } },
+    gas: { t: 'NO and N₂O', p: 'Trace gases leaking from the nitrification and denitrification pipes. NO (+2) is reactive and feeds tropospheric ozone chemistry; N₂O (+1) is long-lived (~115 yr), GWP₁₀₀ ≈ 273, and the main ozone-depleting emission.', d: { 'Sources': 'nitrification by-product (~0.1–1%), nitrifier denitrification, denitrification intermediates, chemodenitrification, fungal denitrification', 'Sink': 'only N₂O reductase (nosZ) consumes N₂O; NO is reduced by nor' } },
+    plant: { t: 'Plant N', p: 'Amino acids, proteins (Rubisco can be 25–50% of leaf soluble protein), nucleic acids, chlorophyll, alkaloids. Vegetation holds only 3–4 Pg N globally; leaf N 1–4% dry mass, wood 0.1–0.3%.', d: { 'Acquired as': 'NH₄⁺ (AMT), NO₃⁻ (NRT; reduced by nitrate and nitrite reductase, 8 e⁻ per N), amino acids (AAP), via mycorrhizae, or by symbiotic fixation', 'Returned by': 'litterfall, root turnover, exudation, herbivory' } },
+    som: { t: 'Soil organic N', p: 'Proteins and peptides, amino sugars (chitin, peptidoglycan), nucleic acids, heterocyclic N, much of it sorbed to minerals or inside aggregates. 95–99% of soil N; 95–140 Pg N globally in the top metre; C:N 10–14.', d: { 'Formed by': 'litter input, microbial immobilisation and necromass, sorption of amino compounds', 'Released by': 'extracellular depolymerisation (proteases, chitinases), the rate-limiting step (Schimel & Bennett 2004)' } },
+    nh4: { t: 'Ammonium NH₄⁺', p: 'Oxidation state −3, cation held on exchange sites and fixed in clay interlayers, so relatively immobile. Usually &lt; 10 kg N ha⁻¹ in the plough layer. Its conjugate base NH₃ (pK<sub>a</sub> 9.25) is the substrate for ammonia oxidisers and the form that volatilises.', d: { 'Produced by': 'ammonification, fixation, DNRA, urea hydrolysis (urease)', 'Consumed by': 'nitrification, plant and microbial assimilation, anammox, volatilisation' } },
+    no2: { t: 'Nitrite NO₂⁻', p: 'Oxidation state +3; toxic and transient, usually &lt; 1 kg N ha⁻¹ because nitrite oxidisers keep up with ammonia oxidisers. Accumulates at high pH after urea or ammonia application and in anoxic transients.', d: { 'Produced by': 'ammonia oxidation (AMO + HAO), nitrate reduction (nar/nap)', 'Consumed by': 'NOB (nxr), nitrite reductase (nirK/nirS), anammox, DNRA (nrfA)' } },
+    no3: { t: 'Nitrate NO₃⁻', p: 'Oxidation state +5, fully oxidised; an anion that is not retained by most soils and therefore leaches with drainage. The dominant mineral N form in aerated agricultural soils (10–100 kg N ha⁻¹ after fertilisation).', d: { 'Produced by': 'nitrite oxidation (NOB), comammox', 'Consumed by': 'plant uptake (nitrate reductase), denitrification (narG/napA), DNRA, microbial assimilation, leaching' } },
+    nh3: { t: 'NH₃ gas', p: 'The volatile, un-ionised form of ammoniacal N. Fraction NH₃ = 1/(1 + 10^(pK<sub>a</sub> − pH)); 0.6% at pH 7, 36% at pH 9. Lost mainly from urea, manure, flooded rice and calcareous soils; redeposited regionally.', d: { 'Control': 'pH, temperature (pK<sub>a</sub> falls with T), wind, CEC, incorporation', 'Fractionation': 'ε ≈ −20 to −40‰, leaving residual NH₄⁺ enriched in ¹⁵N' } },
+    out: { t: 'Leaching to groundwater', p: 'Nitrate (and DON in unpolluted systems) move with drainage water below the rooting zone. Cropland losses 10–60 kg N ha⁻¹ yr⁻¹; forests &lt; 5. Drives groundwater nitrate limits (50 mg NO₃⁻ L⁻¹ EU; 10 mg NO₃⁻-N L⁻¹ US) and coastal eutrophication.', d: { 'Control': 'water surplus, timing of nitrification vs uptake, anion exchange (small), macropore flow' } },
+    bnf: { t: 'Biological N fixation', p: 'N₂ + 8 H⁺ + 8 e⁻ + 16 ATP → 2 NH₃ + H₂. Reduction from 0 to −3. Symbiotic (rhizobia–legumes, Frankia, cyanobacteria in lichens and cycads): 50–300 kg N ha⁻¹ yr⁻¹; associative and free-living: 1–20 kg.', d: { 'Organisms': 'diazotrophic bacteria and archaea only: Rhizobium, Bradyrhizobium, Frankia, Azotobacter, Azospirillum, cyanobacteria (Nostoc, Anabaena)', 'Enzyme': 'nitrogenase (nifHDK; MoFe protein + Fe protein); irreversibly inactivated by O₂, hence heterocysts, leghaemoglobin, anaerobiosis', 'Controls': 'energy (C, light), O₂, P, Mo, Fe, temperature; repressed by mineral N', 'In models': 'NPP- or ET-scaled (CLM4.5, JULES), cost-based (FUN in CLM5), demand-driven (ORCHIDEE-CNP, QUINCY)' } },
+    hb: { t: 'Fertiliser and deposition inputs', p: 'Haber–Bosch (~120 Tg N yr⁻¹) supplies urea, ammonium and nitrate fertilisers; atmospheric deposition (~60–70 Tg N yr⁻¹ to land) delivers NH<sub>x</sub> from agriculture and NO<sub>y</sub> from combustion.', d: { 'Forms': 'urea → NH₄⁺ via urease within days; anhydrous NH₃; ammonium nitrate; NO₃⁻', 'Consequences': 'N saturation stages (Aber et al. 1998), soil acidification, nitrate leaching, N₂O (Tier 1 EF 1%)' } },
+    litter: { t: 'Litterfall and root turnover', p: 'Plant N returns to soil in leaves (after 50–65% resorption), fine roots, wood and exudates. Temperate forests cycle 50–100 kg N ha⁻¹ yr⁻¹ this way, an order of magnitude more than inputs.', d: { 'Stoichiometry': 'litter C:N 40–100+; wood 100–500; so early decomposition immobilises N', 'Timescale': 'months (leaf) to decades (wood)' } },
+    miner: { t: 'Depolymerisation and ammonification', p: 'Extracellular proteases, peptidases, chitinases and nucleases cut polymers into amino acids, amino sugars and nucleotides (depolymerisation, the rate-limiting step). Microbes deaminate the monomers they do not need, releasing NH₄⁺ (ammonification). No change in oxidation state (−3 throughout).', d: { 'Organisms': 'bacteria and fungi broadly; fungi dominate protease and chitinase production in litter', 'Controls': 'temperature (Q₁₀ ≈ 2), moisture, substrate C:N relative to the threshold ≈ 25, enzyme sorption to minerals', 'Measurement': 'net incubations; ¹⁵N pool dilution for gross rates (gross ≈ 5–10 × net)' } },
+    immob: { t: 'Immobilisation', p: 'Microbial assimilation of NH₄⁺ and NO₃⁻ into biomass when substrate C:N exceeds (C:N)<sub>microbe</sub>/CUE ≈ 25. Keeps fertiliser and deposition N in the soil (the main retention mechanism in N-saturation experiments) and competes with plants.', d: { 'Organisms': 'all heterotrophs; glutamine synthetase/GOGAT assimilation', 'Controls': 'labile C supply (straw, root exudates), substrate C:N, mineral N availability', 'In models': 'N demand of C flows into narrow-C:N receiver pools; if unmet, decomposition is down-regulated' } },
+    nit1: { t: 'Ammonia oxidation', p: 'NH₃ → NH₂OH → (NO) → NO₂⁻. Oxidation from −3 to +3. Chemolithoautotrophic, O₂-requiring, slow-growing. Releases N₂O as a by-product (~0.1–1%) and more under low O₂ via nitrifier denitrification.', d: { 'Organisms': 'AOA (Nitrososphaera, Nitrosopumilus; high NH₃ affinity, dominate acidic and low-N soils), AOB (Nitrosomonas, Nitrosospira; dominate after fertilisation), comammox Nitrospira', 'Enzymes': 'ammonia monooxygenase (amoA), hydroxylamine oxidoreductase (HAO)', 'Controls': 'O₂, NH₃ supply, pH (NH₃/NH₄⁺), temperature (25–35 °C optimum), WFPS ≈ 60% optimum', 'Inhibitors': 'nitrapyrin, DCD, DMPP; 10 Pa acetylene' } },
+    nit2: { t: 'Nitrite oxidation', p: 'NO₂⁻ → NO₃⁻ (+3 to +5) by nitrite oxidoreductase. Usually faster than ammonia oxidation, so nitrite does not accumulate except at high pH or after NH₃ toxicity to NOB.', d: { 'Organisms': 'Nitrobacter (copiotrophic), Nitrospira (oligotrophic; includes comammox strains that do both steps, Daims et al. 2015)', 'Enzyme': 'nitrite oxidoreductase (nxrAB)', 'Controls': 'O₂, nitrite supply, pH, free NH₃ inhibition' } },
+    denit: { t: 'Denitrification', p: 'NO₃⁻ → NO₂⁻ → NO → N₂O → N₂ (+5 to 0), anaerobic respiration using nitrogen oxides as terminal electron acceptors and organic C as donor. The main pathway returning N to the atmosphere; the least constrained global flux (~100–150 Tg N yr⁻¹ on land).', d: { 'Organisms': 'facultative anaerobes: Pseudomonas, Paracoccus, Bacillus, Alcaligenes; some fungi (to N₂O only) and archaea', 'Enzymes/genes': 'narG/napA (NO₃⁻ → NO₂⁻), nirK/nirS (→ NO), norB (→ N₂O), nosZ clade I/II (→ N₂)', 'Controls': 'anoxia (WFPS &gt; 60–70%), NO₃⁻, labile C, pH (low pH inhibits nosZ → high N₂O:N₂), temperature', 'Measurement': 'acetylene block (10 kPa), ¹⁵N gas flux, N₂/Ar' } },
+    n2on: { t: 'N₂O and NO from nitrifiers', p: 'Hydroxylamine oxidation leaks NO and N₂O chemically and enzymatically; under low O₂, AOB reduce their own nitrite to NO and N₂O (nitrifier denitrification, nirK + norB). Dominant N₂O source in well-aerated, fertilised soils at 40–60% WFPS.', d: { 'Yield': '≈ 0.1–1% of N nitrified (DayCent uses ~2% including nitrifier denitrification)', 'Control': 'O₂ (rises as WFPS increases toward 60%), NH₄⁺ supply, pH' } },
+    togas: { t: 'N₂O reduction to N₂', p: 'The final step of denitrification, catalysed by N₂O reductase (nosZ), a copper enzyme that is the most O₂-sensitive and most pH-sensitive enzyme in the pathway. Many denitrifiers lack nosZ; clade II nosZ organisms are non-denitrifying N₂O sinks.', d: { 'Consequence': 'N₂O:N₂ ratio high in acidic, freshly anoxic, nitrate-rich soils; low in persistently wet, neutral soils', 'Management': 'liming lowers N₂O:N₂; adding nosZ-bearing inoculants is under study' } },
+    uptake: { t: 'Plant and mycorrhizal uptake of NH₄⁺ and organic N', p: 'Roots and mycorrhizal hyphae take up NH₄⁺ through AMT transporters and amino acids through AAP transporters; ecto- and ericoid mycorrhizal fungi secrete proteases and access organic N directly. NH₄⁺ assimilation via glutamine synthetase costs no reductant but acidifies the rhizosphere.', d: { 'Preferences': 'conifers, ericads, rice, tundra plants favour NH₄⁺ or amino acids; many crops favour NO₃⁻', 'In models': 'demand-driven from allocation (Century), cost-based (FUN in CLM5), Michaelis–Menten in mineral N (most)' } },
+    uptake2: { t: 'Plant uptake of NO₃⁻', p: 'High- and low-affinity NRT2/NRT1 transporters; nitrate is reduced in root or leaf by nitrate reductase (NO₃⁻ → NO₂⁻, 2 e⁻) and plastidic nitrite reductase (NO₂⁻ → NH₄⁺, 6 e⁻), then assimilated by GS/GOGAT. Nitrate uptake alkalinises the rhizosphere and nitrate also acts as a signal for root branching.', d: { 'Cost': '8 e⁻ per N beyond NH₄⁺ assimilation (≈ 10–15% of photosynthetic reductant in leaves of nitrate-fed plants)', 'Significance': 'the main form in aerated agricultural soils; competes with leaching and denitrification for the same pool' } },
+    volat: { t: 'NH₃ volatilisation', p: 'Loss of un-ionised NH₃ to the atmosphere, controlled by the NH₄⁺/NH₃ equilibrium (pK<sub>a</sub> 9.25 at 25 °C). Large after surface urea, manure or anhydrous ammonia on warm, dry, calcareous or high-pH soils and from flooded rice (10–40% of applied N).', d: { 'Controls': 'pH, temperature, wind, CEC, soil moisture, urease activity', 'Mitigation': 'incorporation, injection, NBPT urease inhibitor, application before rain, acidifying sources' } },
+    leach: { t: 'Nitrate leaching', p: 'Nitrate moves with percolating water because soils have little anion exchange. Losses peak when drainage coincides with low plant demand (autumn, winter, snowmelt) and after nitrate accumulates from fertiliser or mineralisation.', d: { 'Magnitude': '10–60 kg N ha⁻¹ yr⁻¹ cropland; &lt; 5 forest; DON dominates unpolluted systems', 'Mitigation': 'cover crops, split applications, controlled drainage, riparian buffers (denitrification)' } },
+    dnra: { t: 'Dissimilatory nitrate reduction to ammonium (DNRA)', p: 'NO₃⁻ → NO₂⁻ → NH₄⁺ (+5 to −3), an 8-electron respiratory reduction by fermentative and some sulphur-oxidising bacteria. Conserves N in the ecosystem (as NH₄⁺) rather than losing it as gas.', d: { 'Organisms': 'Enterobacteriaceae, Clostridia, Bacillus, Thioploca; gene nrfA', 'Favoured by': 'high labile C : NO₃⁻ ratio, strongly reducing conditions, sulphide, high temperature; common in wetlands, paddies, sediments' } },
+    anammox: { t: 'Anammox', p: 'NH₄⁺ + NO₂⁻ → N₂ + 2 H₂O (−3 and +3 → 0) by Planctomycetes (Candidatus Brocadia, Kuenenia, Scalindua) via the hydrazine synthase pathway inside the anammoxosome. Autotrophic and very slow-growing.', d: { 'Significance': 'up to 30–50% of N₂ production in marine OMZs and sediments; minor but present in paddy and wetland soils', 'Requirements': 'anoxia, coincident NH₄⁺ and NO₂⁻ supply (nitrification–anammox interface)' } }
+  };
+  var ncyc = document.getElementById('ncyc');
+  if (ncyc) {
+    var nodes = ncyc.querySelectorAll('.fx, .pool');
+    var cur = null;
+    function showInfo(k) {
+      var d = info[k]; if (!d) return;
+      cur = k;
+      Array.prototype.forEach.call(nodes, function (n) { n.classList.toggle('on', n.getAttribute('data-k') === k); });
+      document.getElementById('ncycTitle').textContent = d.t;
+      document.getElementById('ncycText').innerHTML = d.p;
+      var dl = document.getElementById('ncycDl'); dl.innerHTML = '';
+      Object.keys(d.d || {}).forEach(function (key) { var dt = document.createElement('dt'); dt.textContent = key; var dd = document.createElement('dd'); dd.innerHTML = d.d[key]; dl.appendChild(dt); dl.appendChild(dd); });
+    }
+    Array.prototype.forEach.call(nodes, function (n) {
+      n.addEventListener('click', function () { showInfo(n.getAttribute('data-k')); });
+      n.setAttribute('tabindex', '0'); n.setAttribute('role', 'button');
+      n.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); showInfo(n.getAttribute('data-k')); } });
+    });
+    showInfo('miner');
+  }
+
+  /* ---------- Lab B: hole-in-the-pipe ---------- */
+  var hipSvg = document.getElementById('hipSvg'), hipTip = document.getElementById('hipTip');
+  function hipModel(W, Nav, Cav, pH) {
+    // W as fraction 0..1
+    var fN = Math.exp(-Math.pow((W - 0.57) / 0.17, 2));                 // nitrification activity
+    var fD = 1 / (1 + Math.exp(-(W - 0.72) / 0.045));                    // denitrification activity
+    var nit = 120 * Nav * fN;                                            // nominal nitrification rate
+    var nitGas = 0.012 * nit;                                            // gaseous yield from nitrification
+    var fracNO = 1 / (1 + Math.exp((W - 0.45) / 0.07));                  // share of nitrifier gas that is NO (dry → NO)
+    var den = 150 * Nav * Cav * fD;                                      // nominal denitrification
+    var pHfac = 1 / (1 + Math.exp(-(pH - 5.8) / 0.4));                   // nosZ activity rises with pH
+    var g = pHfac * (1 / (1 + Math.exp(-(W - 0.84) / 0.04)));            // fraction of denitrified N reaching N2
+    var NO = nitGas * fracNO + den * 0.04 * (1 - g);
+    var N2O = nitGas * (1 - fracNO) + den * 0.96 * (1 - g);
+    var N2 = den * g;
+    return { fN: fN, fD: fD, NO: NO, N2O: N2O, N2: N2, nit: nit, den: den, g: g };
+  }
+  function drawHip() {
+    outs(['hW', 'hN', 'hC', 'hpH']);
+    var W0 = val('hW') / 100, Nav = val('hN'), Cav = val('hC'), pH = val('hpH');
+    var ymax = 0; var rows = [];
+    for (var w = 0.1; w <= 1.0001; w += 0.01) { var m = hipModel(w, Nav, Cav, pH); rows.push([w, m]); ymax = Math.max(ymax, m.NO, m.N2O, m.N2); }
+    ymax = Math.max(10, Math.ceil(ymax * 1.1 / 10) * 10);
+    var step = ymax > 400 ? 100 : (ymax > 200 ? 50 : (ymax > 80 ? 20 : 10));
+    var c = mkChart(hipSvg, { W: 640, H: 380, mL: 60, mR: 60, xmin: 10, xmax: 100, ymin: 0, ymax: ymax, xt: ticks(10, 100, 10), yt: ticks(0, ymax, step), xl: 'Water-filled pore space (%)', yl: 'N gas flux (nominal µg N m⁻² h⁻¹)' });
+    // activity curves scaled to ymax*0.9
+    series(c, rows.map(function (r) { return [r[0] * 100, r[1].fN * ymax * 0.9]; }), 'dash thin', 'var(--muted)');
+    series(c, rows.map(function (r) { return [r[0] * 100, r[1].fD * ymax * 0.9]; }), 'dash thin', 'var(--muted)');
+    label(c, c.sx(57), c.sy(ymax * 0.9) - 6, 'nitrification', 'var(--muted)', 'middle', 'note');
+    label(c, c.sx(98), c.sy(ymax * 0.9) - 6, 'denitrification', 'var(--muted)', 'end', 'note');
+    series(c, rows.map(function (r) { return [r[0] * 100, r[1].NO]; }), '', 'var(--series-1)');
+    series(c, rows.map(function (r) { return [r[0] * 100, r[1].N2O]; }), '', 'var(--series-2)');
+    series(c, rows.map(function (r) { return [r[0] * 100, r[1].N2]; }), '', 'var(--series-3)');
+    // direct labels at peaks
+    function peakOf(key) { var b = rows[0]; rows.forEach(function (r) { if (r[1][key] > b[1][key]) b = r; }); return b; }
+    var pNO = peakOf('NO'), pN2O = peakOf('N2O');
+    label(c, c.sx(pNO[0] * 100), c.sy(pNO[1].NO) - 8, 'NO', 'var(--series-1)', 'middle');
+    label(c, c.sx(pN2O[0] * 100), c.sy(pN2O[1].N2O) - 8, 'N₂O', 'var(--series-2)', 'middle');
+    var last = rows[rows.length - 1][1];
+    label(c, c.mL + c.pw + 6, c.sy(last.N2) + 4, 'N₂', 'var(--series-3)');
+    // current WFPS
+    var cm = hipModel(W0, Nav, Cav, pH);
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(W0 * 100), x2: c.sx(W0 * 100), y1: c.mT, y2: c.mT + c.ph, stroke: 'var(--fg)' }));
+    [['NO', 'var(--series-1)'], ['N2O', 'var(--series-2)'], ['N2', 'var(--series-3)']].forEach(function (s) { c.svg.appendChild(el('circle', { cx: c.sx(W0 * 100), cy: c.sy(cm[s[0]]), r: 5, fill: s[1], stroke: 'var(--surface)', 'stroke-width': 2 })); });
+    hover(c, hipTip, function (x) { var m = hipModel(x / 100, Nav, Cav, pH); return { y: m.N2O, html: 'WFPS <b>' + fmt(x, 0) + '</b>%<br>NO <b>' + fmt(m.NO, 1) + '</b> · N₂O <b>' + fmt(m.N2O, 1) + '</b> · N₂ <b>' + fmt(m.N2, 1) + '</b><br>nitrification ' + fmt(m.fN, 2) + ' · denitrification ' + fmt(m.fD, 2) }; });
+    txt('hFn', fmt(cm.fN, 2)); txt('hFd', fmt(cm.fD, 2));
+    txt('hNOv', fmt(cm.NO, 1)); txt('hN2Ov', fmt(cm.N2O, 1)); txt('hN2v', fmt(cm.N2, 1));
+    txt('hRatio', cm.den > 0.01 ? fmt((1 - cm.g) / Math.max(cm.g, 1e-6), 2) : '–');
+    var dom = cm.NO >= cm.N2O && cm.NO >= cm.N2 ? 'NO' : (cm.N2O >= cm.N2 ? 'N₂O' : 'N₂');
+    var dEl = document.getElementById('hDom'); dEl.textContent = dom; dEl.style.color = dom === 'NO' ? 'var(--series-1)' : (dom === 'N₂O' ? 'var(--series-2)' : 'var(--series-3)');
+    var html = '<thead><tr><th class="num">WFPS %</th><th class="num">nitrif.</th><th class="num">denitrif.</th><th class="num">NO</th><th class="num">N₂O</th><th class="num">N₂</th></tr></thead><tbody>';
+    [20, 30, 40, 50, 60, 70, 80, 90, 100].forEach(function (w) { var m = hipModel(w / 100, Nav, Cav, pH); html += '<tr><td class="num">' + w + '</td><td class="num">' + fmt(m.fN, 2) + '</td><td class="num">' + fmt(m.fD, 2) + '</td><td class="num">' + fmt(m.NO, 1) + '</td><td class="num">' + fmt(m.N2O, 1) + '</td><td class="num">' + fmt(m.N2, 1) + '</td></tr>'; });
+    document.getElementById('hipTable').innerHTML = html + '</tbody>';
+  }
+  bind(['hW', 'hN', 'hC', 'hpH'], drawHip); drawHip();
+
+  /* ---------- Lab C: mineral N simulator ---------- */
+  var simSvg = document.getElementById('simSvg'), simTip = document.getElementById('simTip');
+  var pulses = [10];
+  function runSim() {
+    var T = val('sT'), W = val('sW') / 100, dose = val('sD');
+    var fT = Math.pow(2, (T - 20) / 10);
+    var fWm = W < 0.6 ? W / 0.6 : Math.max(0.3, 1 - (W - 0.6) / 0.4 * 0.7);
+    var fWn = Math.exp(-Math.pow((W - 0.6) / 0.2, 2));
+    var fD = 1 / (1 + Math.exp(-(W - 0.72) / 0.045));
+    var leachK = 0.35 * Math.max(0, (W - 0.65) / 0.35);
+    var NH4 = 4, NO3 = 8, Norg = 3000;
+    var cum = { min: 0, nit: 0, up: 0, le: 0, de: 0, vo: 0, fert: 0 };
+    var out = [];
+    var sub = 4, dt = 1 / sub;
+    for (var day = 0; day <= 120; day++) {
+      if (day > 0 && pulses.indexOf(day) >= 0) { NH4 += dose; cum.fert += dose; }
+      out.push({ t: day, NH4: NH4, NO3: NO3, up: cum.up });
+      if (day === 120) break;
+      for (var s = 0; s < sub; s++) {
+        var tt = day + s * dt;
+        var min = 0.30 * fT * fWm;
+        var nit = 0.2 * fT * fWn * NH4;
+        var demand = 2.2 * Math.max(0, Math.sin(Math.PI * tt / 120));
+        var Nm = NH4 + NO3;
+        var upt = demand * Nm / (8 + Nm);
+        var upNH4 = Nm > 0 ? upt * (2 * NH4) / (2 * NH4 + NO3) : 0, upNO3 = upt - upNH4;
+        var le = leachK * NO3;
+        var de = 0.08 * fD * fT * NO3;
+        var recent = pulses.some(function (p) { return tt >= p && tt < p + 7; });
+        var vo = recent ? 0.01 * NH4 : 0.0005 * NH4;
+        NH4 += dt * (min - nit - upNH4 - vo); NO3 += dt * (nit - upNO3 - le - de);
+        Norg -= dt * min;
+        if (NH4 < 0) NH4 = 0; if (NO3 < 0) NO3 = 0;
+        cum.min += dt * min; cum.nit += dt * nit; cum.up += dt * upt; cum.le += dt * le; cum.de += dt * de; cum.vo += dt * vo;
+      }
+    }
+    return { out: out, cum: cum };
+  }
+  function drawSim() {
+    outs(['sT', 'sW', 'sD', 'sDay']);
+    var r = runSim(), out = r.out, cum = r.cum;
+    var ymax = 0; out.forEach(function (p) { ymax = Math.max(ymax, p.NH4, p.NO3, p.up / 5); });
+    ymax = Math.max(20, Math.ceil(ymax * 1.15 / 10) * 10);
+    var step = ymax > 200 ? 50 : (ymax > 80 ? 20 : 10);
+    var c = mkChart(simSvg, { W: 640, H: 380, mL: 56, mR: 80, xmin: 0, xmax: 120, ymin: 0, ymax: ymax, xt: ticks(0, 120, 20), yt: ticks(0, ymax, step), xl: 'Day', yl: 'Mineral N (kg N ha⁻¹)' });
+    pulses.forEach(function (p) { c.svg.appendChild(el('line', { 'class': 'pulse', x1: c.sx(p), x2: c.sx(p), y1: c.mT, y2: c.mT + c.ph })); label(c, c.sx(p) + 3, c.mT + 12, 'pulse', 'var(--accent-2)', 'start', 'note'); });
+    series(c, out.map(function (p) { return [p.t, p.NH4]; }), '', 'var(--series-1)');
+    series(c, out.map(function (p) { return [p.t, p.NO3]; }), '', 'var(--series-2)');
+    series(c, out.map(function (p) { return [p.t, p.up / 5]; }), 'dash', 'var(--series-3)');
+    var last = out[out.length - 1];
+    var labs = [{ t: 'NH₄⁺', y: c.sy(last.NH4), col: 'var(--series-1)' }, { t: 'NO₃⁻', y: c.sy(last.NO3), col: 'var(--series-2)' }, { t: 'uptake ÷5', y: c.sy(last.up / 5), col: 'var(--series-3)' }];
+    labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { label(c, c.mL + c.pw + 6, L.y + 4, L.t, L.col); });
+    hover(c, simTip, function (x) { var p = out[Math.round(x)]; return { y: p.NO3, html: 'day <b>' + p.t + '</b><br>NH₄⁺ <b>' + fmt(p.NH4, 1) + '</b> · NO₃⁻ <b>' + fmt(p.NO3, 1) + '</b> kg N ha⁻¹<br>cumulative uptake <b>' + fmt(p.up, 1) + '</b>' }; });
+    txt('sMin', fmt(cum.min, 1)); txt('sNit', fmt(cum.nit, 1)); txt('sUp', fmt(cum.up, 1)); txt('sLe', fmt(cum.le, 1)); txt('sDe', fmt(cum.de, 1)); txt('sVo', fmt(cum.vo, 1));
+    txt('sEff', fmt(100 * cum.up / (cum.fert + cum.min + 12), 0) + '%');
+    txt('sPulses', pulses.length ? 'pulses at day ' + pulses.slice().sort(function (a, b) { return a - b; }).join(', ') : 'no fertiliser');
+    var html = '<thead><tr><th class="num">Day</th><th class="num">NH₄⁺</th><th class="num">NO₃⁻</th><th class="num">Cum. uptake</th></tr></thead><tbody>';
+    [0, 10, 20, 30, 45, 60, 75, 90, 105, 120].forEach(function (d) { var p = out[d]; html += '<tr><td class="num">' + d + '</td><td class="num">' + fmt(p.NH4, 1) + '</td><td class="num">' + fmt(p.NO3, 1) + '</td><td class="num">' + fmt(p.up, 1) + '</td></tr>'; });
+    document.getElementById('simTable').innerHTML = html + '</tbody>';
+  }
+  bind(['sT', 'sW', 'sD', 'sDay'], drawSim);
+  document.getElementById('sAdd').addEventListener('click', function () { var d = val('sDay'); if (pulses.indexOf(d) < 0) pulses.push(d); drawSim(); });
+  document.getElementById('sClear').addEventListener('click', function () { pulses = []; drawSim(); });
+  drawSim();
+
+  /* ---------- Lab D: NH3 volatilisation ---------- */
+  var nh3Svg = document.getElementById('nh3Svg'), nh3Tip = document.getElementById('nh3Tip');
+  function pKa(T) { return 0.09018 + 2729.92 / (T + 273.15); }
+  function fNH3(pH, T) { return 1 / (1 + Math.pow(10, pKa(T) - pH)); }
+  function drawNH3() {
+    outs(['vpH', 'vT']);
+    var pH = val('vpH'), T = val('vT');
+    var c = mkChart(nh3Svg, { W: 640, H: 360, mL: 56, mR: 24, xmin: 4, xmax: 11, ymin: 0, ymax: 100, xt: ticks(4, 11, 1), yt: ticks(0, 100, 20), xl: 'pH', yl: 'Fraction as NH₃ (%)' });
+    function curve(Tc, cls, col) { var pts = []; for (var p = 4; p <= 11.001; p += 0.05) pts.push([p, 100 * fNH3(p, Tc)]); series(c, pts, cls, col); }
+    curve(5, 'thin', 'var(--series-1)'); curve(35, 'thin', 'var(--series-2)'); curve(T, 'net');
+    label(c, c.sx(10.4), c.sy(100 * fNH3(10.4, 5)) + 14, '5 °C', 'var(--series-1)', 'start');
+    label(c, c.sx(8.4), c.sy(100 * fNH3(8.4, 35)) - 8, '35 °C', 'var(--series-2)', 'end');
+    label(c, c.sx(9.6), c.sy(100 * fNH3(9.6, T)) - 8, T + ' °C', 'var(--fg)', 'end');
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(pKa(T)), x2: c.sx(pKa(T)), y1: c.mT, y2: c.mT + c.ph }));
+    label(c, c.sx(pKa(T)) + 4, c.mT + c.ph - 8, 'pKa = ' + fmt(pKa(T), 2), 'var(--muted)', 'start', 'note');
+    var f = fNH3(pH, T);
+    c.svg.appendChild(el('circle', { 'class': 'pt2', cx: c.sx(pH), cy: c.sy(100 * f), r: 6 }));
+    label(c, c.sx(pH) + (pH > 9.5 ? -10 : 10), c.sy(100 * f) - 10, 'pH ' + fmt(pH, 2) + ': ' + fmt(100 * f, f < 0.01 ? 2 : 1) + '% NH₃', 'var(--accent-2)', pH > 9.5 ? 'end' : 'start');
+    hover(c, nh3Tip, function (x) { var v = fNH3(x, T); return { y: 100 * v, html: 'pH <b>' + fmt(x, 2) + '</b><br>NH₃ fraction <b>' + fmt(100 * v, 2) + '</b>% at ' + T + ' °C<br>5 °C: ' + fmt(100 * fNH3(x, 5), 2) + '% · 35 °C: ' + fmt(100 * fNH3(x, 35), 2) + '%' }; });
+    txt('vpKa', fmt(pKa(T), 2));
+    txt('vF', (f < 0.001 ? fmt(100 * f, 3) : fmt(100 * f, 2)) + '%');
+    txt('vF789', fmt(100 * fNH3(7, T), 2) + '% / ' + fmt(100 * fNH3(8, T), 1) + '% / ' + fmt(100 * fNH3(9, T), 1) + '%');
+    txt('vHalf', fmt(pKa(T), 2));
+  }
+  bind(['vpH', 'vT'], drawNH3); drawNH3();
+})();
+</script>
+</body>
+</html>

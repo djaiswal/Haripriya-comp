@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maximum-Likelihood Estimation</title>
+<meta name="description" content="Maximum-likelihood estimation at comprehensive-exam depth: likelihood, score and Fisher information, properties of the MLE, worked derivations, least squares as MLE, numerical maximisation, Wald and likelihood-ratio inference, AIC/BIC and KL divergence, MAP and Bayesian contrasts, and likelihoods in ecosystem data assimilation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .thin { stroke-width: 1.4; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .ann { font-size: 11px; fill: var(--muted); }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 1.2; }
+  .ch .cell { stroke: none; }
+  .ch .area { stroke: none; }
+  .chartbox { position: relative; }
+  .ctrl select { width: 100%; font: inherit; font-size: 0.85rem; padding: 0.25rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .btnrow { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .twocharts { display: grid; gap: 0.5rem; }
+  .ok { color: var(--accent); font-weight: 600; } .bad { color: var(--accent-2); font-weight: 600; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .iterlog { font-family: var(--font-mono); font-size: 0.75rem; background: var(--surface-2); border-radius: 8px; padding: 0.5rem 0.7rem; max-height: 9rem; overflow: auto; white-space: pre; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Maximum-likelihood estimation</div>
+    <div class="eyebrow">Topic 5 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Maximum-Likelihood Estimation</h1>
+    <p class="lead">One principle that generates least squares, logistic regression, the cost functions of data assimilation and the information criteria used to choose between ecosystem models: pick the parameters under which the data you saw were most probable.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>A probability model assigns a probability (or density) to data given parameters, \(p(y \mid \theta)\). Read the other way, as a function of θ for the data you actually observed, it is the <strong>likelihood</strong> \(L(\theta) = p(y_{obs} \mid \theta)\), and the <strong>maximum-likelihood estimate</strong> (MLE) is the θ that maximises it. Fisher's idea is simple and remarkably productive: under mild regularity conditions the MLE is consistent, asymptotically normal with variance equal to the inverse Fisher information (the Cramér–Rao bound), and invariant to reparametrisation. Least squares is the MLE under Gaussian errors, weighted least squares under heteroscedastic Gaussian errors, logistic and Poisson regression under their respective distributions, and the "cost function" minimised when calibrating a soil-carbon or photosynthesis model to observations is a negative log-likelihood. The curvature of the log-likelihood at its peak gives standard errors; its drop away from the peak gives likelihood-ratio tests and profile intervals; and the maximised value, penalised for parameters, gives AIC and BIC. Maximising likelihood is minimising Kullback–Leibler divergence from the truth, which is why it overfits when models are flexible and why priors (MAP) and penalties exist.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>You will be asked to derive an MLE from scratch (normal, Poisson, binomial, exponential are the standards), to explain why least squares is maximum likelihood and what happens when that assumption fails, to get a standard error from a Hessian, to compare two models by a likelihood-ratio test or AIC and say which is appropriate, and to recognise a flat or ridged likelihood (V<sub>cmax</sub>–g<sub>m</sub>, soil-pool equifinality) as a statement about the data, not the optimiser.</p></div>
+  </section>
+
+  <section id="likelihood">
+    <h2>Likelihood, score and Fisher information</h2>
+    <p>For independent observations y<sub>1</sub>, …, y<sub>n</sub> with density f(y<sub>i</sub>; θ), the likelihood is the joint density viewed as a function of θ:</p>
+    <div class="eq">$$L(\theta) = \prod_{i=1}^n f(y_i;\theta), \qquad \ell(\theta) = \log L(\theta) = \sum_{i=1}^n \log f(y_i;\theta).$$</div>
+    <p>The likelihood is <em>not</em> a probability distribution over θ: it does not integrate to one in θ, and only ratios L(θ<sub>1</sub>)/L(θ<sub>2</sub>) carry meaning (the likelihood principle). Working with the <strong>log-likelihood</strong> ℓ turns products into sums, is numerically stable, and makes the second derivative meaningful. Three derived objects do most of the work:</p>
+    <ul>
+      <li>The <strong>score</strong> \(U(\theta) = \partial\ell/\partial\theta\). The MLE solves the score equation \(U(\hat\theta) = 0\). Under regularity, \(E_\theta[U(\theta)] = 0\) at the true θ, because \(\int \partial_\theta f \, dy = \partial_\theta \int f\,dy = 0\).</li>
+      <li>The <strong>expected Fisher information</strong> \(I(\theta) = E_\theta\!\left[U(\theta)^2\right] = -E_\theta\!\left[\partial^2\ell/\partial\theta^2\right]\), the variance of the score. The second equality (the information identity) again follows from differentiating \(\int f\,dy = 1\) twice. For n iid observations I(θ) = n i(θ), with i the per-observation information.</li>
+      <li>The <strong>observed information</strong> \(J(\hat\theta) = -\partial^2\ell/\partial\theta^2\big|_{\hat\theta}\), the curvature of the log-likelihood at its peak. It is what software actually computes (the negative Hessian) and what gives standard errors in practice; Efron and Hinkley argued it is usually the better choice.</li>
+    </ul>
+    <p>Curvature is the key intuition. A sharply peaked log-likelihood means small changes in θ make the data much less probable: the data are informative and the MLE is precise. A flat log-likelihood means many parameter values explain the data about equally well: no optimiser can fix that. The lab shows the log-likelihood of a normal sample as a function of μ and of (μ, σ), and how it sharpens as n grows: because ℓ is a sum of n terms, its curvature scales with n, and the standard error of the MLE with \(1/\sqrt n\).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Likelihood surface explorer: a normal sample of leaf nitrogen</h3><div class="btnrow"><button class="btn small" id="lsBtn" type="button">Resample</button><span class="small muted">Hover for values</span></div></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="lsSvg1" viewBox="0 0 640 250" role="img" aria-label="Log-likelihood as a function of the mean, with the maximum and the quadratic approximation from the Fisher information"></svg>
+            <div class="chart-tip" id="lsTip1" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="lsSvg2" viewBox="0 0 640 300" role="img" aria-label="Heat map of the log-likelihood over mean and standard deviation with the maximum-likelihood estimate marked"></svg>
+            <div class="chart-tip" id="lsTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">profile log-likelihood ℓ(μ, σ̂(μ))</span><span style="--c:var(--series-2)">quadratic approximation from I(μ̂)</span><span style="--c:var(--series-1)">heat map: darker = higher ℓ(μ, σ)</span><span style="--c:var(--accent)">MLE (μ̂, σ̂)</span><span style="--c:var(--accent-2)">true (μ, σ)</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lsN"><span>Sample size n</span><output id="lsNO">10</output></label><input type="range" id="lsN" min="2" max="200" step="1" value="10"></div>
+          <div class="ctrl"><label for="lsMu"><span>True μ (g N m⁻²)</span><output id="lsMuO">2.0</output></label><input type="range" id="lsMu" min="1" max="3" step="0.05" value="2"></div>
+          <div class="ctrl"><label for="lsSd"><span>True σ</span><output id="lsSdO">0.40</output></label><input type="range" id="lsSd" min="0.1" max="1" step="0.05" value="0.4"></div>
+          <dl class="readout">
+            <dt>μ̂ = ȳ · σ̂ (MLE, divides by n)</dt><dd id="lsEst"></dd>
+            <dt>s (divides by n − 1)</dt><dd id="lsS"></dd>
+            <dt>Maximised ℓ(μ̂, σ̂)</dt><dd id="lsL"></dd>
+            <dt>Fisher information for μ, n/σ̂²</dt><dd id="lsI"></dd>
+            <dt>SE(μ̂) = σ̂/√n</dt><dd id="lsSe"></dd>
+            <dt>Wald 95% CI for μ</dt><dd id="lsCi"></dd>
+            <dt>Profile-likelihood 95% CI (drop 1.92)</dt><dd id="lsPci"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: increase n from 5 to 200 and watch the ridge in the heat map contract and the parabola narrow (the y-axis rescales; read the SE); at n = 3 compare σ̂ with s and note how asymmetric the surface is in σ; move true μ and confirm the MLE tracks it with scatter of order σ/√n.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="properties">
+    <h2>Properties of the MLE</h2>
+    <p>Under <strong>regularity conditions</strong> (the parameter is interior to the parameter space, the support of y does not depend on θ, the log-density is three times differentiable with integrable derivatives, and the model is identifiable, meaning θ<sub>1</sub> ≠ θ<sub>2</sub> implies different distributions) the MLE has four properties that make it the default estimator:</p>
+    <ol>
+      <li><strong>Consistency</strong>: \(\hat\theta_n \xrightarrow{p} \theta_0\). The argument: \(\frac1n\ell(\theta) \to E_{\theta_0}[\log f(y;\theta)]\) by the law of large numbers, and this expectation is maximised at θ<sub>0</sub> because \(E_{\theta_0}[\log f(y;\theta)] - E_{\theta_0}[\log f(y;\theta_0)] = -\mathrm{KL}(f_{\theta_0}\,\|\,f_\theta) \le 0\) (Jensen's inequality). Maximising likelihood is minimising Kullback–Leibler divergence from the data-generating distribution.</li>
+      <li><strong>Asymptotic normality</strong>: \(\sqrt n(\hat\theta_n - \theta_0) \xrightarrow{d} N\big(0,\, i(\theta_0)^{-1}\big)\). Sketch: expand the score around θ<sub>0</sub>, \(0 = U(\hat\theta) \approx U(\theta_0) + U'(\theta_0)(\hat\theta - \theta_0)\), so \(\hat\theta - \theta_0 \approx -U(\theta_0)/U'(\theta_0)\). The numerator is a sum of n iid zero-mean terms with variance n i(θ<sub>0</sub>) (CLT), the denominator converges to −n i(θ<sub>0</sub>) (LLN), and Slutsky's theorem gives the result. In practice: \(\hat\theta \approx N(\theta_0, J(\hat\theta)^{-1})\).</li>
+      <li><strong>Efficiency</strong>: the <strong>Cramér–Rao bound</strong> says any unbiased estimator satisfies \(\operatorname{Var}(\tilde\theta) \ge I(\theta)^{-1}\); the MLE attains it asymptotically, so no regular estimator does better in large samples. (In small samples it may be biased, as σ̂² below shows.)</li>
+      <li><strong>Invariance</strong>: if \(\hat\theta\) is the MLE of θ, then \(g(\hat\theta)\) is the MLE of g(θ) for any function g. The MLE of a turnover time τ = 1/k is 1/k̂; the MLE of the J<sub>max</sub>/V<sub>cmax</sub> ratio is the ratio of the MLEs. Standard errors do not transfer so simply: use the delta method, \(\operatorname{Var}(g(\hat\theta)) \approx g'(\hat\theta)^2\operatorname{Var}(\hat\theta)\), or profile the likelihood in the new parameter.</li>
+    </ol>
+    <p>When regularity fails, so do the asymptotics: the uniform example below has a support that depends on θ, and its MLE converges at rate 1/n rather than 1/√n with a non-normal limit. Parameters on a boundary (a variance component estimated at zero; a mixture weight at zero) give likelihood-ratio statistics that are mixtures of χ² distributions rather than a single χ².</p>
+  </section>
+
+  <section id="derivations">
+    <h2>Worked derivations</h2>
+    <p>Every derivation follows the same four steps: write ℓ(θ), differentiate, set to zero, check the second derivative is negative. The Fisher information falls out of the same calculation.</p>
+    <h3>Bernoulli / binomial: p</h3>
+    <p>k successes in n independent trials (k germinated seeds out of n; k days of the year with a flux gap): \(\ell(p) = k\log p + (n-k)\log(1-p) + \text{const}\).</p>
+    <div class="eq">$$U(p) = \frac{k}{p} - \frac{n-k}{1-p} = 0 \;\Rightarrow\; \hat p = \frac{k}{n},$$</div>
+    <div class="eq">$$I(p) = -E\!\left[-\frac{k}{p^2} - \frac{n-k}{(1-p)^2}\right] = \frac{n}{p(1-p)}, \qquad \mathrm{SE}(\hat p) = \sqrt{\frac{\hat p(1-\hat p)}{n}}.$$</div>
+    <h3>Poisson: λ</h3>
+    <p>Counts y<sub>i</sub> (seedlings per quadrat, nodules per root): \(\ell(\lambda) = \sum_i (y_i\log\lambda - \lambda - \log y_i!)\).</p>
+    <div class="eq">$$U(\lambda) = \frac{\sum y_i}{\lambda} - n = 0 \;\Rightarrow\; \hat\lambda = \bar y, \qquad I(\lambda) = E\!\left[\frac{\sum y_i}{\lambda^2}\right] = \frac{n}{\lambda}, \qquad \operatorname{Var}(\hat\lambda) = \frac{\lambda}{n}.$$</div>
+    <h3>Normal: μ and σ²</h3>
+    <div class="eq">$$\ell(\mu,\sigma^2) = -\frac n2\log(2\pi) - \frac n2\log\sigma^2 - \frac{1}{2\sigma^2}\sum_i (y_i-\mu)^2.$$</div>
+    <div class="eq">$$\frac{\partial\ell}{\partial\mu} = \frac{1}{\sigma^2}\sum_i (y_i-\mu) = 0 \;\Rightarrow\; \hat\mu = \bar y,$$</div>
+    <div class="eq">$$\frac{\partial\ell}{\partial\sigma^2} = -\frac{n}{2\sigma^2} + \frac{1}{2\sigma^4}\sum_i (y_i-\mu)^2 = 0 \;\Rightarrow\; \hat\sigma^2 = \frac1n\sum_i (y_i-\bar y)^2.$$</div>
+    <p>The MLE of σ² divides by n and is <strong>biased</strong>: because \(\sum(y_i - \bar y)^2 = \sum(y_i-\mu)^2 - n(\bar y - \mu)^2\) and \(E[n(\bar y-\mu)^2] = \sigma^2\), \(E[\hat\sigma^2] = \frac{n-1}{n}\sigma^2\). Using ȳ instead of μ "uses up" one degree of freedom; the unbiased s² divides by n − 1. The MLE nevertheless has smaller mean squared error for normal data, a first glimpse of the bias–variance trade-off. The Fisher information matrix is diagonal, \(I(\mu,\sigma^2) = \operatorname{diag}(n/\sigma^2,\; n/(2\sigma^4))\), so μ̂ and σ̂² are asymptotically independent and \(\mathrm{SE}(\hat\mu) = \sigma/\sqrt n\).</p>
+    <h3>Exponential: rate λ (or mean 1/λ)</h3>
+    <p>Waiting times or residence times t<sub>i</sub> (time to decomposition of a litter cohort, if first-order): \(\ell(\lambda) = n\log\lambda - \lambda\sum t_i\), so \(\hat\lambda = 1/\bar t\), and by invariance the MLE of the mean residence time is \(\bar t\). \(I(\lambda) = n/\lambda^2\).</p>
+    <h3>Uniform on [0, θ]: the non-regular case</h3>
+    <p>\(L(\theta) = \theta^{-n}\) for θ ≥ max(y<sub>i</sub>) and 0 otherwise. The likelihood is decreasing in θ wherever it is positive, so the MLE is \(\hat\theta = y_{(n)}\), the sample maximum, found at a boundary rather than by setting a derivative to zero. It is biased (\(E[y_{(n)}] = \frac{n}{n+1}\theta\)), its error shrinks like 1/n rather than 1/√n, and the Fisher-information machinery does not apply because the support depends on θ.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Binomial likelihood: germination of k seeds out of n</h3><span class="small muted">Wald vs likelihood-ratio interval</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="bnSvg" viewBox="0 0 640 340" role="img" aria-label="Binomial log-likelihood as a function of p with the MLE, Wald interval and likelihood-ratio interval"></svg>
+            <div class="chart-tip" id="bnTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">log-likelihood ℓ(p) − ℓ(p̂)</span><span style="--c:var(--series-2)">quadratic (Wald) approximation</span><span style="--c:var(--series-1)">Wald 95% CI</span><span style="--c:var(--accent)">LR / profile 95% CI (drop of 1.92)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="bnTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="bnN"><span>Trials n</span><output id="bnNO">20</output></label><input type="range" id="bnN" min="1" max="200" step="1" value="20"></div>
+          <div class="ctrl"><label for="bnK"><span>Successes k</span><output id="bnKO">17</output></label><input type="range" id="bnK" min="0" max="20" step="1" value="17"></div>
+          <dl class="readout">
+            <dt>MLE p̂ = k/n</dt><dd id="bnP"></dd>
+            <dt>Fisher information n/[p̂(1−p̂)]</dt><dd id="bnI"></dd>
+            <dt>SE(p̂)</dt><dd id="bnSe"></dd>
+            <dt>Wald 95% CI</dt><dd id="bnW"></dd>
+            <dt>LR 95% CI</dt><dd id="bnLr"></dd>
+            <dt>Wilson 95% CI (score)</dt><dd id="bnWi"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Suggested experiments: n = 20, k = 17 (the Wald interval is symmetric and runs toward 1, the LR interval is skewed left); k = 20 (Wald collapses to zero width, LR still gives a sensible lower bound); n = 200, k = 170 (all intervals agree, the surface is a parabola).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="leastsquares">
+    <h2>Least squares is maximum likelihood</h2>
+    <p>Suppose \(y_i = f(x_i;\theta) + \varepsilon_i\) with \(\varepsilon_i \sim N(0,\sigma^2)\) independent. Then</p>
+    <div class="eq">$$\ell(\theta,\sigma^2) = -\frac n2\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\underbrace{\sum_i \big(y_i - f(x_i;\theta)\big)^2}_{RSS(\theta)}.$$</div>
+    <p>For any σ², maximising ℓ over θ is minimising RSS(θ): <strong>ordinary least squares is the MLE under iid Gaussian errors</strong>, whether f is linear (\(f = X\beta\), \(\hat\beta = (X^\top X)^{-1}X^\top y\)) or nonlinear (FvCB, a Michaelis–Menten uptake curve, a two-pool soil-carbon decay). Maximising over σ² afterwards gives \(\hat\sigma^2 = RSS(\hat\theta)/n\) (biased; the usual estimator divides by n − p), and the maximised log-likelihood becomes</p>
+    <div class="eq">$$\ell_{max} = -\frac n2\Big[\log\!\Big(\frac{2\pi\,RSS}{n}\Big) + 1\Big], \qquad \text{so } -2\ell_{max} = n\log(RSS/n) + \text{const},$$</div>
+    <p>which is why AIC for regression models is often written \(n\log(RSS/n) + 2k\). Three generalisations follow immediately:</p>
+    <ul>
+      <li><strong>Weighted least squares.</strong> If \(\varepsilon_i \sim N(0,\sigma_i^2)\) with known (or modelled) variances, \(\ell = -\frac12\sum_i\left[\log(2\pi\sigma_i^2) + (y_i - f_i)^2/\sigma_i^2\right]\), and the MLE minimises \(\sum_i (y_i-f_i)^2/\sigma_i^2\): each residual weighted by its inverse variance. Flux data with error proportional to flux magnitude, or A–C<sub>i</sub> points measured with different stability, should be fitted this way; ignoring heteroscedasticity leaves the estimate consistent but inefficient and makes the standard errors wrong.</li>
+      <li><strong>Correlated errors.</strong> With \(\varepsilon \sim N(0,\Sigma)\), \(-2\ell = \log|\Sigma| + (y-f)^\top\Sigma^{-1}(y-f) + \text{const}\): the generalised least-squares objective and, with Σ the observation-error covariance R, exactly the observation term of the data-assimilation cost function discussed below.</li>
+      <li><strong>Non-Gaussian errors.</strong> Laplace (double-exponential) errors give least <em>absolute</em> deviations as the MLE; Student-t errors give a robust M-estimator that down-weights outliers. Richardson and Hollinger's finding that eddy-covariance random error is closer to Laplace than normal is an argument for L1 cost functions in flux-based model calibration.</li>
+    </ul>
+    <h3>Generalised linear models</h3>
+    <p>When the response is a count or a proportion the Gaussian likelihood is the wrong model and the MLE changes accordingly. In a GLM the mean \(\mu_i = E[y_i]\) is linked to a linear predictor by \(g(\mu_i) = x_i^\top\beta\) and the likelihood is from an exponential family. For <strong>logistic regression</strong> (presence/absence of a species; mortality of a tree), \(y_i \sim \text{Bernoulli}(\pi_i)\), \(\log\frac{\pi_i}{1-\pi_i} = x_i^\top\beta\), and</p>
+    <div class="eq">$$\ell(\beta) = \sum_i \left[y_i\, x_i^\top\beta - \log\!\big(1 + e^{x_i^\top\beta}\big)\right], \qquad U(\beta) = \sum_i (y_i - \pi_i)\,x_i, \qquad I(\beta) = \sum_i \pi_i(1-\pi_i)\,x_i x_i^\top.$$</div>
+    <p>For <strong>Poisson regression</strong> with log link, \(\ell(\beta) = \sum_i [y_i x_i^\top\beta - e^{x_i^\top\beta} - \log y_i!]\), \(U = \sum (y_i - \mu_i)x_i\) and \(I = \sum \mu_i x_i x_i^\top\). In both cases the score has the form "residual times covariate" and there is no closed form, so the MLE is found by Fisher scoring, which for GLMs is iteratively reweighted least squares. The logistic-regression page develops this in full.</p>
+  </section>
+
+  <section id="numerical">
+    <h2>Finding the maximum numerically</h2>
+    <p>Outside the textbook cases the score equation has no closed-form solution and the MLE is found iteratively. The methods are those of the gradient-descent and Newton–Raphson pages, applied to −ℓ:</p>
+    <ul>
+      <li><strong>Newton–Raphson</strong>: \(\theta_{t+1} = \theta_t - H(\theta_t)^{-1}U(\theta_t)\), with H the Hessian of ℓ. Quadratic convergence near the optimum; needs second derivatives; can diverge from a poor start or on a non-concave surface.</li>
+      <li><strong>Fisher scoring</strong>: replace H by its expectation −I(θ). Always negative definite, so the step is always uphill; for GLMs it reduces to iteratively reweighted least squares.</li>
+      <li><strong>Gauss–Newton</strong> for least squares: with residuals r = y − f(θ) and Jacobian J = ∂f/∂θ, \(\nabla RSS = -2J^\top r\) and \(H \approx 2J^\top J\) (dropping the term with second derivatives of f, which vanishes at the optimum if the model fits), giving \(\theta_{t+1} = \theta_t + (J^\top J)^{-1}J^\top r\). The Levenberg–Marquardt modification adds λI to JᵀJ to interpolate between Gauss–Newton and gradient descent; it is the algorithm inside <code>nls</code>, <code>scipy.optimize.curve_fit</code> and most A–C<sub>i</sub> fitting tools.</li>
+      <li><strong>Gradient and quasi-Newton methods</strong> (BFGS, L-BFGS) when the Hessian is too expensive; <strong>derivative-free</strong> methods (Nelder–Mead) when ℓ is a black-box ecosystem model; <strong>stochastic</strong> search or MCMC when the surface is multimodal. Always try several starting values: a local maximum of a soil-carbon-model likelihood is easy to mistake for the MLE.</li>
+      <li><strong>EM algorithm</strong> (Dempster, Laird &amp; Rubin [9]) for latent variables: if the complete-data likelihood with unobserved z would be easy, alternate an E-step (expected complete log-likelihood given current θ) and an M-step (maximise it). Each iteration increases ℓ. Gaussian mixture models (their page uses it to cluster, for example, flux-tower regimes) and missing-data problems are the standard applications.</li>
+    </ul>
+
+    <div class="lab">
+      <div class="lab-head"><h3>MLE for a nonlinear ecological model: first-order soil-carbon loss in an incubation</h3><div class="btnrow"><button class="btn small primary" id="nlSolve" type="button">Solve (Gauss–Newton)</button><button class="btn small" id="nlReset" type="button">Reset guess</button><button class="btn small" id="nlNew" type="button">New data</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="nlSvg" viewBox="0 0 640 340" role="img" aria-label="Noisy soil carbon remaining over time with the current model curve and the maximum-likelihood fit"></svg>
+            <div class="chart-tip" id="nlTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">observations</span><span style="--c:var(--series-2)">current curve C₀ e^(−kt)</span><span style="--c:var(--series-1)">MLE fit</span><span style="--c:var(--muted)">true function (dashed)</span></div>
+          <div class="iterlog" id="nlLog">Press Solve to run Gauss–Newton from the current guess.</div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="nlC0"><span>C₀, initial C (g C kg⁻¹)</span><output id="nlC0O">30</output></label><input type="range" id="nlC0" min="10" max="60" step="0.5" value="30"></div>
+          <div class="ctrl"><label for="nlK"><span>k, decay rate (yr⁻¹)</span><output id="nlKO">0.50</output></label><input type="range" id="nlK" min="0.02" max="3" step="0.01" value="0.5"></div>
+          <div class="ctrl"><label for="nlSig"><span>Observation noise σ (g C kg⁻¹)</span><output id="nlSigO">2.0</output></label><input type="range" id="nlSig" min="0.5" max="6" step="0.25" value="2"></div>
+          <dl class="readout">
+            <dt>RSS at current (C₀, k)</dt><dd id="nlRss"></dd>
+            <dt>Log-likelihood ℓ at current (σ̂² profiled)</dt><dd id="nlLl"></dd>
+            <dt>MLE Ĉ₀ ± SE</dt><dd id="nlC0h"></dd>
+            <dt>MLE k̂ ± SE</dt><dd id="nlKh"></dd>
+            <dt>Correlation(Ĉ₀, k̂)</dt><dd id="nlCor"></dd>
+            <dt>ℓ at MLE · drop from MLE</dt><dd id="nlLm"></dd>
+            <dt>Turnover 1/k̂ (yr) by invariance</dt><dd id="nlTau"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Truth: C₀ = 40, k = 1.2 yr⁻¹, 12 samplings over 3 years. SEs come from σ̂²(JᵀJ)⁻¹ with σ̂² = RSS/(n − 2). Suggested experiments: move the sliders by hand to push ℓ up, then press Solve and watch the iterations; set σ = 6 and compare the SEs; start from k = 3 and see Gauss–Newton take a few more steps.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="inference">
+    <h2>Inference from the likelihood</h2>
+    <h3>Standard errors and Wald tests</h3>
+    <p>From asymptotic normality, \(\widehat{\operatorname{Var}}(\hat\theta) = J(\hat\theta)^{-1}\), the inverse of the negative Hessian at the optimum, and SE<sub>k</sub> is the square root of its k-th diagonal element. The <strong>Wald</strong> statistic \((\hat\theta_k - \theta_{k,0})/\mathrm{SE}_k\) is approximately N(0, 1), the Wald interval is \(\hat\theta_k \pm 1.96\,\mathrm{SE}_k\), and for a vector hypothesis \((\hat\theta - \theta_0)^\top J(\hat\theta)(\hat\theta-\theta_0) \sim \chi^2_p\). Wald inference is cheap (one fit) but trusts the quadratic approximation at the peak and is not invariant to reparametrisation: a Wald interval for k and for log k give different answers after back-transformation.</p>
+    <h3>Likelihood-ratio tests</h3>
+    <p>For nested models, where the reduced model fixes q of the p parameters, <strong>Wilks' theorem</strong> [8] states that under the reduced model</p>
+    <div class="eq">$$\Lambda = 2\big[\ell(\hat\theta_{full}) - \ell(\hat\theta_{reduced})\big] \;\xrightarrow{d}\; \chi^2_q.$$</div>
+    <p>The sketch: expand \(\ell(\theta_0)\) around \(\hat\theta\); the first-order term vanishes because \(U(\hat\theta) = 0\), leaving \(2[\ell(\hat\theta) - \ell(\theta_0)] \approx (\hat\theta - \theta_0)^\top J (\hat\theta-\theta_0)\), a quadratic form in an asymptotically normal vector with covariance J⁻¹, hence χ². The LRT is invariant to reparametrisation and more accurate than Wald in small samples, at the cost of two fits. "Does the A–C<sub>i</sub> curve need a TPU limitation?" (q = 1, threshold 3.84), "do the two treatments share a V<sub>cmax</sub>?" (q = 1), "is a two-pool soil model better than one pool?" (q = 2, threshold 5.99 — but note the second pool's parameters are not identified under the one-pool model, which violates the regularity conditions and makes the χ² reference approximate) are all LRTs. The <strong>profile-likelihood interval</strong> inverts the LRT: it is the set of θ<sub>k</sub> values with \(2[\ell(\hat\theta) - \ell_p(\theta_k)] \le 3.84\), i.e. where the profile log-likelihood is within 1.92 of its maximum, as in the binomial lab. The score test (Rao) completes the trio, using only the reduced-model fit; Wald, LR and score are asymptotically equivalent.</p>
+
+    <h3>Model comparison: AIC, BIC and Kullback–Leibler divergence</h3>
+    <p>Non-nested models, or many candidate models, call for an information criterion rather than a test. The target quantity in Akaike's derivation [6] is the expected Kullback–Leibler divergence from the true distribution g to the fitted model f<sub>θ̂</sub>,</p>
+    <div class="eq">$$\mathrm{KL}(g\,\|\,f_{\hat\theta}) = \int g(y)\log g(y)\,dy - \int g(y)\log f(y;\hat\theta)\,dy = \text{const} - E_g\!\left[\log f(y_{new};\hat\theta)\right],$$</div>
+    <p>so ranking models by KL is ranking them by expected log-likelihood on <em>new</em> data. The maximised log-likelihood \(\ell(\hat\theta)\) estimates this but is optimistic, because the same data chose θ̂. Akaike showed that, to second order, the optimism equals the number of parameters k, giving</p>
+    <div class="eq">$$\mathrm{AIC} = -2\ell(\hat\theta) + 2k, \qquad \mathrm{AIC}_c = \mathrm{AIC} + \frac{2k(k+1)}{n-k-1}, \qquad \mathrm{BIC} = -2\ell(\hat\theta) + k\log n.$$</div>
+    <p>The derivation sketch: with \(\hat\theta\) the MLE and θ* the KL-closest parameter, two Taylor expansions give \(E[\ell(\hat\theta)] - E[\ell(\theta^*)] \approx k/2\) (the fitted model gains about k/2 from fitting noise) and \(E[\ell(\theta^*)] - E[\ell_{new}(\hat\theta)] \approx k/2\) (it loses about k/2 on new data), each term being the expectation of a χ²<sub>k</sub>/2 quadratic form; together the bias is k, doubled for the −2ℓ scale. AIC<sub>c</sub> (Hurvich &amp; Tsai) corrects the small-sample bias and should be used when n/k &lt; 40 [5]. BIC comes from a different question: Schwarz [7] approximated the marginal likelihood \(\int L(\theta)\pi(\theta)d\theta\) by Laplace's method, obtaining \(\log p(y\mid M) \approx \ell(\hat\theta) - \frac k2\log n\), so differences in BIC approximate twice the log Bayes factor. The practical contrast: AIC seeks the model with the best predictions (and keeps adding parameters as n grows, when the truth is complex), BIC seeks the true model among the candidates (consistent for model selection if the truth is in the set) and penalises harder once n &gt; 8. Report differences from the best model (ΔAIC &lt; 2 is indistinguishable, &gt; 10 is decisive) and Akaike weights \(w_m \propto e^{-\Delta_m/2}\), and remember that the criterion compares models fitted to the <em>same</em> data with the <em>same</em> likelihood (a model fitted to log-transformed data cannot be compared by AIC with one fitted to raw data without the Jacobian of the transformation).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>AIC and BIC against polynomial degree: a light-response curve</h3><div class="btnrow"><button class="btn small" id="icBtn" type="button">Resample</button></div></div>
+      <div class="lab-grid">
+        <div class="twocharts">
+          <div class="chartbox figwrap">
+            <svg class="ch" id="icSvg1" viewBox="0 0 640 280" role="img" aria-label="Deviance, AIC, AICc and BIC versus polynomial degree"></svg>
+            <div class="chart-tip" id="icTip1" hidden></div>
+          </div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="icSvg2" viewBox="0 0 640 260" role="img" aria-label="Photosynthesis versus light with the true curve and the selected polynomial fit"></svg>
+            <div class="chart-tip" id="icTip2" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">−2ℓ (deviance)</span><span style="--c:var(--series-1)">AIC</span><span style="--c:var(--series-3)">AICc</span><span style="--c:var(--series-2)">BIC</span><span style="--c:var(--accent)">fit of the selected degree</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="icTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="icN"><span>Observations n</span><output id="icNO">30</output></label><input type="range" id="icN" min="10" max="120" step="1" value="30"></div>
+          <div class="ctrl"><label for="icSig"><span>Noise σ (µmol m⁻² s⁻¹)</span><output id="icSigO">3.0</output></label><input type="range" id="icSig" min="0.25" max="5" step="0.25" value="3"></div>
+          <div class="ctrl"><label for="icD"><span>Degree shown in lower chart</span><output id="icDO">3</output></label><input type="range" id="icD" min="1" max="8" step="1" value="3"></div>
+          <dl class="readout">
+            <dt>Degree chosen by AIC</dt><dd id="icA"></dd>
+            <dt>Degree chosen by AICc</dt><dd id="icAc"></dd>
+            <dt>Degree chosen by BIC</dt><dd id="icB"></dd>
+            <dt>RSS, ℓ for shown degree</dt><dd id="icR"></dd>
+            <dt>Test RMSE of shown degree (new data)</dt><dd id="icT"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Truth: a non-rectangular hyperbola (A<sub>max</sub> = 25, φ = 0.05, θ = 0.8, R<sub>d</sub> = 1.5) over PPFD 0–2000, which no polynomial reproduces exactly. The deviance always falls with degree; AIC and BIC turn upward. Suggested experiments: n = 10 (AICc separates sharply from AIC); n = 120 (BIC's log n penalty bites and AIC prefers a higher degree); σ = 1 (the hyperbola's shape is resolved and every criterion asks for more terms, because the truth is not a polynomial).</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Overfitting and penalties</h3>
+    <p>Because ℓ(θ̂) can only rise as parameters are added, maximising likelihood over a family of increasingly flexible models always chooses the most flexible one: the deviance curve in the lab is monotone. Information criteria penalise after the fact; <strong>penalised likelihood</strong> changes the objective, maximising \(\ell(\theta) - \lambda\,\mathrm{pen}(\theta)\). Ridge (pen = ‖θ‖²), lasso (‖θ‖₁) and smoothness penalties on splines are the common cases, and the next paragraph shows that each is a prior in disguise. The bias–variance page quantifies what the penalty buys.</p>
+  </section>
+
+  <section id="bayes">
+    <h2>MLE, MAP and the Bayesian posterior; identifiability</h2>
+    <p>Bayes' theorem gives the posterior \(p(\theta\mid y) \propto L(\theta)\,\pi(\theta)\). The <strong>maximum a posteriori</strong> (MAP) estimate maximises the posterior, i.e. \(\ell(\theta) + \log\pi(\theta)\): the log-prior is a penalty. With a Gaussian prior \(\theta \sim N(0, \tau^2 I)\) and Gaussian errors, \(\log\pi(\theta) = -\|\theta\|^2/2\tau^2 + \text{const}\), so <strong>MAP with a Gaussian prior is ridge regression</strong> with λ = σ²/τ²; a Laplace prior gives the lasso. The MLE is MAP with a flat prior. The full Bayesian answer does not maximise at all: it reports the whole posterior, and summarises it by its mean (which minimises expected squared error) and credible intervals. For large n the posterior concentrates around the MLE with covariance J⁻¹ (the Bernstein–von Mises theorem), so the three approaches agree; they differ when data are few, parameters many, or prior knowledge is strong, which describes almost every ecosystem-model calibration.</p>
+    <p><strong>Identifiability</strong> is the property that different parameter values produce different likelihoods. It fails structurally when parameters enter only through a product or ratio (the data cannot separate them at all) and practically when the data are too sparse or noisy to separate them well. In FvCB fitting, V<sub>cmax</sub> and mesophyll conductance g<sub>m</sub> trade off: a lower g<sub>m</sub> with a higher V<sub>cmax</sub> produces almost the same A–C<sub>i</sub> curve, so the likelihood has a long curved ridge, Wald SEs are huge or nonsensical, and the fitted pair depends on the starting values. In multi-pool soil-carbon models, pool sizes and turnover rates are confounded when only total respiration is observed; many (C<sub>fast</sub>, k<sub>fast</sub>, C<sub>slow</sub>, k<sub>slow</sub>) combinations give the same CO₂ efflux curve. Beven calls this <strong>equifinality</strong>. The likelihood tells you about it (flat directions in the Hessian, eigenvalues near zero, profile likelihoods that never drop by 1.92); the remedies are more informative data (isotopes, pool fractionation, A–C<sub>i</sub> curves at several O₂ levels), fixing or constraining parameters from independent measurements, reparametrising to identifiable combinations, or an informative prior that says which part of the ridge is physically plausible.</p>
+    <h3>Likelihoods for time series and state-space models</h3>
+    <p>When the data are a time series generated by a dynamic model with process noise, observations are not independent and the likelihood must integrate over the unobserved states. For a linear Gaussian state-space model \(x_t = Ax_{t-1} + w_t\), \(y_t = Hx_t + v_t\), the <strong>Kalman filter</strong> does this recursively: at each step it predicts \(y_t\) with mean \(H\hat x_{t|t-1}\) and innovation covariance \(S_t\), and the log-likelihood is the sum of the innovation log-densities, \(\ell = -\frac12\sum_t\left[\log|2\pi S_t| + e_t^\top S_t^{-1}e_t\right]\), the prediction-error decomposition. Parameters (turnover rates, process-noise variances) are then estimated by maximising this ℓ. Nonlinear models use the extended or ensemble Kalman filter or a particle filter to approximate the same quantity.</p>
+    <h3>Likelihoods in ecosystem data assimilation</h3>
+    <p>Model–data fusion for ecosystem models writes a cost function</p>
+    <div class="eq">$$J(\theta) = \tfrac12\,(y - M(\theta))^\top R^{-1}(y - M(\theta)) + \tfrac12\,(\theta - \theta_b)^\top B^{-1}(\theta - \theta_b),$$</div>
+    <p>where M(θ) is the model prediction, R the observation-error covariance and B the prior ("background") covariance. The first term is \(-\log L\) for Gaussian observation errors, the second is \(-\log\pi(\theta)\), and minimising J is MAP estimation; the inverse Hessian of J at the minimum is the posterior covariance. Richardson et al. [12] fitted a carbon-cycle model to multiple data streams at Howland Forest and showed that the assumed error structure (and the relative weighting of streams through R) changes the answer; Keenan et al. [13] showed that which data constrain which processes can be read from the posterior covariance, and that adding constraints is more valuable than adding parameters. The Bayesian calibrations of DALEC, BioCro, DayCent or MIMICS by MCMC replace minimisation with sampling, but the "likelihood" they evaluate is the same object, and its assumptions (independent, Gaussian, correctly weighted errors; no model structural error) are the main weakness of the whole enterprise: with autocorrelated flux errors and a biased model, the posterior is overconfident and centred on parameters that compensate for structural error.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Every parameter in a process model that came from data came from a likelihood.</strong> V<sub>cmax</sub>, J<sub>max</sub> and their temperature responses (nonlinear least squares on A–C<sub>i</sub> and A–T curves), the Medlyn g<sub>1</sub> (least squares or robust regression on g<sub>s</sub> vs A/(C<sub>a</sub>√D)), Q<sub>10</sub> and E<sub>a</sub> of respiration, litter decay constants from litterbag mass loss (exponential MLE), soil-pool turnover from incubation CO₂ (multi-exponential, often poorly identified).</li>
+      <li><strong>Model structure choice.</strong> Whether to include TPU limitation, a g<sub>m</sub> term, a second soil pool, or microbial dynamics is an LRT or AIC question when the models are fitted to the same data by likelihood; it is a question about predictive error (cross-validation) when the goal is forecasting. CLM, JULES and ORCHIDEE do not fit their parameters by likelihood globally, but their parameter databases (TRY, Walker et al. V<sub>cmax</sub>–N relations) do.</li>
+      <li><strong>Calibration and uncertainty.</strong> The cost functions of data assimilation (4D-Var, EnKF, MCMC calibration of DALEC/CARDAMOM, Bayesian calibration in PEcAn) are likelihoods times priors; the posterior covariance, i.e. the inverse Hessian, propagates to prediction uncertainty. Choosing R (observation errors, including gap-filling and partitioning errors) is choosing the likelihood and is as important as choosing the model.</li>
+      <li><strong>Equifinality as a likelihood property.</strong> Flat ridges in the likelihood of multi-pool soil models and of FvCB with g<sub>m</sub> explain why different studies report wildly different pool turnover times and why model intercomparisons disagree on soil-carbon response: the data never constrained them.</li>
+      <li><strong>Remote sensing retrievals.</strong> Inverting a radiative-transfer model (PROSAIL) for LAI and chlorophyll is nonlinear MLE or MAP with a prior; the same ill-posedness (LAI–leaf-angle trade-off) appears.</li>
+      <li><strong>Machine-learning bridges.</strong> Cross-entropy loss in neural-network classifiers is a Bernoulli/multinomial negative log-likelihood; mean squared error is the Gaussian one; weight decay is a Gaussian prior. The GLM, logistic-regression and GMM pages are all likelihood maximisation under different distributional assumptions.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers and formulas to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Formula / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Score, information</td><td class="num">U = ∂ℓ/∂θ, I = E[U²] = −E[∂²ℓ/∂θ²]</td><td>Information identity</td></tr>
+        <tr><td>Asymptotic distribution</td><td class="num">θ̂ ≈ N(θ, I(θ)⁻¹)</td><td>SE from the inverse Hessian</td></tr>
+        <tr><td>Cramér–Rao bound</td><td class="num">Var(θ̃) ≥ 1/I(θ)</td><td>For unbiased estimators</td></tr>
+        <tr><td>Binomial, Poisson, exponential MLEs</td><td class="num">k/n, ȳ, 1/t̄</td><td>I = n/[p(1−p)], n/λ, n/λ²</td></tr>
+        <tr><td>Normal σ² MLE</td><td class="num">Σ(y−ȳ)²/n; E = (n−1)σ²/n</td><td>Biased by factor (n−1)/n</td></tr>
+        <tr><td>Gaussian regression</td><td class="num">−2ℓ<sub>max</sub> = n log(RSS/n) + const</td><td>OLS = MLE; σ̂² = RSS/n</td></tr>
+        <tr><td>Wilks</td><td class="num">2Δℓ ~ χ²<sub>q</sub></td><td>Thresholds 3.84 (q=1), 5.99 (q=2), 7.81 (q=3)</td></tr>
+        <tr><td>Profile-likelihood 95% interval</td><td class="num">ℓ within 1.92 of maximum</td><td>χ²<sub>1,0.95</sub>/2</td></tr>
+        <tr><td>AIC, AICc, BIC</td><td class="num">−2ℓ + 2k; + 2k(k+1)/(n−k−1); −2ℓ + k ln n</td><td>Use AICc when n/k &lt; 40; BIC penalty exceeds AIC's for n &gt; 8</td></tr>
+        <tr><td>ΔAIC interpretation</td><td class="num">&lt; 2 similar; 4–7 less support; &gt; 10 none</td><td>Burnham &amp; Anderson [5]</td></tr>
+        <tr><td>Akaike weight</td><td class="num">w<sub>m</sub> ∝ exp(−Δ<sub>m</sub>/2)</td><td>Normalise over candidate set</td></tr>
+        <tr><td>MAP with Gaussian prior</td><td class="num">ridge with λ = σ²/τ²</td><td>Laplace prior ↔ lasso</td></tr>
+        <tr><td>Gauss–Newton step</td><td class="num">Δθ = (JᵀJ)⁻¹Jᵀr</td><td>Var(θ̂) ≈ σ̂²(JᵀJ)⁻¹</td></tr>
+        <tr><td>Delta method</td><td class="num">Var(g(θ̂)) ≈ g′(θ̂)² Var(θ̂)</td><td>SE for transformed parameters</td></tr>
+        <tr><td>Uniform[0, θ] MLE</td><td class="num">max(y); error ∝ 1/n</td><td>Non-regular</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Define the likelihood function and explain how it differs from a probability distribution over the parameters. State the likelihood principle in one sentence.</span></summary><div class="a"><p>Given a probability model p(y | θ) and observed data y<sub>obs</sub>, the likelihood is L(θ) = p(y<sub>obs</sub> | θ) regarded as a function of θ with the data fixed. It is not a density in θ: it does not integrate to one over θ, its absolute value is meaningless (multiplying by any constant not depending on θ changes nothing), and only ratios or differences of log-likelihood between parameter values carry information. A probability distribution over θ (a prior or a posterior) requires Bayes' theorem and a prior; the posterior is proportional to likelihood times prior. The likelihood principle states that all the evidence in the data about θ is contained in the likelihood function, so two experiments yielding proportional likelihoods should lead to the same inferences about θ; frequentist p-values violate it (they depend on unobserved outcomes and stopping rules), Bayesian and pure-likelihood inference obey it.</p></div></details>
+    <details class="q"><summary><span>2. Derive the MLEs of μ and σ² for a normal sample, show that σ̂² is biased, and give the Fisher information matrix. Why does the bias not matter asymptotically?</span></summary><div class="a"><p>ℓ(μ, σ²) = −(n/2) log(2πσ²) − Σ(y<sub>i</sub> − μ)²/(2σ²). ∂ℓ/∂μ = Σ(y<sub>i</sub> − μ)/σ² = 0 gives μ̂ = ȳ. ∂ℓ/∂σ² = −n/(2σ²) + Σ(y<sub>i</sub> − μ)²/(2σ⁴) = 0 gives σ̂² = Σ(y<sub>i</sub> − ȳ)²/n after substituting μ̂. Second derivatives are negative at the solution, so it is a maximum. Bias: Σ(y<sub>i</sub> − ȳ)² = Σ(y<sub>i</sub> − μ)² − n(ȳ − μ)²; taking expectations, E[Σ(y<sub>i</sub> − μ)²] = nσ² and E[n(ȳ − μ)²] = n·σ²/n = σ², so E[σ̂²] = (n − 1)σ²/n: the MLE underestimates σ² by the factor (n − 1)/n because the deviations are measured from ȳ, which is closer to the data than μ is. Fisher information: −E[∂²ℓ/∂μ²] = n/σ²; −E[∂²ℓ/∂(σ²)²] = −E[n/(2σ⁴) − Σ(y<sub>i</sub> − μ)²/σ⁶] = −n/(2σ⁴) + n/σ⁴ = n/(2σ⁴); the cross term −E[Σ(y<sub>i</sub> − μ)/σ⁴] = 0. So I = diag(n/σ², n/(2σ⁴)), the estimates are asymptotically independent, and SE(μ̂) = σ/√n, SE(σ̂²) = σ²√(2/n). The bias is O(1/n) while the standard error is O(1/√n), so bias/SE → 0: asymptotically the MLE is unbiased, normal and efficient, and in fact its MSE is smaller than that of s² for normal data because the extra variance of s² outweighs the bias of σ̂².</p></div></details>
+    <details class="q"><summary><span>3. Show that ordinary least squares is the maximum-likelihood estimator under independent Gaussian errors. What changes if the errors are heteroscedastic, autocorrelated, or Laplace-distributed?</span></summary><div class="a"><p>With y<sub>i</sub> = f(x<sub>i</sub>; θ) + ε<sub>i</sub>, ε<sub>i</sub> ~ N(0, σ²) independent, ℓ(θ, σ²) = −(n/2) log(2πσ²) − RSS(θ)/(2σ²) where RSS(θ) = Σ[y<sub>i</sub> − f(x<sub>i</sub>; θ)]². For any fixed σ² the only θ-dependence is through −RSS/(2σ²), so maximising ℓ in θ is minimising RSS: the OLS (or nonlinear least squares) estimator is the MLE. Then σ̂² = RSS(θ̂)/n. Heteroscedastic errors ε<sub>i</sub> ~ N(0, σ<sub>i</sub>²): ℓ = −½Σ[log(2πσ<sub>i</sub>²) + (y<sub>i</sub> − f<sub>i</sub>)²/σ<sub>i</sub>²], so the MLE is weighted least squares with weights 1/σ<sub>i</sub>²; OLS remains consistent but is inefficient and its standard errors are wrong. Autocorrelated errors ε ~ N(0, Σ): −2ℓ = log|Σ| + (y − f)ᵀΣ⁻¹(y − f) + const, generalised least squares; OLS point estimates are still unbiased but standard errors are typically far too small for positively autocorrelated data (flux time series), and if Σ has unknown parameters they are estimated jointly. Laplace errors with density (1/2b) exp(−|ε|/b): ℓ = −n log 2b − Σ|y<sub>i</sub> − f<sub>i</sub>|/b, so the MLE minimises the sum of absolute deviations (L1 regression), which is robust to outliers; Richardson and Hollinger found eddy-covariance random error to be closer to Laplace than Gaussian, which argues for L1 cost functions in flux-based calibration.</p></div></details>
+    <details class="q"><summary><span>4. You fit the FvCB model to an A–C<sub>i</sub> curve and obtain the Hessian of the negative log-likelihood at the optimum. Explain how to obtain standard errors and a 95% interval for V<sub>cmax</sub>, what assumptions this relies on, and what you would do if the Hessian were nearly singular.</span></summary><div class="a"><p>By asymptotic normality, Var(θ̂) ≈ J(θ̂)⁻¹ where J is the observed information, the negative Hessian of ℓ (equivalently the Hessian of −ℓ). For least squares, J ≈ JᵀJ/σ̂² with J the Jacobian of predictions, the Gauss–Newton approximation. Invert the matrix, take the diagonal element for V<sub>cmax</sub>, and SE = its square root; the Wald interval is V̂<sub>cmax</sub> ± t<sub>n−p,0.975</sub> SE (or ± 1.96 SE for large n). Assumptions: independent, homoscedastic, approximately Gaussian residuals (or correctly specified weights); the log-likelihood approximately quadratic over the ±2 SE range; n large enough relative to p; and the fitted optimum being the global one. A nearly singular Hessian (a tiny eigenvalue, correlation near ±1 between V<sub>cmax</sub> and g<sub>m</sub> or T<sub>p</sub>) means the data do not identify the parameters separately: the likelihood is flat along some direction, the inverse blows up and the Wald SEs are meaningless. Responses: (i) profile the likelihood for V<sub>cmax</sub> and report the interval where it drops by 1.92, which will be wide or one-sided and is at least honest; (ii) fix the poorly identified parameter (g<sub>m</sub> from an independent measurement, or assume infinite g<sub>m</sub> and report V<sub>cmax</sub> as an apparent C<sub>i</sub>-based value); (iii) collect data in the region that discriminates (more points at low C<sub>i</sub>, curves at 2% O₂, chlorophyll fluorescence to constrain J); (iv) reparametrise or impose a prior and report a posterior. One should also check that the residuals show no structure, since a misspecified transition between limitations biases V<sub>cmax</sub> regardless of the SE.</p></div></details>
+    <details class="q"><summary><span>5. State Wilks' theorem and sketch why it holds. Use it to decide whether a two-pool soil-carbon model is justified over a one-pool model given ℓ<sub>1</sub> = −142.3 and ℓ<sub>2</sub> = −137.1. What subtlety arises in this particular comparison?</span></summary><div class="a"><p>Wilks: if the reduced model (with q parameters fixed) is true and regularity conditions hold, Λ = 2[ℓ(θ̂<sub>full</sub>) − ℓ(θ̂<sub>reduced</sub>)] converges in distribution to χ²<sub>q</sub>. Sketch: expand ℓ around the full-model MLE, ℓ(θ<sub>0</sub>) ≈ ℓ(θ̂) + U(θ̂)ᵀ(θ<sub>0</sub> − θ̂) − ½(θ<sub>0</sub> − θ̂)ᵀJ(θ<sub>0</sub> − θ̂); the score at the MLE is zero, so 2[ℓ(θ̂) − ℓ(θ<sub>0</sub>)] ≈ (θ̂ − θ<sub>0</sub>)ᵀJ(θ̂ − θ<sub>0</sub>). Since √n(θ̂ − θ<sub>0</sub>) is asymptotically N(0, i⁻¹) and J/n → i, this is a quadratic form of a normal vector with its own inverse covariance, which is χ² with as many degrees of freedom as constrained dimensions. For the soil example Λ = 2(−137.1 + 142.3) = 10.4 with q = 2 (a second pool adds a pool fraction and a rate), threshold χ²<sub>2,0.95</sub> = 5.99 and p ≈ 0.006, so the two-pool model is supported. The subtlety: the models are nested only on the boundary of the parameter space (one pool is recovered when the second pool's fraction is zero, and at that point its rate constant is unidentified), which violates Wilks' regularity conditions. The true null distribution is not χ²<sub>2</sub> but a mixture of χ² distributions, and the standard test is conservative or anticonservative depending on the parametrisation; a parametric bootstrap of Λ under the one-pool model, or a comparison by AICc, is the safer route. One should also check whether the two-pool parameters are themselves identifiable from the incubation data (profile likelihoods), since a better fit along an equifinal ridge still predicts nothing reliably.</p></div></details>
+    <details class="q"><summary><span>6. Explain what AIC estimates, sketch Akaike's derivation, and contrast it with BIC. A modeller compares four soil-respiration models and reports AIC = 410.2, 408.9, 408.5, 421.0. What should she conclude?</span></summary><div class="a"><p>AIC estimates the expected relative Kullback–Leibler divergence between the data-generating distribution and the fitted model, equivalently the expected log-likelihood the fitted model would achieve on new data from the same process, up to a constant common to all models. The maximised log-likelihood ℓ(θ̂) overestimates this quantity because θ̂ was chosen to fit the sample. Akaike's argument: let θ* minimise KL (the "best" parameter in the model). Two second-order Taylor expansions, one of ℓ(θ̂) around θ*, the other of the expected new-data log-likelihood around θ*, show that E[ℓ(θ̂)] exceeds E[ℓ(θ*)] by about k/2 and that E[ℓ<sub>new</sub>(θ̂)] falls short of E[ℓ(θ*)] by about k/2, each being the expectation of a quadratic form of a χ²<sub>k</sub> type with the covariance cancelling the information matrix; the total optimism is k, so −2ℓ(θ̂) + 2k is approximately unbiased for −2 × expected new-data log-likelihood. AICc adds 2k(k+1)/(n−k−1) for small n. BIC = −2ℓ + k log n arises instead from a Laplace approximation to the marginal likelihood p(y | M) under a Bayesian model-selection framing; it is consistent for picking the true model when it is in the candidate set and penalises more heavily than AIC for n &gt; 8, whereas AIC targets predictive accuracy and may keep adding parameters as n grows. For the four models: ΔAIC = 1.7, 0.4, 0, 12.5. Models 2 and 3 are essentially indistinguishable (Δ &lt; 2), model 1 has slightly less support, model 4 can be dismissed (Δ &gt; 10). Akaike weights are proportional to exp(−Δ/2): 0.43, 0.82, 1, 0.002, normalised to 0.19, 0.36, 0.44, 0.00. She should not declare model 3 "the best" but report the weights, consider model averaging of predictions, and check that all four were fitted to the same data with the same likelihood (same transformation of the response) and that n/k is large enough that AICc is unnecessary.</p></div></details>
+    <details class="q"><summary><span>7. Show that MAP estimation with a Gaussian prior on regression coefficients is ridge regression, and interpret the ridge parameter. When would you prefer the full posterior to the MAP estimate?</span></summary><div class="a"><p>With y = Xβ + ε, ε ~ N(0, σ²I) and prior β ~ N(0, τ²I), the log-posterior is log p(β | y) = ℓ(β) + log π(β) + const = −‖y − Xβ‖²/(2σ²) − ‖β‖²/(2τ²) + const. Multiplying by −2σ² and dropping constants, the MAP estimate minimises ‖y − Xβ‖² + (σ²/τ²)‖β‖², the ridge objective with λ = σ²/τ², whose solution is β̂ = (XᵀX + λI)⁻¹Xᵀy. λ is the ratio of noise variance to prior variance: a vague prior (large τ) gives λ → 0 and OLS; a strong belief that coefficients are small gives large λ and strong shrinkage toward zero. A Laplace prior gives the lasso penalty λ‖β‖₁ and sparsity; a prior centred on θ<sub>b</sub> with covariance B gives the background term of a data-assimilation cost function. The MAP estimate is a point and ignores the shape of the posterior: prefer the full posterior (by MCMC, or its Laplace approximation) when uncertainty must be propagated into predictions, when the posterior is skewed or multimodal (equifinal parameters in a soil-carbon model, V<sub>cmax</sub>–g<sub>m</sub> ridges), when there are hierarchical levels (site- or species-level parameters with partial pooling, where the MAP of variance components can collapse to zero), or when decisions depend on tail probabilities rather than the most probable parameter. The posterior mean minimises expected squared error and can differ substantially from the mode in such cases.</p></div></details>
+    <details class="q"><summary><span>8. Describe the cost function of a typical ecosystem model–data fusion study as a likelihood and prior. What assumptions does it make, which are usually violated with flux-tower data, and what are the consequences?</span></summary><div class="a"><p>The standard cost function is J(θ) = ½(y − M(θ))ᵀR⁻¹(y − M(θ)) + ½(θ − θ<sub>b</sub>)ᵀB⁻¹(θ − θ<sub>b</sub>). The first term is −log L(θ) for observation errors that are Gaussian with covariance R (often diagonal, with variances set per data stream); the second is −log π(θ) for a Gaussian prior with mean θ<sub>b</sub> and covariance B. Minimising J is MAP estimation; the inverse Hessian of J at the minimum approximates the posterior covariance, from which prediction uncertainty is propagated. Assumptions: (i) observation errors are independent across time and streams (R diagonal), (ii) Gaussian, (iii) with known variances, (iv) the model is structurally correct so that model-minus-data differences are observation error only, (v) the prior is Gaussian and correctly centred, and (vi) the optimum found is global. With flux-tower data, (i) fails because random flux errors are autocorrelated at sub-daily to seasonal scales and gap-filled values are model output; (ii) fails because the random error is Laplace-like and heteroscedastic, scaling with flux magnitude; (iii) is approximate; and (iv) fails for every ecosystem model. Consequences: the effective number of observations is overstated, so the posterior is far too narrow (overconfidence); the weighting between data streams (NEE vs soil respiration vs biomass) is arbitrary and changes the parameter estimates; parameters absorb structural error and take compensating, physically implausible values that transfer poorly to other sites or future climate; and streams with many observations (half-hourly NEE) dominate streams with few (annual biomass increment) unless R is scaled. Remedies in the literature: thicken R with temporal error correlation or use daily aggregates, use Laplace or heavy-tailed likelihoods, inflate variances per stream to balance them, include a model-discrepancy term, and validate on held-out years or sites rather than trusting the posterior spread (Richardson et al. 2010; Keenan et al. 2012).</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Fisher RA (1922). On the mathematical foundations of theoretical statistics. <em>Philosophical Transactions of the Royal Society A</em> 222: 309–368. <a href="https://doi.org/10.1098/rsta.1922.0009">doi:10.1098/rsta.1922.0009</a><span class="why">Where likelihood, sufficiency, efficiency and consistency were defined; readable and worth an hour.</span></li>
+      <li>Casella G, Berger RL (2002). <em>Statistical Inference</em>, 2nd ed. Duxbury, Pacific Grove. <span class="why">Chapter 7 for the MLE and its properties, chapter 10 for the asymptotics and the Cramér–Rao bound.</span></li>
+      <li>Pawitan Y (2001). <em>In All Likelihood: Statistical Modelling and Inference Using Likelihood</em>. Oxford University Press, Oxford. <span class="why">The best single book on likelihood as a tool: profile likelihood, nuisance parameters, non-regular cases.</span></li>
+      <li>Edwards AWF (1972). <em>Likelihood</em>. Cambridge University Press, Cambridge. <span class="why">The philosophical case for likelihood-based inference and the support function.</span></li>
+      <li>Burnham KP, Anderson DR (2002). <em>Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach</em>, 2nd ed. Springer, New York. <span class="why">AIC, AICc, Akaike weights and model averaging, with the KL derivation in chapter 7; the standard reference in ecology.</span></li>
+      <li>Akaike H (1974). A new look at the statistical model identification. <em>IEEE Transactions on Automatic Control</em> 19: 716–723. <a href="https://doi.org/10.1109/TAC.1974.1100705">doi:10.1109/TAC.1974.1100705</a><span class="why">The original AIC paper.</span></li>
+      <li>Schwarz G (1978). Estimating the dimension of a model. <em>Annals of Statistics</em> 6: 461–464. <a href="https://doi.org/10.1214/aos/1176344136">doi:10.1214/aos/1176344136</a><span class="why">The BIC derivation from the marginal likelihood.</span></li>
+      <li>Wilks SS (1938). The large-sample distribution of the likelihood ratio for testing composite hypotheses. <em>Annals of Mathematical Statistics</em> 9: 60–62. <a href="https://doi.org/10.1214/aoms/1177732360">doi:10.1214/aoms/1177732360</a><span class="why">The χ² limit of the likelihood-ratio statistic.</span></li>
+      <li>Dempster AP, Laird NM, Rubin DB (1977). Maximum likelihood from incomplete data via the EM algorithm. <em>Journal of the Royal Statistical Society B</em> 39: 1–38. <a href="https://doi.org/10.1111/j.2517-6161.1977.tb01600.x">doi:10.1111/j.2517-6161.1977.tb01600.x</a><span class="why">The EM algorithm and its monotonicity proof.</span></li>
+      <li>Bolker BM (2008). <em>Ecological Models and Data in R</em>. Princeton University Press, Princeton. <span class="why">Likelihood fitting of nonlinear ecological models with code; chapters 6–8 on likelihood, profiles and model selection.</span></li>
+      <li>Hilborn R, Mangel M (1997). <em>The Ecological Detective: Confronting Models with Data</em>. Princeton University Press, Princeton. <span class="why">Likelihood as a way of thinking about ecological evidence, with worked case studies.</span></li>
+      <li>Richardson AD, Williams M, Hollinger DY, et al. (2010). Estimating parameters of a forest ecosystem C model with measurements of stocks and fluxes as joint constraints. <em>Oecologia</em> 164: 25–40. <a href="https://doi.org/10.1007/s00442-010-1628-y">doi:10.1007/s00442-010-1628-y</a><span class="why">Multi-constraint model–data fusion at Howland; shows how the assumed error model changes the fit.</span></li>
+      <li>Keenan TF, Davidson E, Moffat AM, Munger W, Richardson AD (2012). Using model-data fusion to interpret past trends, and quantify uncertainties in future projections, of terrestrial ecosystem carbon cycling. <em>Global Change Biology</em> 18: 2555–2569. <a href="https://doi.org/10.1111/j.1365-2486.2012.02684.x">doi:10.1111/j.1365-2486.2012.02684.x</a><span class="why">Which data streams constrain which processes, and the consequences for projection uncertainty. (Keenan et al. 2011, <em>Oecologia</em> 167: 587–597, is the companion paper on the value of constraints.)</span></li>
+      <li>Hobbs NT, Hooten MB (2015). <em>Bayesian Models: A Statistical Primer for Ecologists</em>. Princeton University Press, Princeton. <span class="why">Clear bridge from likelihood to posterior for ecologists; priors as regularisers.</span></li>
+      <li>Murphy KP (2012). <em>Machine Learning: A Probabilistic Perspective</em>. MIT Press, Cambridge MA. <span class="why">MLE, MAP, EM and information criteria in a unified probabilistic framing; chapters 2, 5, 7, 11.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer, New York. <span class="why">Section 8.2 on bootstrap and maximum likelihood, 8.5 on EM, chapter 7 on AIC/BIC and model assessment.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="gradient-descent.html">← Gradient Descent</a><a href="bias-variance.html">Bias–Variance Analysis →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#likelihood">Likelihood, score, information</a></li>
+      <li><a href="#properties">Properties of the MLE</a></li>
+      <li><a href="#derivations">Worked derivations</a></li>
+      <li><a href="#leastsquares">Least squares as MLE</a></li>
+      <li><a href="#numerical">Numerical maximisation</a></li>
+      <li><a href="#inference">Inference: Wald, LRT, AIC</a></li>
+      <li><a href="#bayes">MAP, Bayes, identifiability</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Simulations use a seeded pseudo-random generator (mulberry32) with Box–Muller normal draws; the Resample buttons advance the seed. Fits use closed-form least squares (polynomials) and Gauss–Newton (nonlinear model); standard errors come from σ̂²(JᵀJ)⁻¹.</div></footer>
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function $(id) { return document.getElementById(id); }
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { if (!isFinite(x)) return '–'; return Number(x).toFixed(d === undefined ? 2 : d); }
+  function fmtP(p) { if (p < 1e-4) return '< 0.0001'; return p.toFixed(4); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- seeded RNG and normal draws ---------- */
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { var u = 0, v = 0; while (u === 0) u = r(); v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  /* ---------- distribution functions ---------- */
+  function lgamma(x) {
+    var c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x);
+    x -= 1; var a = c[0], t = x + 7.5; for (var i = 1; i < 9; i++) a += c[i] / (x + i);
+    return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+  }
+  function betacf(a, b, x) {
+    var FP = 1e-300, qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FP) d = FP; d = 1 / d; var h = d;
+    for (var m = 1; m <= 300; m++) { var m2 = 2 * m, aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FP) d = FP; c = 1 + aa / c; if (Math.abs(c) < FP) c = FP; d = 1 / d; var del = d * c; h *= del; if (Math.abs(del - 1) < 3e-14) break; }
+    return h;
+  }
+  function ibeta(x, a, b) { if (x <= 0) return 0; if (x >= 1) return 1; var bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x)); if (x < (a + 1) / (a + b + 2)) return bt * betacf(a, b, x) / a; return 1 - bt * betacf(b, a, 1 - x) / b; }
+  function tcdf(t, df) { var p = 0.5 * ibeta(df / (df + t * t), df / 2, 0.5); return t > 0 ? 1 - p : p; }
+  function tpdf(t, df) { return Math.exp(lgamma((df + 1) / 2) - lgamma(df / 2)) / Math.sqrt(df * Math.PI) * Math.pow(1 + t * t / df, -(df + 1) / 2); }
+  function ncdf(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)); var d = 0.3989422804014327 * Math.exp(-z * z / 2); var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+  function npdf(z) { return 0.3989422804014327 * Math.exp(-z * z / 2); }
+  function qt(p, df) { var lo = -60, hi = 60; for (var i = 0; i < 90; i++) { var m = (lo + hi) / 2; if (tcdf(m, df) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function qn(p) { var lo = -12, hi = 12; for (var i = 0; i < 80; i++) { var m = (lo + hi) / 2; if (ncdf(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+  function sd(a) { var m = mean(a), s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+  function skew(a) { var m = mean(a), s2 = 0, s3 = 0; for (var i = 0; i < a.length; i++) { var d = a[i] - m; s2 += d * d; s3 += d * d * d; } s2 /= a.length; s3 /= a.length; return s3 / Math.pow(s2, 1.5); }
+  function quant(sorted, q) { var pos = q * (sorted.length - 1), lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo); }
+
+  /* ---------- chart helper ---------- */
+  function ticks(a, b, n) { var span = b - a; if (span <= 0) return [a]; var step = Math.pow(10, Math.floor(Math.log(span / n) / Math.LN10)); var e = span / n / step; if (e >= 5) step *= 5; else if (e >= 2) step *= 2; var out = []; for (var v = Math.ceil(a / step - 1e-9) * step; v <= b + 1e-9; v += step) out.push(+v.toFixed(10)); return out; }
+  function chart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 360, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 16, mB = o.mB || 46;
+    var pw = W - mL - mR, ph = H - mT - mB, x0 = o.x0, x1 = o.x1, y0 = o.y0, y1 = o.y1;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    function sx(x) { return mL + (x - x0) / (x1 - x0) * pw; }
+    function sy(y) { return mT + (y1 - y) / (y1 - y0) * ph; }
+    (o.yt || ticks(y0, y1, 5)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < y0 - 1e-9 || v > y1 + 1e-9) return; var y = sy(v); svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: y, y2: y })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: y + 4, 'text-anchor': 'end' }, l)); });
+    (o.xt || ticks(x0, x1, 7)).forEach(function (t) { var v = (t.v !== undefined) ? t.v : t, l = (t.l !== undefined) ? t.l : t; if (v < x0 - 1e-9 || v > x1 + 1e-9) return; var x = sx(v); svg.appendChild(el('line', { 'class': 'ax', x1: x, x2: x, y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: x, y: mT + ph + 18, 'text-anchor': 'middle' }, l)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    if (o.xl) svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, o.xl));
+    if (o.yl) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    var ch = { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, x0: x0, x1: x1, y0: y0, y1: y1 };
+    ch.cy = function (y) { return sy(Math.max(y0, Math.min(y1, y))); };
+    ch.cx = function (x) { return sx(Math.max(x0, Math.min(x1, x))); };
+    ch.path = function (fn, cls, stroke, N) { N = N || 240; var d = ''; for (var i = 0; i <= N; i++) { var x = x0 + (x1 - x0) * i / N, y = fn(x); if (!isFinite(y)) continue; d += (d === '' ? 'M' : 'L') + sx(x).toFixed(1) + ',' + ch.cy(y).toFixed(1); } var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); svg.appendChild(p); return p; };
+    ch.area = function (fn, a, b, fill, op, N) { N = N || 120; a = Math.max(a, x0); b = Math.min(b, x1); if (b <= a) return null; var d = 'M' + sx(a).toFixed(1) + ',' + sy(y0).toFixed(1); for (var i = 0; i <= N; i++) { var x = a + (b - a) * i / N; d += 'L' + sx(x).toFixed(1) + ',' + ch.cy(fn(x)).toFixed(1); } d += 'L' + sx(b).toFixed(1) + ',' + sy(y0).toFixed(1) + 'Z'; var p = el('path', { 'class': 'area', d: d, fill: fill, 'fill-opacity': op === undefined ? 0.25 : op }); svg.appendChild(p); return p; };
+    ch.vline = function (x, stroke, dash, w) { if (x < x0 || x > x1) return null; var l = el('line', { x1: sx(x), x2: sx(x), y1: mT, y2: mT + ph, stroke: stroke, 'stroke-width': w || 1.5 }); if (dash) l.setAttribute('stroke-dasharray', dash); svg.appendChild(l); return l; };
+    ch.label = function (x, y, t, attrs) { var a = { 'class': 'dl', x: x, y: y }; for (var k in attrs) a[k] = attrs[k]; var e = el('text', a, t); svg.appendChild(e); return e; };
+    return ch;
+  }
+  function hover(ch, tip, fn) {
+    var svg = ch.svg;
+    var xh = el('line', { 'class': 'xh', y1: ch.mT, y2: ch.mT + ch.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: ch.mL, y: ch.mT, width: ch.pw, height: ch.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = ch.x0 + (p.x - ch.mL) / ch.pw * (ch.x1 - ch.x0); x = Math.max(ch.x0, Math.min(ch.x1, x));
+      var r = fn(x); if (!r) { leave(); return; }
+      xh.setAttribute('x1', ch.sx(x)); xh.setAttribute('x2', ch.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y !== undefined && isFinite(r.y)) { dot.setAttribute('cx', ch.sx(x)); dot.setAttribute('cy', ch.cy(r.y)); dot.setAttribute('visibility', 'visible'); } else dot.setAttribute('visibility', 'hidden');
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function histogram(data, lo, hi, nb) { var w = (hi - lo) / nb, c = []; for (var i = 0; i < nb; i++) c.push(0); for (var j = 0; j < data.length; j++) { var k = Math.floor((data[j] - lo) / w); if (k >= 0 && k < nb) c[k]++; } return { counts: c, w: w, lo: lo, dens: c.map(function (v) { return v / (data.length * w); }) }; }
+  function drawHist(ch, h, cls) { for (var i = 0; i < h.counts.length; i++) { if (!h.counts[i]) continue; var xa = ch.sx(h.lo + i * h.w), xb = ch.sx(h.lo + (i + 1) * h.w), y = ch.cy(h.dens[i]); ch.svg.appendChild(el('rect', { 'class': cls || 'bar', x: xa, y: y, width: Math.max(0.5, xb - xa), height: ch.sy(ch.y0) - y })); } }
+
+  function solveLinear(A, b) { // Gaussian elimination with partial pivoting; A is n x n array, b length n
+    var n = b.length, M = A.map(function (r, i) { return r.slice().concat([b[i]]); });
+    for (var c = 0; c < n; c++) {
+      var piv = c; for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+      var tmp = M[c]; M[c] = M[piv]; M[piv] = tmp;
+      if (Math.abs(M[c][c]) < 1e-14) return null;
+      for (var r2 = 0; r2 < n; r2++) { if (r2 === c) continue; var f = M[r2][c] / M[c][c]; for (var k = c; k <= n; k++) M[r2][k] -= f * M[c][k]; }
+    }
+    return M.map(function (r, i) { return r[n] / r[i]; });
+  }
+
+  /* ---------- Lab A: likelihood surface ---------- */
+  var seedLs = 21;
+  function labLs() {
+    var n = +$('lsN').value, mu0 = +$('lsMu').value, sd0 = +$('lsSd').value;
+    $('lsNO').textContent = n; $('lsMuO').textContent = mu0.toFixed(2); $('lsSdO').textContent = sd0.toFixed(2);
+    var r = mulberry32(seedLs), y = []; for (var i = 0; i < n; i++) y.push(mu0 + sd0 * gauss(r));
+    var ybar = mean(y), ss = 0; y.forEach(function (v) { ss += (v - ybar) * (v - ybar); });
+    var sig2 = ss / n, sig = Math.sqrt(sig2), s = Math.sqrt(ss / Math.max(1, n - 1));
+    function ll(m, sg) { var q = 0; for (var i = 0; i < n; i++) q += (y[i] - m) * (y[i] - m); return -n / 2 * Math.log(2 * Math.PI * sg * sg) - q / (2 * sg * sg); }
+    function llp(m) { var q = 0; for (var i = 0; i < n; i++) q += (y[i] - m) * (y[i] - m); return -n / 2 * (Math.log(2 * Math.PI * q / n) + 1); }
+    var lmax = llp(ybar), info = n / sig2, se = sig / Math.sqrt(n);
+    function quad(m) { return lmax - 0.5 * info * (m - ybar) * (m - ybar); }
+    // profile CI by bisection
+    function root(lo, hi) { for (var i = 0; i < 60; i++) { var m = (lo + hi) / 2; if (lmax - llp(m) < 1.92) lo = m; else hi = m; } return (lo + hi) / 2; }
+    var pl = root(ybar, ybar - 10 * se - 1), ph2 = root(ybar, ybar + 10 * se + 1);
+    $('lsEst').textContent = fmt(ybar, 3) + ' · ' + fmt(sig, 3); $('lsS').textContent = fmt(s, 3); $('lsL').textContent = fmt(lmax, 2); $('lsI').textContent = fmt(info, 1);
+    $('lsSe').textContent = fmt(se, 4); $('lsCi').textContent = '[' + fmt(ybar - 1.96 * se, 3) + ', ' + fmt(ybar + 1.96 * se, 3) + ']'; $('lsPci').textContent = '[' + fmt(pl, 3) + ', ' + fmt(ph2, 3) + ']';
+    // chart 1
+    var w = Math.max(4 * se, 0.15), xlo = ybar - w, xhi = ybar + w, ylo = lmax - Math.max(12, 0.5 * info * w * w) ;
+    var c1 = chart($('lsSvg1'), { W: 640, H: 250, x0: xlo, x1: xhi, y0: ylo, y1: lmax + (lmax - ylo) * 0.12, xl: 'μ (g N m⁻²)', yl: 'log-likelihood', mB: 40, mL: 64, mR: 24, yt: ticks(ylo, lmax, 4) });
+    c1.area(function (m) { return llp(m); }, pl, ph2, 'var(--accent)', 0.12);
+    c1.path(quad, 'dash', 'var(--series-2)'); c1.path(llp, 'net');
+    c1.vline(ybar, 'var(--accent)', '3 3', 1.2); c1.vline(mu0, 'var(--accent-2)', '2 4', 1);
+    c1.svg.appendChild(el('line', { x1: c1.sx(xlo), x2: c1.sx(xhi), y1: c1.sy(lmax - 1.92), y2: c1.sy(lmax - 1.92), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    c1.label(c1.sx(xlo) + 4, c1.sy(lmax - 1.92) - 4, 'ℓmax − 1.92', { 'class': 'ann' });
+    c1.label(c1.sx(ybar) + 4, c1.mT + 12, 'μ̂ = ' + fmt(ybar, 3), { fill: 'var(--accent)' });
+    hover(c1, $('lsTip1'), function (m) { return { y: llp(m), html: 'μ <b>' + fmt(m, 3) + '</b><br>profile ℓ <b>' + fmt(llp(m), 2) + '</b> · drop <b>' + fmt(lmax - llp(m), 2) + '</b><br>quadratic <b>' + fmt(quad(m), 2) + '</b>' }; });
+    // chart 2: heat map
+    var sw = Math.max(0.5 * sig, 3.5 * sig / Math.sqrt(2 * n)), slo = Math.max(0.02, sig - sw), shi = sig + sw;
+    var c2 = chart($('lsSvg2'), { W: 640, H: 300, x0: xlo, x1: xhi, y0: slo, y1: shi, xl: 'μ (g N m⁻²)', yl: 'σ', mB: 40, mL: 64, mR: 24 });
+    var NX = 60, NY = 36, dx = (xhi - xlo) / NX, dy = (shi - slo) / NY;
+    for (var ix = 0; ix < NX; ix++) for (var iy = 0; iy < NY; iy++) {
+      var m = xlo + (ix + 0.5) * dx, sg = slo + (iy + 0.5) * dy, v = ll(m, sg) - lmax; var op = Math.max(0, 1 + v / 12) * 0.9;
+      if (op <= 0.01) continue;
+      c2.svg.appendChild(el('rect', { 'class': 'cell', x: c2.sx(xlo + ix * dx), y: c2.sy(slo + (iy + 1) * dy), width: c2.sx(xlo + dx) - c2.sx(xlo) + 0.5, height: c2.sy(slo) - c2.sy(slo + dy) + 0.5, fill: 'var(--series-1)', 'fill-opacity': op }));
+    }
+    c2.svg.appendChild(el('circle', { cx: c2.sx(ybar), cy: c2.cy(sig), r: 5, fill: 'var(--accent)', stroke: 'var(--surface)', 'stroke-width': 1.5 }));
+    c2.svg.appendChild(el('circle', { cx: c2.cx(mu0), cy: c2.cy(sd0), r: 5, fill: 'none', stroke: 'var(--accent-2)', 'stroke-width': 2 }));
+    c2.label(c2.sx(ybar) + 8, c2.cy(sig) - 8, 'MLE', { fill: 'var(--accent)' });
+    c2.label(c2.cx(mu0) + 8, c2.cy(sd0) + 14, 'truth', { fill: 'var(--accent-2)' });
+    hover(c2, $('lsTip2'), function (m) { return { html: 'μ <b>' + fmt(m, 3) + '</b> · ℓ(μ, σ̂) − ℓmax = <b>' + fmt(ll(m, sig) - lmax, 2) + '</b><br>cells fade to transparent 12 log-lik units below the maximum' }; });
+  }
+  ['lsN', 'lsMu', 'lsSd'].forEach(function (id) { $(id).addEventListener('input', labLs); });
+  $('lsBtn').addEventListener('click', function () { seedLs += 1; labLs(); });
+  labLs();
+
+  /* ---------- Lab B: binomial likelihood ---------- */
+  function labBn() {
+    var n = +$('bnN').value; var kEl = $('bnK'); kEl.max = n; if (+kEl.value > n) kEl.value = n; var k = +kEl.value;
+    $('bnNO').textContent = n; $('bnKO').textContent = k;
+    var ph = k / n;
+    function rel(p) { var a = k > 0 ? k * Math.log(p / ph) : 0; var b = (n - k) > 0 ? (n - k) * Math.log((1 - p) / (1 - ph)) : 0; return a + b; }
+    var regular = ph > 0 && ph < 1, info = regular ? n / (ph * (1 - ph)) : NaN, se = regular ? Math.sqrt(ph * (1 - ph) / n) : NaN;
+    function root(lo, hi) { for (var i = 0; i < 70; i++) { var m = (lo + hi) / 2; if (-rel(m) < 1.92) lo = m; else hi = m; } return (lo + hi) / 2; }
+    var lrL = ph > 0 ? root(ph, 1e-9) : 0, lrH = ph < 1 ? root(ph, 1 - 1e-9) : 1;
+    var z = 1.96, wc = (ph + z * z / (2 * n)) / (1 + z * z / n), wh = z / (1 + z * z / n) * Math.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n));
+    $('bnP').textContent = fmt(ph, 3); $('bnI').textContent = regular ? fmt(info, 1) : 'undefined (boundary)'; $('bnSe').textContent = regular ? fmt(se, 4) : 'undefined';
+    $('bnW').textContent = regular ? '[' + fmt(Math.max(0, ph - z * se), 3) + ', ' + fmt(Math.min(1, ph + z * se), 3) + ']' : 'zero width (useless)';
+    $('bnLr').textContent = '[' + fmt(lrL, 3) + ', ' + fmt(lrH, 3) + ']'; $('bnWi').textContent = '[' + fmt(wc - wh, 3) + ', ' + fmt(wc + wh, 3) + ']';
+    var ch = chart($('bnSvg'), { W: 640, H: 340, x0: 0, x1: 1, y0: -8, y1: 0.8, xl: 'p (germination probability)', yl: 'ℓ(p) − ℓ(p̂)', mL: 64, mR: 24, xt: [0, 0.2, 0.4, 0.6, 0.8, 1], yt: [0, -2, -4, -6, -8] });
+    ch.area(function (p) { return rel(p); }, lrL, lrH, 'var(--accent)', 0.12);
+    if (regular) { ch.path(function (p) { return -0.5 * info * (p - ph) * (p - ph); }, 'dash', 'var(--series-2)'); var y1 = ch.sy(-7.2); ch.svg.appendChild(el('line', { x1: ch.cx(ph - z * se), x2: ch.cx(ph + z * se), y1: y1, y2: y1, stroke: 'var(--series-1)', 'stroke-width': 3 })); if (ph + z * se < 0.86) ch.label(ch.cx(ph + z * se) + 6, y1 + 4, 'Wald', { fill: 'var(--series-1)' }); else ch.label(ch.cx(ph - z * se) - 6, y1 + 4, 'Wald', { fill: 'var(--series-1)', 'text-anchor': 'end' }); }
+    ch.path(function (p) { return (p <= 0 || p >= 1) ? NaN : rel(p); }, 'net', null, 400);
+    var y2 = ch.sy(-7.7); ch.svg.appendChild(el('line', { x1: ch.sx(lrL), x2: ch.sx(lrH), y1: y2, y2: y2, stroke: 'var(--accent)', 'stroke-width': 3 })); if (lrH < 0.9) ch.label(ch.sx(lrH) + 6, y2 + 4, 'LR', { fill: 'var(--accent)' }); else ch.label(ch.sx(lrL) - 6, y2 + 4, 'LR', { fill: 'var(--accent)', 'text-anchor': 'end' });
+    ch.svg.appendChild(el('line', { x1: ch.sx(0), x2: ch.sx(1), y1: ch.sy(-1.92), y2: ch.sy(-1.92), stroke: 'var(--muted)', 'stroke-dasharray': '2 3' }));
+    ch.label(ch.sx(0) + 4, ch.sy(-1.92) - 4, '−1.92', { 'class': 'ann' });
+    ch.vline(ph, 'var(--accent)', '3 3', 1.2); ch.label(ch.sx(ph) + 4, ch.mT + 12, 'p̂ = ' + fmt(ph, 3), { fill: 'var(--accent)' });
+    hover(ch, $('bnTip'), function (p) { if (p <= 0 || p >= 1) return null; return { y: rel(p), html: 'p <b>' + fmt(p, 3) + '</b> · ℓ − ℓmax <b>' + fmt(rel(p), 2) + '</b><br>likelihood ratio L(p)/L(p̂) <b>' + fmt(Math.exp(rel(p)), 3) + '</b>' + (regular ? ' · quadratic <b>' + fmt(-0.5 * info * (p - ph) * (p - ph), 2) + '</b>' : '') }; });
+    var html = '<thead><tr><th class="num">p</th><th class="num">ℓ − ℓmax</th><th class="num">L/Lmax</th><th class="num">quadratic</th></tr></thead><tbody>';
+    for (var q = 0.05; q < 1; q += 0.05) html += '<tr><td class="num">' + fmt(q, 2) + '</td><td class="num">' + fmt(rel(q), 2) + '</td><td class="num">' + fmt(Math.exp(rel(q)), 4) + '</td><td class="num">' + (regular ? fmt(-0.5 * info * (q - ph) * (q - ph), 2) : '–') + '</td></tr>';
+    $('bnTable').innerHTML = html + '</tbody>';
+  }
+  ['bnN', 'bnK'].forEach(function (id) { $(id).addEventListener('input', labBn); });
+  labBn();
+
+  /* ---------- Lab C: nonlinear MLE with Gauss-Newton ---------- */
+  var seedNl = 8, nlData = null, nlMle = null, nlTimer = null;
+  function nlGen() {
+    var sig = +$('nlSig').value, r = mulberry32(seedNl), t = [], y = [];
+    for (var i = 0; i < 12; i++) { t.push(0.25 * i); y.push(40 * Math.exp(-1.2 * 0.25 * i) + sig * gauss(r)); }
+    nlData = { t: t, y: y, n: 12 };
+    nlMle = gaussNewton(35, 1, 60).final;
+  }
+  function nlModel(C0, k, t) { return C0 * Math.exp(-k * t); }
+  function nlRss(C0, k) { var s = 0; for (var i = 0; i < nlData.n; i++) { var d = nlData.y[i] - nlModel(C0, k, nlData.t[i]); s += d * d; } return s; }
+  function nlLl(rss) { return -nlData.n / 2 * (Math.log(2 * Math.PI * rss / nlData.n) + 1); }
+  function gnStep(C0, k) { // returns new params and info
+    var JtJ = [[0, 0], [0, 0]], Jtr = [0, 0];
+    for (var i = 0; i < nlData.n; i++) { var e = Math.exp(-k * nlData.t[i]), j1 = e, j2 = -C0 * nlData.t[i] * e, r = nlData.y[i] - C0 * e; JtJ[0][0] += j1 * j1; JtJ[0][1] += j1 * j2; JtJ[1][1] += j2 * j2; Jtr[0] += j1 * r; Jtr[1] += j2 * r; }
+    JtJ[1][0] = JtJ[0][1];
+    var d = solveLinear(JtJ, Jtr); if (!d) return null;
+    var rss0 = nlRss(C0, k), step = 1, nC = C0 + d[0], nk = k + d[1];
+    for (var h = 0; h < 12; h++) { nC = C0 + step * d[0]; nk = Math.max(0.005, k + step * d[1]); if (nlRss(nC, nk) <= rss0) break; step /= 2; }
+    return { C0: nC, k: nk, JtJ: JtJ, rss: nlRss(nC, nk) };
+  }
+  function gaussNewton(C0, k, maxit) {
+    var path = [{ C0: C0, k: k, rss: nlRss(C0, k) }];
+    for (var it = 0; it < maxit; it++) { var s = gnStep(C0, k); if (!s) break; var conv = Math.abs(s.C0 - C0) < 1e-7 * (1 + Math.abs(C0)) && Math.abs(s.k - k) < 1e-7 * (1 + k); C0 = s.C0; k = s.k; path.push({ C0: C0, k: k, rss: s.rss }); if (conv) break; }
+    var JtJ = [[0, 0], [0, 0]];
+    for (var i = 0; i < nlData.n; i++) { var e = Math.exp(-k * nlData.t[i]), j1 = e, j2 = -C0 * nlData.t[i] * e; JtJ[0][0] += j1 * j1; JtJ[0][1] += j1 * j2; JtJ[1][1] += j2 * j2; }
+    JtJ[1][0] = JtJ[0][1];
+    var rss = nlRss(C0, k), s2 = rss / (nlData.n - 2), det = JtJ[0][0] * JtJ[1][1] - JtJ[0][1] * JtJ[0][1];
+    var cov = [[JtJ[1][1] / det * s2, -JtJ[0][1] / det * s2], [-JtJ[0][1] / det * s2, JtJ[0][0] / det * s2]];
+    return { path: path, final: { C0: C0, k: k, rss: rss, se: [Math.sqrt(cov[0][0]), Math.sqrt(cov[1][1])], cor: cov[0][1] / Math.sqrt(cov[0][0] * cov[1][1]) } };
+  }
+  function drawNl() {
+    var C0 = +$('nlC0').value, k = +$('nlK').value; $('nlC0O').textContent = C0.toFixed(1); $('nlKO').textContent = k.toFixed(2); $('nlSigO').textContent = (+$('nlSig').value).toFixed(2);
+    var rss = nlRss(C0, k), ll = nlLl(rss), m = nlMle, llm = nlLl(m.rss);
+    $('nlRss').textContent = fmt(rss, 1); $('nlLl').textContent = fmt(ll, 2);
+    $('nlC0h').textContent = fmt(m.C0, 2) + ' ± ' + fmt(m.se[0], 2); $('nlKh').textContent = fmt(m.k, 3) + ' ± ' + fmt(m.se[1], 3); $('nlCor').textContent = fmt(m.cor, 3);
+    $('nlLm').textContent = fmt(llm, 2) + ' · ' + fmt(llm - ll, 2); $('nlTau').textContent = fmt(1 / m.k, 2) + ' ± ' + fmt(m.se[1] / (m.k * m.k), 2) + ' (delta method)';
+    var ymax = Math.max(50, Math.max.apply(null, nlData.y) * 1.1, C0 * 1.05);
+    var ch = chart($('nlSvg'), { W: 640, H: 340, x0: 0, x1: 3, y0: Math.min(0, Math.min.apply(null, nlData.y) - 2), y1: ymax, xl: 'Time since start of incubation (yr)', yl: 'Soil C remaining (g C kg⁻¹)', mR: 24, xt: [0, 0.5, 1, 1.5, 2, 2.5, 3] });
+    ch.path(function (t) { return nlModel(40, 1.2, t); }, 'dash thin', 'var(--muted)');
+    ch.path(function (t) { return nlModel(m.C0, m.k, t); }, '', 'var(--series-1)');
+    ch.path(function (t) { return nlModel(C0, k, t); }, '', 'var(--series-2)');
+    for (var i = 0; i < nlData.n; i++) { ch.svg.appendChild(el('line', { x1: ch.sx(nlData.t[i]), x2: ch.sx(nlData.t[i]), y1: ch.cy(nlData.y[i]), y2: ch.cy(nlModel(C0, k, nlData.t[i])), stroke: 'var(--series-2)', 'stroke-width': 1, 'stroke-opacity': 0.6 })); ch.svg.appendChild(el('circle', { 'class': 'pt', cx: ch.sx(nlData.t[i]), cy: ch.cy(nlData.y[i]), r: 4 })); }
+    ch.label(ch.sx(2.0), ch.cy(nlModel(C0, k, 2.0)) - 8, 'current: RSS ' + fmt(rss, 1), { fill: 'var(--series-2)' });
+    ch.label(ch.sx(1.2), ch.cy(nlModel(m.C0, m.k, 1.2)) + 16, 'MLE: RSS ' + fmt(m.rss, 1), { fill: 'var(--series-1)' });
+    hover(ch, $('nlTip'), function (t) { return { y: nlModel(C0, k, t), html: 't <b>' + fmt(t, 2) + '</b> yr<br>current <b>' + fmt(nlModel(C0, k, t), 2) + '</b> · MLE <b>' + fmt(nlModel(m.C0, m.k, t), 2) + '</b> · truth <b>' + fmt(nlModel(40, 1.2, t), 2) + '</b>' }; });
+  }
+  function nlSolve() {
+    if (nlTimer) { clearInterval(nlTimer); nlTimer = null; }
+    var res = gaussNewton(+$('nlC0').value, +$('nlK').value, 30), path = res.path, i = 0, log = $('nlLog'), lines = [];
+    function show(p, it) { $('nlC0').value = Math.max(10, Math.min(60, p.C0)); $('nlK').value = Math.max(0.02, Math.min(3, p.k)); lines.push('iter ' + it + ':  C0 = ' + p.C0.toFixed(3) + '  k = ' + p.k.toFixed(4) + '  RSS = ' + p.rss.toFixed(3) + '  ℓ = ' + nlLl(p.rss).toFixed(3)); log.textContent = lines.join('\n'); log.scrollTop = log.scrollHeight; drawNl(); }
+    if (reduced) { path.forEach(function (p, it) { show(p, it); }); return; }
+    show(path[0], 0); i = 1;
+    nlTimer = setInterval(function () { if (i >= path.length) { clearInterval(nlTimer); nlTimer = null; lines.push('converged in ' + (path.length - 1) + ' steps; SE from σ̂²(JᵀJ)⁻¹: ' + res.final.se[0].toFixed(3) + ', ' + res.final.se[1].toFixed(4)); log.textContent = lines.join('\n'); log.scrollTop = log.scrollHeight; return; } show(path[i], i); i++; }, 450);
+  }
+  nlGen();
+  ['nlC0', 'nlK'].forEach(function (id) { $(id).addEventListener('input', function () { if (nlTimer) { clearInterval(nlTimer); nlTimer = null; } drawNl(); }); });
+  $('nlSig').addEventListener('input', function () { nlGen(); drawNl(); });
+  $('nlSolve').addEventListener('click', nlSolve);
+  $('nlReset').addEventListener('click', function () { $('nlC0').value = 30; $('nlK').value = 0.5; $('nlLog').textContent = 'Press Solve to run Gauss–Newton from the current guess.'; drawNl(); });
+  $('nlNew').addEventListener('click', function () { seedNl += 1; nlGen(); drawNl(); });
+  drawNl();
+
+  /* ---------- Lab D: AIC/BIC vs polynomial degree ---------- */
+  var seedIc = 5;
+  function nrh(Q) { var Am = 25, phi = 0.05, th = 0.8, Rd = 1.5; var s = phi * Q + Am; return (s - Math.sqrt(s * s - 4 * th * phi * Q * Am)) / (2 * th) - Rd; }
+  function polyfit(x, y, d) { // x scaled to [-1,1]
+    var p = d + 1, A = [], b = [];
+    for (var i = 0; i < p; i++) { A.push([]); b.push(0); for (var j = 0; j < p; j++) A[i].push(0); }
+    for (var k = 0; k < x.length; k++) { var pw = []; var v = 1; for (var i2 = 0; i2 < p; i2++) { pw.push(v); v *= x[k]; } for (var a = 0; a < p; a++) { b[a] += pw[a] * y[k]; for (var c = 0; c < p; c++) A[a][c] += pw[a] * pw[c]; } }
+    return solveLinear(A, b);
+  }
+  function polyval(cf, x) { var v = 0; for (var i = cf.length - 1; i >= 0; i--) v = v * x + cf[i]; return v; }
+  function labIc() {
+    var n = +$('icN').value, sig = +$('icSig').value, dShow = +$('icD').value;
+    $('icNO').textContent = n; $('icSigO').textContent = sig.toFixed(2); $('icDO').textContent = dShow;
+    var r = mulberry32(seedIc), Q = [], y = [];
+    for (var i = 0; i < n; i++) Q.push(2000 * r()); Q.sort(function (a, b) { return a - b; });
+    for (var j = 0; j < n; j++) y.push(nrh(Q[j]) + sig * gauss(r));
+    var xs = Q.map(function (q) { return q / 1000 - 1; });
+    var Qt = [], yt = []; for (var t = 0; t < 200; t++) { var q = 2000 * r(); Qt.push(q); yt.push(nrh(q) + sig * gauss(r)); }
+    var rows = [], fits = [];
+    for (var d = 1; d <= 8; d++) {
+      var cf = polyfit(xs, y, d); fits.push(cf); var rss = 0; for (var k = 0; k < n; k++) { var e = y[k] - polyval(cf, xs[k]); rss += e * e; }
+      var ll = -n / 2 * (Math.log(2 * Math.PI * rss / n) + 1), kp = d + 2;
+      var aic = -2 * ll + 2 * kp, aicc = (n - kp - 1 > 0) ? aic + 2 * kp * (kp + 1) / (n - kp - 1) : NaN, bic = -2 * ll + kp * Math.log(n);
+      var tr = 0; for (var u = 0; u < 200; u++) { var et = yt[u] - polyval(cf, Qt[u] / 1000 - 1); tr += et * et; }
+      rows.push({ d: d, k: kp, rss: rss, ll: ll, dev: -2 * ll, aic: aic, aicc: aicc, bic: bic, rmse: Math.sqrt(tr / 200) });
+    }
+    function argmin(key) { var best = rows[0]; rows.forEach(function (o) { if (isFinite(o[key]) && o[key] < best[key]) best = o; }); return best.d; }
+    $('icA').textContent = argmin('aic'); $('icAc').textContent = argmin('aicc'); $('icB').textContent = argmin('bic');
+    var sh = rows[dShow - 1]; $('icR').textContent = fmt(sh.rss, 1) + ', ' + fmt(sh.ll, 2); $('icT').textContent = fmt(sh.rmse, 2) + ' (noise σ = ' + sig.toFixed(2) + ')';
+    var all = []; rows.forEach(function (o) { all.push(o.dev, o.aic, o.bic); if (isFinite(o.aicc) && o.aicc < o.aic + 60) all.push(o.aicc); });
+    var ylo = Math.min.apply(null, all), yhi = Math.max.apply(null, all), pad = (yhi - ylo) * 0.08;
+    var c1 = chart($('icSvg1'), { W: 640, H: 280, x0: 0.5, x1: 8.5, y0: ylo - pad, y1: yhi + pad, xl: 'Polynomial degree', yl: 'criterion value', mB: 40, mL: 64, mR: 24, xt: [1, 2, 3, 4, 5, 6, 7, 8] });
+    function series(key, cls, col) { var dd = ''; rows.forEach(function (o) { if (!isFinite(o[key])) return; dd += (dd === '' ? 'M' : 'L') + c1.sx(o.d).toFixed(1) + ',' + c1.cy(o[key]).toFixed(1); }); var p = el('path', { 'class': 'ser ' + cls, d: dd }); if (col) p.setAttribute('stroke', col); c1.svg.appendChild(p); rows.forEach(function (o) { if (!isFinite(o[key])) return; c1.svg.appendChild(el('circle', { cx: c1.sx(o.d), cy: c1.cy(o[key]), r: 3, fill: col || 'var(--fg)' })); }); }
+    series('dev', 'net'); series('aic', '', 'var(--series-1)'); series('aicc', 'dash', 'var(--series-3)'); series('bic', '', 'var(--series-2)');
+    var last = rows[7]; c1.label(c1.sx(8) - 6, c1.cy(last.dev) + 14, '−2ℓ', { 'text-anchor': 'end' }); c1.label(c1.sx(8) - 6, c1.cy(last.bic) - 6, 'BIC', { fill: 'var(--series-2)', 'text-anchor': 'end' }); c1.label(c1.sx(8) - 6, c1.cy(last.aic) - 6, 'AIC', { fill: 'var(--series-1)', 'text-anchor': 'end' });
+    c1.vline(dShow, 'var(--accent)', '3 3', 1.2);
+    hover(c1, $('icTip1'), function (x) { var d = Math.max(1, Math.min(8, Math.round(x))); var o = rows[d - 1]; return { y: o.aic, html: 'degree <b>' + d + '</b> (k = ' + o.k + ')<br>−2ℓ <b>' + fmt(o.dev, 1) + '</b> · AIC <b>' + fmt(o.aic, 1) + '</b> · AICc <b>' + fmt(o.aicc, 1) + '</b> · BIC <b>' + fmt(o.bic, 1) + '</b><br>test RMSE <b>' + fmt(o.rmse, 2) + '</b>' }; });
+    var c2 = chart($('icSvg2'), { W: 640, H: 260, x0: 0, x1: 2000, y0: -5, y1: 30, xl: 'PPFD (µmol photons m⁻² s⁻¹)', yl: 'A (µmol CO₂ m⁻² s⁻¹)', mB: 40, mL: 64, mR: 24, xt: [0, 500, 1000, 1500, 2000], yt: [0, 10, 20, 30] });
+    c2.path(nrh, 'dash thin', 'var(--muted)');
+    c2.path(function (q) { return polyval(fits[dShow - 1], q / 1000 - 1); }, '', 'var(--accent)');
+    for (var m = 0; m < n; m++) c2.svg.appendChild(el('circle', { 'class': 'pt', cx: c2.sx(Q[m]), cy: c2.cy(y[m]), r: 3.5 }));
+    c2.label(c2.sx(1500), c2.cy(polyval(fits[dShow - 1], 0.5)) - 10, 'degree ' + dShow, { fill: 'var(--accent)' });
+    hover(c2, $('icTip2'), function (q) { return { y: polyval(fits[dShow - 1], q / 1000 - 1), html: 'PPFD <b>' + fmt(q, 0) + '</b><br>fit <b>' + fmt(polyval(fits[dShow - 1], q / 1000 - 1), 2) + '</b> · truth <b>' + fmt(nrh(q), 2) + '</b>' }; });
+    var html = '<thead><tr><th class="num">Degree</th><th class="num">k</th><th class="num">RSS</th><th class="num">ℓ</th><th class="num">AIC</th><th class="num">AICc</th><th class="num">BIC</th><th class="num">Test RMSE</th></tr></thead><tbody>';
+    rows.forEach(function (o) { html += '<tr><td class="num">' + o.d + '</td><td class="num">' + o.k + '</td><td class="num">' + fmt(o.rss, 1) + '</td><td class="num">' + fmt(o.ll, 2) + '</td><td class="num">' + fmt(o.aic, 1) + '</td><td class="num">' + fmt(o.aicc, 1) + '</td><td class="num">' + fmt(o.bic, 1) + '</td><td class="num">' + fmt(o.rmse, 2) + '</td></tr>'; });
+    $('icTable').innerHTML = html + '</tbody>';
+  }
+  ['icN', 'icSig', 'icD'].forEach(function (id) { $(id).addEventListener('input', labIc); });
+  $('icBtn').addEventListener('click', function () { seedIc += 1; labIc(); });
+  labIc();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phosphorus Loss and Retention</title>
+<meta name="description" content="Phosphorus cycling for ecosystem modellers: rock-derived supply and the Walker–Syers trajectory, speciation and sorption chemistry, organic and microbial P, Hedley fractions, loss by erosion, runoff and leaching, eutrophication and legacy P, acquisition strategies, global P flows, and how land models represent P.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .chart text { font-family: var(--font-display); fill: var(--fg); }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dash { stroke-dasharray: 5 4; }
+  .chart .thin { stroke-width: 1.3; opacity: 0.7; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .band { fill: var(--accent-2-soft); opacity: 0.6; }
+  .chart .band2 { fill: var(--accent-soft); opacity: 0.55; }
+  .chart .band3 { fill: var(--series-1); opacity: 0.12; }
+  .chart .pt { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .chart .pt2 { fill: var(--accent-2); stroke: var(--surface); stroke-width: 2; }
+  .chart .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .verdict { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+  .hedley td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .bars { display: grid; gap: 0.35rem; margin-top: 0.75rem; font-family: var(--font-display); font-size: 0.8rem; }
+  .bar { display: grid; grid-template-columns: 110px 1fr 70px; gap: 0.5rem; align-items: center; color: var(--muted); }
+  .bar .track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--c); transition: width .2s; }
+  .bar .v { font-family: var(--font-mono); color: var(--fg); text-align: right; font-size: 0.78rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#biogeo">Soil Biogeochemistry</a> › Phosphorus loss and retention</div>
+    <div class="eyebrow">Topic 6 of the Biogeochemistry section</div>
+    <h1 style="margin-top:0.3rem">Phosphorus Loss and Retention</h1>
+    <p class="lead">Phosphorus has no gas phase and arrives only by rock weathering and dust, so its fate is decided by surfaces: whether phosphate is held on Fe and Al oxides, locked in calcium minerals, bound in organic molecules, or carried away on sediment. This page covers the chemistry, the pedogenic trajectory, the loss pathways that drive eutrophication, and how models handle P.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Phosphorus enters ecosystems almost entirely from the weathering of apatite in parent material (plus a trickle of dust), and leaves only in water or on sediment, because, unlike nitrogen, it has no significant gaseous form. Walker and Syers [1] showed that this makes soil P a one-way clock: primary mineral P declines with soil age, is converted into organic P, labile sorbed P and <strong>occluded</strong> P buried inside Fe and Al oxide coatings, and the total slowly leaks away until an old soil is P-limited and the ecosystem survives on tight recycling. In the soil solution, orthophosphate speciation is set by pH (pK<sub>a</sub> 2.15, 7.20, 12.35); its concentration is buffered by <strong>sorption</strong> on oxide surfaces in acid soils and by <strong>precipitation</strong> with calcium in calcareous soils, so solution P is typically only 0.01–0.3 mg L⁻¹ and plants have evolved mycorrhizae, cluster roots, carboxylate exudation and phosphatases to get at the rest. Organic P (30–65% of total) is mineralised by phosphatases in response to demand, largely independent of carbon flow. Agricultural soils have been loaded with fertiliser P for a century; the resulting <strong>legacy P</strong> is lost by erosion (particulate P) and runoff (dissolved P, rising sharply above a soil-test change point), and causes freshwater <strong>eutrophication</strong> that can persist for decades. Land-surface models now add P pools with Langmuir-type sorption, and P limitation may halve the CO₂ fertilisation effect in tropical forests.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to be asked to contrast N and P (gas phase, source, loss mechanism, limitation with soil age), to interpret Hedley fractions or a sorption isotherm, to explain why P moves mainly with sediment and why dissolved P loss is non-linear in soil test P, to describe plant and microbial P acquisition, and to say how a model such as ELM, CASA-CNP or ORCHIDEE-CNP represents sorption and why that matters for tropical carbon uptake.</p></div>
+  </section>
+
+  <section id="pedogenesis">
+    <h2>Rock-derived P and the Walker–Syers trajectory</h2>
+    <p>Phosphorus is about 0.1% of the crust, almost all as the calcium phosphate apatite, Ca₅(PO₄)₃(F,Cl,OH). Acid hydrolysis of apatite (accelerated by carbonic acid, organic acids and root and microbial exudates) releases orthophosphate at rates of 0.01–1 kg P ha⁻¹ yr⁻¹, far less than annual plant uptake (5–30 kg), so ecosystems live on recycling. Total soil P ranges from ~100 to ~2000 mg kg⁻¹ (median ~500), and because P is retained strongly by sorption, the soil's P stock is an archive of its history.</p>
+    <p>Walker and Syers [1], using New Zealand chronosequences, proposed the conceptual model every P paper cites. At time zero all P is in primary minerals. Weathering transfers it into (i) <strong>non-occluded (labile) inorganic P</strong> sorbed on surfaces, (ii) <strong>organic P</strong> in biomass and soil organic matter, which accumulates rapidly then declines, and (iii) <strong>occluded P</strong>, phosphate trapped within secondary Fe and Al oxides and hydroxides as they crystallise and coat sorbed P, which becomes the dominant form in old soils. Leaching and erosion remove P continuously, so <strong>total P declines monotonically</strong> toward a terminal steady state dominated by occluded and organic forms, at which point the ecosystem is strongly P-limited. Nitrogen follows the opposite course, accumulating from zero by fixation, so young soils are N-limited and old soils P-limited. Crews et al. [5] confirmed this on the Hawaiian chronosequence (300 yr to 4.1 Myr lava flows): N limitation and high primary P at the young site, P limitation, most P occluded, and the highest N:P at the oldest site; Vitousek (2004) and Vitousek et al. [4] generalised the picture into six mechanisms of P limitation: depletion-driven (Walker–Syers), soil barrier (sorption and occlusion), transactional (slow organic P turnover), low-P parent material, sink-driven (high demand), and anthropogenic.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Walker &amp; Syers chronosequence simulator</h3><span class="small muted">Hover the chart to read values (log time axis)</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="wsSvg" viewBox="0 0 640 380" role="img" aria-label="Soil phosphorus pools over a logarithmic time axis from 100 to one million years: primary mineral P, labile inorganic P, organic P, occluded P and total P"></svg>
+            <div class="chart-tip" id="wsTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">primary mineral P</span><span style="--c:var(--series-2)">labile (non-occluded) P</span><span style="--c:var(--series-3)">organic P</span><span style="--c:var(--accent-2)">occluded P</span><span style="--c:var(--fg)">total P</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="wsTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="wKw"><span>Weathering rate k<sub>w</sub> (10<sup>x</sup> yr⁻¹)</span><output id="wKwO">-4.0</output></label><input type="range" id="wKw" min="-5.5" max="-2.5" step="0.1" value="-4"></div>
+          <div class="ctrl"><label for="wKo"><span>Occlusion rate k<sub>o</sub> (10<sup>x</sup> yr⁻¹)</span><output id="wKoO">-3.5</output></label><input type="range" id="wKo" min="-5" max="-2" step="0.1" value="-3.5"></div>
+          <div class="ctrl"><label for="wKl"><span>Leaching loss rate k<sub>l</sub> (10<sup>x</sup> yr⁻¹)</span><output id="wKlO">-4.0</output></label><input type="range" id="wKl" min="-6" max="-2.5" step="0.1" value="-4"></div>
+          <div class="ctrl"><label for="wKb"><span>Organic : labile ratio at equilibrium</span><output id="wKbO">4</output></label><input type="range" id="wKb" min="1" max="12" step="0.5" value="4"></div>
+          <dl class="readout">
+            <dt>Age when primary P is half gone</dt><dd id="wHalf"></dd>
+            <dt>Peak organic P (% of initial)</dt><dd id="wPkO"></dd>
+            <dt>Age of organic P peak</dt><dd id="wTpk"></dd>
+            <dt>Total P at 10⁶ yr</dt><dd id="wTot"></dd>
+            <dt>Occluded share at 10⁶ yr</dt><dd id="wOcc"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Model: primary P weathers at k<sub>w</sub> into labile P; labile P is taken up into organic P (k<sub>b</sub> = 0.02 yr⁻¹) and mineralised back (k<sub>m</sub> = k<sub>b</sub>/ratio), occluded at k<sub>o</sub>, and leached at k<sub>l</sub>. Suggested experiments: raise k<sub>o</sub> relative to k<sub>l</sub> and the terminal state is occlusion-dominated (an Oxisol); raise k<sub>l</sub> and total P collapses (a sandy podzol); slow k<sub>w</sub> and the organic P peak shifts to older ages. Compare with Crews et al. [5]: the 4.1 Myr Hawaiian site has most P occluded and total P a fraction of the 300 yr site.</p>
+    </div>
+  </section>
+
+  <section id="forms">
+    <h2>Forms of P in soil and the chemistry that holds them</h2>
+    <h3>Solution P and speciation</h3>
+    <p>Orthophosphoric acid dissociates in three steps with pK<sub>a</sub> values of 2.15, 7.20 and 12.35, so in the pH range of soils the solution contains H₂PO₄⁻ (dominant below 7.2) and HPO₄²⁻ (dominant above), with PO₄³⁻ negligible until pH &gt; 11. Plants take up mainly H₂PO₄⁻. The fractions follow directly from the equilibria:</p>
+    <div class="eq">$$\alpha_{H_2PO_4^-} = \frac{10^{pH - pK_1}}{1 + 10^{pH - pK_1} + 10^{2pH - pK_1 - pK_2} + 10^{3pH - pK_1 - pK_2 - pK_3}}$$</div>
+    <p>Speciation matters because the different anions have different affinities for mineral surfaces and different solubility products with Ca, Fe and Al, which is why P availability is maximal near pH 6–7 and falls off on both sides.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Orthophosphate speciation versus pH</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="spSvg" viewBox="0 0 640 360" role="img" aria-label="Fractions of H3PO4, H2PO4-, HPO4 2- and PO4 3- against pH with shaded windows for Fe and Al retention at low pH and Ca precipitation at high pH"></svg>
+            <div class="chart-tip" id="spTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--muted)">H₃PO₄</span><span style="--c:var(--series-1)">H₂PO₄⁻</span><span style="--c:var(--series-2)">HPO₄²⁻</span><span style="--c:var(--series-3)">PO₄³⁻</span><span style="--c:var(--accent-2)">shaded: Fe/Al-P retention (acid) and Ca-P precipitation (alkaline)</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="spH"><span>Soil solution pH</span><output id="spHO">6.5</output></label><input type="range" id="spH" min="2" max="13" step="0.05" value="6.5"></div>
+          <dl class="readout">
+            <dt>H₃PO₄</dt><dd id="sp0"></dd>
+            <dt>H₂PO₄⁻</dt><dd id="sp1"></dd>
+            <dt>HPO₄²⁻</dt><dd id="sp2"></dd>
+            <dt>PO₄³⁻</dt><dd id="sp3"></dd>
+            <dt>Dominant retention mechanism</dt><dd id="spMech" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: slide to pH 7.2 and note H₂PO₄⁻ = HPO₄²⁻. Below pH 5.5 the shaded window marks where Fe³⁺ and Al³⁺ activity and oxide surface charge make sorption and precipitation (strengite, variscite) dominant; above 7.5 the Ca window marks dicalcium phosphate, octacalcium phosphate and eventually apatite precipitation. The unshaded 6–7 window is where soil-test P is most available per unit total P, and is the target of liming acid soils and acidifying calcareous ones.</p>
+    </div>
+
+    <h3>Sorption on Fe and Al oxides</h3>
+    <p>In acid and neutral soils the main sink is <strong>ligand exchange</strong>: phosphate displaces hydroxyl or water from the surface of goethite, ferrihydrite, gibbsite and allophane and forms inner-sphere bidentate complexes. This is fast (minutes to hours) and partly reversible, followed by slow diffusion into micropores and precipitation that is less reversible. Sorption is described by isotherms. The <strong>Langmuir</strong> form assumes a finite number of identical sites:</p>
+    <div class="eq">$$Q = \frac{Q_{max} K C}{1 + K C}, \qquad \text{buffer capacity } \frac{dQ}{dC} = \frac{Q_{max} K}{(1 + KC)^2},$$</div>
+    <p>where Q is sorbed P (mg kg⁻¹), C is solution P (mg L⁻¹), Q<sub>max</sub> the sorption maximum, and K the affinity. The <strong>Freundlich</strong> form Q = K<sub>f</sub> C<sup>n</sup> (n ≈ 0.3–0.7) has no maximum and fits heterogeneous surfaces better at low C. Two derived quantities are central. The <strong>equilibrium P concentration at zero net sorption, EPC₀</strong>, is the solution concentration in equilibrium with the soil's current sorbed P: below it the soil releases P, above it the soil sorbs, so EPC₀ predicts whether a soil or sediment will act as a P source or sink in contact with runoff or a lake. The <strong>degree of P saturation</strong>,</p>
+    <div class="eq">$$DPS = \frac{P_{ox}}{\alpha\,(Fe_{ox} + Al_{ox})} \times 100\%, \qquad \alpha \approx 0.5,$$</div>
+    <p>uses acid ammonium oxalate extraction of amorphous Fe, Al and P (mmol kg⁻¹) to express how full the sorption capacity is; Dutch work set a critical DPS of ~25%, above which dissolved P in drainage rises steeply. Q<sub>max</sub> scales with oxalate Fe + Al, which is why Oxisols and Andisols (allophane) fix enormous amounts of fertiliser P and sandy soils fix little.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · P sorption isotherm, EPC₀ and buffering</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="isoSvg" viewBox="0 0 640 380" role="img" aria-label="Sorbed P against solution P with Langmuir and Freundlich isotherms, the current soil point and the point after fertiliser addition"></svg>
+            <div class="chart-tip" id="isoTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Langmuir</span><span style="--c:var(--series-1)">Freundlich (n = 0.5, matched at C = 1)</span><span style="--c:var(--series-2)">current soil (Q₀, EPC₀)</span><span style="--c:var(--accent-2)">after fertiliser</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="isoTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="iFe"><span>Oxalate Fe + Al (mmol kg⁻¹)</span><output id="iFeO">100</output></label><input type="range" id="iFe" min="10" max="400" step="5" value="100"></div>
+          <div class="ctrl"><label for="iK"><span>Langmuir affinity K (L mg⁻¹)</span><output id="iKO">1.0</output></label><input type="range" id="iK" min="0.1" max="6" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="iQ0"><span>P already sorbed, Q₀ (mg kg⁻¹)</span><output id="iQ0O">250</output></label><input type="range" id="iQ0" min="0" max="3000" step="10" value="250"></div>
+          <div class="ctrl"><label for="iAdd"><span>Fertiliser added (mg P kg⁻¹)</span><output id="iAddO">100</output></label><input type="range" id="iAdd" min="0" max="1000" step="10" value="100"></div>
+          <dl class="readout">
+            <dt>Q<sub>max</sub> (= 15.5 × (Fe+Al)<sub>ox</sub>)</dt><dd id="iQmax"></dd>
+            <dt>DPS before → after</dt><dd id="iDPS"></dd>
+            <dt>EPC₀ now → after (mg L⁻¹)</dt><dd id="iEPC"></dd>
+            <dt>Buffer capacity (L kg⁻¹)</dt><dd id="iBuf"></dd>
+            <dt>Verdict</dt><dd id="iVerd" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Fertiliser is assumed to join the sorbed pool (soil solution volume is negligible), moving the soil up its isotherm. Suggested experiments: with Fe + Al = 100 mmol kg⁻¹ (Q<sub>max</sub> 1550 mg kg⁻¹) add 100 mg kg⁻¹ (≈ 200 kg P ha⁻¹ in a 20 cm layer) and note EPC₀ barely moves; set Fe + Al = 20 (a sandy soil) and the same addition pushes DPS past 25% and EPC₀ above 1 mg L⁻¹. Raise Q₀ until DPS passes ~25% and watch EPC₀ turn upward: this is the change point in Lab D. Compare an Oxisol (Fe + Al 400, high K): huge capacity, tiny solution P, P fixation.</p>
+    </div>
+
+    <h3>Calcium-bound, occluded and organic P</h3>
+    <p>In <strong>calcareous and alkaline soils</strong> the sink is precipitation: added phosphate reacts with Ca²⁺ to form dicalcium phosphate dihydrate, then octacalcium phosphate, then over months to years the less soluble hydroxyapatite, and it also sorbs on calcite surfaces. Availability is low despite high total P, and acidifying fertilisers or band placement help. <strong>Occluded P</strong> is phosphate physically enclosed within Fe and Al oxide coatings or inside aggregates; it is unavailable on decadal timescales and is extracted only by strong reductants or residual digestion. <strong>Organic P</strong> is 30–65% of total P in most surface soils (higher in old, weathered and in organic soils). Its main components are inositol phosphates (phytate, up to 50% of organic P; strongly sorbed on oxides and Ca, so stable), nucleic acids, phospholipids and sugar phosphates (fast-cycling), and phosphonates. McGill and Cole [6] made the distinction that organises P mineralisation: C–O–P ester bonds can be cleaved by extracellular <strong>phosphatases</strong> (phosphomonoesterases, phosphodiesterases, phytases) released in response to P demand, so organic P is mineralised <em>biochemically</em> and largely independently of the C flow, whereas C-bonded N and S are mineralised <em>biologically</em> as a by-product of C oxidation. Phosphatase activity therefore rises when P is scarce and is suppressed by phosphate, a regulatory loop visible in the ecoenzymatic ratios on the stoichiometry page. <strong>Microbial P</strong> (chloroform-labile, 5–50 kg P ha⁻¹, often as polyphosphate) is a large, fast pool relative to solution P; its turnover on drying–rewetting (the Birch effect) and freeze–thaw releases pulses of phosphate, and in P-poor tropical soils microbial P can exceed plant-available inorganic P.</p>
+
+    <h3>Hedley fractionation</h3>
+    <p>Hedley, Stewart and Chauhan [2] introduced sequential extraction to apportion soil P by availability, later refined by Tiessen and Moir: anion-exchange resin (freely exchangeable P<sub>i</sub>), 0.5 M NaHCO₃ (labile P<sub>i</sub> and P<sub>o</sub>), 0.1 M NaOH (Fe/Al-associated P<sub>i</sub> and more stable P<sub>o</sub>; sometimes after sonication for aggregate-protected P), 1 M HCl (Ca-bound, mostly apatite), and residual (concentrated acid digest; occluded and recalcitrant organic). Cross and Schlesinger [3] meta-analysed 88 soils in Hedley terms and found that along weathering gradients HCl-P<sub>i</sub> (primary) declines, NaOH-P<sub>i</sub> and residual P increase, and organic P peaks in moderately weathered soils, exactly the Walker–Syers trajectory expressed as fractions. The method is operational, not mechanistic: the fractions are defined by the extractant, extractions can redistribute P, and NaOH-P<sub>o</sub> is a mixture, so interpret with care. Several models (ELM/E3SM, CASA-CNP) map their P pools directly onto Hedley fractions so that the fractionation data can initialise and test them.</p>
+    <div class="tablewrap"><table class="hedley">
+      <thead><tr><th>Hedley step</th><th>What it extracts</th><th>Interpretation</th><th>Model pool</th></tr></thead>
+      <tbody>
+        <tr><td>Resin / water</td><td>Solution and freely exchangeable P<sub>i</sub></td><td>Immediately available; days</td><td>Solution + labile P</td></tr>
+        <tr><td>0.5 M NaHCO₃ (pH 8.5)</td><td>Weakly sorbed P<sub>i</sub>; labile P<sub>o</sub> (microbial, fresh residues)</td><td>Plant-available over a season (Olsen P)</td><td>Labile sorbed P; fast organic P</td></tr>
+        <tr><td>0.1 M NaOH</td><td>P<sub>i</sub> on Fe/Al oxides; humic-associated P<sub>o</sub></td><td>Slowly available; years to decades</td><td>Secondary (sorbed) mineral P; slow organic P</td></tr>
+        <tr><td>1 M HCl</td><td>Ca-bound P<sub>i</sub>, apatite</td><td>Primary mineral P; weathering source</td><td>Primary mineral P</td></tr>
+        <tr><td>Residual (H₂SO₄/H₂O₂ digest)</td><td>Occluded P and recalcitrant P<sub>o</sub></td><td>Effectively unavailable</td><td>Occluded P</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="acquisition">
+    <h2>How plants and microbes get P, and what redox and dust add</h2>
+    <p>Because solution P is tiny and immobile (diffusion coefficient ~10⁻¹² to 10⁻¹⁵ m² s⁻¹ in soil; a depletion zone of only 1–2 mm forms around roots), P acquisition is about increasing contact with soil and about chemistry at the root surface. Lambers et al. [8] organise the strategies along a gradient: (i) <strong>mycorrhizal symbiosis</strong>, in which arbuscular and ectomycorrhizal hyphae extend the depletion zone by centimetres and deliver P for carbon (the dominant strategy in most ecosystems; 80% of plant families); (ii) <strong>root morphology</strong>, with fine roots, long root hairs, high specific root length, and on the most P-impoverished soils (south-western Australia, the Cape, old tropical sites) non-mycorrhizal <strong>cluster roots</strong> (Proteaceae, lupins) that release pulses of carboxylates; (iii) <strong>rhizosphere chemistry</strong> (Hinsinger [7]): citrate, malate and oxalate exudation that desorbs P by ligand exchange and complexes Fe, Al and Ca; proton or hydroxyl extrusion that shifts pH toward the availability optimum; and secretion of acid phosphatases and, with microbial help, phytases that mineralise organic P; and (iv) internal economy: high P-use efficiency, P resorption (~65%) and replacement of phospholipids by galacto- and sulpholipids. Richardson and Simpson [9] review the microbial side: phosphate-solubilising bacteria and fungi (<em>Pseudomonas</em>, <em>Bacillus</em>, <em>Penicillium</em>) using organic acids and phosphatases, and the mycorrhizal pathway as the main route in most plants.</p>
+    <p><strong>Redox.</strong> Flooding and waterlogging drive reductive dissolution of Fe(III) oxides to Fe²⁺ (Eh &lt; ~ +100 mV), releasing the phosphate sorbed on or precipitated with them. This is why paddy rice often needs less P fertiliser than upland crops, why wetland soils release P on inundation, and why lakes show <strong>internal loading</strong>: anoxic hypolimnia in summer dissolve Fe-bound P from sediments and return it to the water column, prolonging eutrophication for decades after external loads are cut. Re-oxidation re-precipitates ferric phosphate and ferrihydrite that scavenge P again, so redox oscillations pump P between forms.</p>
+    <p><strong>Dust.</strong> In weathering-limited systems the only external P input is atmospheric. Okin et al. [10] estimated that mineral dust carries on the order of 1 Tg P yr⁻¹ to the global land surface, and Yu et al. [11] used CALIPSO lidar to estimate that ~22 Tg of Saharan dust, carrying about 22 Gg of P (~0.02 Tg), reaches the Amazon each year, a quantity comparable to the basin's hydrological P loss, which is why Bodélé Depression dust is invoked as the long-term P subsidy that keeps old Amazonian soils productive. <strong>Supply-limited versus weathering-limited</strong>: on young or eroding landscapes (mountains, glaciated terrain, volcanic ash) P supply from fresh minerals exceeds demand and N limits; on old stable surfaces weathering has exhausted the supply, P is held in occluded and organic forms, and dust and tight recycling sustain the system.</p>
+  </section>
+
+  <section id="losses">
+    <h2>Loss pathways: erosion, runoff, leaching, and the lake</h2>
+    <p>Haygarth et al. [12] describe P transfer as a continuum of <strong>sources</strong> (soil P status, fertiliser and manure, plant residues), <strong>mobilisation</strong> (solubilisation into water or detachment of particles), <strong>delivery</strong> (overland flow, subsurface flow via macropores and drains, bank erosion) and <strong>impact</strong>. In most agricultural landscapes the dominant loss is <strong>particulate P</strong> carried on eroded sediment: total P in sediment is enriched relative to the source soil (enrichment ratios 1.2–3) because fine, P-rich clay and organic particles are preferentially detached. Particulate P is only partly bioavailable, but it accumulates in sediments and can be released later. <strong>Dissolved reactive P</strong> (DRP, essentially orthophosphate) in surface runoff is the immediately algal-available fraction. Its concentration depends on soil-test P in the thin surface interaction layer, and the relationship is <strong>non-linear</strong>: Heckrath et al. [13] showed for the Broadbalk experiment at Rothamsted that P in drainage water was low and insensitive to Olsen P up to a <strong>change point</strong> around 60 mg kg⁻¹ and then rose steeply, because once sorption sites approach saturation (DPS ~25%) each additional increment of P raises EPC₀ sharply. Freshly applied fertiliser or manure on the surface before rain gives "incidental" losses that bypass the soil chemistry altogether.</p>
+    <p><strong>Subsurface leaching</strong> was long considered negligible, but it matters in sandy soils with low Fe and Al, in organic (peat) soils, in soils with a long manure history, and where <strong>macropores and tile drains</strong> short-circuit the matrix; preferential flow carries colloid-bound P as well as DRP. Losses are small in absolute terms (0.1–2 kg P ha⁻¹ yr⁻¹) but ecologically large because lakes respond to tens of µg L⁻¹.</p>
+    <p><strong>Critical source areas</strong> are the intersection of high-P soils with hydrologically active zones (saturated areas near streams, compacted tracks); a small fraction of a catchment usually delivers most of the P. The <strong>P Index</strong> (Lemunyon and Gilbert 1993 and state versions) ranks fields by combining source factors (soil test P, fertiliser and manure rate, method and timing) with transport factors (erosion, runoff class, distance to water, connectivity) to target management. Soil tests: <strong>Olsen</strong> (0.5 M NaHCO₃, pH 8.5; works across pH, standard in Europe and calcareous soils), <strong>Bray-1</strong> (dilute HCl + NH₄F; acid soils), <strong>Mehlich-3</strong> (acid, multi-element; widespread in North America); agronomic optima are roughly Olsen 20–30 mg kg⁻¹ and Mehlich-3 30–50 mg kg⁻¹, and environmental thresholds lie not far above.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · P loss explorer: dissolved versus particulate</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="plSvg" viewBox="0 0 640 360" role="img" aria-label="Dissolved reactive P concentration in runoff against soil test P with a change point, and the current field marked"></svg>
+            <div class="chart-tip" id="plTip" hidden></div>
+          </div>
+          <div class="bars" id="plBars">
+            <div class="bar"><span>Dissolved P</span><div class="track"><div class="fill" id="plBarD" style="--c:var(--series-2)"></div></div><span class="v" id="plVD"></span></div>
+            <div class="bar"><span>Particulate P</span><div class="track"><div class="fill" id="plBarP" style="--c:var(--series-1)"></div></div><span class="v" id="plVP"></span></div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="pSTP"><span>Olsen soil test P (mg kg⁻¹)</span><output id="pSTPO">40</output></label><input type="range" id="pSTP" min="0" max="150" step="1" value="40"></div>
+          <div class="ctrl"><label for="pCP"><span>Change point (mg kg⁻¹)</span><output id="pCPO">60</output></label><input type="range" id="pCP" min="20" max="100" step="1" value="60"></div>
+          <div class="ctrl"><label for="pRun"><span>Annual runoff (mm)</span><output id="pRunO">100</output></label><input type="range" id="pRun" min="0" max="400" step="5" value="100"></div>
+          <div class="ctrl"><label for="pSlope"><span>Slope (%)</span><output id="pSlopeO">6</output></label><input type="range" id="pSlope" min="0.5" max="25" step="0.5" value="6"></div>
+          <div class="ctrl"><label for="pCov"><span>Ground cover (%)</span><output id="pCovO">50</output></label><input type="range" id="pCov" min="0" max="100" step="1" value="50"></div>
+          <div class="ctrl"><label for="pTP"><span>Soil total P (mg kg⁻¹)</span><output id="pTPO">700</output></label><input type="range" id="pTP" min="200" max="2000" step="10" value="700"></div>
+          <dl class="readout">
+            <dt>DRP conc. (mg L⁻¹)</dt><dd id="pConc"></dd>
+            <dt>Dissolved load (kg P ha⁻¹ yr⁻¹)</dt><dd id="pDL"></dd>
+            <dt>Soil loss (t ha⁻¹ yr⁻¹)</dt><dd id="pEro"></dd>
+            <dt>Particulate load (kg P ha⁻¹ yr⁻¹)</dt><dd id="pPL"></dd>
+            <dt>Total P loss</dt><dd id="pTot"></dd>
+            <dt>Dominant pathway</dt><dd id="pDom" class="verdict"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">DRP concentration = 0.002 × STP below the change point, rising at 0.012 mg L⁻¹ per mg kg⁻¹ above it (two-slope model after Heckrath et al. [13]); dissolved load = concentration × runoff. Soil loss is a USLE-like 4 × (slope/9)<sup>1.3</sup> × e<sup>−0.04 cover</sup> t ha⁻¹ yr⁻¹; particulate P = soil loss × total P × enrichment ratio 1.5. Suggested experiments: at STP 40 and 6% slope, particulate P dominates (the common case); raise STP to 100 and dissolved P takes over even on flat land; set cover to 95% (no-till, grass) and see particulate P collapse while dissolved P stays, the well-known trade-off of conservation tillage.</p>
+    </div>
+
+    <h3>Eutrophication and legacy P</h3>
+    <p>Schindler's whole-lake experiments at the Experimental Lakes Area (Lake 227, from 1969) established that P, not C or N, controls algal biomass in most freshwater lakes: a lake fertilised with C and N stayed clear, while P addition produced blooms; after 37 years, Schindler et al. [14] showed that cutting N while keeping P did not control blooms because N-fixing cyanobacteria filled the gap, so P control is necessary and often sufficient. Eutrophic lakes are typically above ~30–35 µg total P L⁻¹. Because P sorbs, decades of surplus applications have built <strong>legacy P</strong> in soils, stream sediments and lake beds: Sharpley et al. [15] and Jarvie et al. [16] document lag times of years to decades between reducing inputs and improved water quality, because legacy stores keep releasing P (desorption as EPC₀ remains high, internal loading under anoxia, remobilisation of sediment). Management must therefore combine source reduction (drawing down soil P by harvest removal without fertiliser, which takes ~10 years to drop Olsen P by 20 mg kg⁻¹), transport interruption (buffers, cover, drainage control) and realistic expectations.</p>
+
+    <h3>Global P flows, use efficiency and "peak phosphorus"</h3>
+    <p>Mined phosphate rock supplies ~20 Tg P yr⁻¹ (14–20 Tg as fertiliser), two thirds of it from Morocco, China, the United States and Russia; USGS reserves are ~70 Gt of rock, with Morocco holding most. Cordell, Drangert and White [17] argued that production could peak around 2030 ("peak phosphorus") and that P security deserves the attention given to energy; subsequent reserve re-estimates pushed the peak out by a century or more, but the geopolitical concentration and the lack of substitutes remain. MacDonald et al. [18] mapped agronomic P balances at 0.5°: 71% of cropland had a surplus (Western Europe, China, parts of Brazil), while 29% (sub-Saharan Africa, parts of South America and Eastern Europe) ran deficits, mining soil P. Sattari et al. [19] showed with a residual-P model that legacy soil P can supply a large share of future crop demand in surplus regions, cutting required fertiliser substantially. Use efficiency along the chain (mine to fork) is only ~20%; the main leaks are mining losses, erosion and runoff from fields, and the one-way flow of P in food and manure to cities and the sea.</p>
+  </section>
+
+  <section id="limitation">
+    <h2>P limitation of tropical forests and the CO₂ fertilisation effect</h2>
+    <p>Lowland tropical forests on old Oxisols and Ultisols have most of their P occluded or organic, extremely low available P, high phosphatase activity, high N:P and high P resorption: all signatures of P limitation, though direct fertilisation evidence is mixed (growth and litterfall respond in some experiments, not others, and co-limitation by N and base cations is common). The question matters globally because the tropics hold the largest potential CO₂ fertilisation response. Fleischer et al. [20] ran 14 vegetation models for the AmazonFACE site: models without a P cycle predicted ~46% biomass gain under +200 ppm CO₂, whereas models with P limitation predicted about half that, and the spread among P-models reflected different assumptions about plant P flexibility, phosphatase up-regulation and increased P uptake by roots and mycorrhizae under elevated CO₂, i.e. exactly the acquisition strategies above. Terrer et al. (2019) likewise found that the CO₂ effect on biomass declines with decreasing soil P in ectomycorrhizal systems.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>Century P submodel.</strong> Parton et al. (1988) gave Century parallel P pools for each organic C pool with flexible C:P bounds, plus a mineral P chain: labile (solution + sorbed) P in rapid equilibrium with a secondary (sorbed) pool, which slowly transfers to an occluded pool, and a parent-material pool that weathers at a fixed rate. Organic P mineralisation follows the McGill–Cole logic, with a separate biochemical mineralisation flux depending on labile P. This structure, labile ⇌ secondary → occluded ← parent, is the template for most later models.</p>
+    <p><strong>CASA-CNP</strong> (Wang, Law and Pak [21]) added N and P to CASA for global simulations with fixed plant C:P, Hedley-based initialisation and a Langmuir-type labile–sorbed equilibrium; it found P limitation of NPP in tropical and old-soil regions and reduced global NPP by ~25% relative to C-only runs. <strong>JSBACH-CNP</strong> (Goll et al. [22]) and <strong>ELM/E3SM</strong> (Yang et al. [23]) followed; Yang et al. represent sorption dynamically with Langmuir kinetics and map pools to Hedley fractions, using the global Hedley dataset of Yang and Post (2011) and a soil-order-based Q<sub>max</sub> and K. <strong>ORCHIDEE-CNP</strong> (Goll et al. 2017) includes weathering as a function of lithology and runoff, flexible plant stoichiometry and phosphatase-driven mineralisation. <strong>QUINCY</strong> carries P with explicit microbial demand. The crop model <strong>QUEFTS</strong> (Janssen et al. 1990) takes the opposite, empirical approach: it estimates potential N, P and K supply from soil tests (Olsen P, organic C, pH) and computes yield from the most limiting pair of nutrients with substitution, and is the backbone of fertiliser recommendation in many tropical systems. Reed, Yang and Thornton [24] reviewed the state of P in models and listed the uncertain processes: weathering rates, sorption parameters by soil type, biochemical mineralisation and phosphatase response, plant P flexibility and mycorrhizal uptake, and dust inputs. Where P models differ most is how much extra P plants can acquire when CO₂ rises, which is the Fleischer et al. result in another form.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>pK<sub>a</sub> of phosphoric acid</td><td class="num">2.15, 7.20, 12.35</td><td>H₂PO₄⁻ = HPO₄²⁻ at pH 7.2</td></tr>
+        <tr><td>Total soil P</td><td class="num">100–2000 mg kg⁻¹ (median ~500)</td><td>Organic P 30–65% of total</td></tr>
+        <tr><td>Solution P</td><td class="num">0.01–0.3 mg L⁻¹ (0.2 mg L⁻¹ agronomic target)</td><td>&lt; 0.1% of total P</td></tr>
+        <tr><td>Diffusion distance to roots</td><td class="num">1–2 mm depletion zone</td><td>Mycorrhizal hyphae extend to cm</td></tr>
+        <tr><td>Critical degree of P saturation</td><td class="num">≈ 25% (α = 0.5)</td><td>Dutch oxalate method; above it DRP rises steeply</td></tr>
+        <tr><td>Change point in Olsen P</td><td class="num">≈ 60 mg kg⁻¹ (Broadbalk)</td><td>Heckrath et al. 1995 [13]; site-specific</td></tr>
+        <tr><td>Agronomic optimum soil test</td><td class="num">Olsen 20–30; Mehlich-3 30–50 mg kg⁻¹</td><td>Environmental threshold just above</td></tr>
+        <tr><td>Eutrophic lake threshold</td><td class="num">≈ 30–35 µg total P L⁻¹</td><td>OECD classification</td></tr>
+        <tr><td>Sediment P enrichment ratio</td><td class="num">1.2–3</td><td>Fine fraction preferentially eroded</td></tr>
+        <tr><td>Apatite weathering input</td><td class="num">0.01–1 kg P ha⁻¹ yr⁻¹</td><td>Vs plant uptake 5–30 kg</td></tr>
+        <tr><td>Dust P deposition</td><td class="num">~1 Tg P yr⁻¹ global; ~0.02 Tg to Amazon</td><td>Okin et al. 2004 [10]; Yu et al. 2015 [11]</td></tr>
+        <tr><td>Fertiliser P use</td><td class="num">14–20 Tg P yr⁻¹; reserves ~70 Gt rock</td><td>MacDonald et al. 2011 [18]; USGS</td></tr>
+        <tr><td>Cropland P balance</td><td class="num">71% surplus, 29% deficit</td><td>MacDonald et al. 2011 [18]</td></tr>
+        <tr><td>P resorption efficiency</td><td class="num">≈ 65%</td><td>Vergutz et al. 2012</td></tr>
+        <tr><td>AmazonFACE biomass response</td><td class="num">≈ +46% (no P) vs ≈ +23% (P-limited)</td><td>Fleischer et al. 2019 [20], +200 ppm</td></tr>
+        <tr><td>Hawaiian chronosequence</td><td class="num">300 yr → 4.1 Myr</td><td>N-limited young, P-limited old; Crews et al. 1995 [5]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Contrast the N and P cycles in terms of source, loss pathways, and the change in limitation with soil age. Why does this contrast matter for ecosystem models?</summary><div class="a"><p>Source: N enters from an effectively infinite atmospheric pool through biological fixation (and now Haber–Bosch and deposition), so inputs respond to biology; P enters by weathering of apatite in parent material plus dust, so inputs are set by geology and decline as the mineral is exhausted. Losses: N has gaseous pathways (denitrification, volatilisation, fire) in addition to leaching of the mobile nitrate anion; P has no gas phase, is retained by sorption and precipitation, and leaves mainly on sediment or in small dissolved amounts. Soil age: N accumulates from zero (young soils N-limited); P declines and is progressively occluded (old soils P-limited), the Walker–Syers trajectory confirmed on the Hawaiian chronosequence. Consequences for models: N cycles need fixation, denitrification and leaching formulations and respond to climate on annual timescales; P cycles need weathering, sorption (Langmuir with soil-type parameters), occlusion and biochemical mineralisation, and their long-term state depends on soil order, so initialisation (Hedley data) dominates. N limitation is widespread in temperate and boreal zones, P limitation in the tropics; so CO₂ fertilisation projections depend on N in the north and P in the tropics (Fleischer et al. 2019).</p></div></details>
+    <details class="q"><summary>2. Derive the Langmuir isotherm's buffer capacity and explain the meaning and use of EPC₀ and the degree of P saturation.</summary><div class="a"><p>Langmuir: Q = Q<sub>max</sub>KC/(1 + KC). Differentiating, dQ/dC = [Q<sub>max</sub>K(1 + KC) − Q<sub>max</sub>KC·K]/(1 + KC)² = Q<sub>max</sub>K/(1 + KC)². At low C the buffer capacity approaches Q<sub>max</sub>K (maximal), and it declines as sites fill, so each added unit of P raises solution concentration more as the soil saturates. EPC₀ is the solution P concentration at which net sorption is zero for the soil's existing sorbed P; inverting the isotherm, C = Q₀/[K(Q<sub>max</sub> − Q₀)]. If runoff or lake water has a concentration below EPC₀, the soil or sediment releases P (acts as a source); above it, sorbs (sink). It is measured by equilibrating soil with a series of P solutions and finding the zero-crossing. DPS = P<sub>ox</sub>/[α(Fe<sub>ox</sub> + Al<sub>ox</sub>)] × 100 with α ≈ 0.5 expresses how much of the sorption maximum (proportional to amorphous Fe and Al) is occupied; above ~25% EPC₀ and dissolved P losses rise sharply, so DPS is an environmental risk index that is transferable across soils because it normalises for capacity, unlike a bare soil-test value.</p></div></details>
+    <details class="q"><summary>3. Explain, with the McGill and Cole (1981) framework, why organic P mineralisation can be decoupled from carbon mineralisation and what this implies for stoichiometric models.</summary><div class="a"><p>McGill and Cole distinguished elements bonded directly to carbon (C–N, C–S in amino acids and amino sulphur) from those attached through ester linkages (C–O–P in phosphate esters, C–O–S in sulphate esters). C-bonded elements are released only when the carbon skeleton is oxidised: mineralisation is "biological", a by-product of microbial use of the substrate for energy, and so follows C flow and the C:N threshold logic. Ester-bonded P can be cleaved by extracellular phosphatases without degrading the carbon backbone: mineralisation is "biochemical", driven by demand for P, with phosphatase synthesis induced by low phosphate and repressed by high phosphate. Therefore P mineralisation responds to P scarcity rather than to C supply, and organic P can be mined from otherwise stable organic matter. Implications: models cannot compute P release purely from C decomposition with fixed C:P; they need a separate biochemical mineralisation term that depends on labile P and on microbial or plant P demand (Century, ORCHIDEE-CNP, ELM include such a term). It also predicts that under elevated CO₂ plants may increase phosphatase investment, which is one of the processes separating P-models in Fleischer et al. (2019), and that ecoenzymatic ratios (phosphatase relative to glucosidase) indicate P stress.</p></div></details>
+    <details class="q"><summary>4. Why is dissolved P in runoff a non-linear function of soil test P, and why does P loss persist for decades after fertiliser inputs are cut?</summary><div class="a"><p>Dissolved reactive P in runoff equilibrates with the thin surface soil layer. At low sorbed P the soil has abundant high-affinity sites and strong buffer capacity (dQ/dC ≈ Q<sub>max</sub>K), so EPC₀ and runoff DRP are low and change little as soil-test P rises. As sorbed P approaches a substantial fraction of Q<sub>max</sub> (DPS above ~25%), remaining sites are weak and buffer capacity falls as 1/(1 + KC)², so EPC₀ rises steeply with each increment: the change-point or two-slope relationship of Heckrath et al. (1995) at Olsen P ≈ 60 mg kg⁻¹ for Broadbalk. Persistence: decades of surplus applications have stored legacy P in soils (desorbing slowly as EPC₀ remains above stream concentrations), in stream and ditch sediments (acting as sources when water P falls below their EPC₀), and in lake sediments (internal loading by reductive dissolution of Fe-P under anoxia). Drawing down soil-test P by crop removal without fertiliser is slow (roughly 10 years per 20 mg kg⁻¹ Olsen P), and sediment stores can supply lakes for decades (Sharpley et al. 2013; Jarvie et al. 2013). Hence lag times and the need to combine source and transport management.</p></div></details>
+    <details class="q"><summary>5. Describe the Hedley fractionation and how Cross and Schlesinger used it to test Walker and Syers. What are its limitations?</summary><div class="a"><p>Sequential extraction of a soil sample: anion-exchange resin (freely exchangeable P<sub>i</sub>), 0.5 M NaHCO₃ (labile P<sub>i</sub> and P<sub>o</sub>, including microbial P after fumigation), 0.1 M NaOH (Fe/Al-oxide sorbed P<sub>i</sub> and humic P<sub>o</sub>), 1 M HCl (Ca-bound primary P), and residual digest (occluded and recalcitrant P). Cross and Schlesinger (1995) compiled 88 soils of different weathering status and found that with increasing weathering the HCl (primary) fraction declined, NaOH-P<sub>i</sub> and residual P increased, and organic P peaked in intermediate soils; they also found that labile fractions correlated with organic P in unfertilised soils, supporting biological control of availability in older soils. This matches Walker and Syers' predicted sequence of primary → labile/organic → occluded. Limitations: fractions are operationally defined and overlap chemically; extractions can hydrolyse organic P (NaOH) or redistribute P among phases; NaOH-P<sub>o</sub> is heterogeneous; microbial P must be handled separately; the method is laborious and results vary with soil:solution ratio and shaking time. It is best used comparatively and to initialise model pools (ELM, CASA-CNP) rather than as a mechanistic measure of availability.</p></div></details>
+    <details class="q"><summary>6. List the strategies plants use to acquire P from P-poor soils, and relate them to the soil chemistry that makes P unavailable.</summary><div class="a"><p>The constraint is that phosphate is immobile (diffusion-limited depletion zones of 1–2 mm), sorbed on Fe/Al oxides (acid soils) or precipitated with Ca (alkaline soils), and partly organic (phytate strongly sorbed). Strategies (Lambers et al. 2008; Hinsinger 2001): (i) increase soil volume explored: mycorrhizal hyphae (AM and ECM) extend beyond the depletion zone and have high P affinity; fine roots, root hairs and high specific root length; topsoil foraging. (ii) Chemically mobilise sorbed and precipitated P: exudation of carboxylates (citrate, malate, oxalate), especially in pulses from cluster roots of non-mycorrhizal Proteaceae and lupins, which displace phosphate from oxides by ligand exchange and complex Al, Fe and Ca; rhizosphere acidification or alkalinisation to move pH toward 6–7; reductant release. (iii) Mineralise organic P: secretion of acid phosphatases and phytases (also by rhizosphere microbes and mycorrhizae). (iv) Reduce demand: high P-use efficiency, photosynthate per unit P, replacement of phospholipids with sulpho- and galactolipids, long leaf lifespan, and ~65% P resorption before leaf fall. (v) Microbial partnerships beyond mycorrhizae: phosphate-solubilising bacteria and fungi. Trade-offs: carboxylate strategies cost up to 20% of photosynthate but work on the oldest soils where mycorrhizal P is simply absent.</p></div></details>
+    <details class="q"><summary>7. How do land-surface models represent P sorption and why does it matter for projections of tropical carbon uptake?</summary><div class="a"><p>Most follow the Century template: solution/labile P exchanges rapidly with a sorbed (secondary) pool, the sorbed pool slowly transfers to an occluded pool, and parent material weathers into labile P. CASA-CNP uses a Langmuir equilibrium between labile and sorbed P; ELM/E3SM (Yang et al. 2014) uses Langmuir kinetics with Q<sub>max</sub> and K assigned by soil order from the Hedley dataset so that sorption capacity differs between Oxisols and Mollisols; ORCHIDEE-CNP links weathering to lithology and runoff. Organic P mineralisation includes a biochemical term dependent on labile P. Plant P demand follows tissue C:P (fixed or flexible), and uptake is limited by labile P and root or mycorrhizal capacity. It matters because in the tropics the labile pool is tiny and the sorbed/occluded pools large; whether plants can increase P supply under elevated CO₂ (through phosphatase up-regulation, more root and mycorrhizal uptake, desorption by exudates) decides the size of the CO₂ fertilisation effect. Fleischer et al. (2019) found that adding P limitation roughly halved the simulated AmazonFACE biomass response (from ~+46% to ~+23%), and that the spread among P models came mainly from those acquisition assumptions. Without a P cycle, Earth system models likely overestimate the tropical land sink.</p></div></details>
+    <details class="q"><summary>8. Explain the redox control of P availability and its consequences in paddy soils and eutrophic lakes.</summary><div class="a"><p>Phosphate in acid and neutral soils is largely sorbed on or co-precipitated with ferric oxides and hydroxides (goethite, ferrihydrite, strengite). When soils are flooded, O₂ is consumed, Eh falls below ~+100 to +200 mV, and iron-reducing bacteria use Fe(III) as an electron acceptor, dissolving the oxides to Fe²⁺ and releasing the associated phosphate into solution. Simultaneously pH converges toward 6.5–7 in flooded soils, improving availability. In paddy rice, this reductive release is why flooded rice often shows a smaller P response than upland crops on the same soil and why P fertiliser recommendations differ. On drainage, Fe²⁺ re-oxidises to fresh, highly sorptive ferrihydrite that recaptures P. In stratified eutrophic lakes, summer hypolimnetic anoxia drives the same reaction in sediments: Fe-bound P is released to the water column ("internal loading") and mixed into the epilimnion at turnover, sustaining blooms even after catchment inputs are reduced; sulphate reduction makes it worse by sequestering Fe as FeS, removing the P sink. Remedies include hypolimnetic oxygenation, alum or lanthanum-modified clay additions to bind P independently of redox, and, ultimately, reducing legacy P delivery.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Walker TW, Syers JK (1976). The fate of phosphorus during pedogenesis. <em>Geoderma</em> 15: 1–19. <a href="https://doi.org/10.1016/0016-7061(76)90066-5">doi:10.1016/0016-7061(76)90066-5</a><span class="why">The conceptual model of P transformation with soil age reproduced in Lab B.</span></li>
+      <li>Hedley MJ, Stewart JWB, Chauhan BS (1982). Changes in inorganic and organic soil phosphorus fractions induced by cultivation practices and by laboratory incubations. <em>Soil Science Society of America Journal</em> 46: 970–976. <a href="https://doi.org/10.2136/sssaj1982.03615995004600050017x">doi:10.2136/sssaj1982.03615995004600050017x</a><span class="why">Origin of the sequential fractionation scheme.</span></li>
+      <li>Cross AF, Schlesinger WH (1995). A literature review and evaluation of the Hedley fractionation: applications to the biogeochemical cycle of soil phosphorus in natural ecosystems. <em>Geoderma</em> 64: 197–214. <a href="https://doi.org/10.1016/0016-7061(94)00023-4">doi:10.1016/0016-7061(94)00023-4</a><span class="why">Meta-analysis of Hedley data along weathering gradients; empirical test of Walker &amp; Syers.</span></li>
+      <li>Vitousek PM, Porder S, Houlton BZ, Chadwick OA (2010). Terrestrial phosphorus limitation: mechanisms, implications, and nitrogen–phosphorus interactions. <em>Ecological Applications</em> 20: 5–15. <a href="https://doi.org/10.1890/08-0127.1">doi:10.1890/08-0127.1</a><span class="why">The six mechanisms of P limitation and their interaction with N.</span></li>
+      <li>Crews TE, Kitayama K, Fownes JH, et al. (1995). Changes in soil phosphorus fractions and ecosystem dynamics across a long chronosequence in Hawaii. <em>Ecology</em> 76: 1407–1424. <a href="https://doi.org/10.2307/1938144">doi:10.2307/1938144</a><span class="why">The Hawaiian chronosequence: N limitation young, P limitation old.</span></li>
+      <li>McGill WB, Cole CV (1981). Comparative aspects of cycling of organic C, N, S and P through soil organic matter. <em>Geoderma</em> 26: 267–286. <a href="https://doi.org/10.1016/0016-7061(81)90024-0">doi:10.1016/0016-7061(81)90024-0</a><span class="why">Biological versus biochemical mineralisation; why P can be decoupled from C.</span></li>
+      <li>Hinsinger P (2001). Bioavailability of soil inorganic P in the rhizosphere as affected by root-induced chemical changes: a review. <em>Plant and Soil</em> 237: 173–195. <a href="https://doi.org/10.1023/A:1013351617532">doi:10.1023/A:1013351617532</a><span class="why">Rhizosphere pH, carboxylates and P desorption.</span></li>
+      <li>Lambers H, Raven JA, Shaver GR, Smith SE (2008). Plant nutrient-acquisition strategies change with soil age. <em>Trends in Ecology &amp; Evolution</em> 23: 95–103. <a href="https://doi.org/10.1016/j.tree.2007.10.008">doi:10.1016/j.tree.2007.10.008</a><span class="why">Mycorrhizae versus cluster roots along the Walker–Syers gradient.</span></li>
+      <li>Richardson AE, Simpson RJ (2011). Soil microorganisms mediating phosphorus availability. <em>Plant Physiology</em> 156: 989–996. <a href="https://doi.org/10.1104/pp.111.175448">doi:10.1104/pp.111.175448</a><span class="why">Microbial solubilisation, phosphatases and mycorrhizal pathways.</span></li>
+      <li>Okin GS, Mahowald N, Chadwick OA, Artaxo P (2004). Impact of desert dust on the biogeochemistry of phosphorus in terrestrial ecosystems. <em>Global Biogeochemical Cycles</em> 18: GB2005. <a href="https://doi.org/10.1029/2003GB002145">doi:10.1029/2003GB002145</a><span class="why">Global dust P deposition and its significance for old soils.</span></li>
+      <li>Yu H, Chin M, Yuan T, et al. (2015). The fertilizing role of African dust in the Amazon rainforest: a first multiyear assessment based on data from Cloud-Aerosol Lidar and Infrared Pathfinder Satellite Observations. <em>Geophysical Research Letters</em> 42: 1984–1991. <a href="https://doi.org/10.1002/2015GL063040">doi:10.1002/2015GL063040</a><span class="why">Saharan dust delivers ~22 Gg P yr⁻¹ to the Amazon.</span></li>
+      <li>Haygarth PM, Condron LM, Heathwaite AL, Turner BL, Harris GP (2005). The phosphorus transfer continuum: linking source to impact with an interdisciplinary and multi-scaled approach. <em>Science of the Total Environment</em> 344: 5–14. <a href="https://doi.org/10.1016/j.scitotenv.2005.02.001">doi:10.1016/j.scitotenv.2005.02.001</a><span class="why">Source–mobilisation–delivery–impact framework for P loss.</span></li>
+      <li>Heckrath G, Brookes PC, Poulton PR, Goulding KWT (1995). Phosphorus leaching from soils containing different phosphorus concentrations in the Broadbalk experiment. <em>Journal of Environmental Quality</em> 24: 904–910. <a href="https://doi.org/10.2134/jeq1995.00472425002400050018x">doi:10.2134/jeq1995.00472425002400050018x</a><span class="why">The change-point relationship between Olsen P and drainage P.</span></li>
+      <li>Schindler DW, Hecky RE, Findlay DL, et al. (2008). Eutrophication of lakes cannot be controlled by reducing nitrogen input: results of a 37-year whole-ecosystem experiment. <em>PNAS</em> 105: 11254–11258. <a href="https://doi.org/10.1073/pnas.0805108105">doi:10.1073/pnas.0805108105</a><span class="why">Why P control is the lever for freshwater eutrophication.</span></li>
+      <li>Sharpley A, Jarvie HP, Buda A, et al. (2013). Phosphorus legacy: overcoming the effects of past management practices to mitigate future water quality impairment. <em>Journal of Environmental Quality</em> 42: 1308–1326. <a href="https://doi.org/10.2134/jeq2013.03.0098">doi:10.2134/jeq2013.03.0098</a><span class="why">Legacy P stores and lag times in catchment response.</span></li>
+      <li>Jarvie HP, Sharpley AN, Withers PJA, Scott JT, Haggard BE, Neal C (2013). Phosphorus mitigation to control river eutrophication: murky waters, inconvenient truths, and "postnormal" science. <em>Journal of Environmental Quality</em> 42: 295–304. <a href="https://doi.org/10.2134/jeq2012.0085">doi:10.2134/jeq2012.0085</a><span class="why">Why reducing P inputs has not cleaned rivers as expected: legacy stores, sediment sources and bioavailability.</span></li>
+      <li>Cordell D, Drangert J-O, White S (2009). The story of phosphorus: global food security and food for thought. <em>Global Environmental Change</em> 19: 292–305. <a href="https://doi.org/10.1016/j.gloenvcha.2008.10.009">doi:10.1016/j.gloenvcha.2008.10.009</a><span class="why">The peak phosphorus argument and P security.</span></li>
+      <li>MacDonald GK, Bennett EM, Potter PA, Ramankutty N (2011). Agronomic phosphorus imbalances across the world's croplands. <em>PNAS</em> 108: 3086–3091. <a href="https://doi.org/10.1073/pnas.1010808108">doi:10.1073/pnas.1010808108</a><span class="why">Global map of P surpluses and deficits.</span></li>
+      <li>Sattari SZ, Bouwman AF, Giller KE, van Ittersum MK (2012). Residual soil phosphorus as the missing piece in the global phosphorus crisis puzzle. <em>PNAS</em> 109: 6348–6353. <a href="https://doi.org/10.1073/pnas.1113675109">doi:10.1073/pnas.1113675109</a><span class="why">Legacy soil P can meet much of future demand.</span></li>
+      <li>Fleischer K, Rammig A, De Kauwe MG, et al. (2019). Amazon forest response to CO₂ fertilization dependent on plant phosphorus acquisition. <em>Nature Geoscience</em> 12: 736–741. <a href="https://doi.org/10.1038/s41561-019-0404-9">doi:10.1038/s41561-019-0404-9</a><span class="why">AmazonFACE model intercomparison: P limitation halves the CO₂ response.</span></li>
+      <li>Wang YP, Law RM, Pak B (2010). A global model of carbon, nitrogen and phosphorus cycles for the terrestrial biosphere. <em>Biogeosciences</em> 7: 2261–2282. <a href="https://doi.org/10.5194/bg-7-2261-2010">doi:10.5194/bg-7-2261-2010</a><span class="why">CASA-CNP: the first global CNP land model.</span></li>
+      <li>Goll DS, Brovkin V, Parida BR, et al. (2012). Nutrient limitation reduces land carbon uptake in simulations with a model of combined carbon, nitrogen and phosphorus cycling. <em>Biogeosciences</em> 9: 3547–3569. <a href="https://doi.org/10.5194/bg-9-3547-2012">doi:10.5194/bg-9-3547-2012</a><span class="why">JSBACH-CNP; N and P limitation of 21st-century land uptake.</span></li>
+      <li>Yang X, Thornton PE, Ricciuto DM, Post WM (2014). The role of phosphorus dynamics in tropical forests: a modeling study using CLM-CNP. <em>Biogeosciences</em> 11: 1667–1681. <a href="https://doi.org/10.5194/bg-11-1667-2014">doi:10.5194/bg-11-1667-2014</a><span class="why">Dynamic sorption and Hedley-based pools in CLM/ELM.</span></li>
+      <li>Reed SC, Yang X, Thornton PE (2015). Incorporating phosphorus cycling into global modeling efforts: a worthwhile, tractable endeavor. <em>New Phytologist</em> 208: 324–329. <a href="https://doi.org/10.1111/nph.13521">doi:10.1111/nph.13521</a><span class="why">Review of what P models need and where the uncertainties lie.</span></li>
+      <li>Frossard E, Condron LM, Oberson A, Sinaj S, Fardeau JC (2000). Processes governing phosphorus availability in temperate soils. <em>Journal of Environmental Quality</em> 29: 15–23. <a href="https://doi.org/10.2134/jeq2000.00472425002900010003x">doi:10.2134/jeq2000.00472425002900010003x</a><span class="why">Isotopic exchange kinetics and the continuum of P availability.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="nitrogen-cycling.html">← Previous: Nitrogen Cycling</a><a href="carbon-cycle-overview.html">Next: The Carbon Cycle →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#pedogenesis">Rock P &amp; Walker–Syers</a></li>
+      <li><a href="#forms">Forms &amp; chemistry</a></li>
+      <li><a href="#acquisition">Acquisition, redox, dust</a></li>
+      <li><a href="#losses">Loss pathways</a></li>
+      <li><a href="#limitation">P limitation &amp; CO₂</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use idealised isotherms, a four-pool pedogenesis model and a two-slope runoff relationship; parameter values are representative, not site-specific.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(n, a, t) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function clear(s) { while (s.firstChild) s.removeChild(s.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function ticks(min, max, step) { var a = []; for (var v = min; v <= max + 1e-9; v += step) a.push(+v.toFixed(6)); return a; }
+  function val(id) { return +document.getElementById(id).value; }
+  function txt(id, t) { document.getElementById(id).textContent = t; }
+  function outs(ids) { ids.forEach(function (id) { var o = document.getElementById(id + 'O'), i = document.getElementById(id); if (o && i) o.textContent = i.value; }); }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('input', fn); }); }
+  function log10(x) { return Math.log(x) / Math.LN10; }
+  function mkChart(svg, o) {
+    clear(svg);
+    var W = o.W || 640, H = o.H || 380, mL = o.mL || 56, mR = o.mR || 20, mT = o.mT || 18, mB = o.mB || 48;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var xmin = o.xmin, xmax = o.xmax, ymin = o.ymin, ymax = o.ymax, xlog = !!o.xlog;
+    function sx(x) { var f = xlog ? (log10(x) - log10(xmin)) / (log10(xmax) - log10(xmin)) : (x - xmin) / (xmax - xmin); return mL + Math.max(0, Math.min(1, f)) * pw; }
+    function sy(y) { var f = (ymax - y) / (ymax - ymin); return mT + Math.max(0, Math.min(1, f)) * ph; }
+    (o.yt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(v) + 4, 'text-anchor': 'end' }, o.yfmt ? o.yfmt(v) : v)); });
+    (o.xt || []).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: mT + ph, y2: mT + ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: mT + ph + 18, 'text-anchor': 'middle' }, o.xfmt ? o.xfmt(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: mT + ph, y2: mT + ph }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, o.xl));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, o.yl));
+    return { svg: svg, sx: sx, sy: sy, mL: mL, mT: mT, pw: pw, ph: ph, W: W, H: H, xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax, xlog: xlog };
+  }
+  function linePath(c, pts) { var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1); }); return d; }
+  function series(c, pts, cls, stroke) { var p = el('path', { 'class': 'ser ' + (cls || ''), d: linePath(c, pts) }); if (stroke) p.setAttribute('stroke', stroke); c.svg.appendChild(p); return p; }
+  function label(c, x, y, t, col, anchor, cls) { c.svg.appendChild(el('text', { 'class': cls || 'dl', x: x, y: y, fill: col || 'var(--fg)', 'text-anchor': anchor || 'start' }, t)); }
+  function hover(c, tip, fn) {
+    var svg = c.svg;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: c.mT, y2: c.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: c.mL, y: c.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var f = Math.max(0, Math.min(1, (p.x - c.mL) / c.pw));
+      var x = c.xlog ? Math.pow(10, log10(c.xmin) + f * (log10(c.xmax) - log10(c.xmin))) : c.xmin + f * (c.xmax - c.xmin);
+      var r = fn(x);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      if (r.y === null || r.y === undefined || isNaN(r.y)) dot.setAttribute('visibility', 'hidden'); else { dot.setAttribute('cx', c.sx(x)); dot.setAttribute('cy', c.sy(r.y)); dot.setAttribute('visibility', 'visible'); }
+      tip.innerHTML = r.html; tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab B: Walker & Syers ---------- */
+  var wsSvg = document.getElementById('wsSvg'), wsTip = document.getElementById('wsTip');
+  function wsRun() {
+    var kw = Math.pow(10, val('wKw')), ko = Math.pow(10, val('wKo')), kl = Math.pow(10, val('wKl')), ratio = val('wKb');
+    var kb = 0.02, km = kb / ratio;
+    var Pp = 100, Pl = 0, Po = 0, Pocc = 0, lost = 0;
+    var dt = Math.min(10, 0.2 / Math.max(kb, km, kw, ko, kl));
+    var t = 0, nextOut = 100, out = [];
+    out.push({ t: 1, Pp: Pp, Pl: Pl, Po: Po, Pocc: Pocc, lost: lost });
+    var steps = 0;
+    while (t < 1e6 && steps < 2e6) {
+      var w = kw * Pp, b = kb * Pl, m = km * Po, oc = ko * Pl, le = kl * Pl;
+      Pp -= dt * w; Pl += dt * (w - b + m - oc - le); Po += dt * (b - m); Pocc += dt * oc; lost += dt * le;
+      if (Pl < 0) Pl = 0;
+      t += dt; steps++;
+      if (t >= nextOut) { out.push({ t: t, Pp: Pp, Pl: Pl, Po: Po, Pocc: Pocc, lost: lost }); nextOut *= 1.03; }
+    }
+    return out;
+  }
+  function wsAt(out, t) { var lo = 0, hi = out.length - 1; while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (out[mid].t <= t) lo = mid; else hi = mid; } return out[lo]; }
+  function drawWS() {
+    outs(['wKw', 'wKo', 'wKl', 'wKb']);
+    var out = wsRun();
+    var c = mkChart(wsSvg, { W: 640, H: 380, mL: 56, mR: 90, xmin: 100, xmax: 1e6, ymin: 0, ymax: 100, xlog: true, xt: [100, 1000, 1e4, 1e5, 1e6], xfmt: function (v) { return '10^' + Math.round(log10(v)); }, yt: ticks(0, 100, 20), xl: 'Soil age (years, log scale)', yl: 'P (% of initial total P)' });
+    var pts = out.filter(function (p) { return p.t >= 100; });
+    function ser(key, col, cls) { series(c, pts.map(function (p) { return [p.t, key === 'tot' ? p.Pp + p.Pl + p.Po + p.Pocc : p[key]]; }), cls || '', col); }
+    ser('Pp', 'var(--series-1)'); ser('Pl', 'var(--series-2)'); ser('Po', 'var(--series-3)'); ser('Pocc', 'var(--accent-2)'); ser('tot', null, 'net');
+    var last = pts[pts.length - 1];
+    var labs = [{ t: 'primary', v: last.Pp, col: 'var(--series-1)' }, { t: 'labile', v: last.Pl, col: 'var(--series-2)' }, { t: 'organic', v: last.Po, col: 'var(--series-3)' }, { t: 'occluded', v: last.Pocc, col: 'var(--accent-2)' }, { t: 'total', v: last.Pp + last.Pl + last.Po + last.Pocc, col: 'var(--fg)' }];
+    labs.forEach(function (L) { L.y = c.sy(L.v); }); labs.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+    labs.forEach(function (L) { label(c, c.mL + c.pw + 6, L.y + 4, L.t, L.col); });
+    hover(c, wsTip, function (x) { var p = wsAt(out, x); var tot = p.Pp + p.Pl + p.Po + p.Pocc; return { y: tot, html: 'age <b>' + (x >= 1e4 ? fmt(x / 1000, 0) + ' kyr' : fmt(x, 0) + ' yr') + '</b><br>primary <b>' + fmt(p.Pp, 1) + '</b> · labile <b>' + fmt(p.Pl, 1) + '</b> · organic <b>' + fmt(p.Po, 1) + '</b><br>occluded <b>' + fmt(p.Pocc, 1) + '</b> · total <b>' + fmt(tot, 1) + '</b> · lost <b>' + fmt(p.lost, 1) + '</b>' }; });
+    var half = out.filter(function (p) { return p.Pp <= 50; })[0];
+    txt('wHalf', half ? (half.t >= 1e4 ? fmt(half.t / 1000, 0) + ' kyr' : fmt(half.t, 0) + ' yr') : '> 10⁶ yr');
+    var pk = out.reduce(function (a, p) { return p.Po > a.Po ? p : a; }, out[0]);
+    txt('wPkO', fmt(pk.Po, 1) + '%');
+    txt('wTpk', pk.t >= 1e4 ? fmt(pk.t / 1000, 0) + ' kyr' : fmt(pk.t, 0) + ' yr');
+    var tot6 = last.Pp + last.Pl + last.Po + last.Pocc;
+    txt('wTot', fmt(tot6, 1) + '% of initial');
+    txt('wOcc', tot6 > 0.01 ? fmt(100 * last.Pocc / tot6, 0) + '% of remaining' : '–');
+    var html = '<thead><tr><th class="num">Age (yr)</th><th class="num">Primary</th><th class="num">Labile</th><th class="num">Organic</th><th class="num">Occluded</th><th class="num">Total</th><th class="num">Lost</th></tr></thead><tbody>';
+    [100, 300, 1000, 3000, 1e4, 3e4, 1e5, 3e5, 1e6].forEach(function (t) { var p = wsAt(out, t); html += '<tr><td class="num">' + t + '</td><td class="num">' + fmt(p.Pp, 1) + '</td><td class="num">' + fmt(p.Pl, 1) + '</td><td class="num">' + fmt(p.Po, 1) + '</td><td class="num">' + fmt(p.Pocc, 1) + '</td><td class="num">' + fmt(p.Pp + p.Pl + p.Po + p.Pocc, 1) + '</td><td class="num">' + fmt(p.lost, 1) + '</td></tr>'; });
+    document.getElementById('wsTable').innerHTML = html + '</tbody>';
+  }
+  bind(['wKw', 'wKo', 'wKl', 'wKb'], drawWS); drawWS();
+
+  /* ---------- Lab C: speciation ---------- */
+  var spSvg = document.getElementById('spSvg'), spTip = document.getElementById('spTip');
+  var pK = [2.15, 7.20, 12.35];
+  function spec(pH) {
+    var a = [1, Math.pow(10, pH - pK[0]), Math.pow(10, 2 * pH - pK[0] - pK[1]), Math.pow(10, 3 * pH - pK[0] - pK[1] - pK[2])];
+    var s = a[0] + a[1] + a[2] + a[3]; return a.map(function (v) { return v / s; });
+  }
+  function drawSp() {
+    outs(['spH']);
+    var pH = val('spH');
+    var c = mkChart(spSvg, { W: 640, H: 360, mL: 56, mR: 20, xmin: 2, xmax: 13, ymin: 0, ymax: 100, xt: ticks(2, 13, 1), yt: ticks(0, 100, 20), xl: 'pH', yl: 'Fraction of orthophosphate (%)' });
+    c.svg.appendChild(el('rect', { 'class': 'band', x: c.sx(2), y: c.mT, width: c.sx(5.5) - c.sx(2), height: c.ph }));
+    c.svg.appendChild(el('rect', { 'class': 'band', x: c.sx(7.5), y: c.mT, width: c.sx(13) - c.sx(7.5), height: c.ph }));
+    c.svg.appendChild(el('rect', { 'class': 'band2', x: c.sx(6), y: c.mT, width: c.sx(7) - c.sx(6), height: c.ph }));
+    label(c, c.sx(3.7), c.sy(50) + 4, 'Fe/Al sorption, strengite, variscite', 'var(--accent-2)', 'middle', 'note');
+    label(c, c.sx(10.2), c.sy(50) + 4, 'Ca-P precipitation (DCP → OCP → apatite)', 'var(--accent-2)', 'middle', 'note');
+    label(c, c.sx(6.5), c.mT + c.ph - 8, 'max availability', 'var(--accent)', 'middle', 'note');
+    var cols = ['var(--muted)', 'var(--series-1)', 'var(--series-2)', 'var(--series-3)'], names = ['H₃PO₄', 'H₂PO₄⁻', 'HPO₄²⁻', 'PO₄³⁻'];
+    for (var k = 0; k < 4; k++) { var pts = []; for (var p = 2; p <= 13.001; p += 0.05) pts.push([p, 100 * spec(p)[k]]); series(c, pts, '', cols[k]); }
+    [[2.4, 0], [4.7, 1], [9.8, 2], [12.9, 3]].forEach(function (q) { var f = spec(q[0])[q[1]]; label(c, c.sx(q[0]), c.sy(100 * f) - 8, names[q[1]], cols[q[1]], q[1] === 3 ? 'end' : 'middle'); });
+    var s = spec(pH);
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(pH), x2: c.sx(pH), y1: c.mT, y2: c.mT + c.ph, stroke: 'var(--fg)' }));
+    for (var j = 0; j < 4; j++) c.svg.appendChild(el('circle', { cx: c.sx(pH), cy: c.sy(100 * s[j]), r: 4.5, fill: cols[j], stroke: 'var(--surface)', 'stroke-width': 2 }));
+    hover(c, spTip, function (x) { var v = spec(x); return { y: 100 * Math.max(v[1], v[2]), html: 'pH <b>' + fmt(x, 2) + '</b><br>H₃PO₄ ' + fmt(100 * v[0], 1) + '% · H₂PO₄⁻ <b>' + fmt(100 * v[1], 1) + '</b>% · HPO₄²⁻ <b>' + fmt(100 * v[2], 1) + '</b>% · PO₄³⁻ ' + fmt(100 * v[3], 2) + '%' }; });
+    txt('sp0', fmt(100 * s[0], 2) + '%'); txt('sp1', fmt(100 * s[1], 1) + '%'); txt('sp2', fmt(100 * s[2], 1) + '%'); txt('sp3', fmt(100 * s[3], 3) + '%');
+    txt('spMech', pH < 5.5 ? 'Fe/Al oxides: sorption and precipitation' : (pH > 7.5 ? 'Ca phosphates: precipitation' : (pH >= 6 && pH <= 7 ? 'Near optimum availability' : 'Transitional')));
+  }
+  bind(['spH'], drawSp); drawSp();
+
+  /* ---------- Lab A: sorption isotherm ---------- */
+  var isoSvg = document.getElementById('isoSvg'), isoTip = document.getElementById('isoTip');
+  function drawIso() {
+    outs(['iFe', 'iK', 'iQ0', 'iAdd']);
+    var FeAl = val('iFe'), K = val('iK'), Q0 = val('iQ0'), add = val('iAdd');
+    var Qmax = 31 * 0.5 * FeAl;
+    function QL(C) { return Qmax * K * C / (1 + K * C); }
+    var Kf = QL(1); function QF(C) { return Kf * Math.pow(C, 0.5); }
+    function Cof(Q) { return Q >= Qmax ? Infinity : Q / (K * (Qmax - Q)); }
+    var Q0c = Math.min(Q0, Qmax * 0.999), Q1 = Math.min(Q0 + add, Qmax * 0.999);
+    var C0 = Cof(Q0c), C1 = Cof(Q1);
+    var Cmax = 10, ymax = Math.max(500, Math.ceil(Qmax * 1.05 / 500) * 500);
+    var ystep = ymax > 4000 ? 1000 : (ymax > 2000 ? 500 : 250);
+    var c = mkChart(isoSvg, { W: 640, H: 380, mL: 66, mR: 24, xmin: 0, xmax: Cmax, ymin: 0, ymax: ymax, xt: ticks(0, Cmax, 1), yt: ticks(0, ymax, ystep), xl: 'Solution P, C (mg L⁻¹)', yl: 'Sorbed P, Q (mg kg⁻¹)' });
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.mL, x2: c.mL + c.pw, y1: c.sy(Qmax), y2: c.sy(Qmax) }));
+    label(c, c.mL + c.pw - 4, c.sy(Qmax) - 5, 'Qmax = ' + fmt(Qmax, 0) + ' mg kg⁻¹', 'var(--muted)', 'end', 'note');
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.mL, x2: c.mL + c.pw, y1: c.sy(0.25 * Qmax), y2: c.sy(0.25 * Qmax), stroke: 'var(--accent-2)' }));
+    label(c, c.mL + c.pw - 4, c.sy(0.25 * Qmax) - 5, 'DPS 25%', 'var(--accent-2)', 'end', 'note');
+    var pl = [], pf = []; for (var C = 0; C <= Cmax + 1e-9; C += 0.05) { pl.push([C, QL(C)]); pf.push([C, Math.min(ymax, QF(C))]); }
+    series(c, pf, 'dash', 'var(--series-1)'); series(c, pl, 'net');
+    label(c, c.sx(Cmax) - 4, c.sy(QF(Cmax)) + (QF(Cmax) > QL(Cmax) ? -8 : 14), 'Freundlich', 'var(--series-1)', 'end');
+    label(c, c.sx(Cmax) - 4, c.sy(QL(Cmax)) + (QF(Cmax) > QL(Cmax) ? 14 : -8), 'Langmuir', 'var(--fg)', 'end');
+    if (isFinite(C0) && C0 <= Cmax) { c.svg.appendChild(el('circle', { 'class': 'pt', cx: c.sx(C0), cy: c.sy(Q0c), r: 6, fill: 'var(--series-2)' })); label(c, c.sx(C0) + 9, c.sy(Q0c) + 14, 'now: EPC₀ ' + fmt(C0, C0 < 0.1 ? 3 : 2), 'var(--series-2)'); }
+    if (add > 0 && isFinite(C1) && C1 <= Cmax) { c.svg.appendChild(el('circle', { 'class': 'pt2', cx: c.sx(C1), cy: c.sy(Q1), r: 6 })); label(c, c.sx(C1) + 9, c.sy(Q1) - 8, 'after: EPC₀ ' + fmt(C1, C1 < 0.1 ? 3 : 2), 'var(--accent-2)'); }
+    hover(c, isoTip, function (x) { return { y: QL(x), html: 'C <b>' + fmt(x, 2) + '</b> mg L⁻¹<br>Langmuir Q <b>' + fmt(QL(x), 0) + '</b> · Freundlich Q <b>' + fmt(QF(x), 0) + '</b> mg kg⁻¹<br>buffer capacity ' + fmt(Qmax * K / Math.pow(1 + K * x, 2), 0) + ' L kg⁻¹' }; });
+    txt('iQmax', fmt(Qmax, 0) + ' mg kg⁻¹');
+    txt('iDPS', fmt(100 * Q0c / Qmax, 1) + '% → ' + fmt(100 * Q1 / Qmax, 1) + '%');
+    txt('iEPC', (isFinite(C0) ? fmt(C0, 3) : '∞') + ' → ' + (isFinite(C1) ? fmt(C1, 3) : '∞'));
+    txt('iBuf', isFinite(C1) ? fmt(Qmax * K / Math.pow(1 + K * C1, 2), 0) : '0');
+    var v = document.getElementById('iVerd');
+    if (Q0 + add >= Qmax) { v.textContent = 'Capacity exceeded: P fixation sites full, large losses'; v.style.color = 'var(--accent-2)'; }
+    else if (Q1 / Qmax > 0.25 || C1 > 0.3) { v.textContent = 'Above DPS 25%: environmental risk, little agronomic gain'; v.style.color = 'var(--accent-2)'; }
+    else if (C1 < 0.05) { v.textContent = 'Strongly P-fixing: solution P below crop needs (~0.2 mg L⁻¹)'; v.style.color = 'var(--series-1)'; }
+    else { v.textContent = 'Agronomic range: adequate, well buffered'; v.style.color = 'var(--accent)'; }
+    var html = '<thead><tr><th class="num">C (mg L⁻¹)</th><th class="num">Langmuir Q</th><th class="num">Freundlich Q</th><th class="num">dQ/dC (L kg⁻¹)</th><th class="num">DPS (%)</th></tr></thead><tbody>';
+    [0.01, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10].forEach(function (C) { html += '<tr><td class="num">' + C + '</td><td class="num">' + fmt(QL(C), 0) + '</td><td class="num">' + fmt(QF(C), 0) + '</td><td class="num">' + fmt(Qmax * K / Math.pow(1 + K * C, 2), 0) + '</td><td class="num">' + fmt(100 * QL(C) / Qmax, 1) + '</td></tr>'; });
+    document.getElementById('isoTable').innerHTML = html + '</tbody>';
+  }
+  bind(['iFe', 'iK', 'iQ0', 'iAdd'], drawIso); drawIso();
+
+  /* ---------- Lab D: P loss ---------- */
+  var plSvg = document.getElementById('plSvg'), plTip = document.getElementById('plTip');
+  function drp(stp, cp) { return stp <= cp ? 0.002 * stp : 0.002 * cp + 0.012 * (stp - cp); }
+  function drawPL() {
+    outs(['pSTP', 'pCP', 'pRun', 'pSlope', 'pCov', 'pTP']);
+    var stp = val('pSTP'), cp = val('pCP'), run = val('pRun'), slope = val('pSlope'), cov = val('pCov'), tp = val('pTP');
+    var conc = drp(stp, cp);
+    var DL = conc * run * 0.01;
+    var ero = 4 * Math.pow(slope / 9, 1.3) * Math.exp(-0.04 * cov);
+    var PL = ero * tp * 1.5 / 1000;
+    var ymax = Math.max(0.5, Math.ceil(drp(150, 20) * 1.05 * 10) / 10);
+    var c = mkChart(plSvg, { W: 640, H: 360, mL: 60, mR: 24, xmin: 0, xmax: 150, ymin: 0, ymax: ymax, xt: ticks(0, 150, 25), yt: ticks(0, ymax, 0.2), yfmt: function (v) { return fmt(v, 1); }, xl: 'Olsen soil test P (mg kg⁻¹)', yl: 'DRP in runoff (mg P L⁻¹)' });
+    c.svg.appendChild(el('rect', { 'class': 'band3', x: c.sx(cp), y: c.mT, width: c.sx(150) - c.sx(cp), height: c.ph }));
+    c.svg.appendChild(el('line', { 'class': 'ref', x1: c.sx(cp), x2: c.sx(cp), y1: c.mT, y2: c.mT + c.ph }));
+    label(c, c.sx(cp) + 4, c.mT + 14, 'change point ' + cp, 'var(--muted)', 'start', 'note');
+    c.svg.appendChild(el('rect', { 'class': 'band2', x: c.sx(20), y: c.mT, width: c.sx(30) - c.sx(20), height: c.ph }));
+    label(c, c.sx(25), c.mT + 30, 'agronomic optimum', 'var(--accent)', 'middle', 'note');
+    var pts = []; for (var s = 0; s <= 150; s += 1) pts.push([s, drp(s, cp)]);
+    series(c, pts, 'net');
+    c.svg.appendChild(el('circle', { 'class': 'pt2', cx: c.sx(stp), cy: c.sy(conc), r: 6 }));
+    label(c, c.sx(stp) + (stp > 110 ? -10 : 10), c.sy(conc) - 10, 'STP ' + stp + ': ' + fmt(conc, 3) + ' mg L⁻¹', 'var(--accent-2)', stp > 110 ? 'end' : 'start');
+    hover(c, plTip, function (x) { var v = drp(x, cp); return { y: v, html: 'Olsen P <b>' + fmt(x, 0) + '</b> mg kg⁻¹<br>DRP <b>' + fmt(v, 3) + '</b> mg L⁻¹ · load at ' + run + ' mm: <b>' + fmt(v * run * 0.01, 2) + '</b> kg P ha⁻¹' }; });
+    txt('pConc', fmt(conc, 3)); txt('pDL', fmt(DL, 2)); txt('pEro', fmt(ero, 2)); txt('pPL', fmt(PL, 2)); txt('pTot', fmt(DL + PL, 2) + ' kg P ha⁻¹ yr⁻¹');
+    var tot = DL + PL, fd = tot > 0 ? DL / tot : 0;
+    var d = document.getElementById('pDom'); d.textContent = tot < 0.01 ? 'negligible loss' : (fd > 0.5 ? 'dissolved (' + fmt(100 * fd, 0) + '%)' : 'particulate (' + fmt(100 * (1 - fd), 0) + '%)'); d.style.color = fd > 0.5 ? 'var(--series-2)' : 'var(--series-1)';
+    var mx = Math.max(DL, PL, 0.01);
+    document.getElementById('plBarD').style.width = (100 * DL / mx) + '%'; document.getElementById('plBarP').style.width = (100 * PL / mx) + '%';
+    txt('plVD', fmt(DL, 2) + ' kg'); txt('plVP', fmt(PL, 2) + ' kg');
+  }
+  bind(['pSTP', 'pCP', 'pRun', 'pSlope', 'pCov', 'pTP'], drawPL); drawPL();
+})();
+</script>
+</body>
+</html>

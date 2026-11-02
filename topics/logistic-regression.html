@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Logistic Regression</title>
+<meta name="description" content="Logistic regression at comprehensive-exam depth: Bernoulli likelihood, logit link, odds ratios, IRLS and gradient fitting, separation, regularisation, softmax, ROC/AUC, calibration, deviance, and ecological applications from species distribution models to tree mortality.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2.2; stroke-linejoin: round; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .pt0 { fill: var(--series-1); stroke: var(--surface); stroke-width: 1; opacity: 0.85; }
+  .ch .pt1 { fill: var(--series-2); stroke: var(--surface); stroke-width: 1; opacity: 0.85; }
+  .ch .bnd { stroke: var(--fg); stroke-dasharray: 5 4; stroke-width: 1.5; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .cell { stroke: none; }
+  .ch .ctr { fill: none; stroke: var(--fg); stroke-width: 1.4; }
+  .ch .ctr.faint { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+  .ch .bar { fill: var(--series-1); opacity: 0.8; }
+  .chartbox { position: relative; }
+  .cm { border-collapse: collapse; font-family: var(--font-display); font-size: 0.85rem; margin-top: 0.5rem; width: auto; }
+  .cm th, .cm td { padding: 0.35rem 0.6rem; border: 1px solid var(--line); text-align: center; }
+  .cm td.n { font-family: var(--font-mono); font-size: 0.95rem; }
+  .cm td.tp, .cm td.tn { background: var(--accent-soft); }
+  .cm td.fp, .cm td.fn { background: var(--accent-2-soft); }
+  .cm th { text-transform: none; letter-spacing: 0; }
+  .chk { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
+  .chk input { accent-color: var(--accent); }
+  .status { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); min-height: 1.2em; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Logistic regression</div>
+    <div class="eyebrow">Topic 7 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Logistic Regression</h1>
+    <p class="lead">The workhorse model for a yes/no outcome against continuous drivers: species present or absent, tree alive or dead, pixel forest or not. A generalised linear model with a Bernoulli likelihood and a logit link, fitted by Newton's method, read through odds ratios, and judged by ROC curves and calibration.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>A binary outcome \(y_i \in \{0,1\}\) is modelled as a Bernoulli trial whose success probability \(p_i\) depends on covariates through the <strong>logit link</strong>: \(\log\frac{p_i}{1-p_i} = \mathbf{x}_i^\top\boldsymbol\beta\), equivalently \(p_i = \sigma(\mathbf{x}_i^\top\boldsymbol\beta)\) with the sigmoid \(\sigma(z) = 1/(1+e^{-z})\). The log-odds are linear in the predictors, so each coefficient is a <strong>log odds ratio</strong>: a one-unit increase in \(x_j\) multiplies the odds by \(e^{\beta_j}\), whatever the other covariates. The log-likelihood is concave with gradient \(\mathbf{X}^\top(\mathbf{y}-\mathbf{p})\) and Hessian \(-\mathbf{X}^\top\mathbf{W}\mathbf{X}\); it has no closed-form maximiser, so it is fitted by Newton–Raphson, which for a GLM is iteratively reweighted least squares (IRLS). The model is a GLM with the canonical link of the Bernoulli family, a one-layer neural network with sigmoid output, and a linear classifier whose decision boundary \(\mathbf{x}^\top\boldsymbol\beta = 0\) is a hyperplane. Its quality is judged on discrimination (ROC, AUC), calibration (reliability, Brier score), and likelihood (deviance, log-loss, AIC), never on accuracy alone. In ecology it underlies species distribution models, mortality and fire-occurrence models, and remote-sensing classification.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Three things get asked almost every time: derive the gradient and Hessian from the Bernoulli log-likelihood and explain why the MLE is unique; interpret a coefficient correctly (odds, not probability); and explain why accuracy is a bad metric for a rare event such as tree death and what to use instead. The fourth, for a modelling student, is how a statistical presence/absence model relates to a process model of the same phenomenon.</p></div>
+  </section>
+
+  <section id="why">
+    <h2>Why not ordinary least squares?</h2>
+    <p>Suppose \(y_i\) is 1 if a seedling survived a drought and 0 otherwise, and \(x_i\) is soil water. Regressing \(y\) on \(x\) by OLS fits \(E[y\mid x] = p(x) = \beta_0 + \beta_1 x\). Three things go wrong. First, a line is unbounded, but \(p\) must lie in \([0,1]\); the fit predicts probabilities below zero for dry sites and above one for wet ones. Second, a Bernoulli variable has variance \(p(1-p)\), which depends on the mean, so the residuals are <strong>heteroscedastic</strong> by construction and the OLS standard errors are wrong. Third, the errors cannot be normal: for a given \(x\) the residual takes only the two values \(1-p\) and \(-p\). Linear probability models still appear in economics as a rough approximation near \(p \approx 0.5\), but for ecological thresholds, which are the interesting part, they fail exactly where they are needed.</p>
+    <p>The fix is to model the probability on a scale where a straight line makes sense. Any monotone map from \(\mathbb{R}\) to \((0,1)\) will do; the logit is the one with the cleanest interpretation and the cleanest mathematics.</p>
+  </section>
+
+  <section id="model">
+    <h2>The model: Bernoulli likelihood, logit link, odds</h2>
+    <h3>Likelihood</h3>
+    <p>For independent observations with \(y_i \sim \mathrm{Bernoulli}(p_i)\),</p>
+    <div class="eq">$$L(\boldsymbol\beta) = \prod_{i=1}^{n} p_i^{\,y_i}(1-p_i)^{1-y_i}, \qquad \ell(\boldsymbol\beta) = \sum_{i=1}^{n}\Big[y_i\log p_i + (1-y_i)\log(1-p_i)\Big].$$</div>
+    <p>With \(p_i = \sigma(\eta_i)\), \(\eta_i = \mathbf{x}_i^\top\boldsymbol\beta\), the log-likelihood simplifies because \(\log\frac{p_i}{1-p_i} = \eta_i\) and \(\log(1-p_i) = -\log(1+e^{\eta_i})\):</p>
+    <div class="eq">$$\ell(\boldsymbol\beta) = \sum_{i=1}^{n}\Big[y_i\,\eta_i - \log\!\big(1+e^{\eta_i}\big)\Big].$$</div>
+    <p>The negative of this, divided by \(n\), is the <strong>log-loss</strong> or binary cross-entropy used throughout machine learning. The two names describe one object.</p>
+
+    <h3>Logit, sigmoid, odds and odds ratios</h3>
+    <p>The odds of an event are \(p/(1-p)\): a probability of 0.8 is odds of 4 to 1. The logit is the log of the odds, and the sigmoid is its inverse:</p>
+    <div class="eq">$$\operatorname{logit}(p) = \log\frac{p}{1-p}, \qquad \sigma(z) = \frac{1}{1+e^{-z}} = \frac{e^{z}}{1+e^{z}},$$</div>
+    <div class="eq">$$\sigma'(z) = \sigma(z)\big(1-\sigma(z)\big), \qquad 1-\sigma(z) = \sigma(-z).$$</div>
+    <p>Because \(\log\mathrm{odds} = \beta_0 + \beta_1 x_1 + \dots\), increasing \(x_j\) by one unit adds \(\beta_j\) to the log-odds and therefore <strong>multiplies the odds by \(e^{\beta_j}\)</strong>, the odds ratio. This holds at any baseline and for any values of the other covariates, which is what makes the logit the natural scale to report on. The effect on the <em>probability</em> is not constant: the marginal effect is</p>
+    <div class="eq">$$\frac{\partial p}{\partial x_j} = \beta_j\,p\,(1-p),$$</div>
+    <p>largest at \(p = 0.5\) (where it equals \(\beta_j/4\), the "divide by four" rule) and vanishing in the tails. A coefficient of \(\beta = 0.7\) on VPD (per kPa) means an odds ratio of \(e^{0.7} \approx 2.0\): each extra kPa doubles the odds of mortality. If the baseline mortality is 2%, doubling the odds moves it to about 3.9%; if the baseline is 50%, to 67%. Report odds ratios with confidence intervals \(\exp(\hat\beta \pm 1.96\,\mathrm{SE})\), which are asymmetric on the probability scale.</p>
+
+    <h3>Logistic regression as a GLM</h3>
+    <p>A GLM has three parts: a response distribution from the exponential family, a linear predictor \(\eta = \mathbf{x}^\top\boldsymbol\beta\), and a link \(g(\mu) = \eta\). The Bernoulli density in exponential-family form is</p>
+    <div class="eq">$$f(y;\theta) = \exp\!\big[y\theta - \log(1+e^{\theta})\big], \qquad \theta = \log\frac{p}{1-p},$$</div>
+    <div class="eq">$$b(\theta) = \log(1+e^\theta),\qquad b'(\theta) = p = \mu,\qquad b''(\theta) = p(1-p) = \operatorname{Var}(y).$$</div>
+    <p>The natural parameter is the logit, so the logit is the <strong>canonical link</strong>. Canonical links make the score equations \(\mathbf{X}^\top(\mathbf{y}-\boldsymbol\mu) = \mathbf{0}\) especially simple, make the observed and expected information coincide, and make the log-likelihood concave in \(\boldsymbol\beta\). Two common alternatives are the <strong>probit</strong>, \(p = \Phi(\eta)\), which arises from a latent normal variable crossing a threshold and gives coefficients about \(1/1.6\) to \(1/1.8\) the size of logit ones with almost identical fitted probabilities; and the <strong>complementary log-log</strong>, \(p = 1-\exp(-e^{\eta})\), which is asymmetric and arises when the event is "at least one occurrence" of a Poisson process, hence natural for mortality over an interval or for presence as at least one individual. The cloglog is also the link that makes a binary model consistent with a continuous-time hazard, which matters when census intervals differ between plots.</p>
+  </section>
+
+  <section id="fitting">
+    <h2>Fitting: gradient, Hessian, Newton–Raphson and IRLS</h2>
+    <h3>Score and Hessian</h3>
+    <p>Differentiate \(\ell = \sum_i [y_i\eta_i - \log(1+e^{\eta_i})]\) with respect to \(\boldsymbol\beta\), using \(\partial\eta_i/\partial\boldsymbol\beta = \mathbf{x}_i\) and \(\frac{d}{d\eta}\log(1+e^{\eta}) = \sigma(\eta) = p\):</p>
+    <div class="eq">$$\nabla\ell = \sum_{i}(y_i - p_i)\,\mathbf{x}_i = \mathbf{X}^\top(\mathbf{y}-\mathbf{p}).$$</div>
+    <p>Differentiating again, \(\partial p_i/\partial\boldsymbol\beta = p_i(1-p_i)\mathbf{x}_i\), so</p>
+    <div class="eq">$$\mathbf{H} = \nabla^2\ell = -\sum_i p_i(1-p_i)\,\mathbf{x}_i\mathbf{x}_i^\top = -\mathbf{X}^\top\mathbf{W}\mathbf{X}, \qquad \mathbf{W} = \operatorname{diag}\big(p_i(1-p_i)\big).$$</div>
+    <p>Since every weight \(p_i(1-p_i) > 0\), \(\mathbf{X}^\top\mathbf{W}\mathbf{X}\) is positive definite whenever \(\mathbf{X}\) has full column rank, so \(\mathbf{H}\) is negative definite and \(\ell\) is <strong>strictly concave</strong>. Any stationary point is the unique global maximum. The score equations \(\mathbf{X}^\top(\mathbf{y}-\mathbf{p}) = \mathbf{0}\) are nonlinear in \(\boldsymbol\beta\) (because \(\mathbf{p}\) is), so there is no closed form, unlike OLS. Note also that for the canonical link the Hessian does not involve \(y\), so observed and expected (Fisher) information coincide: Newton–Raphson and Fisher scoring are the same algorithm here. The asymptotic covariance of \(\hat{\boldsymbol\beta}\) is \((\mathbf{X}^\top\hat{\mathbf{W}}\mathbf{X})^{-1}\), and Wald standard errors are the square roots of its diagonal.</p>
+
+    <div class="keybox"><h3>Newton–Raphson is iteratively reweighted least squares</h3>
+      <p>The Newton update \(\boldsymbol\beta^{(t+1)} = \boldsymbol\beta^{(t)} - \mathbf{H}^{-1}\nabla\ell\) becomes</p>
+      <div class="eq">$$\boldsymbol\beta^{(t+1)} = \boldsymbol\beta^{(t)} + (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top(\mathbf{y}-\mathbf{p}) = (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}\,\mathbf{z},$$</div>
+      <p>where the <strong>working response</strong> is \(\mathbf{z} = \mathbf{X}\boldsymbol\beta^{(t)} + \mathbf{W}^{-1}(\mathbf{y}-\mathbf{p})\), i.e. \(z_i = \eta_i + \dfrac{y_i - p_i}{p_i(1-p_i)}\). To see the identity, multiply out: \((\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}\mathbf{X}\boldsymbol\beta^{(t)} = \boldsymbol\beta^{(t)}\) and \(\mathbf{W}\mathbf{W}^{-1} = \mathbf{I}\). Each Newton step is therefore a weighted least-squares regression of \(\mathbf{z}\) on \(\mathbf{X}\) with weights \(\mathbf{W}\): a first-order Taylor expansion of the link around the current fit, \(g(y_i) \approx g(p_i) + g'(p_i)(y_i-p_i)\) with \(g'(p) = 1/[p(1-p)]\). Convergence is quadratic and usually takes 4–8 iterations from \(\boldsymbol\beta = \mathbf{0}\). This is how <code>glm()</code> works, and the general GLM case is on the <a href="newton-raphson.html">Newton–Raphson page</a>.</p></div>
+
+    <p><strong>Gradient descent</strong> instead takes \(\boldsymbol\beta \leftarrow \boldsymbol\beta + \alpha\,\mathbf{X}^\top(\mathbf{y}-\mathbf{p})\), avoiding the \(O(k^3)\) solve of a \(k\times k\) system but needing many more iterations and a step size. It is the method of choice when \(n\) or \(k\) is large or when the model is one layer of something bigger (see the <a href="gradient-descent.html">gradient descent page</a>). Because \(\ell\) is concave and its gradient is Lipschitz (each \(\sigma'\le 1/4\), so \(\alpha < 4/\lambda_{\max}(\mathbf{X}^\top\mathbf{X})\) is safe), plain gradient descent converges to the same unique optimum.</p>
+
+    <h3>Separation</h3>
+    <p>If some hyperplane perfectly separates the ones from the zeros (<strong>complete separation</strong>), the likelihood can be increased without bound by scaling \(\boldsymbol\beta\) along the separating direction: \(p_i \to 1\) for every \(y_i = 1\) and \(\to 0\) for every \(y_i = 0\), so \(\ell \to 0\) and the MLE does not exist (Albert &amp; Anderson 1984 [9]). <strong>Quasi-complete separation</strong> (a hyperplane separates with ties on the boundary) behaves the same way for some coefficients. Software reports huge coefficients, enormous standard errors and a warning about fitted probabilities of 0 or 1. It is common in ecology: a species that is never found above 1,800 m, a categorical predictor with a level that has no deaths, or a small dataset with many predictors. The remedies are Firth's penalised likelihood (below), a Bayesian weakly informative prior, or recognising that the covariate is a deterministic rule rather than a probabilistic effect.</p>
+    <p><strong>Firth's correction</strong> (Firth 1993 [8]) maximises \(\ell^*(\boldsymbol\beta) = \ell(\boldsymbol\beta) + \tfrac12\log\det\mathbf{I}(\boldsymbol\beta)\), where \(\mathbf{I} = \mathbf{X}^\top\mathbf{W}\mathbf{X}\). The Jeffreys-prior penalty removes the first-order bias of the MLE, which in small samples is away from zero, and always gives finite estimates. The modified score is \(\mathbf{X}^\top(\mathbf{y} + \mathbf{h}/2 - \mathbf{p}(1+\mathbf{h}))\) with \(h_i\) the leverages of the weighted regression, so it can be fitted with a tiny change to IRLS: each observation is split into fractional pseudo-observations that pull toward \(p = 0.5\).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · One-predictor logistic fit: seedling survival vs soil moisture</h3><button class="btn small primary" id="l1Fit" type="button">Fit by IRLS (animated)</button></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="l1Svg" viewBox="0 0 640 360" role="img" aria-label="Survival (0 or 1) of seedlings plotted against volumetric soil water with a logistic curve and the decision boundary"></svg>
+            <div class="chart-tip" id="l1Tip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-2)">survived (y = 1)</span><span style="--c:var(--series-1)">died (y = 0)</span><span style="--c:var(--fg)">current p(x) = σ(β₀ + β₁x)</span><span style="--c:var(--accent)">maximum-likelihood fit</span></div>
+          <div class="status" id="l1Status"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="l1Table"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="l1b0"><span>Intercept β₀</span><output id="l1b0O">0</output></label><input type="range" id="l1b0" min="-16" max="6" step="0.1" value="0"></div>
+          <div class="ctrl"><label for="l1b1"><span>Slope β₁ (per m³ m⁻³)</span><output id="l1b1O">0</output></label><input type="range" id="l1b1" min="-20" max="80" step="0.5" value="0"></div>
+          <div class="chk"><input type="checkbox" id="l1ShowML" checked><label for="l1ShowML">show ML curve</label></div>
+          <dl class="readout">
+            <dt>Log-likelihood ℓ(β)</dt><dd id="l1LL"></dd>
+            <dt>ℓ at the MLE</dt><dd id="l1LLmax"></dd>
+            <dt>Null · residual deviance</dt><dd id="l1Dev"></dd>
+            <dt>McFadden R² (ML · current)</dt><dd id="l1R2"></dd>
+            <dt>Boundary x* = −β₀/β₁</dt><dd id="l1X"></dd>
+            <dt>Odds ratio per 0.05 m³ m⁻³</dt><dd id="l1OR"></dd>
+            <dt>Max slope β₁/4</dt><dd id="l1Slope"></dd>
+            <dt>MLE β₀, β₁ (SE)</dt><dd id="l1ML"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Eighty seedlings (seeded synthetic data) with survival generated from logit p = −7.5 + 25 x. Suggested experiments: with β₁ = 0 slide β₀ and find where ℓ is maximised (it is at logit of the overall survival fraction: the null model). Then press Fit and watch the IRLS iterations converge in a handful of steps; the readout shows the working-response update. Set β₁ to 80 and note the log-likelihood falls even though the curve is "sharper": overconfident predictions are punished by the log-loss. The grey dashed line is the decision boundary where p = 0.5.</p>
+    </div>
+  </section>
+
+  <section id="regularisation">
+    <h2>Regularisation and the multinomial extension</h2>
+    <h3>Penalised logistic regression</h3>
+    <p>Adding a penalty to the negative log-likelihood shrinks coefficients, stabilises the fit under separation or collinearity, and trades a little bias for a lot of variance (see the <a href="bias-variance.html">bias–variance page</a>):</p>
+    <div class="eq">$$\min_{\boldsymbol\beta}\; -\ell(\boldsymbol\beta) + \lambda\,\|\boldsymbol\beta_{-0}\|_2^2 \;\;\text{(ridge, L2)}, \qquad \min_{\boldsymbol\beta}\; -\ell(\boldsymbol\beta) + \lambda\,\|\boldsymbol\beta_{-0}\|_1 \;\;\text{(lasso, L1)}.$$</div>
+    <p>The intercept is not penalised, and predictors must be standardised first or the penalty depends on units. L2 keeps every coefficient but shrinks them (and makes the Hessian \(-\mathbf{X}^\top\mathbf{W}\mathbf{X} - 2\lambda\mathbf{I}\) strictly negative definite even under separation, so a finite optimum always exists); L1 sets some exactly to zero and so selects variables. Both have a <strong>Bayesian (MAP) interpretation</strong>: minimising \(-\ell + \lambda\|\boldsymbol\beta\|_2^2\) is maximising the posterior under a Gaussian prior \(\beta_j \sim N(0, 1/(2\lambda))\), and the L1 penalty corresponds to a Laplace prior. Choose \(\lambda\) by cross-validated log-loss or deviance, not by accuracy, and in ecology use blocked rather than random folds when the data are spatially or temporally clustered.</p>
+
+    <h3>Multinomial (softmax) regression and cross-entropy</h3>
+    <p>With \(K\) classes (for example land-cover types from spectral bands), give each class its own linear predictor \(\eta_k = \mathbf{x}^\top\boldsymbol\beta_k\) and use the <strong>softmax</strong></p>
+    <div class="eq">$$p_k = \frac{e^{\eta_k}}{\sum_{j=1}^{K} e^{\eta_j}}, \qquad \ell = \sum_{i}\sum_{k} y_{ik}\log p_{ik}, \qquad -\ell/n = \text{categorical cross-entropy},$$</div>
+    <p>where \(y_{ik}\) is a one-hot indicator. The parameters are identified only up to a shared constant added to every \(\boldsymbol\beta_k\), so one class is fixed as the reference (\(\boldsymbol\beta_K = \mathbf{0}\)) and the remaining coefficients are log odds ratios relative to it; for \(K = 2\) this is exactly binary logistic regression. To derive the gradient, note \(\partial p_k/\partial\eta_j = p_k(\delta_{kj} - p_j)\), so</p>
+    <div class="eq">$$\frac{\partial\ell_i}{\partial\eta_{ij}} = \sum_k y_{ik}\,\frac{1}{p_{ik}}\,p_{ik}(\delta_{kj}-p_{ij}) = y_{ij} - p_{ij}\sum_k y_{ik} = y_{ij} - p_{ij},$$</div>
+    <div class="eq">$$\nabla_{\boldsymbol\beta_j}\ell = \mathbf{X}^\top(\mathbf{y}_j - \mathbf{p}_j),$$</div>
+    <p>the same "observed minus expected" form as the binary case, which is why softmax with cross-entropy is the standard output layer of a classification network: the gradient is clean and never saturates the way a squared-error loss on a sigmoid does. The Hessian blocks are \(-\mathbf{X}^\top\operatorname{diag}(p_j(\delta_{jk}-p_k))\mathbf{X}\), again negative semidefinite, so the multinomial likelihood is concave too.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Two-feature classifier: drought mortality vs VPD and soil water</h3><span class="small muted">Boundary at p = 0.5 (solid), p = 0.1 and 0.9 (dashed)</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap">
+            <svg class="ch" id="l2Svg" viewBox="0 0 640 420" role="img" aria-label="Scatter of surviving and dead trees in the plane of vapour pressure deficit and soil water with logistic decision boundary and probability shading"></svg>
+          </div>
+          <div class="legend"><span style="--c:var(--series-2)">died (y = 1)</span><span style="--c:var(--series-1)">survived (y = 0)</span><span style="--c:var(--fg)">p = 0.5 boundary</span></div>
+          <div class="status" id="l2Status"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="l2Lam"><span>L2 penalty log₁₀ λ</span><output id="l2LamO">−3</output></label><input type="range" id="l2Lam" min="-3" max="2.5" step="0.1" value="-3"></div>
+          <div class="chk"><input type="checkbox" id="l2Quad"><label for="l2Quad">add quadratic features (x₁², x₂², x₁x₂)</label></div>
+          <div class="chk"><input type="checkbox" id="l2Shade" checked><label for="l2Shade">shade probability field</label></div>
+          <dl class="readout">
+            <dt>Coefficients (standardised x)</dt><dd id="l2Coef"></dd>
+            <dt>Mean log-loss (train)</dt><dd id="l2LL"></dd>
+            <dt>Accuracy at 0.5</dt><dd id="l2Acc"></dd>
+            <dt>‖β₋₀‖₂</dt><dd id="l2Norm"></dd>
+            <dt>Newton iterations</dt><dd id="l2It"></dd>
+            <dt>Odds ratio per 1 kPa VPD (at mean SW)</dt><dd id="l2OR"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Two hundred trees (seeded). Mortality probability was generated with a curved logit in VPD and soil water, so the linear model is slightly misspecified. Suggested experiments: compare log-loss with and without quadratic features (the curved boundary follows the data better, but with eight parameters it starts to chase noise). Increase λ and watch the boundary stay in place while the probability field flattens toward 0.5: shrinkage affects confidence more than the location of the boundary. At λ = 10²·⁵ almost all coefficients are gone. Lab 3 below evaluates whichever model is currently fitted here.</p>
+    </div>
+  </section>
+
+  <section id="evaluation">
+    <h2>Evaluating a probabilistic classifier</h2>
+    <p>A logistic model produces probabilities; a decision rule turns them into classes by thresholding at some \(t\). Keep the two separate. <strong>Discrimination</strong> asks whether cases get higher \(p\) than non-cases; <strong>calibration</strong> asks whether \(p = 0.3\) really happens 30% of the time; a <strong>proper scoring rule</strong> rewards both at once (Steyerberg et al. 2010 [18]).</p>
+    <h3>Confusion matrix and threshold-dependent metrics</h3>
+    <p>At threshold \(t\), predicted positives are \(\hat p_i \ge t\). The 2×2 table of true positives (TP), false positives (FP), false negatives (FN) and true negatives (TN) gives</p>
+    <div class="eq">$$\text{accuracy} = \frac{TP+TN}{n},\qquad \text{precision} = \frac{TP}{TP+FP},\qquad \text{recall (sensitivity, TPR)} = \frac{TP}{TP+FN},$$</div>
+    <div class="eq">$$\text{specificity} = \frac{TN}{TN+FP},\qquad F_1 = \frac{2\,\text{precision}\cdot\text{recall}}{\text{precision}+\text{recall}}.$$</div>
+    <p><strong>Accuracy fails under class imbalance.</strong> If 3% of trees die in a census, the model "nobody dies" is 97% accurate and useless. Precision and recall ignore TN and so are informative for rare positives; \(F_1\) is their harmonic mean. Sensitivity and specificity condition on the true class and so do not depend on prevalence; precision does. In species distribution modelling the same quantities appear as the true skill statistic (TSS = sensitivity + specificity − 1) and Cohen's kappa.</p>
+    <h3>ROC curve and AUC</h3>
+    <p>Sweeping \(t\) from 1 to 0 traces the <strong>receiver operating characteristic</strong>: TPR against FPR (= 1 − specificity). A random classifier gives the diagonal; a perfect one goes through (0,1). The <strong>area under the curve</strong> has a direct probabilistic meaning (Hanley &amp; McNeil 1982 [11]): it is the probability that a randomly chosen positive receives a higher score than a randomly chosen negative,</p>
+    <div class="eq">$$\mathrm{AUC} = \Pr(\hat p_{i} > \hat p_{j} \mid y_i = 1, y_j = 0) = \frac{1}{n_1 n_0}\sum_{i:y_i=1}\sum_{j:y_j=0}\mathbb{1}[\hat p_i > \hat p_j] \;(+\tfrac12\,\text{ties}),$$</div>
+    <p>i.e. the Mann–Whitney U statistic scaled to [0,1]. AUC is invariant to any monotone transformation of the scores, so it measures ranking only: a model can have AUC 0.95 and be badly calibrated. Rules of thumb: 0.7 acceptable, 0.8 good, 0.9 excellent; in SDMs AUC inflates as the modelled range shrinks relative to the background, so compare models only on the same extent (Fawcett 2006 [13]; Elith &amp; Leathwick 2009 [14]). For rare events the precision–recall curve is more informative than ROC because it does not reward the easy true negatives.</p>
+    <h3>Calibration and proper scores</h3>
+    <p>A <strong>reliability diagram</strong> bins predictions by \(\hat p\) and plots the observed event fraction in each bin against the mean predicted probability; a calibrated model lies on the 1:1 line. Summaries: the calibration intercept and slope from regressing \(y\) on logit(\(\hat p\)) (slope &lt; 1 means overconfident, typical of an overfitted model), and the <strong>Hosmer–Lemeshow</strong> test, \(\chi^2 = \sum_{g=1}^{G}\frac{(O_g - E_g)^2}{E_g(1-E_g/n_g)}\) over \(G \approx 10\) groups, which is widely used and widely criticised for depending on the grouping and for low power. The <strong>Brier score</strong>, \(\frac1n\sum(\hat p_i - y_i)^2\), and the <strong>log-loss</strong>, \(-\frac1n\sum[y_i\log\hat p_i + (1-y_i)\log(1-\hat p_i)]\), are both strictly proper: they are minimised in expectation only by the true probabilities, so they cannot be gamed by hedging. The Brier score decomposes as reliability − resolution + uncertainty (Murphy), separating calibration from discrimination. Log-loss punishes confident errors without bound; the Brier score caps the penalty at 1.</p>
+    <h3>Choosing a threshold</h3>
+    <p>If a false negative costs \(c_{FN}\) and a false positive \(c_{FP}\), predicting "positive" minimises expected cost when \(p\,c_{FN} > (1-p)\,c_{FP}\), i.e. at</p>
+    <div class="eq">$$t^* = \frac{c_{FP}}{c_{FP}+c_{FN}}.$$</div>
+    <p>Missing a tree that will die (and so not thinning around it) is usually costlier than a false alarm, so \(t^*\) is well below 0.5 for rare events. Other common choices, the threshold maximising TSS or Youden's \(J\), or the one matching predicted to observed prevalence, are implicit cost assumptions and should be stated as such. Setting \(t = 0.5\) is a choice, not a default.</p>
+
+    <h3>Deviance, likelihood-ratio tests, pseudo-\(R^2\), AIC</h3>
+    <p>The <strong>deviance</strong> is twice the log-likelihood gap to the saturated model; for binary data the saturated log-likelihood is 0, so \(D = -2\ell(\hat{\boldsymbol\beta})\). Nested models are compared by the <strong>likelihood-ratio test</strong>: \(D_0 - D_1 = 2(\ell_1 - \ell_0) \sim \chi^2_{k_1 - k_0}\) under the smaller model. With ungrouped binary data the residual deviance itself is <em>not</em> a goodness-of-fit statistic (it does not follow a \(\chi^2\) distribution); it is only useful for comparisons. The <strong>null deviance</strong> \(D_{\text{null}}\) comes from the intercept-only model, \(\hat p = \bar y\), and <strong>McFadden's pseudo-\(R^2\)</strong> is \(1 - \ell_1/\ell_0 = 1 - D_1/D_{\text{null}}\); values of 0.2–0.4 are considered excellent, so do not read it as an OLS \(R^2\). Tjur's \(R^2\), the mean \(\hat p\) among ones minus the mean among zeros, is a more intuitive alternative. For non-nested comparison use \(\mathrm{AIC} = D + 2k\). Wald tests (\(\hat\beta/\mathrm{SE}\)) are quicker than LRTs but misbehave near separation, where the SE explodes and the Wald statistic shrinks to zero even though the effect is huge (the Hauck–Donner effect).</p>
+
+    <h3>Residuals, assumptions and diagnostics</h3>
+    <p>Raw residuals \(y_i - \hat p_i\) are useless to plot: they form two bands. Use <strong>Pearson residuals</strong> \((y_i-\hat p_i)/\sqrt{\hat p_i(1-\hat p_i)}\), <strong>deviance residuals</strong> \(\operatorname{sign}(y_i-\hat p_i)\sqrt{d_i}\) with \(d_i = -2[y_i\log\hat p_i + (1-y_i)\log(1-\hat p_i)]\), <strong>binned residuals</strong> (average residual in bins of \(\hat p\) or of a covariate, with ±2 SE bands; Gelman &amp; Hill), or <strong>simulation-based quantile residuals</strong> as in the DHARMa package (Hartig 2022 [17]): simulate new \(y\) from the fitted model many times, find where each observation falls in its simulated distribution, and plot the resulting quantiles, which should be uniform for a correctly specified model and which work equally well for binomial, Poisson and mixed models. The assumptions are: independent observations given covariates (violated by spatial clustering, repeated plots, nested designs; fix with mixed models or GEE); correct link and <strong>linearity in the logit</strong> (check with partial residuals, splines or a Box–Tidwell test; fix with polynomials or a GAM, \(\operatorname{logit}p = \beta_0 + f_1(x_1) + f_2(x_2)\)); no influential points (Cook's distance, leverage from the IRLS hat matrix); no severe multicollinearity (variance inflation factors; inflates SEs and makes odds ratios uninterpretable one at a time). Interactions are included as products on the logit scale, and their odds ratios are ratios of odds ratios; on the probability scale an additive logit already implies interaction, so test interactions on the scale on which the model is linear.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · Threshold, confusion matrix, ROC and calibration for the Lab 2 model</h3><span class="small muted">Hover the ROC curve to read the threshold</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="l3Svg" viewBox="0 0 640 330" role="img" aria-label="ROC curve of true positive rate against false positive rate with the current threshold marked, next to a reliability diagram"></svg>
+            <div class="chart-tip" id="l3Tip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">ROC curve</span><span style="--c:var(--accent)">current threshold</span><span style="--c:var(--series-3)">reliability (10 bins)</span><span style="--c:var(--muted)">chance / perfect calibration</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="l3Table"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="l3T"><span>Threshold t</span><output id="l3TO">0.50</output></label><input type="range" id="l3T" min="0.02" max="0.98" step="0.01" value="0.5"></div>
+          <div class="ctrl"><label for="l3Cost"><span>Cost ratio c<sub>FN</sub> / c<sub>FP</sub></span><output id="l3CostO">1</output></label><input type="range" id="l3Cost" min="0.2" max="10" step="0.1" value="1"></div>
+          <table class="cm" aria-label="Confusion matrix">
+            <thead><tr><th></th><th>pred. died</th><th>pred. survived</th></tr></thead>
+            <tbody>
+              <tr><th>died</th><td class="n tp" id="cmTP">0</td><td class="n fn" id="cmFN">0</td></tr>
+              <tr><th>survived</th><td class="n fp" id="cmFP">0</td><td class="n tn" id="cmTN">0</td></tr>
+            </tbody>
+          </table>
+          <dl class="readout">
+            <dt>Accuracy</dt><dd id="l3Acc"></dd>
+            <dt>Precision · Recall</dt><dd id="l3PR"></dd>
+            <dt>Specificity · F₁</dt><dd id="l3SF"></dd>
+            <dt>TSS (sens + spec − 1)</dt><dd id="l3TSS"></dd>
+            <dt>AUC (concordance)</dt><dd id="l3AUC"></dd>
+            <dt>Brier · log-loss</dt><dd id="l3Brier"></dd>
+            <dt>Cost-optimal t* = c<sub>FP</sub>/(c<sub>FP</sub>+c<sub>FN</sub>)</dt><dd id="l3Tstar"></dd>
+            <dt>Expected cost at t (units of c<sub>FP</sub>)</dt><dd id="l3ExpCost"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Evaluated on the training data of Lab 2 (so the calibration is flattering; held-out data would show a slope below 1). Suggested experiments: drag t to 0.5 and then to the cost-optimal value for a cost ratio of 5; watch recall rise and precision fall. Set λ high in Lab 2 and come back: the AUC barely moves (ranking is preserved) but the reliability diagram collapses toward the prevalence, and the Brier score worsens. Turn on quadratic features and compare AUC and log-loss.</p>
+    </div>
+  </section>
+
+  <section id="interpretation">
+    <h2>Geometry, neural-network view and comparisons</h2>
+    <p><strong>The decision boundary is linear.</strong> Predicting the class with \(p \ge 0.5\) is predicting 1 when \(\mathbf{x}^\top\boldsymbol\beta \ge 0\): a hyperplane in feature space, with \(\boldsymbol\beta\) its normal vector and \(|\mathbf{x}^\top\boldsymbol\beta|/\|\boldsymbol\beta\|\) the distance from it. Curved boundaries come only from engineered features (polynomials, splines, interactions) or from nonlinear models. Changing the threshold shifts the hyperplane parallel to itself. <strong>Logistic regression is a one-layer neural network</strong>: a single unit with sigmoid activation trained with cross-entropy and (stochastic) gradient descent is exactly this model, and softmax regression is the output layer of every classification network; what deep networks add is a learned nonlinear feature map in front of it. The <a href="gradient-descent.html">backpropagation gradient</a> of that final layer is \((\hat p - y)\,\mathbf{h}\), with \(\mathbf{h}\) the hidden features, the same "observed minus expected" as above.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 4 · Odds-ratio interpreter</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="figwrap"><svg class="ch" id="l4Svg" viewBox="0 0 640 300" role="img" aria-label="New probability after a change in log-odds plotted against the baseline probability"></svg></div>
+          <div class="legend"><span style="--c:var(--fg)">p₁ = σ(logit p₀ + β)</span><span style="--c:var(--muted)">no change (p₁ = p₀)</span><span style="--c:var(--accent)">your baseline p₀</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="l4b"><span>Coefficient β (per unit change)</span><output id="l4bO">0.7</output></label><input type="range" id="l4b" min="-3" max="3" step="0.05" value="0.7"></div>
+          <div class="ctrl"><label for="l4p"><span>Baseline probability p₀</span><output id="l4pO">0.10</output></label><input type="range" id="l4p" min="0.01" max="0.99" step="0.01" value="0.1"></div>
+          <dl class="readout">
+            <dt>Baseline odds p₀/(1−p₀)</dt><dd id="l4odds0"></dd>
+            <dt>Odds ratio e^β</dt><dd id="l4OR"></dd>
+            <dt>New odds</dt><dd id="l4odds1"></dd>
+            <dt>New probability p₁</dt><dd id="l4p1"></dd>
+            <dt>Absolute change p₁ − p₀</dt><dd id="l4dp"></dd>
+            <dt>Relative risk p₁/p₀</dt><dd id="l4RR"></dd>
+            <dt>Marginal effect β p₀(1−p₀)</dt><dd id="l4me"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: with β = 0.7 (odds ratio 2), compare the probability change at p₀ = 0.02, 0.5 and 0.95; the same odds ratio means very different risk differences. Notice that the relative risk approaches the odds ratio only when p₀ is small, which is why odds ratios for common outcomes are routinely over-interpreted as relative risks. Compare the exact change with the linear marginal-effect approximation.</p>
+    </div>
+
+    <h3>Comparison with other classifiers</h3>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Method</th><th>What it fits</th><th>Boundary</th><th>Strengths</th><th>Weaknesses</th></tr></thead>
+      <tbody>
+        <tr><td>Logistic regression</td><td>P(y | x) directly (discriminative)</td><td>Linear in features</td><td>Calibrated probabilities, interpretable odds ratios, inference, few parameters</td><td>Linear logit unless engineered; separation; cannot find interactions on its own</td></tr>
+        <tr><td>LDA</td><td>P(x | y) Gaussian with shared covariance, then Bayes (generative)</td><td>Linear (same functional form as logistic)</td><td>More efficient if Gaussian assumption holds; stable with small n</td><td>Sensitive to non-Gaussian x, outliers; logistic is more robust (Efron 1975: ~30% efficiency loss for logistic when LDA is right)</td></tr>
+        <tr><td>Decision tree</td><td>Piecewise-constant p by recursive partitioning</td><td>Axis-aligned rectangles</td><td>Interactions and thresholds automatically; no link assumption</td><td>High variance, poorly calibrated, step predictions</td></tr>
+        <tr><td>Random forest / boosting</td><td>Ensemble of trees</td><td>Flexible</td><td>Best off-the-shelf discrimination; handles many predictors</td><td>Black box; RF probabilities tend toward 0.5 (need recalibration); no extrapolation</td></tr>
+        <tr><td>SVM</td><td>Maximum-margin hyperplane (hinge loss)</td><td>Linear or kernel</td><td>Strong with high-dimensional features; sparse solution</td><td>No probabilities without Platt scaling (which is itself a logistic fit on the scores)</td></tr>
+        <tr><td>GAM (logistic)</td><td>Additive smooth functions on the logit</td><td>Smooth, additive</td><td>Nonlinear responses with interpretability; the standard for SDMs</td><td>Interactions must be specified; smoothing parameters to choose</td></tr>
+      </tbody></table></div>
+    <p>The hinge loss \(\max(0, 1 - y^{\pm}\eta)\) of the SVM and the logistic loss \(\log(1+e^{-y^{\pm}\eta})\) (with \(y^{\pm} \in \{-1,+1\}\)) are both convex surrogates for the 0–1 loss and give similar boundaries; the logistic loss is smooth and yields probabilities, the hinge is sparse. See the <a href="closed-form-convex-loss.html">convex-loss page</a>.</p>
+  </section>
+
+  <section id="ecology">
+    <h2>Ecological applications</h2>
+    <p><strong>Species distribution models.</strong> Presence/absence surveys against climate, soil and topography are the canonical use (Guisan &amp; Zimmermann 2000 [16]; Elith &amp; Leathwick 2009 [14]), usually as a logistic GAM or GLM with quadratic terms so that responses can be unimodal in temperature. Presence-only data (herbarium records, GBIF) have no zeros; <strong>MaxEnt</strong> (Phillips et al. 2006 [15]) fits them by contrasting presences with background points. Renner &amp; Warton (2013 [6]) showed that MaxEnt is equivalent to an inhomogeneous <strong>Poisson point process</strong> model, and that logistic regression of presences against background points estimates the same slope coefficients up to an intercept that depends on the number of background points; the intercept, and hence absolute probabilities, are not identifiable from presence-only data. That is why MaxEnt's "suitability" output should not be read as a probability of presence.</p>
+    <p><strong>Tree mortality.</strong> Annual mortality of individual trees in inventory plots is modelled as \(\operatorname{logit}p = \beta_0 + \beta_1\,\text{DBH} + \beta_2\,\text{growth} + \beta_3\,\text{drought index} + \dots\), often with a cloglog link and an offset of log census interval so that unequal intervals are handled consistently. The <a href="decision-trees-random-forest.html">random-forest page</a> compares this with tree-based mortality models. <strong>Germination and phenology thresholds</strong>: the probability that a seed has germinated, or a bud has burst, by thermal time \(x\) is a sigmoid in \(x\); the logistic fit gives the median threshold \(-\beta_0/\beta_1\) and the spread \(1/\beta_1\), a dose–response problem (the context in which Berkson [2] introduced the logit in 1944). <strong>Fire occurrence</strong>: ignition probability per cell per day vs fuel moisture, wind, lightning and human access, with heavy class imbalance (most cells never burn), where case–control sampling of non-fire days with an intercept correction \(\beta_0 + \log(\pi_1/\pi_0)\) is standard. <strong>Land-cover classification</strong>: multinomial logistic regression on spectral bands and indices is the baseline against which random forests and neural networks are compared; it loses on accuracy but gives calibrated class probabilities.</p>
+    <p><strong>Sample size.</strong> The rule of thumb from Peduzzi et al. (1996 [12]) is at least 10 <em>events</em> (observations in the rarer class) per candidate predictor; with fewer, coefficients are biased away from zero, confidence intervals are unreliable and separation becomes likely. Thirty dead trees support about three predictors, not thirty. Later work (van Smeden et al. 2016) argues the rule is crude and depends on prevalence and effect size, but it remains the examiner's expected answer.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Mortality in vegetation demographic models.</strong> ED2, FATES and LPJ-GUESS use annual mortality probabilities that are logistic functions of carbon starvation, hydraulic stress or growth efficiency; the empirical logistic fits from inventories are what these functions are calibrated against, and the cloglog/hazard view links an annual probability to the daily time step.</li>
+      <li><strong>Phenology and fire modules.</strong> Budburst and leaf-fall probabilities in CLM and ORCHIDEE, and ignition probability in SPITFIRE, are sigmoid functions of accumulated temperature or fuel moisture: logistic regressions with a mechanistic story attached.</li>
+      <li><strong>Statistical vs process SDMs.</strong> A logistic SDM predicts occurrence from climate; a process model predicts it from carbon balance. Both are compared on AUC and calibration, and hybrid approaches use process-model outputs (GPP, water stress) as covariates in the logistic model.</li>
+      <li><strong>Emulation and classification of model behaviour.</strong> Logistic regression on parameter samples classifies which combinations make a model crash, exceed a threshold or switch state (forest to grassland), giving an interpretable sensitivity analysis of a binary outcome.</li>
+      <li><strong>Remote-sensing products that feed models.</strong> Land-cover maps, burned-area masks and disturbance flags are classifier outputs; their per-pixel probabilities, where provided, propagate uncertainty into model forcing.</li>
+      <li><strong>Likelihood for binary observations in model–data fusion.</strong> When assimilating presence/absence or alive/dead observations into a process model, the Bernoulli log-likelihood of this page is the data-model term in the Bayesian calibration, with the process model providing \(p\).</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Expression / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Sigmoid and its derivative</td><td class="num">σ(z) = 1/(1+e⁻ᶻ); σ′ = σ(1−σ) ≤ 1/4</td><td>Max slope at z = 0</td></tr>
+        <tr><td>Log-likelihood</td><td class="num">Σ[yᵢηᵢ − log(1+e^ηᵢ)]</td><td>Concave; −ℓ/n is log-loss</td></tr>
+        <tr><td>Gradient · Hessian</td><td class="num">Xᵀ(y − p) · −XᵀWX, W = diag(p(1−p))</td><td>Unique MLE unless separation</td></tr>
+        <tr><td>IRLS working response</td><td class="num">zᵢ = ηᵢ + (yᵢ − pᵢ)/[pᵢ(1−pᵢ)]</td><td>Weighted LS of z on X each step; 4–8 iterations</td></tr>
+        <tr><td>Odds ratio per unit xⱼ</td><td class="num">e^βⱼ</td><td>Constant; probability change is not</td></tr>
+        <tr><td>Marginal effect</td><td class="num">βⱼ p(1−p); ≈ βⱼ/4 at p = 0.5</td><td>"Divide by four" rule</td></tr>
+        <tr><td>Decision boundary (1-D)</td><td class="num">x* = −β₀/β₁</td><td>Hyperplane xᵀβ = 0 in general</td></tr>
+        <tr><td>Probit vs logit slopes</td><td class="num">β_logit ≈ 1.6–1.8 β_probit</td><td>Fitted probabilities nearly identical</td></tr>
+        <tr><td>Cost-optimal threshold</td><td class="num">t* = c_FP/(c_FP + c_FN)</td><td>t = 0.5 only if costs are equal</td></tr>
+        <tr><td>AUC</td><td class="num">Pr(p̂₁ &gt; p̂₀); 0.5 chance, 0.7/0.8/0.9 fair/good/excellent</td><td>Mann–Whitney U/(n₀n₁)</td></tr>
+        <tr><td>Brier score</td><td class="num">mean (p̂ − y)²; baseline ȳ(1−ȳ)</td><td>Strictly proper; 0.25 for p̂ = 0.5 always</td></tr>
+        <tr><td>Deviance · LRT · AIC</td><td class="num">D = −2ℓ̂; D₀ − D₁ ~ χ²_Δk; AIC = D + 2k</td><td>Residual deviance is not a GOF test for binary data</td></tr>
+        <tr><td>McFadden R²</td><td class="num">1 − ℓ₁/ℓ₀; 0.2–0.4 is "excellent"</td><td>Not comparable to OLS R²</td></tr>
+        <tr><td>Events per variable</td><td class="num">≥ 10</td><td>Peduzzi et al. 1996 [12]</td></tr>
+        <tr><td>Ridge as MAP</td><td class="num">λ‖β‖² ⇔ β ~ N(0, 1/(2λ))</td><td>L1 ⇔ Laplace prior</td></tr>
+        <tr><td>Softmax gradient</td><td class="num">∂ℓ/∂η_j = y_j − p_j</td><td>Same form as binary case</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Starting from the Bernoulli likelihood, derive the gradient and Hessian of the logistic log-likelihood and show the MLE is unique when it exists. Why is there no closed-form solution?</summary><div class="a"><p>With \(p_i = \sigma(\mathbf{x}_i^\top\boldsymbol\beta)\), \(\ell = \sum[y_i\log p_i + (1-y_i)\log(1-p_i)] = \sum[y_i\eta_i - \log(1+e^{\eta_i})]\) because \(\log(p/(1-p)) = \eta\) and \(\log(1-p) = -\log(1+e^\eta)\). Chain rule: \(\partial\ell/\partial\boldsymbol\beta = \sum(y_i - \sigma(\eta_i))\mathbf{x}_i = \mathbf{X}^\top(\mathbf{y}-\mathbf{p})\), using \(d\log(1+e^\eta)/d\eta = \sigma(\eta)\). Differentiating once more with \(\partial\sigma(\eta_i)/\partial\boldsymbol\beta = \sigma(1-\sigma)\mathbf{x}_i\) gives \(\mathbf{H} = -\sum p_i(1-p_i)\mathbf{x}_i\mathbf{x}_i^\top = -\mathbf{X}^\top\mathbf{W}\mathbf{X}\). For any \(\mathbf{v} \ne 0\), \(\mathbf{v}^\top\mathbf{X}^\top\mathbf{W}\mathbf{X}\mathbf{v} = \sum p_i(1-p_i)(\mathbf{x}_i^\top\mathbf{v})^2 > 0\) if \(\mathbf{X}\) has full column rank, so \(\mathbf{H}\) is negative definite everywhere, \(\ell\) is strictly concave, and a stationary point is the unique global maximum. Setting the gradient to zero, \(\sum(y_i - \sigma(\mathbf{x}_i^\top\boldsymbol\beta))\mathbf{x}_i = 0\), is a system of nonlinear equations in \(\boldsymbol\beta\) because \(\sigma\) is nonlinear; in OLS the analogous equations \(\mathbf{X}^\top(\mathbf{y}-\mathbf{X}\boldsymbol\beta) = 0\) are linear and solvable. The maximum may fail to exist (separation), in which case the likelihood increases monotonically along a direction and the estimates diverge.</p></div></details>
+    <details class="q"><summary>2. Show that Newton–Raphson for logistic regression is an iteratively reweighted least-squares algorithm, and define the working response.</summary><div class="a"><p>Newton: \(\boldsymbol\beta^{+} = \boldsymbol\beta - \mathbf{H}^{-1}\nabla\ell = \boldsymbol\beta + (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top(\mathbf{y}-\mathbf{p})\). Write \(\boldsymbol\beta = (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}\mathbf{X}\boldsymbol\beta\) and \(\mathbf{y}-\mathbf{p} = \mathbf{W}\mathbf{W}^{-1}(\mathbf{y}-\mathbf{p})\); factor: \(\boldsymbol\beta^{+} = (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}[\mathbf{X}\boldsymbol\beta + \mathbf{W}^{-1}(\mathbf{y}-\mathbf{p})] = (\mathbf{X}^\top\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{W}\mathbf{z}\). This is the weighted least-squares estimator for regressing the working response \(z_i = \eta_i + (y_i-p_i)/[p_i(1-p_i)]\) on \(\mathbf{X}\) with weights \(w_i = p_i(1-p_i)\). Interpretation: \(z_i\) is the first-order Taylor expansion of the link applied to \(y_i\) around \(p_i\), \(g(y_i) \approx g(p_i) + g'(p_i)(y_i-p_i)\) with \(g' = 1/[p(1-p)]\), so each step linearises the model and solves the resulting weighted linear regression. Weights and working response are recomputed from the new \(\boldsymbol\beta\) and the process repeats until the deviance changes by less than a tolerance; convergence is quadratic. For the canonical link observed and expected information coincide, so this is also Fisher scoring. Starting values \(\boldsymbol\beta = 0\) (so \(p_i = 0.5\), \(w_i = 0.25\), \(z_i = 4(y_i - 0.5)\)) work for logistic regression.</p></div></details>
+    <details class="q"><summary>3. A mortality model gives β = 0.9 for a drought index (per unit). Interpret it on the odds and probability scales for a tree with baseline mortality 2% and one with 40%. Why do ecologists misreport odds ratios as relative risks?</summary><div class="a"><p>Odds ratio \(e^{0.9} \approx 2.46\): a one-unit increase in the index multiplies the odds of dying by 2.46 regardless of other covariates. At 2% baseline the odds are 0.0204; new odds 0.0502; new probability \(0.0502/1.0502 = 4.8\%\), a 2.8-percentage-point increase (relative risk 2.4, close to the OR). At 40% baseline the odds are 0.667; new odds 1.64; new probability 62%, a 22-point increase but a relative risk of only 1.55. The marginal-effect approximation \(\beta p(1-p)\) gives 0.018 and 0.216, reasonable for small changes. Odds ratios approximate relative risks only when the outcome is rare (\(p \lesssim 0.1\)); for common outcomes the OR is always further from 1 than the RR, so reading "OR = 2.5" as "2.5 times as likely to die" overstates the effect when mortality is high. Odds ratios should be reported with \(\exp(\hat\beta \pm 1.96\,\mathrm{SE})\) intervals, and predicted probabilities at representative covariate values should accompany them.</p></div></details>
+    <details class="q"><summary>4. Only 3% of trees in your inventory died. Your logistic model is 97% accurate. Is it good? What would you report instead and how would you choose a threshold?</summary><div class="a"><p>Not necessarily: predicting "alive" for every tree also gives 97% accuracy. Accuracy is dominated by the majority class. Report threshold-free measures: AUC (probability a dead tree is ranked above a live one), ideally with the precision–recall curve because the rare positives are what matter; and calibration (reliability diagram, Brier score relative to the baseline \(\bar y(1-\bar y) = 0.029\), log-loss). For a decision, state the costs. If missing a tree that will die is 5 times as costly as a false alarm, the Bayes-optimal threshold is \(t^* = c_{FP}/(c_{FP}+c_{FN}) = 1/6 \approx 0.17\), far below 0.5; at 0.5 almost no tree would be predicted to die and recall would be near zero. Then report sensitivity, specificity, precision and \(F_1\) (or TSS) at that threshold, and the confusion matrix. Also check events per variable: 3% of, say, 1,000 trees is 30 deaths, which supports about three predictors; use penalisation or Firth's correction otherwise. Evaluate on held-out plots (spatial blocking), not on the training trees.</p></div></details>
+    <details class="q"><summary>5. What is complete separation, why does it break maximum likelihood, and how does Firth's method or ridge regularisation fix it?</summary><div class="a"><p>Complete separation: there exists \(\boldsymbol\beta^*\) with \(\mathbf{x}_i^\top\boldsymbol\beta^* > 0\) for all \(y_i = 1\) and \(< 0\) for all \(y_i = 0\). Then along \(c\boldsymbol\beta^*\), as \(c \to \infty\), every \(p_i \to y_i\) and \(\ell \to 0\), its supremum; the likelihood has no maximum, estimates diverge, and Wald SEs become infinite. Quasi-complete separation (some points on the boundary) gives the same failure for a subset of coefficients. It arises from small samples, many predictors, categorical predictors with empty cells, or genuinely deterministic thresholds. Firth's penalised likelihood adds \(\tfrac12\log\det(\mathbf{X}^\top\mathbf{W}\mathbf{X})\) (the Jeffreys prior). As \(\|\boldsymbol\beta\| \to \infty\) the weights \(p_i(1-p_i) \to 0\) and the penalty \(\to -\infty\) faster than \(\ell\) approaches 0, so a finite maximiser always exists; the correction also removes the \(O(1/n)\) bias of the MLE. Ridge adds \(-\lambda\|\boldsymbol\beta\|^2\), which likewise dominates at large \(\|\boldsymbol\beta\|\) and makes the Hessian \(-\mathbf{X}^\top\mathbf{W}\mathbf{X} - 2\lambda\mathbf{I}\) strictly negative definite, guaranteeing a unique finite solution, equivalent to a Gaussian prior. Both shrink toward zero; neither recovers an "effect size" for a deterministic rule, which should be reported as such.</p></div></details>
+    <details class="q"><summary>6. Derive the gradient of the softmax cross-entropy loss with respect to the linear predictors, and explain why logistic regression is a one-layer neural network.</summary><div class="a"><p>With \(p_k = e^{\eta_k}/\sum_j e^{\eta_j}\), \(\partial p_k/\partial\eta_j = p_k(\delta_{kj} - p_j)\) (differentiate the quotient: for \(k = j\) get \(p_k - p_k^2\); for \(k \ne j\) get \(-p_kp_j\)). The per-observation loss is \(L = -\sum_k y_k\log p_k\), so \(\partial L/\partial\eta_j = -\sum_k (y_k/p_k)\,p_k(\delta_{kj}-p_j) = -y_j + p_j\sum_k y_k = p_j - y_j\) since the one-hot \(y\) sums to 1. Summed over observations and chained through \(\eta_j = \mathbf{x}^\top\boldsymbol\beta_j\), \(\nabla_{\boldsymbol\beta_j}L = \mathbf{X}^\top(\mathbf{p}_j - \mathbf{y}_j)\). For \(K = 2\) with \(\boldsymbol\beta_2 = 0\) this collapses to the binary gradient \(\mathbf{X}^\top(\mathbf{p}-\mathbf{y})\). A neural network's output unit computes \(\sigma(\mathbf{w}^\top\mathbf{h} + b)\) and is trained by gradient descent on cross-entropy; with \(\mathbf{h} = \mathbf{x}\) (no hidden layer) that is exactly logistic regression, and the backpropagated error at the output is \(\hat p - y\). The deep network differs only in learning \(\mathbf{h}\) as a nonlinear function of \(\mathbf{x}\); the final layer is still a (multinomial) logistic regression on learned features. Consequences: the loss surface of the one-layer model is convex, deep models' are not; and the final-layer probabilities of a network are only as calibrated as those of a logistic regression trained on its features.</p></div></details>
+    <details class="q"><summary>7. Explain the relationship between MaxEnt, Poisson point-process models and logistic regression for presence-only species data. What can and cannot be estimated?</summary><div class="a"><p>Presence-only data are locations where a species was recorded, with no absences. MaxEnt models the distribution of presence locations over the landscape as the Gibbs distribution \(\pi(\mathbf{x}) \propto \exp(\mathbf{x}^\top\boldsymbol\beta)\) that maximises entropy subject to matching feature means at presences. Renner &amp; Warton (2013) showed this is the same likelihood as an inhomogeneous Poisson point process with intensity \(\lambda(s) = \exp(\beta_0 + \mathbf{x}(s)^\top\boldsymbol\beta)\), and that logistic regression of presences (1) against background points (0) with enough background points estimates the same slopes \(\boldsymbol\beta\), with an intercept that shifts by \(\log(n_{\text{bg}}/|A|)\). The slopes, and therefore relative suitability and the shape of the response curves, are estimable; the intercept, and therefore absolute probability of presence or expected abundance, is not, because the sampling intensity of presences is unknown. MaxEnt's "logistic output" fixes the intercept by assuming prevalence 0.5 at typical sites, an arbitrary choice. Practical implications: evaluate presence-only models by ranking (AUC against background, which is inflated), state that outputs are relative, and account for sampling bias in presences (target-group background), which the point-process view makes explicit as a thinning of the intensity.</p></div></details>
+    <details class="q"><summary>8. Compare logistic regression with LDA and with a random forest for classifying land cover from two spectral bands. When would each be preferred?</summary><div class="a"><p>Logistic regression models \(P(y\mid\mathbf{x})\) directly with a linear logit; LDA models \(P(\mathbf{x}\mid y)\) as Gaussian with a common covariance and applies Bayes' rule, which yields a posterior of exactly logistic-linear form, so the two have the same boundary family. LDA is more statistically efficient when its Gaussian assumption is true (Efron: logistic loses roughly 30% efficiency), but spectral reflectance within a class is skewed and multimodal, so LDA's assumption fails and logistic regression is more robust; LDA is also pulled by outliers. Both give linear (or quadratic, with QDA or engineered features) boundaries and calibrated probabilities. A random forest partitions the band space into many axis-aligned rectangles, captures interactions and thresholds automatically, usually wins on accuracy for remote-sensing classification, and handles dozens of bands and indices without feature engineering. Its probabilities (vote fractions) are compressed toward the middle and need recalibration, it is a black box relative to odds ratios, and it cannot extrapolate beyond the training spectra. Prefer logistic/multinomial regression when the goal is inference about how reflectance relates to class, when training data are few (10 events per variable), or when calibrated probabilities feed a downstream model; prefer the forest when prediction accuracy is paramount, predictors are many, and the training sample covers the prediction domain.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Cox DR (1958). The regression analysis of binary sequences. <em>Journal of the Royal Statistical Society B</em> 20: 215–242. <span class="why">The paper that established logistic regression as a general method for binary responses.</span></li>
+      <li>Berkson J (1944). Application of the logistic function to bio-assay. <em>Journal of the American Statistical Association</em> 39: 357–365. <span class="why">Introduced the term "logit" in a dose–response setting, the ancestor of germination and phenology threshold models.</span></li>
+      <li>McCullagh P, Nelder JA (1989). <em>Generalized Linear Models</em>, 2nd ed. Chapman &amp; Hall, London. <span class="why">The GLM framework: exponential family, canonical links, IRLS, deviance. Chapter 4 is binary data.</span></li>
+      <li>Hosmer DW, Lemeshow S, Sturdivant RX (2013). <em>Applied Logistic Regression</em>, 3rd ed. Wiley, Hoboken. <span class="why">The applied reference for interpretation, diagnostics, goodness of fit and model building.</span></li>
+      <li>Agresti A (2013). <em>Categorical Data Analysis</em>, 3rd ed. Wiley, Hoboken. <span class="why">Rigorous treatment of logistic, probit and multinomial models, inference and separation.</span></li>
+      <li>Renner IW, Warton DI (2013). Equivalence of MAXENT and Poisson point process models for species distribution modeling in ecology. <em>Biometrics</em> 69: 274–281. <a href="https://doi.org/10.1111/j.1541-0420.2012.01824.x">doi:10.1111/j.1541-0420.2012.01824.x</a><span class="why">Why MaxEnt, point processes and logistic regression on background points estimate the same slopes, and why the intercept is not identifiable.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer, New York. Chapter 4. <span class="why">Logistic regression vs LDA, the IRLS derivation, L1-regularised logistic regression and separable data.</span></li>
+      <li>Firth D (1993). Bias reduction of maximum likelihood estimates. <em>Biometrika</em> 80: 27–38. <a href="https://doi.org/10.1093/biomet/80.1.27">doi:10.1093/biomet/80.1.27</a><span class="why">The Jeffreys-prior penalised likelihood that removes first-order bias and cures separation.</span></li>
+      <li>Albert A, Anderson JA (1984). On the existence of maximum likelihood estimates in logistic regression models. <em>Biometrika</em> 71: 1–10. <a href="https://doi.org/10.1093/biomet/71.1.1">doi:10.1093/biomet/71.1.1</a><span class="why">Formal definitions of complete, quasi-complete separation and overlap, and when the MLE exists.</span></li>
+      <li>Bishop CM (2006). <em>Pattern Recognition and Machine Learning</em>. Springer, New York. Chapter 4. <span class="why">Probabilistic discriminative models, softmax, the cross-entropy gradient and the Bayesian (MAP) view of regularisation.</span></li>
+      <li>Hanley JA, McNeil BJ (1982). The meaning and use of the area under a receiver operating characteristic (ROC) curve. <em>Radiology</em> 143: 29–36. <a href="https://doi.org/10.1148/radiology.143.1.7063747">doi:10.1148/radiology.143.1.7063747</a><span class="why">AUC as the probability of correctly ranking a random positive–negative pair, with its standard error.</span></li>
+      <li>Peduzzi P, Concato J, Kemper E, Holford TR, Feinstein AR (1996). A simulation study of the number of events per variable in logistic regression analysis. <em>Journal of Clinical Epidemiology</em> 49: 1373–1379. <a href="https://doi.org/10.1016/S0895-4356(96)00236-3">doi:10.1016/S0895-4356(96)00236-3</a><span class="why">Source of the 10-events-per-variable rule of thumb.</span></li>
+      <li>Fawcett T (2006). An introduction to ROC analysis. <em>Pattern Recognition Letters</em> 27: 861–874. <a href="https://doi.org/10.1016/j.patrec.2005.10.010">doi:10.1016/j.patrec.2005.10.010</a><span class="why">Clear tutorial on ROC curves, AUC computation, and their behaviour under imbalance and changing costs.</span></li>
+      <li>Elith J, Leathwick JR (2009). Species distribution models: ecological explanation and prediction across space and time. <em>Annual Review of Ecology, Evolution, and Systematics</em> 40: 677–697. <a href="https://doi.org/10.1146/annurev.ecolsys.110308.120159">doi:10.1146/annurev.ecolsys.110308.120159</a><span class="why">The SDM review: data types, model families (GLM, GAM, MaxEnt, BRT), evaluation and transferability.</span></li>
+      <li>Phillips SJ, Anderson RP, Schapire RE (2006). Maximum entropy modeling of species geographic distributions. <em>Ecological Modelling</em> 190: 231–259. <a href="https://doi.org/10.1016/j.ecolmodel.2005.03.026">doi:10.1016/j.ecolmodel.2005.03.026</a><span class="why">The MaxEnt paper; read alongside Renner &amp; Warton for the logistic/point-process interpretation.</span></li>
+      <li>Guisan A, Zimmermann NE (2000). Predictive habitat distribution models in ecology. <em>Ecological Modelling</em> 135: 147–186. <a href="https://doi.org/10.1016/S0304-3800(00)00354-9">doi:10.1016/S0304-3800(00)00354-9</a><span class="why">The classic framework for habitat models, with GLMs as the core method.</span></li>
+      <li>Hartig F (2022). DHARMa: residual diagnostics for hierarchical (multi-level/mixed) regression models. R package. <span class="why">Simulation-based quantile residuals that make binary-model diagnostics interpretable.</span></li>
+      <li>Steyerberg EW, Vickers AJ, Cook NR, et al. (2010). Assessing the performance of prediction models: a framework for traditional and novel measures. <em>Epidemiology</em> 21: 128–138. <a href="https://doi.org/10.1097/EDE.0b013e3181c30fb2">doi:10.1097/EDE.0b013e3181c30fb2</a><span class="why">Organises discrimination, calibration, overall (Brier, R²) and decision-analytic measures; the framework used in the evaluation section.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="bias-variance.html">← Previous: Bias–variance analysis</a><a href="newton-raphson.html">Next: The Newton–Raphson method →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#why">Why not OLS?</a></li>
+      <li><a href="#model">Likelihood, logit, odds, GLM</a></li>
+      <li><a href="#fitting">Fitting: Newton &amp; IRLS</a></li>
+      <li><a href="#regularisation">Regularisation &amp; softmax</a></li>
+      <li><a href="#evaluation">Evaluation</a></li>
+      <li><a href="#interpretation">Geometry &amp; comparisons</a></li>
+      <li><a href="#ecology">Ecological applications</a></li>
+      <li><a href="#connections">Ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas &amp; numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use seeded synthetic data (mulberry32) so every visit shows the same points. Models in the labs are fitted in the browser by Newton–Raphson / IRLS.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function sig(z) { return z >= 0 ? 1 / (1 + Math.exp(-z)) : Math.exp(z) / (1 + Math.exp(z)); }
+  function logit(p) { return Math.log(p / (1 - p)); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function clampP(p) { return Math.min(1 - 1e-12, Math.max(1e-12, p)); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id) { return document.getElementById(id); }
+
+  /* ---- small dense linear algebra ---- */
+  function solve(A, b) { // Gaussian elimination with partial pivoting; A is k x k array of arrays (copied)
+    var k = b.length, M = A.map(function (r, i) { return r.slice().concat([b[i]]); });
+    for (var c = 0; c < k; c++) {
+      var piv = c; for (var r = c + 1; r < k; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+      var tmp = M[c]; M[c] = M[piv]; M[piv] = tmp;
+      if (Math.abs(M[c][c]) < 1e-14) M[c][c] = 1e-14;
+      for (var r2 = 0; r2 < k; r2++) { if (r2 === c) continue; var f = M[r2][c] / M[c][c]; if (f === 0) continue; for (var j = c; j <= k; j++) M[r2][j] -= f * M[c][j]; }
+    }
+    return M.map(function (r, i) { return r[k] / r[i]; });
+  }
+  function inverse(A) { var k = A.length, inv = []; for (var j = 0; j < k; j++) { var e = []; for (var i = 0; i < k; i++) e.push(i === j ? 1 : 0); inv.push(solve(A, e)); } var out = []; for (var i2 = 0; i2 < k; i2++) { out.push([]); for (var j2 = 0; j2 < k; j2++) out[i2].push(inv[j2][i2]); } return out; }
+  function logLik(X, y, beta) { var s = 0; for (var i = 0; i < y.length; i++) { var eta = 0; for (var j = 0; j < beta.length; j++) eta += X[i][j] * beta[j]; s += y[i] * eta - (eta > 30 ? eta : Math.log(1 + Math.exp(eta))); } return s; }
+  function predict(X, beta) { return X.map(function (row) { var eta = 0; for (var j = 0; j < beta.length; j++) eta += row[j] * beta[j]; return sig(eta); }); }
+  // One Newton / IRLS step with ridge penalty lam on non-intercept terms, with step halving on the penalised objective
+  function newtonStep(X, y, beta, lam) {
+    var n = y.length, k = beta.length, p = predict(X, beta);
+    var g = new Array(k).fill(0), H = []; for (var a = 0; a < k; a++) { H.push(new Array(k).fill(0)); }
+    for (var i = 0; i < n; i++) { var w = p[i] * (1 - p[i]), r = y[i] - p[i]; for (var a2 = 0; a2 < k; a2++) { g[a2] += X[i][a2] * r; for (var b = 0; b < k; b++) H[a2][b] += w * X[i][a2] * X[i][b]; } }
+    for (var c = 1; c < k; c++) { g[c] -= 2 * lam * beta[c]; H[c][c] += 2 * lam; }
+    var delta = solve(H, g);
+    function obj(bt) { var pen = 0; for (var c2 = 1; c2 < k; c2++) pen += bt[c2] * bt[c2]; return logLik(X, y, bt) - lam * pen; }
+    var f0 = obj(beta), step = 1, nb;
+    for (var h = 0; h < 12; h++) { nb = beta.map(function (v, j) { return v + step * delta[j]; }); if (obj(nb) >= f0 - 1e-9) break; step /= 2; }
+    var maxd = 0; delta.forEach(function (d) { maxd = Math.max(maxd, Math.abs(step * d)); });
+    return { beta: nb, maxd: maxd, H: H };
+  }
+  function fitLogit(X, y, lam) { var beta = new Array(X[0].length).fill(0), it = 0, H = null; for (it = 1; it <= 40; it++) { var s = newtonStep(X, y, beta, lam); beta = s.beta; H = s.H; if (s.maxd < 1e-7) break; } return { beta: beta, iters: Math.min(it, 40), H: H }; }
+
+  /* ---- generic axes ---- */
+  function drawAxes(svg, box, xr, yr, xt, yt, xlab, ylab, fx, fy) {
+    var sx = function (x) { return box.l + (x - xr[0]) / (xr[1] - xr[0]) * box.w; };
+    var sy = function (y) { return box.t + (yr[1] - y) / (yr[1] - yr[0]) * box.h; };
+    yt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: box.l, x2: box.l + box.w, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: box.l - 7, y: sy(v) + 4, 'text-anchor': 'end' }, fy ? fy(v) : v)); });
+    xt.forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: box.t + box.h, y2: box.t + box.h + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: box.t + box.h + 17, 'text-anchor': 'middle' }, fx ? fx(v) : v)); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.l, x2: box.l + box.w, y1: box.t + box.h, y2: box.t + box.h }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.l, x2: box.l, y1: box.t, y2: box.t + box.h }));
+    if (xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: box.l + box.w / 2, y: box.t + box.h + 36, 'text-anchor': 'middle' }, xlab));
+    if (ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(' + (box.l - 42) + ',' + (box.t + box.h / 2) + ') rotate(-90)' }, ylab));
+    return { sx: sx, sy: sy };
+  }
+  function tipFollow(tip, svg, evt, html) {
+    var e = evt.touches ? evt.touches[0] : evt; var host = tip.parentNode.getBoundingClientRect();
+    tip.innerHTML = html; tip.hidden = false;
+    var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+    tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+  }
+  function svgPoint(svg, evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+
+  /* ================= Lab 1: 1-D fit ================= */
+  (function () {
+    var rng = mulberry32(20240601), n = 80, x = [], y = [], X = [];
+    for (var i = 0; i < n; i++) { var xi = 0.05 + 0.4 * rng(); var p = sig(-7.5 + 25 * xi); x.push(xi); y.push(rng() < p ? 1 : 0); X.push([1, xi]); }
+    var jit = []; for (var j = 0; j < n; j++) jit.push((rng() - 0.5) * 0.06);
+    var ybar = y.reduce(function (a, b) { return a + b; }, 0) / n;
+    var ll0 = logLik(X, y, [logit(ybar), 0]);
+    var ml = fitLogit(X, y, 0), cov = inverse(ml.H), se = [Math.sqrt(cov[0][0]), Math.sqrt(cov[1][1])];
+    var svg = $('l1Svg'), tip = $('l1Tip'), b0 = $('l1b0'), b1 = $('l1b1'), showML = $('l1ShowML');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 360 - 16 - 50 };
+    var anim = null;
+    function draw() {
+      var B0 = +b0.value, B1 = +b1.value; $('l1b0O').textContent = fmt(B0, 1); $('l1b1O').textContent = fmt(B1, 1);
+      clear(svg);
+      var s = drawAxes(svg, box, [0, 0.5], [-0.05, 1.05], [0, 0.1, 0.2, 0.3, 0.4, 0.5], [0, 0.25, 0.5, 0.75, 1], 'Volumetric soil water, θ (m³ m⁻³)', 'Survival probability p(θ)', function (v) { return fmt(v, 1); }, function (v) { return fmt(v, 2); });
+      svg.appendChild(el('line', { 'class': 'ref', x1: box.l, x2: box.l + box.w, y1: s.sy(0.5), y2: s.sy(0.5) }));
+      function curve(beta, cls, stroke) { var d = ''; for (var k = 0; k <= 100; k++) { var xx = k * 0.005; var pp = sig(beta[0] + beta[1] * xx); d += (k ? 'L' : 'M') + s.sx(xx).toFixed(1) + ',' + s.sy(pp).toFixed(1); } svg.appendChild(el('path', { 'class': 'ser ' + cls, d: d, stroke: stroke })); }
+      if (showML.checked) curve(ml.beta, '', 'var(--accent)');
+      curve([B0, B1], '', 'var(--fg)');
+      if (B1 !== 0) { var xs = -B0 / B1; if (xs > 0 && xs < 0.5) { svg.appendChild(el('line', { 'class': 'bnd', x1: s.sx(xs), x2: s.sx(xs), y1: box.t, y2: box.t + box.h })); svg.appendChild(el('text', { 'class': 'tick', x: s.sx(xs) + 5, y: box.t + 12 }, 'x* = ' + fmt(xs, 3))); } }
+      for (var i = 0; i < n; i++) svg.appendChild(el('circle', { 'class': y[i] ? 'pt1' : 'pt0', cx: s.sx(x[i]), cy: s.sy(y[i] + jit[i]), r: 4.5 }));
+      svg.appendChild(el('text', { 'class': 'dl', x: box.l + box.w - 4, y: s.sy(1) - 8, 'text-anchor': 'end', fill: 'var(--series-2)' }, 'survived'));
+      svg.appendChild(el('text', { 'class': 'dl', x: box.l + 6, y: s.sy(0) + 16, fill: 'var(--series-1)' }, 'died'));
+      // hover
+      var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.t, y2: box.t + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+      var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+      var hit = el('rect', { x: box.l, y: box.t, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+      function move(evt) { var p = svgPoint(svg, evt); var xx = Math.max(0, Math.min(0.5, (p.x - box.l) / box.w * 0.5)); var pc = sig(B0 + B1 * xx), pm = sig(ml.beta[0] + ml.beta[1] * xx); xh.setAttribute('x1', s.sx(xx)); xh.setAttribute('x2', s.sx(xx)); xh.setAttribute('visibility', 'visible'); dot.setAttribute('cx', s.sx(xx)); dot.setAttribute('cy', s.sy(pc)); dot.setAttribute('visibility', 'visible'); tipFollow(tip, svg, evt, 'θ <b>' + fmt(xx, 3) + '</b><br>current p <b>' + fmt(pc, 3) + '</b> · ML p <b>' + fmt(pm, 3) + '</b><br>odds <b>' + fmt(pc / (1 - pc), 2) + '</b>'); }
+      function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+      hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave); hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+      // readouts
+      var ll = logLik(X, y, [B0, B1]);
+      $('l1LL').textContent = fmt(ll, 2);
+      $('l1LLmax').textContent = fmt(logLik(X, y, ml.beta), 2);
+      $('l1Dev').textContent = fmt(-2 * ll0, 1) + ' · ' + fmt(-2 * logLik(X, y, ml.beta), 1);
+      $('l1R2').textContent = fmt(1 - logLik(X, y, ml.beta) / ll0, 3) + ' · ' + fmt(Math.max(-9.99, 1 - ll / ll0), 2);
+      $('l1X').textContent = B1 === 0 ? 'undefined' : fmt(-B0 / B1, 3);
+      $('l1OR').textContent = fmt(Math.exp(0.05 * B1), 2);
+      $('l1Slope').textContent = fmt(B1 / 4, 1);
+      $('l1ML').textContent = fmt(ml.beta[0], 2) + ' (' + fmt(se[0], 2) + '), ' + fmt(ml.beta[1], 1) + ' (' + fmt(se[1], 1) + ')';
+      var tb = $('l1Table'), html = '<thead><tr><th class="num">θ</th><th class="num">current p</th><th class="num">ML p</th><th class="num">ML odds</th><th class="num">n at θ±0.025</th><th class="num">observed survival</th></tr></thead><tbody>';
+      for (var t = 0.05; t <= 0.451; t += 0.05) { var cnt = 0, sur = 0; for (var q = 0; q < n; q++) if (Math.abs(x[q] - t) <= 0.025) { cnt++; sur += y[q]; } var pm2 = sig(ml.beta[0] + ml.beta[1] * t); html += '<tr><td class="num">' + fmt(t, 2) + '</td><td class="num">' + fmt(sig(B0 + B1 * t), 3) + '</td><td class="num">' + fmt(pm2, 3) + '</td><td class="num">' + fmt(pm2 / (1 - pm2), 2) + '</td><td class="num">' + cnt + '</td><td class="num">' + (cnt ? fmt(sur / cnt, 2) : '–') + '</td></tr>'; }
+      tb.innerHTML = html + '</tbody>';
+    }
+    function setSliders(beta) { b0.value = Math.max(+b0.min, Math.min(+b0.max, beta[0])); b1.value = Math.max(+b1.min, Math.min(+b1.max, beta[1])); }
+    [b0, b1, showML].forEach(function (c) { c.addEventListener('input', function () { if (anim) { clearTimeout(anim); anim = null; } $('l1Status').textContent = ''; draw(); }); });
+    $('l1Fit').addEventListener('click', function () {
+      if (anim) { clearTimeout(anim); anim = null; }
+      var beta = [+b0.value, +b1.value], it = 0;
+      if (reduced) { setSliders(ml.beta); $('l1Status').textContent = 'Jumped to the MLE (reduced motion).'; draw(); return; }
+      function step() {
+        it++; var s = newtonStep(X, y, beta, 0); beta = s.beta; setSliders(beta); draw();
+        $('l1Status').textContent = 'IRLS iteration ' + it + ': β = (' + fmt(beta[0], 2) + ', ' + fmt(beta[1], 1) + '), max |Δβ| = ' + s.maxd.toExponential(1) + ', ℓ = ' + fmt(logLik(X, y, beta), 2) + (s.maxd < 1e-5 ? ' — converged' : '');
+        if (s.maxd >= 1e-5 && it < 25) anim = setTimeout(step, 650); else anim = null;
+      }
+      step();
+    });
+    draw();
+  })();
+
+  /* ================= Lab 2: 2-D classifier (shared with Lab 3) ================= */
+  var L2 = { p: null, y: null, listeners: [] };
+  (function () {
+    var rng = mulberry32(77), n = 200, v = [], s = [], y = [];
+    for (var i = 0; i < n; i++) {
+      var vi = 0.5 + 3.5 * rng(), si = 0.05 + 0.35 * rng();
+      var dv = vi - 2.25, ds = si - 0.225;
+      var eta = -1.4 + 1.5 * dv - 13 * ds + 0.7 * dv * dv - 45 * ds * ds - 4 * dv * ds;
+      v.push(vi); s.push(si); y.push(rng() < sig(eta) ? 1 : 0);
+    }
+    function mean(a) { return a.reduce(function (p, q) { return p + q; }, 0) / a.length; }
+    function sd(a, m) { return Math.sqrt(a.reduce(function (p, q) { return p + (q - m) * (q - m); }, 0) / (a.length - 1)); }
+    var mv = mean(v), ms = mean(s), sv = sd(v, mv), ss = sd(s, ms);
+    function feats(vi, si, quad) { var z1 = (vi - mv) / sv, z2 = (si - ms) / ss; return quad ? [1, z1, z2, z1 * z1, z2 * z2, z1 * z2] : [1, z1, z2]; }
+    var svg = $('l2Svg'), lamS = $('l2Lam'), quadC = $('l2Quad'), shadeC = $('l2Shade');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 420 - 16 - 50 };
+    var xr = [0.5, 4], yr = [0.05, 0.4];
+    // marching squares for a level set on a grid of values g[ix][iy] at node coords
+    function contour(g, nx, ny, level, gx, gy) {
+      var segs = [];
+      function interp(a, b, va, vb) { var t = (level - va) / (vb - va); return [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]; }
+      for (var i = 0; i < nx; i++) for (var j = 0; j < ny; j++) {
+        var c = [[gx[i], gy[j]], [gx[i + 1], gy[j]], [gx[i + 1], gy[j + 1]], [gx[i], gy[j + 1]]];
+        var val = [g[i][j], g[i + 1][j], g[i + 1][j + 1], g[i][j + 1]];
+        var idx = (val[0] > level ? 1 : 0) | (val[1] > level ? 2 : 0) | (val[2] > level ? 4 : 0) | (val[3] > level ? 8 : 0);
+        if (idx === 0 || idx === 15) continue;
+        var pts = [];
+        var edges = [[0, 1], [1, 2], [2, 3], [3, 0]];
+        edges.forEach(function (e) { var a = e[0], b = e[1]; if ((val[a] > level) !== (val[b] > level)) pts.push(interp(c[a], c[b], val[a], val[b])); });
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+      return segs;
+    }
+    function draw() {
+      var lam = Math.pow(10, +lamS.value), quad = quadC.checked;
+      $('l2LamO').textContent = fmt(+lamS.value, 1).replace('-', '−');
+      var X = []; for (var i = 0; i < n; i++) X.push(feats(v[i], s[i], quad));
+      var fit = fitLogit(X, y, lam), beta = fit.beta, p = predict(X, beta);
+      clear(svg);
+      var sc = drawAxes(svg, box, xr, yr, [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4], [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4], 'Growing-season mean VPD (kPa)', 'Soil water, θ (m³ m⁻³)', function (q) { return fmt(q, 1); }, function (q) { return fmt(q, 2); });
+      // probability field
+      var nx = 56, ny = 40, gx = [], gy = [], g = [];
+      for (var a = 0; a <= nx; a++) gx.push(xr[0] + a / nx * (xr[1] - xr[0]));
+      for (var b = 0; b <= ny; b++) gy.push(yr[0] + b / ny * (yr[1] - yr[0]));
+      for (var a2 = 0; a2 <= nx; a2++) { g.push([]); for (var b2 = 0; b2 <= ny; b2++) { var f = feats(gx[a2], gy[b2], quad), eta = 0; for (var k = 0; k < beta.length; k++) eta += f[k] * beta[k]; g[a2].push(sig(eta)); } }
+      if (shadeC.checked) {
+        var grp = el('g', {}); var cw = box.w / nx, chh = box.h / ny;
+        for (var a3 = 0; a3 < nx; a3++) for (var b3 = 0; b3 < ny; b3++) { var pc = (g[a3][b3] + g[a3 + 1][b3] + g[a3][b3 + 1] + g[a3 + 1][b3 + 1]) / 4; var op = Math.abs(pc - 0.5) * 0.75; if (op < 0.02) continue; grp.appendChild(el('rect', { 'class': 'cell', x: sc.sx(gx[a3]), y: sc.sy(gy[b3 + 1]), width: cw + 0.5, height: chh + 0.5, fill: pc > 0.5 ? 'var(--series-2)' : 'var(--series-1)', opacity: op.toFixed(3) })); }
+        svg.appendChild(grp);
+      }
+      [0.1, 0.9, 0.5].forEach(function (lev) { var segs = contour(g, nx, ny, lev, gx, gy); var d = ''; segs.forEach(function (sg) { d += 'M' + sc.sx(sg[0][0]).toFixed(1) + ',' + sc.sy(sg[0][1]).toFixed(1) + 'L' + sc.sx(sg[1][0]).toFixed(1) + ',' + sc.sy(sg[1][1]).toFixed(1); }); if (d) svg.appendChild(el('path', { 'class': 'ctr' + (lev === 0.5 ? '' : ' faint'), d: d })); });
+      for (var i2 = 0; i2 < n; i2++) svg.appendChild(el('circle', { 'class': y[i2] ? 'pt1' : 'pt0', cx: sc.sx(v[i2]), cy: sc.sy(s[i2]), r: 4 }));
+      // readouts
+      var ll = 0, acc = 0, nrm = 0; for (var q = 0; q < n; q++) { var pp = clampP(p[q]); ll -= y[q] * Math.log(pp) + (1 - y[q]) * Math.log(1 - pp); if ((p[q] >= 0.5) === (y[q] === 1)) acc++; }
+      for (var c = 1; c < beta.length; c++) nrm += beta[c] * beta[c];
+      $('l2Coef').textContent = beta.map(function (bb) { return fmt(bb, 2); }).join(', ');
+      $('l2LL').textContent = fmt(ll / n, 4);
+      $('l2Acc').textContent = fmt(100 * acc / n, 1) + '%';
+      $('l2Norm').textContent = fmt(Math.sqrt(nrm), 3);
+      $('l2It').textContent = fit.iters;
+      $('l2OR').textContent = quad ? 'depends on VPD (quadratic)' : fmt(Math.exp(beta[1] / sv), 2);
+      $('l2Status').textContent = 'n = ' + n + ', died = ' + y.reduce(function (a4, b4) { return a4 + b4; }, 0) + ', λ = ' + lam.toPrecision(2) + ', k = ' + beta.length + ' parameters' + (quad ? ' (quadratic)' : ' (linear logit)');
+      L2.p = p; L2.y = y; L2.listeners.forEach(function (f2) { f2(); });
+    }
+    [lamS, quadC, shadeC].forEach(function (c) { c.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ================= Lab 3: threshold, ROC, calibration ================= */
+  (function () {
+    var svg = $('l3Svg'), tip = $('l3Tip'), tS = $('l3T'), cS = $('l3Cost');
+    var rocBox = { l: 50, t: 16, w: 250, h: 330 - 16 - 50 }, calBox = { l: 372, t: 16, w: 250, h: 330 - 16 - 50 };
+    var roc = null;
+    function buildRoc(p, y) {
+      var idx = p.map(function (_, i) { return i; }).sort(function (a, b) { return p[b] - p[a]; });
+      var n1 = 0, n0 = 0; y.forEach(function (v) { if (v) n1++; else n0++; });
+      var pts = [{ t: 1.01, tp: 0, fp: 0 }], tp = 0, fp = 0, auc = 0, lastFp = 0, lastTp = 0;
+      for (var k = 0; k < idx.length; k++) {
+        var i = idx[k]; if (y[i]) tp++; else fp++;
+        if (k === idx.length - 1 || p[idx[k + 1]] !== p[i]) { auc += (fp - lastFp) * (tp + lastTp) / 2; lastFp = fp; lastTp = tp; pts.push({ t: p[i], tp: tp, fp: fp }); }
+      }
+      return { pts: pts, n1: n1, n0: n0, auc: auc / (n0 * n1) };
+    }
+    function confusion(p, y, t) { var c = { tp: 0, fp: 0, fn: 0, tn: 0 }; for (var i = 0; i < p.length; i++) { var pr = p[i] >= t; if (pr && y[i]) c.tp++; else if (pr && !y[i]) c.fp++; else if (!pr && y[i]) c.fn++; else c.tn++; } return c; }
+    function draw() {
+      var p = L2.p, y = L2.y; if (!p) return;
+      var t = +tS.value, ratio = +cS.value, n = p.length;
+      $('l3TO').textContent = fmt(t, 2); $('l3CostO').textContent = fmt(ratio, 1);
+      roc = buildRoc(p, y);
+      clear(svg);
+      var sc = drawAxes(svg, rocBox, [0, 1], [0, 1], [0, 0.25, 0.5, 0.75, 1], [0, 0.25, 0.5, 0.75, 1], 'False positive rate (1 − specificity)', 'True positive rate (recall)', function (q) { return fmt(q, 2); }, function (q) { return fmt(q, 2); });
+      svg.appendChild(el('line', { 'class': 'ref', x1: sc.sx(0), y1: sc.sy(0), x2: sc.sx(1), y2: sc.sy(1) }));
+      var d = ''; roc.pts.forEach(function (q, i) { d += (i ? 'L' : 'M') + sc.sx(q.fp / roc.n0).toFixed(1) + ',' + sc.sy(q.tp / roc.n1).toFixed(1); });
+      svg.appendChild(el('path', { 'class': 'ser', d: d, stroke: 'var(--series-1)' }));
+      svg.appendChild(el('text', { 'class': 'dl', x: sc.sx(0.55), y: sc.sy(0.3), fill: 'var(--series-1)' }, 'AUC = ' + fmt(roc.auc, 3)));
+      var c = confusion(p, y, t);
+      svg.appendChild(el('circle', { cx: sc.sx(c.fp / roc.n0), cy: sc.sy(c.tp / roc.n1), r: 6, fill: 'var(--accent)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: sc.sx(c.fp / roc.n0) + 9, y: sc.sy(c.tp / roc.n1) + 4 }, 't = ' + fmt(t, 2)));
+      svg.appendChild(el('text', { 'class': 'dl', x: rocBox.l, y: rocBox.t - 4 }, 'ROC'));
+      // calibration
+      var sc2 = drawAxes(svg, calBox, [0, 1], [0, 1], [0, 0.25, 0.5, 0.75, 1], [0, 0.25, 0.5, 0.75, 1], 'Mean predicted probability (bin)', 'Observed fraction died', function (q) { return fmt(q, 2); }, function (q) { return fmt(q, 2); });
+      svg.appendChild(el('line', { 'class': 'ref', x1: sc2.sx(0), y1: sc2.sy(0), x2: sc2.sx(1), y2: sc2.sy(1) }));
+      svg.appendChild(el('text', { 'class': 'dl', x: calBox.l, y: calBox.t - 4 }, 'Reliability diagram'));
+      var bins = []; for (var b = 0; b < 10; b++) bins.push({ n: 0, sp: 0, sy: 0 });
+      var brier = 0, ll = 0;
+      for (var i = 0; i < n; i++) { var bi = Math.min(9, Math.floor(p[i] * 10)); bins[bi].n++; bins[bi].sp += p[i]; bins[bi].sy += y[i]; brier += (p[i] - y[i]) * (p[i] - y[i]); var pp = clampP(p[i]); ll -= y[i] * Math.log(pp) + (1 - y[i]) * Math.log(1 - pp); }
+      var dd = '', first = true;
+      bins.forEach(function (bn) { if (!bn.n) return; var mx = bn.sp / bn.n, my = bn.sy / bn.n; dd += (first ? 'M' : 'L') + sc2.sx(mx).toFixed(1) + ',' + sc2.sy(my).toFixed(1); first = false; });
+      svg.appendChild(el('path', { 'class': 'ser', d: dd, stroke: 'var(--series-3)' }));
+      bins.forEach(function (bn) { if (!bn.n) return; var mx = bn.sp / bn.n, my = bn.sy / bn.n; svg.appendChild(el('circle', { cx: sc2.sx(mx), cy: sc2.sy(my), r: 3 + Math.sqrt(bn.n), fill: 'var(--series-3)', opacity: 0.75, stroke: 'var(--surface)', 'stroke-width': 1 })); });
+      // hover on ROC
+      var dot = el('circle', { r: 4.5, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+      var hit = el('rect', { x: rocBox.l, y: rocBox.t, width: rocBox.w, height: rocBox.h, fill: 'transparent' }); svg.appendChild(hit);
+      function move(evt) { var q = svgPoint(svg, evt); var best = null, bd = 1e9; roc.pts.forEach(function (r) { var dx = sc.sx(r.fp / roc.n0) - q.x, dy = sc.sy(r.tp / roc.n1) - q.y; var dist = dx * dx + dy * dy; if (dist < bd) { bd = dist; best = r; } }); if (!best) return; dot.setAttribute('cx', sc.sx(best.fp / roc.n0)); dot.setAttribute('cy', sc.sy(best.tp / roc.n1)); dot.setAttribute('visibility', 'visible'); tipFollow(tip, svg, evt, 'threshold <b>' + (best.t > 1 ? '> max p' : fmt(best.t, 3)) + '</b><br>TPR <b>' + fmt(best.tp / roc.n1, 3) + '</b> · FPR <b>' + fmt(best.fp / roc.n0, 3) + '</b><br>TP ' + best.tp + ' · FP ' + best.fp); }
+      function leave() { dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+      hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave); hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+      // confusion matrix and metrics
+      $('cmTP').textContent = c.tp; $('cmFP').textContent = c.fp; $('cmFN').textContent = c.fn; $('cmTN').textContent = c.tn;
+      var prec = c.tp + c.fp ? c.tp / (c.tp + c.fp) : NaN, rec = c.tp / (c.tp + c.fn), spec = c.tn / (c.tn + c.fp), f1 = prec + rec ? 2 * prec * rec / (prec + rec) : NaN;
+      $('l3Acc').textContent = fmt(100 * (c.tp + c.tn) / n, 1) + '% (prevalence ' + fmt(100 * roc.n1 / n, 1) + '%)';
+      $('l3PR').textContent = (isNaN(prec) ? '–' : fmt(prec, 3)) + ' · ' + fmt(rec, 3);
+      $('l3SF').textContent = fmt(spec, 3) + ' · ' + (isNaN(f1) ? '–' : fmt(f1, 3));
+      $('l3TSS').textContent = fmt(rec + spec - 1, 3);
+      $('l3AUC').textContent = fmt(roc.auc, 3);
+      $('l3Brier').textContent = fmt(brier / n, 4) + ' · ' + fmt(ll / n, 4);
+      $('l3Tstar').textContent = fmt(1 / (1 + ratio), 3);
+      $('l3ExpCost').textContent = fmt((c.fp + ratio * c.fn) / n, 3);
+      var tb = $('l3Table'), html = '<thead><tr><th class="num">t</th><th class="num">TP</th><th class="num">FP</th><th class="num">FN</th><th class="num">TN</th><th class="num">TPR</th><th class="num">FPR</th><th class="num">Precision</th><th class="num">F₁</th><th class="num">Cost/n</th></tr></thead><tbody>';
+      for (var tt = 0.1; tt <= 0.91; tt += 0.1) { var cc = confusion(p, y, tt); var pr2 = cc.tp + cc.fp ? cc.tp / (cc.tp + cc.fp) : NaN, re2 = cc.tp / (cc.tp + cc.fn); html += '<tr><td class="num">' + fmt(tt, 1) + '</td><td class="num">' + cc.tp + '</td><td class="num">' + cc.fp + '</td><td class="num">' + cc.fn + '</td><td class="num">' + cc.tn + '</td><td class="num">' + fmt(re2, 3) + '</td><td class="num">' + fmt(cc.fp / roc.n0, 3) + '</td><td class="num">' + (isNaN(pr2) ? '–' : fmt(pr2, 3)) + '</td><td class="num">' + (pr2 + re2 ? fmt(2 * pr2 * re2 / (pr2 + re2), 3) : '–') + '</td><td class="num">' + fmt((cc.fp + ratio * cc.fn) / n, 3) + '</td></tr>'; }
+      tb.innerHTML = html + '</tbody>';
+    }
+    [tS, cS].forEach(function (c) { c.addEventListener('input', draw); });
+    L2.listeners.push(draw);
+    draw();
+  })();
+
+  /* ================= Lab 4: odds-ratio interpreter ================= */
+  (function () {
+    var svg = $('l4Svg'), bS = $('l4b'), pS = $('l4p');
+    var box = { l: 56, t: 16, w: 640 - 56 - 22, h: 300 - 16 - 50 };
+    function draw() {
+      var b = +bS.value, p0 = +pS.value; $('l4bO').textContent = fmt(b, 2); $('l4pO').textContent = fmt(p0, 2);
+      clear(svg);
+      var sc = drawAxes(svg, box, [0, 1], [0, 1], [0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.25, 0.5, 0.75, 1], 'Baseline probability p₀', 'New probability p₁', function (q) { return fmt(q, 1); }, function (q) { return fmt(q, 2); });
+      svg.appendChild(el('line', { 'class': 'ref', x1: sc.sx(0), y1: sc.sy(0), x2: sc.sx(1), y2: sc.sy(1) }));
+      var d = ''; for (var k = 1; k < 200; k++) { var q = k / 200; var p1 = sig(logit(q) + b); d += (k === 1 ? 'M' : 'L') + sc.sx(q).toFixed(1) + ',' + sc.sy(p1).toFixed(1); }
+      svg.appendChild(el('path', { 'class': 'ser', d: d, stroke: 'var(--fg)' }));
+      var P1 = sig(logit(p0) + b);
+      svg.appendChild(el('line', { 'class': 'bnd', x1: sc.sx(p0), x2: sc.sx(p0), y1: sc.sy(0), y2: sc.sy(P1) }));
+      svg.appendChild(el('line', { 'class': 'bnd', x1: sc.sx(0), x2: sc.sx(p0), y1: sc.sy(P1), y2: sc.sy(P1) }));
+      svg.appendChild(el('circle', { cx: sc.sx(p0), cy: sc.sy(P1), r: 6, fill: 'var(--accent)', stroke: 'var(--surface)', 'stroke-width': 2 }));
+      svg.appendChild(el('text', { 'class': 'dl', x: sc.sx(p0) + (p0 > 0.7 ? -8 : 9), y: sc.sy(P1) - 8, 'text-anchor': p0 > 0.7 ? 'end' : 'start' }, 'p₀ = ' + fmt(p0, 2) + ' → p₁ = ' + fmt(P1, 3)));
+      svg.appendChild(el('text', { 'class': 'dl', x: box.l + 8, y: box.t + 14, fill: 'var(--muted)' }, 'odds ratio e^β = ' + fmt(Math.exp(b), 2)));
+      var o0 = p0 / (1 - p0), o1 = o0 * Math.exp(b);
+      $('l4odds0').textContent = fmt(o0, 3); $('l4OR').textContent = fmt(Math.exp(b), 3); $('l4odds1').textContent = fmt(o1, 3);
+      $('l4p1').textContent = fmt(P1, 4); $('l4dp').textContent = (P1 - p0 >= 0 ? '+' : '') + fmt(P1 - p0, 4); $('l4RR').textContent = fmt(P1 / p0, 3);
+      $('l4me').textContent = (b * p0 * (1 - p0) >= 0 ? '+' : '') + fmt(b * p0 * (1 - p0), 4) + ' per unit';
+    }
+    [bS, pS].forEach(function (c) { c.addEventListener('input', draw); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

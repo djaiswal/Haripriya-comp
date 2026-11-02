@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CAM Photosynthesis</title>
+<meta name="description" content="Crassulacean acid metabolism at comprehensive-exam depth: Osmond's four phases, night-time PEPC and vacuolar malic acid storage, daytime decarboxylation, energetics, water-use efficiency, CAM plasticity, carbon isotopes, CAM bioenergy crops and how CAM is represented in models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .chart text { font-family: var(--font-display); fill: var(--fg); }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--line); }
+  .chart .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .axlbl { font-size: 12px; fill: var(--muted); }
+  .chart .ptitle { font-size: 12px; font-weight: 600; }
+  .chart .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .chart .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .chart .net { stroke: var(--fg); stroke-width: 2.6; }
+  .chart .dl { font-size: 11.5px; font-weight: 600; }
+  .chart .op { stroke: var(--surface); stroke-width: 2; }
+  .chart .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .chart .xh { stroke: var(--muted); stroke-width: 1; }
+  .chart .night { fill: var(--surface-2); }
+  .chart .phase { font-size: 11px; font-weight: 600; fill: var(--accent); }
+  .chart .phaseline { stroke: var(--accent); stroke-dasharray: 3 3; opacity: 0.7; }
+  .chartbox { position: relative; }
+  .ctrl select { width: 100%; font: inherit; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › CAM photosynthesis</div>
+    <div class="eyebrow">Topic 3 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">CAM Photosynthesis</h1>
+    <p class="lead">The same two carboxylases as C4, separated in time instead of space: CO₂ is captured at night into malic acid, stored in the vacuole, and refixed by Rubisco behind closed stomata the next day. The result is the highest water-use efficiency in the plant kingdom, bought with ATP, succulence and slow growth.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>In crassulacean acid metabolism (CAM) the stomata open at <strong>night</strong>, when the vapour pressure deficit is low. PEP carboxylase (PEPC) fixes bicarbonate into oxaloacetate, which is reduced to malate and pumped into the vacuole as malic acid; the leaf becomes measurably sour by dawn, and the PEP comes from nocturnal breakdown of starch or soluble sugars. During the <strong>day</strong> the stomata close, malic acid leaves the vacuole and is decarboxylated (by NAD(P)-malic enzyme or PEP carboxykinase), raising internal CO₂ to 1–2.5% so that Rubisco runs saturated and almost without photorespiration while the carbon skeletons are rebuilt into storage carbohydrate by gluconeogenesis. Osmond (1978) divided the cycle into four phases: I (night, PEPC), II (dawn transition), III (day, decarboxylation behind closed stomata) and IV (late afternoon, direct C3 fixation when the acid is exhausted). Because water is lost mainly at night, CAM plants need only 50–100 g water per g CO₂ compared with 250–350 for C4 and 400–600 or more for C3. The cost is 5.5–6.5 ATP per CO₂, a vacuole large enough to hold the night's acid (hence succulence), a daily carbon gain capped by that storage capacity, and typically slow growth. CAM is highly plastic: obligate in cacti and agaves, inducible by drought or salt in facultative species, and reducible to CAM-cycling or CAM-idling when water is short. About 6–7% of vascular plant species, in at least 36 families, use it.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>CAM questions test whether you can reason about a <em>temporal</em> separation: what is open, active, stored or depleted at each hour, and why. Expect to draw the four phases, to explain the regulation that stops PEPC and Rubisco from competing (PEPC kinase, malate feedback), to compute water-use efficiency from VPD, and to say why CAM is nearly absent from land-surface models and what a CAM module (Bartlett et al. 2014, Hartzell et al. 2018) must contain.</p></div>
+  </section>
+
+  <section id="phases">
+    <h2>Osmond's four phases</h2>
+    <p>The diurnal course of net CO₂ exchange in a well-watered CAM plant has a characteristic shape: a broad nocturnal plateau, a dawn burst, a daytime trough at or near zero, and an afternoon rise. Osmond (1978) [1] gave the four regions names that are still used in every CAM paper.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Phase</th><th>Stomata</th><th>PEPC</th><th>Rubisco</th><th>Malate, acidity and vacuolar pH</th><th>What is happening</th></tr></thead>
+      <tbody>
+        <tr><td>I<br><span class="muted" style="font-weight:400">night</span></td><td>Open</td><td>Active: phosphorylated by PPCK, insensitive to malate</td><td>Inactive (dark)</td><td>Malate rising to a dawn maximum (ΔH⁺ 100–600 µmol g⁻¹ FW); vacuolar pH falling from ~6 to ~3–3.5</td><td>Net CO₂ uptake; glycolysis of starch or sugars supplies PEP; malic acid is pumped into the vacuole</td></tr>
+        <tr><td>II<br><span class="muted" style="font-weight:400">dawn, 1–2 h</span></td><td>Still open, then closing</td><td>Being dephosphorylated; activity falling</td><td>Activating in the light</td><td>Peak malate, starting to fall; pH at its minimum</td><td>Both carboxylases briefly active; a burst of direct C3 uptake, largest when well watered</td></tr>
+        <tr><td>III<br><span class="muted" style="font-weight:400">most of the day</span></td><td>Closed</td><td>Inhibited by high cytosolic malate</td><td>Active, CO₂-saturated (C<sub>i</sub> 1–2.5%)</td><td>Malate falling to near zero by mid-afternoon; pH rising back toward ~6</td><td>Malate efflux and decarboxylation; refixation by the CBB cycle; gluconeogenesis rebuilds starch; internal O₂ rises</td></tr>
+        <tr><td>IV<br><span class="muted" style="font-weight:400">late afternoon</span></td><td>Reopening</td><td>Low; becoming active toward dusk</td><td>Active on atmospheric CO₂</td><td>Acid depleted; pH neutral</td><td>Direct C3 fixation (sometimes some PEPC); suppressed or absent under drought</td></tr>
+      </tbody></table></div>
+    <p>Under drought, phases II and IV shrink first, then phase I narrows, until in <strong>CAM-idling</strong> the stomata stay shut around the clock and the plant merely recycles respiratory CO₂ through the acid cycle with no net gain, which keeps the photosynthetic apparatus intact for weeks or months. The simulator below reproduces this sequence.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>24-hour CAM simulator: stomata, CO₂ exchange and malate</h3><span class="small muted">Hover to read values; shaded bands are night</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="camSvg" viewBox="0 0 640 520" role="img" aria-label="Three stacked time series over 24 hours: stomatal conductance, net CO2 uptake and malate content of a CAM leaf, with the four phases marked"></svg>
+            <div class="chart-tip" id="camTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Stomatal conductance g<sub>s</sub></span><span style="--c:var(--fg)">Net CO₂ exchange A</span><span style="--c:var(--series-2)">Vacuolar malate</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="camTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sMode"><span>Mode</span></label><select id="sMode"><option value="obligate" selected>Obligate CAM (drought slider trims phases II, IV, then I)</option><option value="cycling">CAM-cycling (day C3 uptake, night recycling only)</option></select></div>
+          <div class="ctrl"><label for="sTn"><span>Night temperature (°C)</span><output id="sTnO">15</output></label><input type="range" id="sTn" min="5" max="32" step="0.5" value="15"></div>
+          <div class="ctrl"><label for="sD"><span>Drought severity (0 = well watered, 1 = idling)</span><output id="sDO">0.20</output></label><input type="range" id="sD" min="0" max="1" step="0.05" value="0.2"></div>
+          <dl class="readout">
+            <dt>Regime</dt><dd id="oReg"></dd>
+            <dt>Night uptake (mmol m⁻²)</dt><dd id="oNight"></dd>
+            <dt>Day uptake, II + IV</dt><dd id="oDay"></dd>
+            <dt>Nocturnal share</dt><dd id="oFrac"></dd>
+            <dt>Dawn malate · ΔH⁺</dt><dd id="oMal"></dd>
+            <dt>Water lost (mol m⁻²)</dt><dd id="oE"></dd>
+            <dt>24-h WUE (mmol mol⁻¹)</dt><dd id="oWue"></dd>
+            <dt>Tissue δ¹³C</dt><dd id="oD13"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">Phenomenological model: nocturnal PEPC capacity peaks at 15 °C and falls off at warm nights; uptake slows as the vacuole fills (storage capacity 250 mmol malate m⁻²); phase III decarboxylation is zero-order; respiration (Q₁₀ = 2) is refixed at night. Day temperature = night + 12 °C, RH 75% at night and 40% at midday. Suggested experiments: warm the night to 28 °C and watch acid accumulation collapse; raise drought to 0.8 (phases II and IV vanish) then 1.0 (idling); switch to CAM-cycling and compare the WUE readout.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="biochem">
+    <h2>Night and day biochemistry</h2>
+    <h3>Night: PEPC, its kinase, and the vacuole</h3>
+    <p>Carbonic anhydrase converts CO₂ to HCO₃⁻, and PEPC carboxylates PEP to oxaloacetate, which cytosolic NAD-malate dehydrogenase reduces to malate using NADH from glycolysis. The enzyme is the same as in C4 and is equally O₂-insensitive. What makes CAM work is <strong>regulation in time</strong>. PEPC is feedback-inhibited by malate; in the dark a circadian-clock-controlled <strong>PEPC kinase (PPCK)</strong> is transcribed and phosphorylates a serine near the N-terminus, which raises the K<sub>i</sub> for malate about ten-fold and lets PEPC keep working while malate accumulates. At dawn PPCK expression stops, a type-2A phosphatase dephosphorylates PEPC, and the enzyme becomes malate-sensitive just as malate floods out of the vacuole, so it switches off and does not refix the CO₂ meant for Rubisco. Stomata follow the same inverted schedule: they open in the dark, probably in response to low internal CO₂ created by PEPC, and close in the light as decarboxylation raises C<sub>i</sub>.</p>
+    <p>Malate is stored as <strong>malic acid</strong>: two protons per malate are pumped across the tonoplast by the vacuolar H⁺-ATPase (and H⁺-pyrophosphatase), and malate²⁻ follows through anion channels of the ALMT family down the electrical gradient. Overnight the vacuole reaches 100–300 mM malic acid (over 1 M in some <em>Clusia</em>, with citric acid), and its pH falls to 3–3.5. This storage sets several constraints. The osmotic load is large, so cells need big vacuoles and a thick, succulent mesophyll; vacuolar volume per unit leaf area therefore limits the night's carbon gain, which is why nocturnal uptake slows toward dawn even if PEPC capacity remains. The acid also has to be made from something: a hexose equivalent, taken from starch (in <em>Kalanchoë</em>, <em>Mesembryanthemum</em>) or from soluble sugars (in <em>Agave</em>, <em>Ananas</em>, <em>Clusia</em>), is glycolysed to two PEP, so the plant carries a daily carbohydrate reserve at least as large as its nocturnal acid pool.</p>
+    <h3>Day: decarboxylation, gluconeogenesis and internal CO₂</h3>
+    <p>Malic acid effluxes passively from the vacuole once light-driven consumption lowers cytosolic malate. Decarboxylation uses the same enzymes as the C4 subtypes: <strong>NADP-ME</strong> (cytosol/chloroplast) or <strong>NAD-ME</strong> (mitochondria) in <em>Kalanchoë</em>, <em>Agave</em>, cacti and most Crassulaceae, producing pyruvate that PPDK converts to PEP; or <strong>PEPCK</strong> in pineapple (<em>Ananas</em>), <em>Clusia</em> and <em>Aloe</em>, producing PEP directly at one ATP. The released CO₂ accumulates behind closed stomata to 1–2.5% (10,000–25,000 µbar), so Rubisco is CO₂-saturated and photorespiration is suppressed, although internal O₂ also rises above 21% and some oxygenation does occur. The PEP is returned to triose-P and hexose by gluconeogenesis (reversing glycolysis, with fructose-1,6-bisphosphatase as the key regulated step) and stored as starch or sugars for the next night. The carbon fixed by Rubisco, by contrast, is exported or stored for growth. Partitioning between "reserve for tomorrow's acid" and "growth" is itself regulated and is a major reason CAM plants grow slowly.</p>
+    <div class="keybox"><h3>Energetics compared with C3 and C4</h3>
+      <div class="rxn">night: hexose → 2 PEP (glycolysis) ; 2 HCO₃⁻ + 2 PEP → 2 malate ; 2 malate + 4 H⁺ → vacuole (V-ATPase, ~2 H⁺ per ATP)<br>day: malate → CO₂ + pyruvate (ME) ; pyruvate + ATP → PEP (PPDK, ≈ 2 ATP) ; 2 PEP → hexose (gluconeogenesis, ATP + NADPH) ; CO₂ → CBB cycle (3 ATP + 2 NADPH)</div>
+      <p style="margin-top:0.75rem">Summing the bill gives roughly <strong>5.5 ATP and 2 NADPH per CO₂</strong> for a starch-storing NAD(P)-ME plant, rising to about 6.5 ATP for species that store soluble sugars (sucrose synthesis and hydrolysis cost extra), against 3 ATP for C3 and 5 ATP for C4 (Winter &amp; Smith 1996 [2]). The extra ATP over C4 is the vacuolar pumping and the gluconeogenic reconstruction of the acceptor; the extra time is a whole night. CAM therefore makes sense only where the water saved is worth more than the ATP and the growth rate forgone.</p></div>
+  </section>
+
+  <section id="wue">
+    <h2>Water-use efficiency: why night matters</h2>
+    <p>Leaf-level water-use efficiency is set by the ratio of the CO₂ and water vapour gradients across the stomata. With A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>) and E = 1.6 g<sub>sc</sub> D/P,</p>
+    <div class="eq">$$\frac{A}{E} = \frac{C_a\,(1 - C_i/C_a)\,P}{1.6\,D}, \qquad D = e_s(T_{leaf}) - e_a, \qquad e_s(T) = 0.6108\,\exp\!\left(\frac{17.27\,T}{T + 237.3}\right)\ \text{kPa}$$</div>
+    <p>(the Tetens formula for saturation vapour pressure). The C4 pathway improves A/E through the numerator (C<sub>i</sub>/C<sub>a</sub> ≈ 0.4). CAM improves it through the denominator: at night the leaf is cooler and the air more humid, so D is typically 0.2–0.5 kPa rather than the 2–4 kPa of a desert afternoon, a factor of 5–10 in water cost per CO₂. Integrated over a growing season this yields transpiration ratios of about 50–100 g H₂O per g CO₂ for CAM, 250–350 for C4 and 400–600 or more for C3. The comparison below computes D from temperature and relative humidity so you can see how much of the CAM advantage depends on nights actually being cool and humid.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Water-use efficiency versus VPD for C3, C4 and CAM</h3><span class="small muted">Hover to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="wueSvg" viewBox="0 0 640 360" role="img" aria-label="Water-use efficiency as a function of vapour pressure deficit for C3, C4 and CAM leaves with operating points at day and night VPD"></svg>
+            <div class="chart-tip" id="wueTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">C3, C<sub>i</sub>/C<sub>a</sub> = 0.7 (day)</span><span style="--c:var(--series-2)">C4, C<sub>i</sub>/C<sub>a</sub> = 0.4 (day)</span><span style="--c:var(--series-3)">CAM phase I, C<sub>i</sub>/C<sub>a</sub> = 0.5 (night)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="wueTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="wTd"><span>Daytime leaf temperature (°C)</span><output id="wTdO">32</output></label><input type="range" id="wTd" min="15" max="45" step="0.5" value="32"></div>
+          <div class="ctrl"><label for="wRHd"><span>Daytime relative humidity (%)</span><output id="wRHdO">30</output></label><input type="range" id="wRHd" min="5" max="90" step="1" value="30"></div>
+          <div class="ctrl"><label for="wTn"><span>Night leaf temperature (°C)</span><output id="wTnO">18</output></label><input type="range" id="wTn" min="0" max="35" step="0.5" value="18"></div>
+          <div class="ctrl"><label for="wRHn"><span>Night relative humidity (%)</span><output id="wRHnO">75</output></label><input type="range" id="wRHn" min="20" max="100" step="1" value="75"></div>
+          <dl class="readout">
+            <dt>D day · D night (kPa)</dt><dd id="owD"></dd>
+            <dt>A/E C3 (mmol mol⁻¹)</dt><dd id="owC3"></dd>
+            <dt>A/E C4</dt><dd id="owC4"></dd>
+            <dt>A/E CAM</dt><dd id="owCAM"></dd>
+            <dt>g H₂O per g CO₂, C3 · C4 · CAM</dt><dd id="owG"></dd>
+            <dt>CAM advantage over C3</dt><dd id="owAdv"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">C<sub>a</sub> = 420 µbar, P = 101.3 kPa; leaf-level instantaneous values, which exclude respiration and cuticular losses and are therefore more favourable than whole-plant transpiration ratios. Suggested experiments: make the night as warm and dry as the day (T 32 °C, RH 30%) and the CAM advantage disappears; set a humid tropical day (28 °C, 80%) and note that C3 and CAM converge, which is one reason CAM is rare in wet lowland forests except as epiphytes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plasticity">
+    <h2>CAM plasticity and environmental control</h2>
+    <p>CAM is less a category than a continuum of expression [6, 7]. <strong>Obligate (constitutive) CAM</strong> plants, such as <em>Opuntia</em>, <em>Agave</em>, <em>Kalanchoë daigremontiana</em> and pineapple, perform CAM in all conditions once mature, though the size of phases II and IV still responds to water. <strong>Facultative (inducible) CAM</strong> plants are C3 when well watered and switch to CAM under drought, salinity or, in <em>Kalanchoë blossfeldiana</em>, short days; the ice plant <em>Mesembryanthemum crystallinum</em>, in which salt stress induces PEPC, PPCK and tonoplast transporter genes within days, is the classic system, and <em>Clusia</em>, <em>Talinum</em> and <em>Portulaca</em> are others. The switch is reversible on rewatering. <strong>CAM-cycling</strong> describes plants that take up CO₂ by C3 photosynthesis in the day but keep their stomata shut at night and refix respiratory CO₂ into malate, producing a small day–night acid fluctuation and a modest water saving. <strong>CAM-idling</strong> is the drought end-point of obligate CAM: stomata closed day and night, acid fluctuation driven entirely by recycled respiratory CO₂, zero net carbon gain but maintained metabolism.</p>
+    <p>Environmental controls act on identifiable steps. <strong>Night temperature</strong> is the strongest: nocturnal acid accumulation in <em>Agave</em> and <em>Opuntia</em> is maximal near 10–15 °C and falls steeply above 25 °C because PEPC becomes more malate-sensitive, respiration rises, and malate leaks from the vacuole, whereas day temperature matters comparatively little; this is why CAM productivity is highest in climates with warm days and cool nights (Nobel 1988, 1991 [8]). <strong>Water deficit</strong> narrows the phases as described above and induces CAM in facultative species through ABA-dependent signalling. <strong>Salinity</strong> acts like drought in <em>M. crystallinum</em>. <strong>Light</strong> during the preceding day sets the carbohydrate reserve for the night's PEP and controls the clock that times PPCK. <strong>Elevated CO₂</strong> stimulates CAM plants substantially (nocturnal PEPC is not saturated at ambient C<sub>i</sub>, and phase IV Rubisco fixation gains as in C3), so CAM crops are among the beneficiaries of rising CO₂. <strong>Nutrients</strong>, especially N and P, limit CAM in the same way as other pathways, and the productivity index approach of Nobel multiplies water, temperature, light and nutrient indices to predict yield.</p>
+  </section>
+
+  <section id="isotopes">
+    <h2>Carbon isotopes in CAM plants</h2>
+    <p>Night-time carbon enters through PEPC, whose effective fractionation is small and negative (b₄ ≈ −5.7‰), so carbon fixed in phase I has a tissue δ¹³C of about −11 to −13‰, indistinguishable from C4. Carbon fixed in phases II and IV enters through Rubisco in the ordinary C3 manner and carries δ¹³C ≈ −26 to −28‰. A CAM plant's bulk tissue therefore lies between these end-members in proportion to the share of carbon taken up at night (Winter &amp; Holtum 2002 established the near-linear relationship [6]):</p>
+    <div class="eq">$$\delta^{13}\mathrm{C}_{plant} \approx f\,\delta_{night} + (1 - f)\,\delta_{day}, \qquad \delta_{night} \approx -11.5‰,\ \ \delta_{day} \approx -27‰$$</div>
+    <p>Three consequences. First, CAM δ¹³C spans −10 to −28‰, the widest range of any pathway, and a value alone cannot distinguish C4 from strong CAM; succulence, nocturnal acidification and gas exchange are needed. Second, weak and facultative CAM is invisible to bulk δ¹³C: a plant obtaining a third of its carbon at night still reads about −22‰, inside the C3 range, which is why surveys that classify CAM by a −20‰ threshold underestimate its frequency. Third, because CAM δ¹³C moves with the environment, it is a useful integrator: the same <em>Clusia</em> or <em>Kalanchoë</em> individual becomes less negative in a dry season. The mixing explorer below makes the arithmetic explicit.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>δ¹³C mixing explorer for facultative CAM</h3><span class="small muted">Hover to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="chart" id="isoSvg" viewBox="0 0 640 340" role="img" aria-label="Tissue carbon isotope ratio as a function of the fraction of carbon fixed at night, with the conventional −20 per mil threshold"></svg>
+            <div class="chart-tip" id="isoTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">δ¹³C of tissue</span><span style="--c:var(--muted)">−20‰ classification threshold</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="isoTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="iF"><span>Fraction of carbon fixed at night, f</span><output id="iFO">0.50</output></label><input type="range" id="iF" min="0" max="1" step="0.01" value="0.5"></div>
+          <div class="ctrl"><label for="iN"><span>Night end-member δ<sub>night</sub> (‰)</span><output id="iNO">-11.5</output></label><input type="range" id="iN" min="-15" max="-8" step="0.1" value="-11.5"></div>
+          <div class="ctrl"><label for="iD"><span>Day end-member δ<sub>day</sub> (‰)</span><output id="iDO">-27.0</output></label><input type="range" id="iD" min="-32" max="-22" step="0.1" value="-27"></div>
+          <dl class="readout">
+            <dt>Tissue δ¹³C at f</dt><dd id="oiVal"></dd>
+            <dt>f at the −20‰ threshold</dt><dd id="oiThr"></dd>
+            <dt>δ¹³C if one-third nocturnal</dt><dd id="oiThird"></dd>
+            <dt>Classification at f</dt><dd id="oiCls"></dd>
+          </dl>
+          <p class="small muted" style="margin:0">End-members follow Winter and Holtum 2002; δ¹³C of air taken as −8‰. Suggested experiments: find the f at which a plant would be called "C3" by the threshold; shift δ<sub>day</sub> to −24‰ (a drought-stressed C3 phase with low C<sub>i</sub>/C<sub>a</sub>) and see how the inferred f changes for the same tissue value.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bioenergy">
+    <h2>CAM crops, bioenergy and models</h2>
+    <p>Despite slow growth per unit leaf area, well-managed CAM crops can be very productive because they keep canopies and stomatal activity going through dry seasons that stop C3 and C4 crops. Nobel (1991) [8] reported 38–43 Mg dry mass ha⁻¹ yr⁻¹ for <em>Agave mapisaga</em> and <em>A. salmiana</em> and up to 47 Mg for <em>Opuntia ficus-indica</em> under near-optimal conditions, comparable to the best C4 crops, and 10–34 Mg under ordinary cultivation. Borland et al. (2009) [3] and Davis, Dohleman and Long (2011) [11] argued that agaves and prickly pear could supply lignocellulosic or fermentable feedstock from semi-arid land receiving 300–800 mm rainfall, land that does not compete with food crops; Owen and Griffiths (2014) mapped the potential for four CAM species across Australia using Nobel's <strong>environmental productivity index</strong> (EPI), the product of water, temperature, PAR and nutrient indices each scaled 0–1 by empirical response curves. <em>Agave tequilana</em> and <em>A. fourcroydes</em> (henequen) have established agronomy, high soluble sugar (fructan) content and ten-year rotations; <em>Opuntia</em> is already grown on about a million hectares for forage and fruit. Borland et al. (2014) [4] extend the argument to engineering CAM into C3 crops, which requires the nocturnal PEPC circuit, the tonoplast transport and the stomatal rhythm to be moved together.</p>
+    <h3>Connections to ecosystem models</h3>
+    <p>No major land-surface model (CLM, JULES, ORCHIDEE, Noah-MP) includes a CAM plant functional type: CAM species are a small share of global biomass, their phenomena are sub-daily, and the storage dynamics do not fit the instantaneous A = min(...) structure of FvCB and Collatz. Three modelling efforts fill the gap. <strong>Owen and Griffiths (2013)</strong> [10] built a system-dynamics model in which PEPC activity, PPCK expression, vacuolar malate, carbohydrate reserves and stomata are state variables with explicit feedbacks; it predicts the extent of phases I–IV from physiology and environment and reproduces the shrinking of II and IV under drought. <strong>Bartlett, Vico and Porporato (2014)</strong> [9] coupled a circadian-rhythm oscillator that gates malic acid storage and release to an FvCB bundle with a CO₂ mass balance of the cell, a stomatal model and a soil water balance, giving a tractable description of daily carbon gain and transpiration against VPD, temperature and soil moisture. <strong>Hartzell, Bartlett and Porporato (2018)</strong> [12] generalised this into <strong>Photo3</strong>, a single framework in which C3, C4 and CAM share the FvCB core and the same plant hydraulics, differing in the CO₂ supply term (ambient for C3, pumped for C4, stored malate for CAM); it is the first model that lets a dynamic vegetation or hydrology scheme compare the three pathways on equal terms. For a crop-scale CAM representation, the empirical EPI of Nobel remains the tool actually used in bioenergy assessments [11], and models such as BioCro or DSSAT have no CAM module. The key ingredients any CAM scheme needs are: a malate pool with a storage ceiling that depends on succulence; a nocturnal PEPC rate controlled by temperature and malate feedback; a daytime decarboxylation rate that sets internal CO₂ for FvCB; a stomatal rule driven by internal CO₂ rather than light; and a carbohydrate reserve that links today's light to tonight's acid.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>ATP per CO₂</td><td class="num">5.5–6.5 ATP + 2 NADPH</td><td>C3 3, C4 5 [2]; lower end for starch-storing ME types</td></tr>
+        <tr><td>Transpiration ratio</td><td class="num">50–100 g H₂O g⁻¹ CO₂</td><td>C4 250–350, C3 400–600+; leaf-level A/E 15–40 mmol mol⁻¹ at night</td></tr>
+        <tr><td>Night VPD vs day VPD</td><td class="num">0.2–0.5 vs 2–4 kPa</td><td>The source of the CAM advantage; Tetens: e<sub>s</sub>(25 °C) = 3.17 kPa</td></tr>
+        <tr><td>Dawn titratable acidity ΔH⁺</td><td class="num">100–600 µmol g⁻¹ FW</td><td>2 H⁺ per malate; vacuolar malic acid 100–300 mM (&gt; 1 M in <em>Clusia</em>)</td></tr>
+        <tr><td>Vacuolar pH, dawn / dusk</td><td class="num">3–3.5 / ~6</td><td>Osmond 1978 [1]</td></tr>
+        <tr><td>Internal CO₂ in phase III</td><td class="num">1–2.5% (10,000–25,000 µbar)</td><td>Rubisco saturated; O₂ also elevated</td></tr>
+        <tr><td>Optimum night temperature</td><td class="num">10–15 °C</td><td>Acid accumulation falls steeply above 25 °C [8]</td></tr>
+        <tr><td>Nocturnal CO₂ uptake rate</td><td class="num">3–10 µmol m⁻² s⁻¹</td><td>Lower than C3/C4 midday rates; compensated by duration and WUE</td></tr>
+        <tr><td>Tissue δ¹³C</td><td class="num">−10 to −28‰</td><td>≈ −11.5‰ all-night, −27‰ all-day; −20‰ ≈ 45% nocturnal [6]</td></tr>
+        <tr><td>Species using CAM</td><td class="num">~6–7% of vascular plants, ≥ 36 families</td><td>Orchidaceae, Bromeliaceae, Cactaceae, Crassulaceae, Euphorbiaceae, Asparagaceae (<em>Agave</em>)</td></tr>
+        <tr><td>Agave / Opuntia productivity</td><td class="num">10–34 Mg DM ha⁻¹ yr⁻¹ (max 38–47)</td><td>Nobel 1991 [8]; Davis et al. 2011 [11]</td></tr>
+        <tr><td>Rainfall band for CAM bioenergy</td><td class="num">300–800 mm yr⁻¹</td><td>Semi-arid land not suited to C3/C4 crops [3, 11]</td></tr>
+        <tr><td>PEPC kinase effect</td><td class="num">K<sub>i</sub>(malate) up ~10×</td><td>Night phosphorylation; clock-controlled transcription</td></tr>
+        <tr><td>Osmond's phases</td><td class="num">I night · II dawn · III day · IV afternoon</td><td>II and IV disappear first under drought</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Sketch the diurnal course of net CO₂ exchange, stomatal conductance and leaf acidity of a well-watered CAM plant, label Osmond's phases, and state what controls each transition.</summary><div class="a"><p>Net CO₂ uptake is positive through the night (phase I, broad plateau of 3–10 µmol m⁻² s⁻¹, declining toward dawn as the vacuole fills); it spikes briefly after sunrise (phase II) as Rubisco activates while stomata are still open; it falls to about zero for most of the day (phase III, stomata closed, C<sub>i</sub> 1–2.5%); and rises again in the late afternoon (phase IV) when the acid is depleted and stomata reopen for direct C3 fixation. Stomatal conductance mirrors this: high at night, a dawn shoulder, near zero at midday, moderate in late afternoon. Titratable acidity rises through the night to a dawn maximum and falls through phase III to a minimum by mid-afternoon. Transitions are controlled by (i) the circadian clock and light: PPCK transcription stops at dawn, PEPC is dephosphorylated and becomes malate-sensitive, Rubisco is activated; (ii) metabolite feedback: malate efflux inhibits PEPC and raises internal CO₂, closing stomata; (iii) exhaustion of the vacuolar acid pool, which lets internal CO₂ fall, stomata reopen and phase IV begin; (iv) darkness and renewed PPCK expression, which restart phase I. Water status scales the whole pattern: drought removes IV, then II, then narrows I.</p></div></details>
+    <details class="q"><summary>2. Explain how PEP carboxylase and Rubisco are prevented from competing for CO₂ in a CAM leaf, and contrast this with the solution used by C4 plants.</summary><div class="a"><p>C4 plants separate the two carboxylases in space (mesophyll vs bundle sheath). CAM plants have both in the same cell and separate them in time by regulating PEPC. At night PEPC kinase, whose gene is transcribed under circadian control in the dark, phosphorylates PEPC, raising its K<sub>i</sub> for malate about ten-fold so the enzyme keeps running as malate accumulates; Rubisco is inactive in the dark anyway, and the stomata are open. At dawn kinase expression ceases, a PP2A phosphatase dephosphorylates PEPC, and the enzyme becomes strongly inhibited by the malate now flooding out of the vacuole, so PEPC shuts down just as Rubisco becomes active; the stomata close as internal CO₂ rises, removing the external supply that PEPC could otherwise fix. Phase II is the brief period when both run, which is why it shows a burst of uptake. In the late afternoon the sequence reverses in phase IV. The C4 solution is anatomically expensive but allows continuous high rates; the CAM solution needs only one cell type but imposes a storage ceiling, a 24-h cycle and the extra ATP for vacuolar transport and gluconeogenesis.</p></div></details>
+    <details class="q"><summary>3. Account for the ATP and NADPH cost of one CO₂ fixed by CAM and compare it with C3 and C4. Where does the extra energy go and when is it worth paying?</summary><div class="a"><p>Night: half a hexose from starch is glycolysed to PEP (roughly ATP-neutral to slightly positive, and generating the NADH used to reduce OAA to malate); PEPC carboxylation is free; storing malic acid requires two H⁺ per malate pumped by the V-ATPase at about two H⁺ per ATP, ~1 ATP. Day: malate decarboxylation by NAD(P)-ME yields pyruvate (and NAD(P)H); PPDK regenerates PEP at 2 ATP equivalents (1 ATP in PEPCK species); gluconeogenesis back to hexose costs about 1 ATP and 1 NADPH per triose; the CBB cycle costs 3 ATP and 2 NADPH. Total ≈ 5.5 ATP + 2 NADPH per CO₂ for starch-storing ME types, up to 6.5 ATP for sugar-storing species that must also make and hydrolyse sucrose; compare 3 ATP + 2 NADPH for C3 (plus photorespiration in air) and 5 ATP + 2 NADPH for C4. The surplus over C4 is the tonoplast pumping and the gluconeogenic rebuild of the acceptor. Because CAM plants are light-saturated for most of phase III and have abundant ATP, energy is rarely the binding constraint; the pathway pays whenever the water saved (5–10 × less per CO₂ than C3) is limiting growth more than the ATP and the storage-capped daily carbon gain are, i.e. in semi-arid climates with cool nights and in epiphytic habitats with intermittent water.</p></div></details>
+    <details class="q"><summary>4. Using the Tetens equation, estimate the leaf-level water-use efficiency of a C3 leaf at 32 °C and 30% RH and of a CAM leaf at 18 °C and 75% RH at night, and explain the result.</summary><div class="a"><p>e<sub>s</sub>(32 °C) = 0.6108 exp(17.27 × 32/269.3) = 4.76 kPa; D<sub>day</sub> = 4.76 × 0.7 = 3.33 kPa. e<sub>s</sub>(18 °C) = 2.06 kPa; D<sub>night</sub> = 2.06 × 0.25 = 0.52 kPa. With A/E = C<sub>a</sub>(1 − C<sub>i</sub>/C<sub>a</sub>)P/(1.6D) and C<sub>a</sub> = 420 µmol mol⁻¹, P = 101.3 kPa: C3 (C<sub>i</sub>/C<sub>a</sub> = 0.7): 420 × 0.3 × 101.3/(1.6 × 3.33) ≈ 2400 µmol mol⁻¹ ≈ 2.4 mmol CO₂ per mol H₂O, i.e. about 420 mol H₂O per mol CO₂ or 170 g H₂O per g CO₂. CAM phase I (C<sub>i</sub>/C<sub>a</sub> ≈ 0.5): 420 × 0.5 × 101.3/(1.6 × 0.52) ≈ 25,600 µmol mol⁻¹ ≈ 26 mmol mol⁻¹, about 39 mol H₂O per mol CO₂ or 16 g g⁻¹. The CAM leaf is roughly ten times more water-efficient, and only about 1.7 of that factor comes from the lower C<sub>i</sub>/C<sub>a</sub>; the rest is the six-fold lower VPD. Whole-plant transpiration ratios are 3–5 times higher than these instantaneous values because of respiration, cuticular loss and phases II and IV, which brings them to the textbook 50–100 g g⁻¹ for CAM and 400–600 for C3. If the night is as hot and dry as the day the advantage vanishes, which constrains where CAM succeeds.</p></div></details>
+    <details class="q"><summary>5. Why do cool nights favour CAM, and what does this imply for CAM crops under climate warming?</summary><div class="a"><p>Nocturnal acid accumulation in agaves and cacti peaks at about 10–15 °C and declines steeply above 25 °C. Mechanisms: PEPC's sensitivity to malate inhibition increases with temperature, so the enzyme shuts off at a lower malate concentration; the tonoplast becomes leakier and passive malate efflux rises, creating a futile cycle; nocturnal respiration (Q₁₀ ≈ 2) consumes more of the carbohydrate reserve needed for PEP and more of the fixed carbon; and the vapour pressure deficit is higher, so the stomata either open less or lose more water per CO₂. Daytime decarboxylation and Rubisco, in contrast, tolerate high temperatures well, so CAM productivity depends on the day–night temperature amplitude more than on the mean. Under warming, regions with mild nights (highlands, coastal deserts, subtropics with large diurnal ranges) retain their CAM advantage, while hot-night lowlands lose it; elevated CO₂ partly compensates because nocturnal PEPC fixation and phase IV Rubisco fixation both respond positively to CO₂. For bioenergy planning this means siting agave or opuntia by night temperature and rainfall rather than by mean annual temperature, which is exactly what the temperature index in Nobel's EPI and the Owen and Griffiths (2014) maps do.</p></div></details>
+    <details class="q"><summary>6. A leaf has δ¹³C = −18‰. What can and cannot be concluded about its photosynthetic pathway, and what further measurements would you make?</summary><div class="a"><p>−18‰ is outside the C3 range (−22 to −35‰) and slightly more negative than typical C4 (−11 to −14‰). It is consistent with (a) a CAM plant obtaining roughly 60% of its carbon at night (linear mixing between −11.5 and −27‰ gives f ≈ 0.58), (b) a C4 plant with unusually high leakiness or high C<sub>i</sub>/C<sub>a</sub>, or (c) in principle a C3–C4 intermediate. A value alone cannot settle it because PEPC-derived carbon has the same signature whether it is fixed in a bundle sheath at noon or a vacuole at midnight. Confirmatory measurements: diurnal titratable acidity (a dawn–dusk ΔH⁺ of &gt; 50 µmol g⁻¹ FW indicates CAM), 24-h gas exchange to see whether uptake is nocturnal, leaf anatomy (Kranz vs succulent mesophyll with large vacuoles), and online Δ¹³C during the day and night. Also recall that a C3-range value does not exclude CAM: a facultative species with a third of its carbon from night-time fixation reads about −22‰, so weak CAM is invisible to bulk isotopes.</p></div></details>
+    <details class="q"><summary>7. Why is CAM absent from most land-surface models, and what state variables and processes would a CAM module need? Refer to the Bartlett et al. (2014) and Hartzell et al. (2018) approaches.</summary><div class="a"><p>Land-surface models compute photosynthesis as an instantaneous function of light, temperature, CO₂ and water (FvCB or Collatz), with stomata responding to the same drivers, and they aggregate vegetation into a few plant functional types weighted by biomass. CAM violates the instantaneous assumption: today's carbon gain depends on last night's acid, which depends on yesterday's carbohydrate, and stomata open in the dark. CAM species also hold a small share of global biomass, so the effort was not prioritised. A module needs: a vacuolar malate pool with a capacity set by succulence and a release rate in the light; a nocturnal PEPC rate limited by temperature, malate feedback, carbohydrate reserve and stomatal supply; a daytime internal CO₂ computed from decarboxylation that feeds the FvCB equations; a stomatal rule driven by internal CO₂ and the clock rather than by light; and a carbohydrate reserve linking the two halves of the day. Bartlett et al. (2014) achieved this with a circadian oscillator that gates storage and release, coupled to FvCB, a stomatal model and a soil water balance, and used it to quantify CAM WUE and productivity against VPD and soil moisture. Hartzell et al. (2018) generalised it as Photo3, in which C3, C4 and CAM share one FvCB core and one hydraulic scheme and differ only in how CO₂ reaches Rubisco; this lets a hydrological or vegetation model compare the pathways and simulate CAM crops on marginal land. Owen and Griffiths (2013) offer a more mechanistic, regulation-explicit alternative suited to predicting phase durations.</p></div></details>
+    <details class="q"><summary>8. Compare C3, C4 and CAM as strategies for the same environmental problem, and explain why each is favoured where it occurs.</summary><div class="a"><p>All three answer the problem that Rubisco is slow, oxygenates, and needs CO₂ delivered through stomata that lose water. C3 accepts photorespiration and water loss in return for the lowest energy cost (3 ATP per CO₂) and the fastest potential growth where water and cool temperatures permit; it dominates mesic, temperate and shaded habitats and ~85–90% of species. C4 adds a spatial CO₂ pump (2 extra ATP) that removes photorespiration, halves the water cost through low C<sub>i</sub>/C<sub>a</sub>, and raises N-use efficiency, at the price of poorer performance in cool and low-light conditions; it dominates hot, open, seasonally dry grasslands and the most productive crops. CAM adds a temporal pump that shifts water loss to the night, cutting water cost by another factor of 5–10 and permitting survival through long droughts by idling, at the price of 5.5–6.5 ATP per CO₂, a storage-limited daily uptake, succulence and slow growth; it dominates deserts with cool nights, rocky and saline sites and the epiphyte niche of tropical canopies, where water is intermittent even though humidity is high. The three are not discrete: C3–C4 intermediates and facultative or weak CAM fill the gaps, and many lineages have evolved C4 (&gt; 60 origins) and CAM (dozens of origins) independently whenever the local balance of water, temperature, light and CO₂ made the extra ATP worthwhile.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Osmond CB (1978). Crassulacean acid metabolism: a curiosity in context. <em>Annual Review of Plant Physiology</em> 29: 379–414. <a href="https://doi.org/10.1146/annurev.pp.29.060178.002115">doi:10.1146/annurev.pp.29.060178.002115</a><span class="why">Defines the four phases and places CAM in its ecological context; still the best starting point.</span></li>
+      <li>Winter K, Smith JAC (eds) (1996). <em>Crassulacean Acid Metabolism: Biochemistry, Ecophysiology and Evolution</em>. Ecological Studies 114, Springer, Berlin. <span class="why">The reference volume: energetics (Winter &amp; Smith's own chapter), vacuolar transport, carbohydrate metabolism, taxonomy.</span></li>
+      <li>Borland AM, Griffiths H, Hartwell J, Smith JAC (2009). Exploiting the potential of plants with crassulacean acid metabolism for bioenergy production on marginal lands. <em>Journal of Experimental Botany</em> 60: 2879–2896. <a href="https://doi.org/10.1093/jxb/erp118">doi:10.1093/jxb/erp118</a><span class="why">The case for agave and opuntia as feedstocks, with productivity and water-use data.</span></li>
+      <li>Borland AM, Hartwell J, Weston DJ, Schlauch KA, Tschaplinski TJ, Tuskan GA, Yang X, Cushman JC (2014). Engineering crassulacean acid metabolism to improve water-use efficiency. <em>Trends in Plant Science</em> 19: 327–338. <a href="https://doi.org/10.1016/j.tplants.2014.01.006">doi:10.1016/j.tplants.2014.01.006</a><span class="why">What a minimal CAM circuit contains, from the perspective of building it into C3 crops.</span></li>
+      <li>Cushman JC (2001). Crassulacean acid metabolism. A plastic photosynthetic adaptation to arid environments. <em>Plant Physiology</em> 127: 1439–1448. <a href="https://doi.org/10.1104/pp.010818">doi:10.1104/pp.010818</a><span class="why">Concise review of CAM biochemistry, regulation (PPCK) and inducibility in <em>Mesembryanthemum</em>.</span></li>
+      <li>Winter K, Holtum JAM (2002). How closely do the δ¹³C values of crassulacean acid metabolism plants reflect the proportion of CO₂ fixed during day and night? <em>Plant Physiology</em> 129: 1843–1851. <a href="https://doi.org/10.1104/pp.002915">doi:10.1104/pp.002915</a><span class="why">The mixing relationship used in the isotope explorer, and why weak CAM is isotopically invisible. See also Winter K, Holtum JAM (2014) <em>J Exp Bot</em> 65: 3425–3441 on facultative CAM.</span></li>
+      <li>Winter K, Holtum JAM, Smith JAC (2015). Crassulacean acid metabolism: a continuous or discrete trait? <em>New Phytologist</em> 208: 73–78. <span class="why">The plasticity argument: obligate, facultative, cycling and idling as points on a continuum.</span></li>
+      <li>Nobel PS (1991). Achievable productivities of certain CAM plants: basis for high values compared with C3 and C4 plants. <em>New Phytologist</em> 119: 183–205. <a href="https://doi.org/10.1111/j.1469-8137.1991.tb01022.x">doi:10.1111/j.1469-8137.1991.tb01022.x</a><span class="why">The productivity records for <em>Agave</em> and <em>Opuntia</em> and the environmental productivity index. Nobel's <em>Environmental Biology of Agaves and Cacti</em> (1988) gives the temperature responses.</span></li>
+      <li>Bartlett MS, Vico G, Porporato A (2014). Coupled carbon and water fluxes in CAM photosynthesis: modeling quantification of water use efficiency and productivity. <em>Plant and Soil</em> 383: 111–138. <a href="https://doi.org/10.1007/s11104-014-2064-2">doi:10.1007/s11104-014-2064-2</a><span class="why">The circadian-oscillator CAM model coupled to FvCB and a soil water balance.</span></li>
+      <li>Owen NA, Griffiths H (2013). A system dynamics model integrating physiology and biochemical regulation predicts extent of crassulacean acid metabolism (CAM) phases. <em>New Phytologist</em> 200: 1116–1131. <a href="https://doi.org/10.1111/nph.12461">doi:10.1111/nph.12461</a><span class="why">Mechanistic, regulation-explicit CAM model; the follow-up (Owen &amp; Griffiths 2014, <em>GCB Bioenergy</em> 6: 687–703) maps agave and opuntia yields across Australia.</span></li>
+      <li>Davis SC, Dohleman FG, Long SP (2011). The global potential for <em>Agave</em> as a biofuel feedstock. <em>GCB Bioenergy</em> 3: 68–78. <a href="https://doi.org/10.1111/j.1757-1707.2010.01077.x">doi:10.1111/j.1757-1707.2010.01077.x</a><span class="why">Yield compilation and the semi-arid land argument for agave bioenergy.</span></li>
+      <li>Hartzell S, Bartlett MS, Porporato A (2018). Unified representation of the C3, C4, and CAM photosynthetic pathways with the Photo3 model. <em>Ecological Modelling</em> 384: 173–187. <a href="https://doi.org/10.1016/j.ecolmodel.2018.06.012">doi:10.1016/j.ecolmodel.2018.06.012</a><span class="why">The model that puts all three pathways on one FvCB and hydraulic footing; read for how CAM storage enters the CO₂ supply term.</span></li>
+      <li>Lüttge U (2004). Ecophysiology of crassulacean acid metabolism (CAM). <em>Annals of Botany</em> 93: 629–652. <a href="https://doi.org/10.1093/aob/mch087">doi:10.1093/aob/mch087</a><span class="why">Broad ecophysiological review: habitats, plasticity, <em>Clusia</em>, and the costs and benefits of CAM.</span></li>
+      <li>Dodd AN, Borland AM, Haslam RP, Griffiths H, Maxwell K (2002). Crassulacean acid metabolism: plastic, fantastic. <em>Journal of Experimental Botany</em> 53: 569–580. <a href="https://doi.org/10.1093/jexbot/53.369.569">doi:10.1093/jexbot/53.369.569</a><span class="why">Readable account of the circadian control of PEPC kinase and phase transitions.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="c4-photosynthesis.html">← Previous: C4 photosynthesis</a><a href="fvcb-model.html">Next: The FvCB model →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#phases">Osmond's four phases</a></li>
+      <li><a href="#biochem">Night &amp; day biochemistry</a></li>
+      <li><a href="#wue">Water-use efficiency</a></li>
+      <li><a href="#plasticity">Plasticity &amp; environment</a></li>
+      <li><a href="#isotopes">Carbon isotopes</a></li>
+      <li><a href="#bioenergy">Bioenergy &amp; models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">The 24-hour simulator is a phenomenological teaching model, not a calibrated CAM model; use it for the shape of the phases and their response to night temperature and drought, not for absolute fluxes.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function esat(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); } // kPa, Tetens
+
+  // Panel: axes + scales inside a sub-rectangle of an SVG
+  function Panel(svg, box, xr, yr, ystep, ylabel) {
+    this.svg = svg; this.b = box; this.xr = xr; this.yr = yr; this.ystep = ystep; this.ylabel = ylabel;
+  }
+  Panel.prototype.sx = function (x) { return this.b.x + (x - this.xr[0]) / (this.xr[1] - this.xr[0]) * this.b.w; };
+  Panel.prototype.sy = function (y) { return this.b.y + (this.yr[1] - y) / (this.yr[1] - this.yr[0]) * this.b.h; };
+  Panel.prototype.axes = function (xstep, xlabel, xfmt) {
+    var s = this.svg, b = this.b, y, x;
+    for (y = this.yr[0]; y <= this.yr[1] + 1e-9; y += this.ystep) { s.appendChild(el('line', { 'class': 'gridline', x1: b.x, x2: b.x + b.w, y1: this.sy(y), y2: this.sy(y) })); s.appendChild(el('text', { 'class': 'tick', x: b.x - 8, y: this.sy(y) + 4, 'text-anchor': 'end' }, this.ystep < 1 ? fmt(y, 1) : fmt(y, 0))); }
+    if (xstep) for (x = this.xr[0]; x <= this.xr[1] + 1e-9; x += xstep) { s.appendChild(el('text', { 'class': 'tick', x: this.sx(x), y: b.y + b.h + 18, 'text-anchor': 'middle' }, xfmt ? xfmt(x) : x)); s.appendChild(el('line', { 'class': 'ax', x1: this.sx(x), x2: this.sx(x), y1: b.y + b.h, y2: b.y + b.h + 4 })); }
+    var y0 = clamp(0, this.yr[0], this.yr[1]);
+    s.appendChild(el('line', { 'class': 'ax', x1: b.x, x2: b.x + b.w, y1: this.sy(y0), y2: this.sy(y0) }));
+    s.appendChild(el('line', { 'class': 'ax', x1: b.x, x2: b.x, y1: b.y, y2: b.y + b.h }));
+    if (xlabel) s.appendChild(el('text', { 'class': 'axlbl', x: b.x + b.w / 2, y: b.y + b.h + 36, 'text-anchor': 'middle' }, xlabel));
+    if (this.ylabel) s.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (b.y + b.h / 2) + ') rotate(-90)' }, this.ylabel));
+  };
+  Panel.prototype.path = function (fn, cls, stroke, n) {
+    var d = '', N = n || 150;
+    for (var i = 0; i <= N; i++) { var x = this.xr[0] + (this.xr[1] - this.xr[0]) * i / N; var y = clamp(fn(x), this.yr[0], this.yr[1]); d += (i === 0 ? 'M' : 'L') + this.sx(x).toFixed(1) + ',' + this.sy(y).toFixed(1); }
+    var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); this.svg.appendChild(p); return p;
+  };
+  function attachHover(svg, tip, hitBox, xr, onMove) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: hitBox.y, y2: hitBox.y + hitBox.h, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: hitBox.x, y: hitBox.y, width: hitBox.w, height: hitBox.h, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = clamp(xr[0] + (p.x - hitBox.x) / hitBox.w * (xr[1] - xr[0]), xr[0], xr[1]);
+      var px = hitBox.x + (x - xr[0]) / (xr[1] - xr[0]) * hitBox.w;
+      xh.setAttribute('x1', px); xh.setAttribute('x2', px); xh.setAttribute('visibility', 'visible');
+      tip.innerHTML = onMove(x); tip.hidden = false;
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; onMove(null); }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+
+  /* ---------- Lab A: 24-h CAM simulator ---------- */
+  var sMode = document.getElementById('sMode'), sTn = document.getElementById('sTn'), sD = document.getElementById('sD');
+  var svgC = document.getElementById('camSvg'), tipC = document.getElementById('camTip');
+  function light(c) { return Math.max(0, Math.sin(Math.PI * (c - 6) / 12)); }
+  function bell(x, mu, sd) { return Math.exp(-Math.pow((x - mu) / sd, 2)); }
+  function simulate(Tn, d, mode) {
+    var dt = 0.1, Mmax = 250, fT = Math.exp(-Math.pow((Tn - 15) / 11, 2)), Rn = 1.0 * Math.pow(2, (Tn - 15) / 10);
+    var M = 0, Mpeak = 0, t4 = null, rows = [], c;
+    var s4 = Math.pow(Math.max(0, 1 - d / 0.8), 1.5), s2 = Math.max(0, 1 - d / 0.8);
+    for (var t = 18; t < 42 - 1e-9; t += dt) {
+      c = t >= 24 ? t - 24 : t;
+      var night = (c >= 18 || c < 6), A, gs, dM, ph, Cint = 400;
+      if (mode === 'cycling') {
+        if (night) { gs = 3; A = -0.3 * Rn; dM = 0.7 * Rn; ph = 'night: stomata closed, respiratory CO₂ refixed'; }
+        else { var L = light(c); gs = 3 + 160 * (1 - d) * L; A = 9 * (1 - d) * L - 0.2; if (c < 9.5) { dM = -Mpeak / 3; Cint = 400 + 3000 * (M > 0 ? 1 : 0); } else dM = 0; ph = 'day: direct C3 uptake' + (c < 9.5 && M > 0 ? ', morning deacidification' : ''); }
+      } else {
+        if (night) { var sf = Math.max(0, 1 - M / Mmax); A = 7 * fT * (1 - d) * sf - 0.2 * Rn; gs = 3 + 130 * fT * (1 - d) * sf; dM = Math.max(0, A) + 0.8 * Rn; ph = 'I: nocturnal PEPC fixation'; Cint = 150 + 250 * (1 - sf); }
+        else if (c < 8) { var L2 = light(c); A = (6 * s2 * bell(c, 6.8, 0.6) + 1.5 * fT * (1 - d) * Math.max(0, 1 - (c - 6) / 1.5)) * Math.max(L2, 0.2) - 0.1; gs = 3 + 140 * s2 * bell(c, 6.8, 0.7) + 40 * fT * (1 - d) * Math.max(0, 1 - (c - 6) / 1.5); dM = c < 7 ? 0.5 * A : -Mpeak / 7; ph = 'II: dawn transition, both carboxylases active'; Cint = c < 7 ? 300 : 3000; }
+        else if (M > 0.02 * Mpeak) { gs = 3 + 8 * (1 - 0.5 * d); A = 0.3; dM = -Mpeak / 7; ph = 'III: stomata closed, malate decarboxylated'; Cint = 8000 + 12000 * (M / Math.max(1, Mpeak)); }
+        else { if (t4 === null) t4 = c; var L3 = light(c); A = 8 * s4 * bell(c, 16.5, 1.4) * L3 + 0.1; gs = 3 + 150 * s4 * bell(c, 16.5, 1.4) * L3; dM = 0; ph = s4 > 0.05 ? 'IV: direct C3 fixation' : 'III/idling: acid exhausted, stomata stay shut'; Cint = 300; }
+      }
+      M = Math.max(0, M + dM * 3.6 * dt);
+      if (night && M > Mpeak) Mpeak = M;
+      if (c >= 5.9 && c < 6 && mode !== 'cycling') Mpeak = M;
+      var Tl = Tn + 12 * light(c), RH = 75 - 35 * light(c), D = esat(Tl) * (1 - RH / 100);
+      var E = gs / 1000 * D / 101.3; // mol m-2 s-1
+      rows.push({ c: c, gs: gs, A: A, M: M, ph: ph, Cint: Cint, E: E, D: D, Tl: Tl, night: night });
+    }
+    rows.sort(function (a, b) { return a.c - b.c; });
+    var up = 0, upN = 0, upD = 0, Etot = 0, peak = 0;
+    rows.forEach(function (r) { var a = r.A * 3.6 * dt; up += a; if (r.night) upN += Math.max(0, a); else upD += Math.max(0, a); Etot += r.E * 3600 * dt; if (r.M > peak) peak = r.M; });
+    return { rows: rows, up: up, upN: upN, upD: upD, Etot: Etot, peak: peak, t4: t4, s4: s4, s2: s2 };
+  }
+  function at(rows, c) { var i = Math.round(clamp(c, 0, 23.9) / 0.1); return rows[Math.min(rows.length - 1, i)]; }
+  function drawC() {
+    var Tn = +sTn.value, d = +sD.value, mode = sMode.value;
+    document.getElementById('sTnO').textContent = Tn; document.getElementById('sDO').textContent = fmt(d, 2);
+    var S = simulate(Tn, d, mode), rows = S.rows;
+    while (svgC.firstChild) svgC.removeChild(svgC.firstChild);
+    var X = 60, Wp = 470, boxes = [{ y: 28, h: 125 }, { y: 188, h: 125 }, { y: 348, h: 125 }];
+    var pG = new Panel(svgC, { x: X, y: boxes[0].y, w: Wp, h: boxes[0].h }, [0, 24], [0, 200], 50, 'gs (mmol m⁻² s⁻¹)');
+    var pA = new Panel(svgC, { x: X, y: boxes[1].y, w: Wp, h: boxes[1].h }, [0, 24], [-2, 10], 2, 'A (µmol m⁻² s⁻¹)');
+    var pM = new Panel(svgC, { x: X, y: boxes[2].y, w: Wp, h: boxes[2].h }, [0, 24], [0, 300], 100, 'malate (mmol m⁻²)');
+    // night shading
+    [pG, pA, pM].forEach(function (p) { svgC.appendChild(el('rect', { 'class': 'night', x: p.sx(0), y: p.b.y, width: p.sx(6) - p.sx(0), height: p.b.h })); svgC.appendChild(el('rect', { 'class': 'night', x: p.sx(18), y: p.b.y, width: p.sx(24) - p.sx(18), height: p.b.h })); });
+    pG.axes(null); pA.axes(null); pM.axes(3, 'Time of day (h)', function (x) { return fmt(x, 0) + ':00'; });
+    svgC.appendChild(el('text', { 'class': 'ptitle', x: X + Wp + 8, y: boxes[0].y + 12, fill: 'var(--series-1)' }, 'stomata'));
+    svgC.appendChild(el('text', { 'class': 'ptitle', x: X + Wp + 8, y: boxes[1].y + 12 }, 'net CO₂'));
+    svgC.appendChild(el('text', { 'class': 'ptitle', x: X + Wp + 8, y: boxes[2].y + 12, fill: 'var(--series-2)' }, 'malate'));
+    // phase markers (obligate)
+    if (mode !== 'cycling') {
+      var marks = [{ c: 3, t: 'I' }, { c: 7, t: 'II' }, { c: S.t4 ? (8 + S.t4) / 2 : 13, t: 'III' }, { c: 21, t: 'I' }];
+      if (S.t4 && S.s4 > 0.05) marks.push({ c: (S.t4 + 18) / 2, t: 'IV' });
+      [6, 8, 18].concat(S.t4 && S.s4 > 0.05 ? [S.t4] : []).forEach(function (c) { svgC.appendChild(el('line', { 'class': 'phaseline', x1: pG.sx(c), x2: pG.sx(c), y1: boxes[0].y - 14, y2: boxes[2].y + boxes[2].h })); });
+      marks.forEach(function (m) { svgC.appendChild(el('text', { 'class': 'phase', x: pG.sx(m.c), y: boxes[0].y - 4, 'text-anchor': 'middle' }, m.t)); });
+      svgC.appendChild(el('text', { 'class': 'tick', x: X, y: 12 }, 'phases:'));
+    } else {
+      svgC.appendChild(el('text', { 'class': 'tick', x: X, y: 12 }, 'CAM-cycling: C3 by day, nocturnal recycling of respiratory CO₂'));
+    }
+    pG.path(function (c) { return at(rows, c).gs; }, '', 'var(--series-1)', 240);
+    pA.path(function (c) { return at(rows, c).A; }, 'net', null, 240);
+    pM.path(function (c) { return at(rows, c).M; }, '', 'var(--series-2)', 240);
+    var dots = [pG, pA, pM].map(function (p) { var c = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svgC.appendChild(c); return c; });
+    attachHover(svgC, tipC, { x: X, y: boxes[0].y, w: Wp, h: boxes[2].y + boxes[2].h - boxes[0].y }, [0, 24], function (c) {
+      if (c === null) { dots.forEach(function (d0) { d0.setAttribute('visibility', 'hidden'); }); return ''; }
+      var r = at(rows, c);
+      [[pG, r.gs], [pA, r.A], [pM, r.M]].forEach(function (pr, i) { dots[i].setAttribute('cx', pr[0].sx(c)); dots[i].setAttribute('cy', pr[0].sy(clamp(pr[1], pr[0].yr[0], pr[0].yr[1]))); dots[i].setAttribute('visibility', 'visible'); });
+      return '<b>' + fmt(Math.floor(c), 0) + ':' + (Math.round((c % 1) * 60) < 10 ? '0' : '') + Math.round((c % 1) * 60) + '</b> · ' + r.ph + '<br>gs <b>' + fmt(r.gs, 0) + '</b> mmol · A <b>' + fmt(r.A, 1) + '</b> µmol · malate <b>' + fmt(r.M, 0) + '</b> mmol m⁻²<br>T<sub>leaf</sub> ' + fmt(r.Tl, 1) + ' °C · D ' + fmt(r.D, 2) + ' kPa · internal CO₂ ≈ ' + fmt(r.Cint, 0) + ' µbar';
+    });
+    var frac = S.up > 0 ? S.upN / Math.max(1e-6, S.upN + S.upD) : 0;
+    var reg = mode === 'cycling' ? 'CAM-cycling' : (d >= 0.95 ? 'CAM-idling (no net gain)' : (S.s4 > 0.05 ? 'obligate CAM, phases I–IV' : 'obligate CAM, phases II and IV suppressed'));
+    document.getElementById('oReg').textContent = reg;
+    document.getElementById('oNight').textContent = fmt(S.upN, 0);
+    document.getElementById('oDay').textContent = fmt(S.upD, 0);
+    document.getElementById('oFrac').textContent = fmt(frac * 100, 0) + '%';
+    document.getElementById('oMal').textContent = fmt(S.peak, 0) + ' · ' + fmt(2 * S.peak, 0) + ' mmol m⁻²';
+    document.getElementById('oE').textContent = fmt(S.Etot, 1);
+    document.getElementById('oWue').textContent = S.Etot > 0 ? fmt(S.up / S.Etot, 1) : 'n/a';
+    document.getElementById('oD13').textContent = S.up > 0 ? fmt(-27 + 15.5 * frac, 1) + '‰' : 'n/a';
+    var html = '<thead><tr><th class="num">Time</th><th class="num">gs</th><th class="num">A</th><th class="num">Malate</th><th>Phase</th></tr></thead><tbody>';
+    for (var h = 0; h < 24; h += 2) { var r = at(rows, h); html += '<tr><td class="num">' + h + ':00</td><td class="num">' + fmt(r.gs, 0) + '</td><td class="num">' + fmt(r.A, 1) + '</td><td class="num">' + fmt(r.M, 0) + '</td><td>' + r.ph + '</td></tr>'; }
+    document.getElementById('camTable').innerHTML = html + '</tbody>';
+  }
+  [sMode, sTn, sD].forEach(function (e) { e.addEventListener('input', drawC); e.addEventListener('change', drawC); });
+  drawC();
+
+  /* ---------- Lab B: WUE vs VPD ---------- */
+  var wTd = document.getElementById('wTd'), wRHd = document.getElementById('wRHd'), wTn = document.getElementById('wTn'), wRHn = document.getElementById('wRHn');
+  var svgW = document.getElementById('wueSvg'), tipW = document.getElementById('wueTip');
+  var Ca = 420, P = 101.3;
+  function wue(ratio, D) { return Ca * (1 - ratio) * P / (1.6 * D) / 1000; } // mmol CO2 per mol H2O
+  function drawW() {
+    var Td = +wTd.value, RHd = +wRHd.value, Tn = +wTn.value, RHn = +wRHn.value;
+    document.getElementById('wTdO').textContent = Td; document.getElementById('wRHdO').textContent = RHd; document.getElementById('wTnO').textContent = Tn; document.getElementById('wRHnO').textContent = RHn;
+    var Dd = Math.max(0.05, esat(Td) * (1 - RHd / 100)), Dn = Math.max(0.05, esat(Tn) * (1 - RHn / 100));
+    while (svgW.firstChild) svgW.removeChild(svgW.firstChild);
+    var p = new Panel(svgW, { x: 60, y: 18, w: 470, h: 280 }, [0.2, 5], [0, 60], 10, 'A / E (mmol CO₂ mol⁻¹ H₂O)');
+    p.axes(0.5, 'Vapour pressure deficit, D (kPa)', function (x) { return fmt(x, 1); });
+    var f3 = function (D) { return wue(0.7, D); }, f4 = function (D) { return wue(0.4, D); }, fc = function (D) { return wue(0.5, D); };
+    p.path(f3, '', 'var(--series-1)', 300); p.path(f4, '', 'var(--series-2)', 300); p.path(fc, '', 'var(--series-3)', 300);
+    [[Dd, f3(Dd), 'var(--series-1)', 'C3 day'], [Dd, f4(Dd), 'var(--series-2)', 'C4 day'], [Dn, fc(Dn), 'var(--series-3)', 'CAM night']].forEach(function (o) {
+      var yy = clamp(o[1], 0, 60); svgW.appendChild(el('circle', { 'class': 'op', cx: p.sx(clamp(o[0], 0.2, 5)), cy: p.sy(yy), r: 5.5, fill: o[2] }));
+      svgW.appendChild(el('text', { 'class': 'dl', x: p.sx(clamp(o[0], 0.2, 5)) + 9, y: p.sy(yy) + (o[3] === 'C3 day' ? 14 : -8), fill: o[2] }, o[3] + ' (' + fmt(o[1], 1) + ')'));
+    });
+    var labs = [{ t: 'C3', y: p.sy(f3(5)), col: 'var(--series-1)' }, { t: 'C4', y: p.sy(f4(5)), col: 'var(--series-2)' }, { t: 'CAM', y: p.sy(fc(5)), col: 'var(--series-3)' }];
+    labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { svgW.appendChild(el('text', { 'class': 'dl', x: p.b.x + p.b.w + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    attachHover(svgW, tipW, p.b, [0.2, 5], function (D) { if (D === null) return ''; return 'D <b>' + fmt(D, 2) + '</b> kPa<br>A/E: C3 <b>' + fmt(f3(D), 1) + '</b> · C4 <b>' + fmt(f4(D), 1) + '</b> · CAM <b>' + fmt(fc(D), 1) + '</b> mmol mol⁻¹'; });
+    var w3 = f3(Dd), w4 = f4(Dd), wc = fc(Dn);
+    function gpg(w) { return fmt(1000 / w * 18 / 44, 0); }
+    document.getElementById('owD').textContent = fmt(Dd, 2) + ' · ' + fmt(Dn, 2);
+    document.getElementById('owC3').textContent = fmt(w3, 1) + ' (' + fmt(1000 / w3, 0) + ' mol/mol)';
+    document.getElementById('owC4').textContent = fmt(w4, 1) + ' (' + fmt(1000 / w4, 0) + ')';
+    document.getElementById('owCAM').textContent = fmt(wc, 1) + ' (' + fmt(1000 / wc, 0) + ')';
+    document.getElementById('owG').textContent = gpg(w3) + ' · ' + gpg(w4) + ' · ' + gpg(wc);
+    document.getElementById('owAdv').textContent = fmt(wc / w3, 1) + '× (' + fmt(0.5 / 0.3, 1) + '× Ci/Ca · ' + fmt(Dd / Dn, 1) + '× VPD)';
+    var html = '<thead><tr><th class="num">D (kPa)</th><th class="num">C3</th><th class="num">C4</th><th class="num">CAM</th></tr></thead><tbody>';
+    [0.2, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5].forEach(function (D) { html += '<tr><td class="num">' + fmt(D, 2) + '</td><td class="num">' + fmt(f3(D)) + '</td><td class="num">' + fmt(f4(D)) + '</td><td class="num">' + fmt(fc(D)) + '</td></tr>'; });
+    document.getElementById('wueTable').innerHTML = html + '</tbody>';
+  }
+  [wTd, wRHd, wTn, wRHn].forEach(function (e) { e.addEventListener('input', drawW); });
+  drawW();
+
+  /* ---------- Lab C: isotope mixing ---------- */
+  var iF = document.getElementById('iF'), iN = document.getElementById('iN'), iD = document.getElementById('iD');
+  var svgI = document.getElementById('isoSvg'), tipI = document.getElementById('isoTip');
+  function drawI() {
+    var f = +iF.value, dn = +iN.value, dd = +iD.value;
+    document.getElementById('iFO').textContent = fmt(f, 2); document.getElementById('iNO').textContent = fmt(dn, 1); document.getElementById('iDO').textContent = fmt(dd, 1);
+    function mix(x) { return x * dn + (1 - x) * dd; }
+    while (svgI.firstChild) svgI.removeChild(svgI.firstChild);
+    var p = new Panel(svgI, { x: 60, y: 18, w: 470, h: 260 }, [0, 1], [-32, -8], 4, 'tissue δ¹³C (‰)');
+    p.axes(0.1, 'Fraction of carbon fixed at night, f', function (x) { return fmt(x, 1); });
+    svgI.appendChild(el('line', { 'class': 'ref', x1: p.sx(0), x2: p.sx(1), y1: p.sy(-20), y2: p.sy(-20) }));
+    svgI.appendChild(el('text', { 'class': 'tick', x: p.sx(0.02), y: p.sy(-20) - 5 }, '−20‰: "CAM" above, "C3" below'));
+    p.path(mix, 'net', null, 50);
+    svgI.appendChild(el('circle', { 'class': 'op', cx: p.sx(f), cy: p.sy(clamp(mix(f), -32, -8)), r: 5.5, fill: 'var(--accent)' }));
+    svgI.appendChild(el('text', { 'class': 'dl', x: p.sx(f) + 9, y: p.sy(clamp(mix(f), -32, -8)) + 14, fill: 'var(--accent)' }, 'f = ' + fmt(f, 2) + ', δ = ' + fmt(mix(f), 1) + '‰'));
+    svgI.appendChild(el('text', { 'class': 'dl', x: p.b.x + p.b.w + 8, y: p.sy(dn) + 4 }, 'all night'));
+    svgI.appendChild(el('text', { 'class': 'dl', x: p.sx(0.03), y: p.sy(dd) + 16 }, 'all day (C3)'));
+    attachHover(svgI, tipI, p.b, [0, 1], function (x) { if (x === null) return ''; return 'f <b>' + fmt(x, 2) + '</b> → δ¹³C <b>' + fmt(mix(x), 1) + '</b>‰'; });
+    var thr = (dn - dd) !== 0 ? (-20 - dd) / (dn - dd) : NaN;
+    document.getElementById('oiVal').textContent = fmt(mix(f), 1) + '‰';
+    document.getElementById('oiThr').textContent = (thr >= 0 && thr <= 1) ? fmt(thr, 2) : 'outside 0–1';
+    document.getElementById('oiThird').textContent = fmt(mix(1 / 3), 1) + '‰ (reads as C3)';
+    document.getElementById('oiCls').textContent = mix(f) > -20 ? 'strong CAM by the −20‰ rule' : (f > 0.05 ? 'C3-like by isotopes, yet ' + fmt(f * 100, 0) + '% nocturnal' : 'C3');
+    var html = '<thead><tr><th class="num">f</th><th class="num">δ¹³C (‰)</th><th>Reads as</th></tr></thead><tbody>';
+    for (var x = 0; x <= 1.0001; x += 0.1) html += '<tr><td class="num">' + fmt(x, 1) + '</td><td class="num">' + fmt(mix(x), 1) + '</td><td>' + (mix(x) > -20 ? 'CAM' : 'C3') + '</td></tr>';
+    document.getElementById('isoTable').innerHTML = html + '</tbody>';
+  }
+  [iF, iN, iD].forEach(function (e) { e.addEventListener('input', drawI); });
+  drawI();
+})();
+</script>
+</body>
+</html>

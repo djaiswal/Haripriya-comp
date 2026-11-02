@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Water Potential and VPD</title>
+<meta name="description" content="Water potential and vapour pressure deficit at comprehensive-exam depth: components of water potential, pressure–volume curves, the soil–plant–atmosphere continuum, cavitation and vulnerability curves, iso/anisohydry, saturation vapour pressure, VPD definitions and units, and VPD trends under climate change.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ptitle { font-size: 12px; font-weight: 600; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dash { stroke-dasharray: 5 4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .ref { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .warnline { stroke: var(--accent-2); stroke-dasharray: 6 4; stroke-width: 1.6; }
+  .ch .okline { stroke: var(--accent); stroke-dasharray: 6 4; stroke-width: 1.6; }
+  .ch .node { fill: var(--surface); stroke: var(--fg); stroke-width: 2; }
+  .ch .node.bad { fill: var(--accent-2); stroke: var(--accent-2); }
+  .ch .span { stroke: var(--accent-2); stroke-width: 2; }
+  .ch .span2 { stroke: var(--series-1); stroke-width: 2; }
+  .ch .area { fill: var(--accent-2-soft); opacity: 0.7; }
+  .chartbox { position: relative; }
+  .readout.stack { grid-template-columns: 1fr; gap: 0; }
+  .readout.stack dt { margin-top: 0.45rem; }
+  .readout.stack dd { text-align: left; }
+  .flag { font-family: var(--font-display); font-size: 0.85rem; padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.6rem; background: var(--surface-2); }
+  .flag.bad { background: var(--accent-2-soft); color: var(--accent-2); font-weight: 600; }
+  .flag.ok { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › Water potential and VPD</div>
+    <div class="eyebrow">Topic 9 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">Water Potential and VPD</h1>
+    <p class="lead">The two quantities that drive water through a plant: the water potential gradient from soil to leaf, and the vapour pressure deficit from leaf to air. What they are, how they are measured and computed, and why a drying atmosphere matters as much as a drying soil.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p><strong>Water potential</strong> Ψ is the chemical potential of water relative to pure free water at the same temperature, expressed per unit molar volume so that it has units of pressure (MPa). Water moves from high to low Ψ. In a cell Ψ = Ψ<sub>s</sub> + Ψ<sub>p</sub>: a negative solute term and a positive turgor term; in soil the matric term Ψ<sub>m</sub> dominates; in a tall tree gravity adds −0.01 MPa per metre. Along the <strong>soil–plant–atmosphere continuum</strong> water flows down a staircase of potentials, from soil (−0.01 to −1.5 MPa) through roots and xylem to leaves (−0.5 to −3 MPa at midday) and into air whose potential at 50% relative humidity is about −94 MPa. The last step is a phase change, and its driving force is best expressed not as Ψ but as the <strong>vapour pressure deficit</strong>, VPD = e<sub>s</sub>(T) − e<sub>a</sub>, the gap between saturation and actual vapour pressure. VPD rises roughly 7% per °C of warming at constant relative humidity, which is why it is increasing almost everywhere and why stomata, transpiration, growth and tree mortality now respond to the atmosphere as strongly as to the soil. The water column in the xylem is under tension (cohesion–tension theory), can cavitate, and each species' vulnerability curve (P50) and the margin between its minimum Ψ and P50 (the hydraulic safety margin) decide how close it lives to failure.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>You will be asked to define Ψ and its components with units and signs, to derive Ψ of air from relative humidity, to compute VPD from temperature and humidity (and to say why VPD, not RH, is the right variable), to sketch a pressure–volume curve and read π<sub>0</sub>, π<sub>tlp</sub> and ε off it, and to explain a vulnerability curve and safety margin. The modelling question is how these quantities enter a land-surface model: where Ψ<sub>soil</sub>, Ψ<sub>leaf</sub>, VPD and P50 appear in the code, and what happens when they are left out.</p></div>
+  </section>
+
+  <section id="potential">
+    <h2>Water potential: definition and components</h2>
+    <p>The chemical potential of water μ<sub>w</sub> (J mol⁻¹) is the free energy per mole. Dividing the difference from the reference state by the partial molar volume of water, V̄<sub>w</sub> = 18.05 × 10⁻⁶ m³ mol⁻¹, gives an energy per volume, which is a pressure:</p>
+    <div class="eq">$$\Psi = \frac{\mu_w - \mu_w^{\circ}}{\bar V_w} \quad [\text{J m}^{-3} = \text{Pa}], \qquad \Psi = \Psi_s + \Psi_p + \Psi_m + \Psi_g .$$</div>
+    <ul>
+      <li><strong>Solute (osmotic) potential</strong> Ψ<sub>s</sub> = π, always ≤ 0. For dilute solutions the van't Hoff relation gives Ψ<sub>s</sub> = −i c R T, with c the molar concentration of solute particles (mol m⁻³), i the dissociation number and RT = 2.48 kJ mol⁻¹ at 25 °C. A 1 osmolal solution has Ψ<sub>s</sub> ≈ −2.48 MPa; leaf cell sap is typically 0.3–0.8 osmolal, so Ψ<sub>s</sub> ≈ −0.8 to −2 MPa; seawater ≈ −2.5 MPa.</li>
+      <li><strong>Pressure (turgor) potential</strong> Ψ<sub>p</sub>: the hydrostatic pressure relative to atmospheric, positive in a turgid cell (0.3–1.5 MPa), zero at the turgor loss point, negative in the xylem (tension).</li>
+      <li><strong>Matric potential</strong> Ψ<sub>m</sub>: lowering of Ψ by adsorption and capillarity on surfaces, dominant in soil and in cell walls; in a soil water retention curve it is this term that falls from −0.01 MPa at field capacity to −1.5 MPa at the conventional wilting point.</li>
+      <li><strong>Gravitational potential</strong> Ψ<sub>g</sub> = ρ<sub>w</sub> g h = 0.0098 MPa m⁻¹ ≈ 0.01 MPa per metre of height, so the top of a 100 m redwood sits at Ψ ≤ −1 MPa before any transpiration occurs.</li>
+    </ul>
+    <p>Equilibrium with water vapour links Ψ to relative humidity. Because μ<sub>w</sub> = μ<sub>w</sub>° + RT ln(e/e<sub>s</sub>),</p>
+    <div class="keybox"><h3>Water potential of air</h3>
+      <div class="eq">$$\Psi_{air} = \frac{RT}{\bar V_w}\,\ln\!\left(\frac{e_a}{e_s}\right) = \frac{RT}{\bar V_w}\ln(\mathrm{RH}), \qquad \frac{RT}{\bar V_w} = \frac{8.314 \times 293.15}{18.05\times10^{-6}} \approx 135\ \text{MPa at 20 °C}.$$</div>
+      <p style="margin-top:0.75rem">At 50% RH, Ψ<sub>air</sub> = 135 × ln 0.5 ≈ −94 MPa (−95 MPa at 25 °C); at 99% RH it is still −1.4 MPa, more negative than most leaves. This is why water always leaves a leaf whose stomata are open, why the vapour phase is where almost the entire soil-to-air potential drop occurs, and why a leaf cannot "rehydrate from humid air" except at RH above ~99%. It is also why a thermocouple psychrometer, which measures RH in equilibrium with a tissue sample, must resolve RH to 0.01% to give Ψ to 0.01 MPa.</p></div>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Compartment</th><th class="num">Typical Ψ (MPa)</th><th>Dominant term</th></tr></thead>
+      <tbody>
+        <tr><td>Soil at field capacity</td><td class="num">−0.01 to −0.03</td><td>Ψ<sub>m</sub></td></tr>
+        <tr><td>Soil at permanent wilting point</td><td class="num">−1.5</td><td>Ψ<sub>m</sub> (convention, not a plant constant)</td></tr>
+        <tr><td>Root xylem, well watered</td><td class="num">−0.2 to −0.6</td><td>Ψ<sub>p</sub> (tension)</td></tr>
+        <tr><td>Leaf, predawn</td><td class="num">−0.1 to −0.5 (≈ wettest root-zone soil)</td><td>Ψ<sub>s</sub> + Ψ<sub>p</sub></td></tr>
+        <tr><td>Leaf, midday</td><td class="num">−0.5 to −3 (mesic to xeric)</td><td>Ψ<sub>s</sub> + Ψ<sub>p</sub></td></tr>
+        <tr><td>Turgor loss point</td><td class="num">−1 to −4</td><td>Ψ<sub>p</sub> = 0, Ψ = π<sub>tlp</sub></td></tr>
+        <tr><td>Air at 90% / 50% / 20% RH, 20 °C</td><td class="num">−14 / −94 / −217</td><td>Vapour phase</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="pv">
+    <h2>Pressure–volume curves and cell water relations</h2>
+    <p>The Höfler diagram and the pressure–volume (P–V) curve describe how Ψ, Ψ<sub>s</sub> and Ψ<sub>p</sub> change as a cell or leaf loses water. Tyree and Hammel [3] formalised the P–V technique: a leaf is allowed to dry on the bench, and Ψ (pressure chamber) and mass are recorded repeatedly. Three things make the analysis simple. If the symplast behaves as an ideal osmometer, Ψ<sub>s</sub> × symplastic volume is constant (Boyle–van't Hoff), so Ψ<sub>s</sub> = π<sub>0</sub>/R<sub>s</sub> where π<sub>0</sub> is the osmotic potential at full turgor and R<sub>s</sub> the symplastic relative water content. Turgor falls approximately linearly with water loss, with slope set by the <strong>bulk modulus of elasticity</strong> ε = dΨ<sub>p</sub>/dR<sub>s</sub> (MPa; stiff walls, high ε, lose turgor quickly). And beyond the turgor loss point Ψ<sub>p</sub> = 0, so Ψ = Ψ<sub>s</sub> and a plot of −1/Ψ against water lost is a straight line whose extrapolation gives π<sub>0</sub> (intercept) and the apoplastic water fraction (x-intercept).</p>
+    <div class="eq">$$\Psi_s = \frac{\pi_0}{R_s}, \qquad \Psi_p = \max\!\left[0,\; -\pi_0 - \varepsilon\,(1 - R_s)\right], \qquad \Psi = \Psi_s + \Psi_p, \qquad \pi_{tlp} = \frac{\pi_0\,\varepsilon}{\pi_0 + \varepsilon}.$$</div>
+    <p>The last expression follows by setting Ψ<sub>p</sub> = 0: 1 − R<sub>s,tlp</sub> = −π<sub>0</sub>/ε, and Ψ<sub>tlp</sub> = π<sub>0</sub>/R<sub>s,tlp</sub>. Bartlett, Scoffoni and Sack [4] showed in a global meta-analysis that π<sub>tlp</sub> is the single best leaf-level predictor of drought tolerance, that it is driven almost entirely by π<sub>0</sub> (osmotic adjustment) rather than by ε, and that both track aridity across biomes: π<sub>tlp</sub> ranges from about −1 MPa in wet tropical understories to −4 MPa or lower in deserts. The practical consequence is that a plant can only lower its turgor loss point by accumulating solutes; stiffer walls change the shape of the curve but not its endpoint.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · Pressure–volume curve explorer</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="pvSvg" viewBox="0 0 640 380" role="img" aria-label="Water potential, osmotic potential and turgor pressure versus relative water deficit, with the turgor loss point marked"></svg>
+            <div class="chart-tip" id="pvTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">Ψ<sub>s</sub> (osmotic)</span><span style="--c:var(--series-3)">Ψ<sub>p</sub> (turgor)</span><span style="--c:var(--fg)">Ψ = Ψ<sub>s</sub> + Ψ<sub>p</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="pvTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="vPi0"><span>π<sub>0</sub>, osmotic potential at full turgor (MPa)</span><output id="vPi0O">−1.5</output></label><input type="range" id="vPi0" min="-4" max="-0.5" step="0.05" value="-1.5"></div>
+          <div class="ctrl"><label for="vEps"><span>ε, bulk elastic modulus (MPa)</span><output id="vEpsO">10</output></label><input type="range" id="vEps" min="2" max="40" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="vAf"><span>Apoplastic water fraction (–)</span><output id="vAfO">0.15</output></label><input type="range" id="vAf" min="0" max="0.5" step="0.01" value="0.15"></div>
+          <dl class="readout">
+            <dt>Turgor loss point π<sub>tlp</sub> (MPa)</dt><dd id="vTlp"></dd>
+            <dt>RWC at turgor loss</dt><dd id="vRwc"></dd>
+            <dt>Turgor at full hydration (MPa)</dt><dd id="vP0"></dd>
+            <dt>π<sub>0</sub>ε/(π<sub>0</sub> + ε)</dt><dd id="vChk"></dd>
+            <dt>Capacitance above TLP (RWC MPa⁻¹)</dt><dd id="vCap"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Linear-elastic symplast model; symplastic RWC is (RWC − a<sub>f</sub>)/(1 − a<sub>f</sub>). Suggested experiments: lower π<sub>0</sub> from −1.5 to −3 MPa (osmotic adjustment) and watch the turgor loss point move; then change ε from 10 to 30 MPa and note that π<sub>tlp</sub> barely moves while the RWC at which it is reached rises sharply, the pattern Bartlett et al. found globally; set ε small (3 MPa) to see a succulent-like curve with large capacitance.</p>
+    </div>
+  </section>
+
+  <section id="spac">
+    <h2>The continuum: a catena of potentials and resistances</h2>
+    <p>Van den Honert (1948) proposed treating the soil–plant–atmosphere pathway as an electrical analogue: a steady flux E passes through resistances in series, and the potential drops across each in proportion to its resistance. In leaf-area-specific conductance terms (K in mmol m⁻² s⁻¹ MPa⁻¹):</p>
+    <div class="eq">$$E = K_{soil\text{-}root}(\Psi_{soil} - \Psi_{root}) = K_{stem}(\Psi_{root} - \Psi_{stem} - \rho g h) = K_{leaf}(\Psi_{stem} - \Psi_{leaf}),$$</div>
+    <div class="eq">$$E = \frac{\Psi_{soil} - \Psi_{leaf} - \rho g h}{\sum_i 1/K_i} = K_{plant}\,(\Psi_{soil} - \Psi_{leaf} - \rho g h).$$</div>
+    <p>Typical whole-plant leaf-specific conductances are 2–10 mmol m⁻² s⁻¹ MPa⁻¹, so a midday transpiration of 3–5 mmol m⁻² s⁻¹ requires a soil-to-leaf drop of 0.5–2 MPa; this is why midday Ψ<sub>leaf</sub> is so much lower than predawn. The leaf itself is often 30% or more of the whole-plant resistance; <strong>K<sub>leaf</sub></strong> (typically 5–30 mmol m⁻² s⁻¹ MPa⁻¹) declines steeply as the leaf dehydrates, through xylem embolism and loss of outside-xylem (bundle sheath, mesophyll, aquaporin-mediated) conductance, and it is temperature and light dependent. Root hydraulic conductance also varies, through aquaporin gating, suberisation and root shrinkage away from the soil, and the <strong>soil–root interface</strong> resistance grows enormously as the soil dries because soil hydraulic conductivity falls by orders of magnitude between −0.03 and −1.5 MPa. In dry soil this rhizosphere resistance, not the xylem, is often the limiting step.</p>
+    <p>The analogy has limits. Flux is not steady over a day (stem and leaf capacitance buffer it, so morning sap flow lags transpiration), the resistances depend on the potentials themselves (vulnerability curves, soil retention curves), and the vapour step is not a Ψ-driven resistance at all but a diffusion step driven by VPD. Modern plant-hydraulics schemes keep the resistor network but make every K a function of Ψ and add capacitors, as in SPA, ED2-hydro and CLM5-PHS.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · SPAC resistor chain</h3><span class="small muted">Potentials along the pathway at steady state</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="spSvg" viewBox="0 0 640 380" role="img" aria-label="Water potential at soil, root, stem, leaf and air nodes for the chosen transpiration rate and conductances, with turgor loss point and P50 reference lines"></svg>
+          </div>
+          <div id="spFlag" class="flag"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="sPsoil"><span>Soil Ψ (MPa)</span><output id="sPsoilO">−0.3</output></label><input type="range" id="sPsoil" min="-3" max="-0.01" step="0.01" value="-0.3"></div>
+          <div class="ctrl"><label for="sE"><span>Transpiration E (mmol m⁻² s⁻¹)</span><output id="sEO">4</output></label><input type="range" id="sE" min="0" max="12" step="0.1" value="4"></div>
+          <div class="ctrl"><label for="sKr"><span>K soil–root (mmol m⁻² s⁻¹ MPa⁻¹)</span><output id="sKrO">10</output></label><input type="range" id="sKr" min="0.5" max="40" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="sKs"><span>K stem (mmol m⁻² s⁻¹ MPa⁻¹)</span><output id="sKsO">12</output></label><input type="range" id="sKs" min="0.5" max="40" step="0.5" value="12"></div>
+          <div class="ctrl"><label for="sKl"><span>K leaf (mmol m⁻² s⁻¹ MPa⁻¹)</span><output id="sKlO">10</output></label><input type="range" id="sKl" min="0.5" max="40" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="sH"><span>Tree height (m)</span><output id="sHO">20</output></label><input type="range" id="sH" min="0" max="100" step="1" value="20"></div>
+          <div class="ctrl"><label for="sTlp"><span>Turgor loss point (MPa)</span><output id="sTlpO">−2.0</output></label><input type="range" id="sTlp" min="-4" max="-0.8" step="0.1" value="-2"></div>
+          <div class="ctrl"><label for="sP50"><span>Stem P50 (MPa)</span><output id="sP50O">−3.0</output></label><input type="range" id="sP50" min="-8" max="-0.8" step="0.1" value="-3"></div>
+          <dl class="readout stack">
+            <dt>Whole-plant K (mmol m⁻² s⁻¹ MPa⁻¹)</dt><dd id="sKt"></dd>
+            <dt>Ψ root · stem · leaf (MPa)</dt><dd id="sPsi"></dd>
+            <dt>Gravity term ρgh (MPa)</dt><dd id="sG"></dd>
+            <dt>E at which Ψ<sub>leaf</sub> = TLP</dt><dd id="sEtlp"></dd>
+            <dt>E at which Ψ<sub>stem</sub> = P50</dt><dd id="sEp50"></dd>
+            <dt>Leaf share of resistance</dt><dd id="sShare"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Air Ψ is plotted at its true value of −94 MPa only on the compressed final step, to make the point that the vapour step dwarfs the liquid ones. Conductances are constants here; in reality K<sub>soil–root</sub> collapses as Ψ<sub>soil</sub> falls and K<sub>stem</sub> follows the vulnerability curve. Suggested experiments: raise E until the leaf crosses the turgor loss point, then until the stem crosses P50; dry the soil to −1.5 MPa and reduce K<sub>soil–root</sub> to 1 to mimic rhizosphere resistance; set height to 100 m and see what gravity alone costs.</p>
+    </div>
+  </section>
+
+  <section id="xylem">
+    <h2>Cohesion–tension, cavitation and vulnerability curves</h2>
+    <p>The <strong>cohesion–tension theory</strong> (Dixon and Joly 1895; Tyree and Zimmermann [2]) holds that evaporation from cell-wall menisci in the leaf generates tension that is transmitted through continuous water columns in the xylem down to the roots; water's cohesion (hydrogen bonding, tensile strength of tens of MPa) and adhesion to the walls allow the column to be pulled rather than pushed. A column under tension is metastable: if an air bubble is seeded into a conduit, typically through a pit membrane from an adjacent air-filled conduit when the pressure difference exceeds the capillary threshold, the conduit <strong>cavitates</strong> and fills with vapour then air (an <strong>embolism</strong>), losing its conductance. Conifers' torus–margo pits and angiosperms' homogeneous pit membranes differ in how they resist air seeding, and pit membrane porosity is the main anatomical determinant of vulnerability.</p>
+    <p>A <strong>vulnerability curve</strong> plots the percentage loss of hydraulic conductivity (PLC) against xylem Ψ, usually fitted by a sigmoid:</p>
+    <div class="eq">$$\mathrm{PLC}(\Psi) = \frac{100}{1 + \exp\!\big[a\,(\Psi - P_{50})\big]}, \qquad K(\Psi) = K_{max}\left(1 - \frac{\mathrm{PLC}}{100}\right), \qquad P_{12} = P_{50} + \frac{2.0}{a}, \quad P_{88} = P_{50} - \frac{2.0}{a}.$$</div>
+    <p>P<sub>50</sub> is the Ψ at 50% loss and ranges from about −0.5 MPa in riparian willows and poplars to below −10 MPa in some desert shrubs and conifers; P<sub>12</sub> is often taken as the "air entry" point and P<sub>88</sub> as the lethal threshold for angiosperms. The <strong>hydraulic safety margin</strong> is HSM = Ψ<sub>min</sub> − P<sub>50</sub> (or − P<sub>88</sub>), the distance between the lowest Ψ a species experiences in the field and its failure point. Choat et al. [5] compiled 226 species from 81 sites and found that 70% operate with margins below 1 MPa, that this convergence holds across biomes from rainforest to desert (drought-tolerant species have lower P<sub>50</sub> but also reach lower Ψ<sub>min</sub>), and that angiosperms have narrower margins than gymnosperms. The conclusion is that forests everywhere are close to their hydraulic limits, so any increase in drought intensity raises mortality risk regardless of the local climate. Sperry and Love [6] framed this as a supply function: integrating K(Ψ) from Ψ<sub>soil</sub> downward gives the transpiration the hydraulic system can deliver at each Ψ<sub>canopy</sub>, which saturates at a critical E<sub>crit</sub> beyond which runaway embolism and hydraulic failure follow.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · Vulnerability curve and safety margin</h3><span class="small muted">Hover the chart to read PLC</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="vcSvg" viewBox="0 0 640 360" role="img" aria-label="Percent loss of conductivity versus xylem water potential with P12, P50, P88 and the minimum field water potential marked"></svg>
+            <div class="chart-tip" id="vcTip" hidden></div>
+          </div>
+          <div id="vcFlag" class="flag"></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cP50"><span>P<sub>50</sub> (MPa)</span><output id="cP50O">−3.0</output></label><input type="range" id="cP50" min="-9" max="-0.5" step="0.1" value="-3"></div>
+          <div class="ctrl"><label for="cSlope"><span>Slope at P<sub>50</sub> (% MPa⁻¹)</span><output id="cSlopeO">40</output></label><input type="range" id="cSlope" min="10" max="150" step="5" value="40"></div>
+          <div class="ctrl"><label for="cPmin"><span>Minimum field Ψ<sub>xylem</sub> (MPa)</span><output id="cPminO">−2.2</output></label><input type="range" id="cPmin" min="-9" max="-0.2" step="0.1" value="-2.2"></div>
+          <dl class="readout">
+            <dt>Sigmoid a (MPa⁻¹)</dt><dd id="cA"></dd>
+            <dt>P<sub>12</sub> · P<sub>88</sub> (MPa)</dt><dd id="cP12"></dd>
+            <dt>Safety margin Ψ<sub>min</sub> − P<sub>50</sub> (MPa)</dt><dd id="cHsm"></dd>
+            <dt>Safety margin to P<sub>88</sub> (MPa)</dt><dd id="cHsm88"></dd>
+            <dt>PLC at Ψ<sub>min</sub></dt><dd id="cPlc"></dd>
+            <dt>K/K<sub>max</sub> at Ψ<sub>min</sub></dt><dd id="cK"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">a = 4 × slope/100. Suggested experiments: compare a riparian poplar (P<sub>50</sub> −1.5, Ψ<sub>min</sub> −1.2) with a piñon pine (P<sub>50</sub> −4.5, Ψ<sub>min</sub> −3.0) and a desert shrub (P<sub>50</sub> −8, Ψ<sub>min</sub> −6): all have safety margins near 1 MPa, Choat's convergence; then steepen the slope and notice how little room there is between P<sub>12</sub> and P<sub>88</sub> for a steep curve.</p>
+    </div>
+
+    <h3>Isohydric and anisohydric strategies</h3>
+    <p>Species differ in how tightly they regulate Ψ<sub>leaf</sub> as soil and atmosphere dry. <strong>Isohydric</strong> plants close stomata early and hold midday Ψ<sub>leaf</sub> nearly constant (e.g. maize, many poplars, piñon pine); <strong>anisohydric</strong> plants let Ψ<sub>leaf</sub> fall with Ψ<sub>soil</sub> and keep stomata open longer (e.g. sunflower, many oaks, juniper). A convenient metric is σ = dΨ<sub>midday</sub>/dΨ<sub>predawn</sub>: σ ≈ 0 strict isohydry, σ ≈ 1 strict anisohydry, σ &lt; 1 partial. Isohydric species protect their xylem but risk carbon starvation in long droughts; anisohydric species risk hydraulic failure. Martínez-Vilalta and Garcia-Forner [7] caution that the dichotomy is leaky: σ depends on the drought stage, on whether stem or leaf Ψ is used, and on hydraulic conductance changes, and the same species can look isohydric in one study and anisohydric in another. For modellers the useful content is the continuum from Ψ<sub>leaf</sub> regulation to stomatal control, which the hydraulic stomatal schemes on the <a href="stomatal-conductance.html">stomatal conductance page</a> represent through the vulnerability parameters rather than a categorical label.</p>
+  </section>
+
+  <section id="vpd">
+    <h2>Vapour pressure deficit</h2>
+    <p>The <strong>saturation vapour pressure</strong> e<sub>s</sub>(T) is the partial pressure of water vapour in equilibrium with a flat liquid surface. It is given by the Clausius–Clapeyron equation, d ln e<sub>s</sub>/dT = L/(R<sub>v</sub>T²), whose integration gives the exponential rise of about 6–7% per °C; empirical fits are used in practice:</p>
+    <div class="eq">$$e_s(T) = 0.6108\,\exp\!\left(\frac{17.27\,T}{T + 237.3}\right)\ \text{kPa} \qquad \text{(Tetens/Magnus, FAO-56)},$$</div>
+    <div class="eq">$$e_s(T) = 0.61121\,\exp\!\left[\left(18.678 - \frac{T}{234.5}\right)\frac{T}{257.14 + T}\right]\ \text{kPa} \qquad \text{(Buck 1981)},$$</div>
+    <p>with T in °C. Buck's form is accurate to better than 0.1% from −20 to 50 °C; Tetens is adequate for most ecological work and is what FAO-56 [11] uses. Useful anchors: e<sub>s</sub> = 0.61 kPa at 0 °C, 1.23 at 10, 2.34 at 20, 3.17 at 25, 4.24 at 30, 7.38 at 40 °C. The <strong>actual vapour pressure</strong> e<sub>a</sub> is set by the moisture content of the air: e<sub>a</sub> = RH × e<sub>s</sub>(T<sub>air</sub>) = e<sub>s</sub>(T<sub>dew</sub>). Then</p>
+    <div class="keybox"><h3>Definitions</h3>
+      <div class="eq">$$\mathrm{VPD}_{air} = e_s(T_{air}) - e_a = e_s(T_{air})(1 - \mathrm{RH}), \qquad \mathrm{VPD}_{leaf} = D = e_s(T_{leaf}) - e_a,$$</div>
+      <div class="eq">$$w = \frac{e}{P}\ \ (\text{mol mol}^{-1}), \qquad E = g_{tw}\,(w_i - w_a), \qquad w_i = \frac{e_s(T_{leaf})}{P}.$$</div>
+      <p style="margin-top:0.75rem">VPD<sub>air</sub> is the atmospheric demand used in meteorology and the Penman–Monteith equation; <strong>leaf-to-air VPD</strong> uses the leaf temperature because the air inside the leaf is saturated at T<sub>leaf</sub>, and it is what stomata and transpiration actually respond to. A sunlit leaf 3 °C warmer than 30 °C air at 50% RH sees D = 5.03 − 2.12 = 2.9 kPa rather than 2.1 kPa. The <strong>mole fraction</strong> form w = e/P (mmol mol⁻¹, dimensionless) is the correct driving force for diffusion, E = g<sub>tw</sub>(w<sub>i</sub> − w<sub>a</sub>); at sea level 1 kPa ≈ 9.9 mmol mol⁻¹, but at 2000 m (P ≈ 80 kPa) the same 1 kPa is 12.5 mmol mol⁻¹, so the pressure and mole-fraction forms diverge with altitude. The <a href="stomatal-conductance.html">Medlyn g<sub>1</sub></a> in √kPa assumes the pressure form.</p></div>
+    <p><strong>VPD is not relative humidity.</strong> RH is a ratio and carries no information about demand unless the temperature is known: 50% RH is a VPD of 1.2 kPa at 20 °C and 3.7 kPa at 40 °C. Plants respond to VPD (strictly to the transpiration rate it drives), not to RH, which is why Ball–Berry's h<sub>s</sub> term fails in hot, dry conditions and why Leuning and Medlyn use D. At constant RH, VPD grows exponentially with temperature; at constant e<sub>a</sub> (the more realistic short-term case), a 1 °C warming raises VPD by about 0.06 kPa × e<sub>s</sub>/kPa, i.e. around 6–7% of e<sub>s</sub>.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 4 · VPD calculator on the saturation curve</h3><span class="small muted">Hover the curve for e<sub>s</sub>(T)</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="esSvg" viewBox="0 0 640 380" role="img" aria-label="Saturation vapour pressure versus temperature with the air state, dew point, leaf saturation point and the two vapour pressure deficits marked"></svg>
+            <div class="chart-tip" id="esTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">e<sub>s</sub>(T), Tetens</span><span style="--c:var(--series-1)">VPD<sub>air</sub></span><span style="--c:var(--accent-2)">leaf-to-air VPD</span></div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="eTa"><span>Air temperature (°C)</span><output id="eTaO">28</output></label><input type="range" id="eTa" min="0" max="45" step="0.5" value="28"></div>
+          <div class="ctrl"><label for="eRH"><span>Relative humidity (%)</span><output id="eRHO">45</output></label><input type="range" id="eRH" min="5" max="100" step="1" value="45"></div>
+          <div class="ctrl"><label for="eDT"><span>T<sub>leaf</sub> − T<sub>air</sub> (°C)</span><output id="eDTO">2</output></label><input type="range" id="eDT" min="-6" max="10" step="0.5" value="2"></div>
+          <div class="ctrl"><label for="eP"><span>Air pressure (kPa)</span><output id="ePO">101.3</output></label><input type="range" id="eP" min="60" max="105" step="0.5" value="101.3"></div>
+          <dl class="readout stack">
+            <dt>e<sub>s</sub>(T<sub>air</sub>) Tetens · Buck (kPa)</dt><dd id="eEs"></dd>
+            <dt>e<sub>a</sub> (kPa)</dt><dd id="eEa"></dd>
+            <dt>VPD<sub>air</sub> (kPa · mmol mol⁻¹)</dt><dd id="eVpd"></dd>
+            <dt>Leaf-to-air VPD (kPa · mmol mol⁻¹)</dt><dd id="eVpdL"></dd>
+            <dt>Dew point (°C)</dt><dd id="eTd"></dd>
+            <dt>Wet-bulb temperature (°C)</dt><dd id="eTw"></dd>
+            <dt>Ψ<sub>air</sub> = (RT/V̄<sub>w</sub>) ln RH (MPa)</dt><dd id="ePsi"></dd>
+            <dt>Mixing ratio (g kg⁻¹)</dt><dd id="eQ"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Wet-bulb temperature solves e<sub>a</sub> = e<sub>s</sub>(T<sub>w</sub>) − γ(T<sub>a</sub> − T<sub>w</sub>) with the psychrometric constant γ = 0.000665 P. Suggested experiments: hold RH at 50% and sweep temperature from 15 to 40 °C to see VPD grow from 0.85 to 3.7 kPa; hold e<sub>a</sub> fixed instead (adjust RH downward as you warm) to mimic a heatwave without added moisture; set T<sub>leaf</sub> − T<sub>air</sub> to −3 °C, the transpirational cooling of a well-watered crop, and compare the two VPDs; drop pressure to 70 kPa and watch the mmol mol⁻¹ values rise while the kPa values stay fixed.</p>
+    </div>
+
+    <h3>Dew point, wet bulb and the psychrometer</h3>
+    <p>The <strong>dew point</strong> T<sub>d</sub> is the temperature at which the air would become saturated if cooled at constant pressure, so e<sub>a</sub> = e<sub>s</sub>(T<sub>d</sub>); inverting Tetens, T<sub>d</sub> = 237.3 ln(e<sub>a</sub>/0.6108)/(17.27 − ln(e<sub>a</sub>/0.6108)). Dew point is conserved as air warms during the day, which is why it is a better field measure of moisture than RH. The <strong>wet-bulb temperature</strong> T<sub>w</sub> is the temperature a ventilated wet surface reaches when evaporative cooling balances sensible heat gain: e<sub>a</sub> = e<sub>s</sub>(T<sub>w</sub>) − γ(T<sub>a</sub> − T<sub>w</sub>), with γ = c<sub>p</sub>P/(0.622 λ) ≈ 0.066 kPa K⁻¹ the <strong>psychrometric constant</strong>. The aspirated psychrometer measures humidity from T<sub>a</sub> and T<sub>w</sub> using this relation; the same physics (a leaf is a wet bulb with an extra stomatal resistance) is the Penman–Monteith equation on the next page. T<sub>d</sub> ≤ T<sub>w</sub> ≤ T<sub>a</sub>, with equality at saturation.</p>
+
+    <h3>Why VPD matters: stomata, transpiration, growth, mortality</h3>
+    <p>Stomata close as D rises, approximately as g<sub>s</sub> ∝ D<sup>−1/2</sup> in the Medlyn formulation. Because E = g<sub>s</sub>D, transpiration first rises with D, then saturates, and in many species declines at high D: the apparent <strong>"feed-forward"</strong> response in which E falls as the driving force increases. Monteith [8] reinterpreted the whole body of humidity-response data by showing that g<sub>s</sub> declines linearly with E rather than with D itself, i.e. stomata sense the water loss rate (through leaf or epidermal water status) rather than humidity: a feedback, with an apparent feed-forward arising when the leaf's hydraulic supply cannot keep up. For modelling, the consequence is that canopy E does not grow in proportion to atmospheric demand, and that models with weak D sensitivity (Jarvis functions with shallow slopes, or Ball–Berry at high temperature) over-predict ET during heatwaves.</p>
+    <p>Growth responds to VPD through turgor: cell expansion needs Ψ<sub>p</sub> above a yield threshold, and high D lowers Ψ<sub>leaf</sub> during the day, so leaf expansion and radial stem growth are often confined to the night and suppressed by dry afternoons even in wet soil. Carbon uptake falls because stomata close. Yuan et al. [9] documented a sharp global rise in VPD since the late 1990s, reversing an earlier trend, and found that over half of the vegetated land shows vegetation indices and productivity negatively correlated with VPD once soil moisture is accounted for; Novick et al. [10] showed with FLUXNET data that VPD limitation of ecosystem fluxes is as important as soil moisture limitation and increasingly so, especially in forests. Grossiord et al. [12] reviewed the physiology: because warming raises e<sub>s</sub> exponentially while e<sub>a</sub> rises more slowly (land dries faster than the ocean supplies moisture), VPD will keep rising; it drives stomatal closure, reduces photosynthesis and growth, increases hydraulic stress through higher transpiration demand per unit conductance, and is implicated in drought-induced tree mortality independently of soil moisture. For an exam, the essential statement is: VPD is both a direct physiological driver and the connection between warming and plant water stress, and models that respond only to soil moisture miss it.</p>
+  </section>
+
+  <section id="measure">
+    <h2>Measuring water potential</h2>
+    <p><strong>Pressure chamber</strong> (Scholander bomb, 1965): a cut leaf or shoot is sealed in a chamber with the cut end protruding, and nitrogen pressure is raised until xylem sap just appears at the cut; the balance pressure equals minus the xylem tension, which at equilibrium approximates Ψ<sub>leaf</sub> (strictly Ψ<sub>p</sub> + Ψ<sub>m</sub> of the xylem, ignoring xylem solutes). It is fast, robust, and the field standard; errors arise from slow readings, overshooting, and from measuring during rapid transpiration. <strong>Thermocouple psychrometers</strong> measure the equilibrium vapour pressure over a tissue sample or in a sealed chamber on a stem or in the soil (Spanner or Peltier type, or the dew-point method), giving total Ψ including the solute term; they need exquisite temperature control (0.001 °C per 0.01 MPa) but work on soil, roots and stems. Osmotic potential is measured on expressed sap with a vapour-pressure osmometer or from the P–V curve. <strong>Stem water potential</strong> is measured with a pressure chamber on a leaf that has been bagged in foil for 1–2 hours so that it stops transpiring and equilibrates with the stem xylem; it is less noisy than leaf Ψ and is the preferred irrigation-scheduling variable in orchards. <strong>Predawn Ψ<sub>leaf</sub></strong>, measured before sunrise when E ≈ 0, is taken as an estimate of root-zone soil Ψ (weighted toward the wettest layer the roots reach); night-time transpiration, hydraulic redistribution and disequilibrium in dry soil all make it less negative or more negative than the soil, so treat it as an index. Psychrometers and new optical or microtensiometer sensors are now embedded in stems for continuous Ψ records that pair with sap-flow and dendrometer data.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>Soil water potential.</strong> Every land-surface model carries a soil water retention curve (Clapp–Hornberger or van Genuchten) that converts volumetric water content to Ψ<sub>m</sub>, and most compute a stress factor β from either θ (between wilting point and field capacity; ORCHIDEE, older JULES, Noah-MP, DayCent, Century-type models) or Ψ<sub>soil</sub> (CLM4.5: β from Ψ relative to Ψ<sub>open</sub> and Ψ<sub>close</sub> per PFT, weighted by root fraction). BioCro and crop models (APSIM, DSSAT) use θ-based supply:demand ratios. The choice matters because Ψ(θ) is highly non-linear: a sandy soil at 10% water content is far wetter in Ψ terms than a clay at 20%.</p>
+    <p><strong>Plant water potential.</strong> CLM5's plant hydraulic stress (PHS; Kennedy et al. 2019) solves Ψ at root, stem and leaf nodes each time step with vulnerability-curve conductances, replacing β with a function of Ψ<sub>leaf</sub> applied to V<sub>cmax</sub> and g<sub>0</sub>, and uses the root–soil Ψ gradient to distribute uptake and permit hydraulic redistribution. JULES has the SOX scheme, ED2 has a hydraulics module (Xu et al. 2016) with leaf and stem capacitance and mortality thresholds, SPA (Williams et al. 1996) was the first to drive stomata from a Ψ<sub>leaf</sub> threshold, and TFS-hydro, FATES-hydro and LPJ-GUESS-hydro follow the same architecture. These require P50, slope, K<sub>max</sub>, capacitance and π<sub>tlp</sub> by PFT, now available from TRY and the Xylem Functional Traits database, and they are the route by which safety margins and iso/anisohydry enter projections of drought mortality.</p>
+    <p><strong>VPD.</strong> Models compute e<sub>s</sub> with Tetens or Buck from forcing temperature, e<sub>a</sub> from specific humidity, and leaf-to-air D from the solved canopy temperature; this D feeds the stomatal model and the Penman–Monteith or energy-balance calculation of λE. Because forcing data are provided at a reference height, the model's D is the air value modified by the canopy layer; models that use air rather than leaf D underestimate transpirational demand on sunlit leaves. Rising VPD under climate change enters the models exclusively through these terms, so stomatal D sensitivity (g<sub>1</sub>, D<sub>0</sub>, or the Jarvis humidity slope) governs the simulated fate of ET and GPP under warming; this is one of the largest spreads among CMIP land models.</p>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Molar volume of water V̄<sub>w</sub></td><td class="num">18.05 × 10⁻⁶ m³ mol⁻¹</td><td>Links μ<sub>w</sub> (J mol⁻¹) to Ψ (Pa)</td></tr>
+        <tr><td>RT/V̄<sub>w</sub></td><td class="num">135 MPa (20 °C) · 137 MPa (25 °C)</td><td>Ψ<sub>air</sub> = (RT/V̄<sub>w</sub>) ln RH</td></tr>
+        <tr><td>Ψ<sub>air</sub> at 50% RH</td><td class="num">≈ −94 MPa</td><td>−14 MPa at 90%, −1.4 MPa at 99%</td></tr>
+        <tr><td>van't Hoff, RT at 25 °C</td><td class="num">2.48 MPa per osmolal</td><td>Ψ<sub>s</sub> = −icRT</td></tr>
+        <tr><td>Gravitational gradient</td><td class="num">0.01 MPa m⁻¹</td><td>ρ<sub>w</sub>g</td></tr>
+        <tr><td>Soil Ψ: field capacity · wilting point</td><td class="num">−0.01 to −0.03 · −1.5 MPa</td><td>Conventions</td></tr>
+        <tr><td>Midday Ψ<sub>leaf</sub></td><td class="num">−0.5 to −3 MPa</td><td>Mesic to xeric</td></tr>
+        <tr><td>π<sub>tlp</sub> range</td><td class="num">−1 to −4 MPa</td><td>Bartlett et al. 2012 [4]</td></tr>
+        <tr><td>ε (bulk elastic modulus)</td><td class="num">5–30 MPa</td><td>Low in succulents</td></tr>
+        <tr><td>P<sub>50</sub> range</td><td class="num">−0.5 to −12 MPa</td><td>Riparian to desert</td></tr>
+        <tr><td>Hydraulic safety margin</td><td class="num">&lt; 1 MPa for 70% of species</td><td>Choat et al. 2012 [5]</td></tr>
+        <tr><td>Whole-plant K (leaf area basis)</td><td class="num">2–10 mmol m⁻² s⁻¹ MPa⁻¹</td><td>K<sub>leaf</sub> 5–30</td></tr>
+        <tr><td>e<sub>s</sub> at 20 · 25 · 30 · 40 °C</td><td class="num">2.34 · 3.17 · 4.24 · 7.38 kPa</td><td>≈ +6–7% per °C</td></tr>
+        <tr><td>Δ = de<sub>s</sub>/dT at 25 °C</td><td class="num">0.189 kPa K⁻¹</td><td>Used in Penman–Monteith</td></tr>
+        <tr><td>Psychrometric constant γ</td><td class="num">0.066 kPa K⁻¹ at sea level</td><td>0.000665 P</td></tr>
+        <tr><td>kPa → mmol mol⁻¹</td><td class="num">× 9.87 at 101.3 kPa</td><td>w = e/P</td></tr>
+        <tr><td>Typical midday VPD</td><td class="num">1–2 kPa temperate · 3–6 kPa arid</td><td>&gt; 3 kPa closes most stomata strongly</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Define water potential and its components. Show that air at 50% relative humidity and 20 °C has a water potential near −94 MPa, and explain the physiological significance.</summary><div class="a"><p>Ψ = (μ<sub>w</sub> − μ<sub>w</sub>°)/V̄<sub>w</sub>, the chemical potential of water relative to pure free water at the same T and atmospheric pressure, divided by the partial molar volume (18.05 × 10⁻⁶ m³ mol⁻¹) so that it has units of pressure; by convention pure water at reference height has Ψ = 0 and almost all Ψ in nature are negative. Ψ = Ψ<sub>s</sub> (solute, ≤ 0, van't Hoff −icRT) + Ψ<sub>p</sub> (hydrostatic, positive in turgid cells, negative in xylem) + Ψ<sub>m</sub> (matric, from adsorption and capillarity, dominant in soils and walls) + Ψ<sub>g</sub> (ρgh, 0.01 MPa m⁻¹). For vapour, μ<sub>w</sub> − μ<sub>w</sub>° = RT ln(e/e<sub>s</sub>), so Ψ<sub>air</sub> = (RT/V̄<sub>w</sub>) ln RH = (8.314 × 293.15/18.05 × 10⁻⁶) × ln 0.5 = 1.35 × 10⁸ Pa × (−0.693) ≈ −94 MPa. Significance: the vapour step holds nearly the entire potential drop from soil (−0.03 MPa) to atmosphere, so water always moves outward through open stomata; the liquid pathway's drops (≈ 1–2 MPa) are tiny by comparison, which is why the last step must be treated as diffusion driven by VPD, not as another resistor; leaves cannot absorb water from air below ~99% RH; and psychrometric measurement of Ψ needs extreme RH resolution.</p></div></details>
+    <details class="q"><summary>2. Sketch and explain a pressure–volume curve. How are π<sub>0</sub>, π<sub>tlp</sub>, ε and the apoplastic fraction obtained, and why does π<sub>tlp</sub> depend mainly on π<sub>0</sub>?</summary><div class="a"><p>A leaf is rehydrated, then dried progressively on the bench while Ψ (pressure chamber) and mass are recorded; relative water content follows from fresh, turgid and dry mass. Plot −1/Ψ (y) against 1 − RWC (x). Initially the curve is concave because turgor and solutes both change; after the turgor loss point it becomes a straight line because Ψ = Ψ<sub>s</sub> = π<sub>0</sub>/R<sub>s</sub>, so −1/Ψ is linear in water lost. Extrapolating the line to x = 0 gives −1/π<sub>0</sub>; the point where the data leave the line is the turgor loss point (π<sub>tlp</sub>, RWC<sub>tlp</sub>); extrapolating to −1/Ψ = 0 gives the apoplastic water fraction (water that is not osmotically active). Turgor at each point is Ψ − Ψ<sub>s</sub> (measured minus the line), and ε = dΨ<sub>p</sub>/dR<sub>s</sub> is the slope of turgor against symplastic RWC, usually taken near full turgor. With the linear model Ψ<sub>p</sub> = −π<sub>0</sub> − ε(1 − R<sub>s</sub>), setting Ψ<sub>p</sub> = 0 gives 1 − R<sub>s,tlp</sub> = −π<sub>0</sub>/ε and π<sub>tlp</sub> = π<sub>0</sub>ε/(π<sub>0</sub> + ε). Because ε (5–30 MPa) is much larger than |π<sub>0</sub>| (1–3 MPa), the factor ε/(π<sub>0</sub> + ε) is close to 1 (≈ 1.1–1.3) and π<sub>tlp</sub> ≈ π<sub>0</sub> × a nearly constant factor; changing ε moves the RWC at which turgor is lost, not the Ψ at which it is lost. Hence drought tolerance (a more negative π<sub>tlp</sub>) is achieved by osmotic adjustment, as Bartlett et al. 2012 showed across 317 species.</p></div></details>
+    <details class="q"><summary>3. Compute VPD for air at 30 °C and 40% RH, and the leaf-to-air VPD for a leaf at 33 °C. Express both in kPa and mmol mol⁻¹ at sea level. Why is VPD rather than RH the correct variable for stomatal and transpiration models?</summary><div class="a"><p>Tetens: e<sub>s</sub>(30) = 0.6108 exp(17.27 × 30/267.3) = 0.6108 × exp(1.938) = 4.24 kPa. e<sub>a</sub> = 0.4 × 4.24 = 1.70 kPa. VPD<sub>air</sub> = 4.24 − 1.70 = 2.55 kPa. e<sub>s</sub>(33) = 0.6108 exp(17.27 × 33/270.3) = 0.6108 × exp(2.108) = 5.03 kPa; leaf-to-air VPD = 5.03 − 1.70 = 3.33 kPa. In mole fraction, divide by P = 101.3 kPa: 25.1 and 32.9 mmol mol⁻¹. Transpiration is a diffusive flux, E = g<sub>tw</sub>(w<sub>i</sub> − w<sub>a</sub>), proportional to the mole-fraction (or vapour-pressure) difference between the saturated intercellular air at T<sub>leaf</sub> and the ambient air; RH is a ratio relative to e<sub>s</sub>(T<sub>air</sub>) and the same RH represents very different demands at different temperatures (50% RH: 1.2 kPa at 20 °C, 3.7 kPa at 40 °C). Stomata respond to the water-loss rate (Monteith 1995), hence to D, which is why Ball–Berry's h<sub>s</sub> term predicts opening with temperature at constant D (wrong) while the Leuning and Medlyn D-based forms do not. Finally, leaf temperature differs from air temperature by several degrees in sun, so models should use leaf-to-air D from the solved energy balance, not VPD<sub>air</sub>.</p></div></details>
+    <details class="q"><summary>4. Explain the cohesion–tension theory, what a vulnerability curve is, and what Choat et al. (2012) concluded about hydraulic safety margins. Why is this relevant to climate-change projections?</summary><div class="a"><p>Cohesion–tension: evaporation from menisci in leaf cell walls generates negative pressure; because water has high cohesive (hydrogen-bond) strength and adheres to hydrophilic walls, this tension is transmitted through continuous water columns in the xylem to the roots and soil, pulling water up without metabolic energy. The columns are metastable: a gas bubble seeded through a pit membrane when the pressure difference across it exceeds the capillary threshold causes cavitation and an air-filled (embolised) conduit, which no longer conducts. A vulnerability curve is the percentage loss of conductivity versus xylem Ψ, usually sigmoid, characterised by P<sub>50</sub> (Ψ at 50% loss), with P<sub>12</sub> (air entry) and P<sub>88</sub> (lethal threshold for angiosperms). The hydraulic safety margin is the minimum field Ψ minus P<sub>50</sub> (or P<sub>88</sub>). Choat et al. compiled 226 species and 81 sites and found that 70% of species operate with safety margins under 1 MPa, that drought-tolerant species have lower P<sub>50</sub> but experience correspondingly lower Ψ<sub>min</sub> (so margins converge across biomes), and that angiosperms have narrower margins than gymnosperms. Relevance: forests everywhere are near their hydraulic limits, so increases in drought intensity or VPD raise mortality risk globally, not just in arid regions; the safety margin and P<sub>50</sub> are now the key traits in plant-hydraulics modules (CLM5-PHS, ED2-hydro, FATES-hydro) that attempt to predict drought mortality, and the narrowness of margins means that model errors of a few tenths of a MPa in Ψ<sub>leaf</sub> flip the outcome.</p></div></details>
+    <details class="q"><summary>5. A 30 m tree transpires 4 mmol m⁻² s⁻¹ (leaf area basis). Soil Ψ is −0.5 MPa, and the soil-to-root, stem and leaf conductances are 8, 15 and 10 mmol m⁻² s⁻¹ MPa⁻¹. Compute Ψ at each node. What happens when the soil dries to −1.5 MPa and the rhizosphere conductance falls to 2?</summary><div class="a"><p>Drops: soil→root 4/8 = 0.5 MPa; root→stem (top) 4/15 = 0.27 MPa plus gravity 0.01 × 30 = 0.3 MPa; stem→leaf 4/10 = 0.4 MPa. Ψ<sub>root</sub> = −1.0, Ψ<sub>stem,top</sub> = −1.57, Ψ<sub>leaf</sub> = −1.97 MPa. Whole-plant conductance 1/(1/8 + 1/15 + 1/10) = 3.43 mmol m⁻² s⁻¹ MPa⁻¹, so the total non-gravity drop is 4/3.43 = 1.17 MPa, consistent. With Ψ<sub>soil</sub> = −1.5 and K<sub>soil–root</sub> = 2: the first drop becomes 2.0 MPa and Ψ<sub>leaf</sub> would be −1.5 − 2.0 − 0.57 − 0.4 = −4.47 MPa at the same E, which would be below the turgor loss point of most trees and below P<sub>50</sub> of many; in reality stomata close so E falls, and the vulnerability curve reduces K<sub>stem</sub> further, so the tree converges on a much lower E with Ψ<sub>leaf</sub> near a regulated value (isohydric) or lets Ψ fall and risks embolism (anisohydric). The example shows (i) gravity matters for tall trees, (ii) in dry soil the rhizosphere, not the xylem, often dominates the resistance, and (iii) E and Ψ must be solved together with a stomatal model, which is what plant-hydraulics schemes do.</p></div></details>
+    <details class="q"><summary>6. Describe Monteith's (1995) reinterpretation of stomatal humidity responses and the "feed-forward" transpiration response. What does it imply for land-surface models during heatwaves?</summary><div class="a"><p>Classic experiments showed g<sub>s</sub> declining as D increased, sometimes so steeply that E = g<sub>s</sub>D itself fell at high D, the apparent feed-forward response (the output declines as the driving force increases, which no simple feedback can produce). Monteith re-plotted published data as g<sub>s</sub> against E rather than against D and found a linear decline, g<sub>s</sub> ≈ g<sub>max</sub>(1 − E/E<sub>max</sub>), across species and conditions. The interpretation is that stomata respond to the rate of water loss through its effect on leaf or epidermal water status (a feedback), not to humidity sensed directly; an apparent feed-forward appears when the hydraulic supply to the epidermis saturates. Mechanistically this is consistent with the hydraulic–ABA signalling now favoured. Implications: canopy transpiration saturates or declines when VPD becomes extreme, so models whose stomatal humidity response is weak (shallow Jarvis slopes, Ball–Berry with h<sub>s</sub> at high temperature, or D-insensitive crop coefficients) over-predict ET and under-predict canopy temperature and water-stress carry-over during heatwaves, while models with a √D or hydraulic response reproduce the plateau. It also warns against fitting D responses from data where E and D are confounded, and favours formulations in which g<sub>s</sub> is tied to Ψ<sub>leaf</sub> or E (Tuzet, SOX, CLM5-PHS).</p></div></details>
+    <details class="q"><summary>7. Compare pressure-chamber, psychrometer, stem (bagged-leaf) and predawn measurements of water potential. Which would you use to parameterise a hydraulic model, and what does each actually measure?</summary><div class="a"><p>Pressure chamber: balance pressure that returns xylem sap to the cut surface; measures the xylem tension of the sample, approximately Ψ<sub>leaf</sub> if the leaf is at equilibrium with its xylem (it neglects xylem solutes, usually &lt; 0.1 MPa); fast, field-robust, destructive; errors from transpiration during handling and from pressurising too fast. Thermocouple psychrometer: equilibrium vapour pressure over tissue or in a soil/stem chamber, converted via Ψ = (RT/V̄<sub>w</sub>) ln RH; measures total Ψ (including solute terms) and works on soil, roots and stems and continuously, but needs 0.001 °C thermal stability, careful calibration and hours of equilibration. Stem Ψ: pressure chamber on a leaf bagged in foil for 1–2 h so E = 0 and the leaf equilibrates with the stem xylem; integrates the whole-plant supply and is less variable than leaf Ψ; used for irrigation scheduling. Predawn Ψ<sub>leaf</sub>: measured with E ≈ 0 before sunrise; approximates the Ψ of the root-zone soil the roots can access, biased by night-time transpiration (more negative) and hydraulic redistribution or soil heterogeneity (weighted to the wettest layer). For a hydraulic model one needs the Ψ at the resistor nodes: predawn (soil boundary), stem Ψ (xylem node, together with sap flow to give K<sub>plant</sub>), and midday leaf Ψ (leaf node, with E from gas exchange to give K<sub>leaf</sub>), plus laboratory vulnerability curves for P<sub>50</sub>; continuous stem psychrometers paired with sap-flow sensors give the time series needed to calibrate capacitance.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Nobel PS (2009). <em>Physicochemical and Environmental Plant Physiology</em>, 4th ed. Academic Press, Oxford. <span class="why">Rigorous derivations of chemical potential, water potential, van't Hoff and the Ψ of air; Chapter 2 is the standard reference.</span></li>
+      <li>Tyree MT, Zimmermann MH (2002). <em>Xylem Structure and the Ascent of Sap</em>, 2nd ed. Springer, Berlin. <span class="why">Cohesion–tension, cavitation, air seeding and vulnerability curves from the people who established them.</span></li>
+      <li>Tyree MT, Hammel HT (1972). The measurement of the turgor pressure and the water relations of plants by the pressure-bomb technique. <em>Journal of Experimental Botany</em> 23: 267–282. <a href="https://doi.org/10.1093/jxb/23.1.267">doi:10.1093/jxb/23.1.267</a><span class="why">The pressure–volume curve method and its analysis.</span></li>
+      <li>Bartlett MK, Scoffoni C, Sack L (2012). The determinants of leaf turgor loss point and prediction of drought tolerance of species and biomes: a global meta-analysis. <em>Ecology Letters</em> 15: 393–405. <a href="https://doi.org/10.1111/j.1461-0248.2012.01751.x">doi:10.1111/j.1461-0248.2012.01751.x</a><span class="why">π<sub>tlp</sub> as the key drought-tolerance trait, driven by π<sub>0</sub> rather than ε.</span></li>
+      <li>Choat B, Jansen S, Brodribb TJ, et al. (2012). Global convergence in the vulnerability of forests to drought. <em>Nature</em> 491: 752–755. <a href="https://doi.org/10.1038/nature11688">doi:10.1038/nature11688</a><span class="why">Hydraulic safety margins of 226 species; the "70% below 1 MPa" result.</span></li>
+      <li>Sperry JS, Love DM (2015). What plant hydraulics can tell us about responses to climate-change droughts. <em>New Phytologist</em> 207: 14–27. <a href="https://doi.org/10.1111/nph.13354">doi:10.1111/nph.13354</a><span class="why">The hydraulic supply function, E<sub>crit</sub>, and how vulnerability curves translate into drought responses.</span></li>
+      <li>Martínez-Vilalta J, Garcia-Forner N (2017). Water potential regulation, stomatal behaviour and hydraulic transport under drought: deconstructing the iso/anisohydric concept. <em>Plant, Cell &amp; Environment</em> 40: 962–976. <a href="https://doi.org/10.1111/pce.12846">doi:10.1111/pce.12846</a><span class="why">Why the iso/anisohydric dichotomy is unstable and what to use instead.</span></li>
+      <li>Monteith JL (1995). A reinterpretation of stomatal responses to humidity. <em>Plant, Cell &amp; Environment</em> 18: 357–364. <a href="https://doi.org/10.1111/j.1365-3040.1995.tb00371.x">doi:10.1111/j.1365-3040.1995.tb00371.x</a><span class="why">Stomata respond to transpiration rate, not humidity; the origin of the "feed-forward" discussion.</span></li>
+      <li>Yuan W, Zheng Y, Piao S, et al. (2019). Increased atmospheric vapor pressure deficit reduces global vegetation growth. <em>Science Advances</em> 5: eaax1396. <a href="https://doi.org/10.1126/sciadv.aax1396">doi:10.1126/sciadv.aax1396</a><span class="why">The sharp post-1990s rise in VPD and its negative association with vegetation growth.</span></li>
+      <li>Novick KA, Ficklin DL, Stoy PC, et al. (2016). The increasing importance of atmospheric demand for ecosystem water and carbon fluxes. <em>Nature Climate Change</em> 6: 1023–1027. <a href="https://doi.org/10.1038/nclimate3114">doi:10.1038/nclimate3114</a><span class="why">FLUXNET evidence that VPD limitation rivals soil-moisture limitation.</span></li>
+      <li>Allen RG, Pereira LS, Raes D, Smith M (1998). <em>Crop Evapotranspiration: Guidelines for Computing Crop Water Requirements</em>. FAO Irrigation and Drainage Paper 56, Rome. <span class="why">The Tetens equations, Δ, γ, dew point and the standard humidity calculations as used operationally.</span></li>
+      <li>Grossiord C, Buckley TN, Cernusak LA, et al. (2020). Plant responses to rising vapor pressure deficit. <em>New Phytologist</em> 226: 1550–1566. <a href="https://doi.org/10.1111/nph.16485">doi:10.1111/nph.16485</a><span class="why">Review of VPD physiology from stomata to mortality, and why VPD will keep rising.</span></li>
+      <li>Buck AL (1981). New equations for computing vapor pressure and enhancement factor. <em>Journal of Applied Meteorology</em> 20: 1527–1532. <span class="why">The Buck saturation vapour pressure formula and its accuracy relative to Goff–Gratch.</span></li>
+      <li>Campbell GS, Norman JM (1998). <em>An Introduction to Environmental Biophysics</em>, 2nd ed. Springer, New York. <span class="why">Chapters 3–4 on humidity variables, psychrometry and water potential, with worked examples in mole-fraction units.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="acclimation-thermal-response.html">← Acclimation and thermal response</a><a href="transpiration-penman-monteith.html">Next: Transpiration and Penman–Monteith →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#potential">Water potential</a></li>
+      <li><a href="#pv">Pressure–volume curves</a></li>
+      <li><a href="#spac">The continuum</a></li>
+      <li><a href="#xylem">Cavitation &amp; vulnerability</a></li>
+      <li><a href="#vpd">Vapour pressure deficit</a></li>
+      <li><a href="#measure">Measuring Ψ</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (linear-elastic symplast, constant conductances in the resistor chain, Tetens saturation curve) chosen for intuition.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  function esat(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }
+  function esBuck(T) { return 0.61121 * Math.exp((18.678 - T / 234.5) * (T / (257.14 + T))); }
+  function dewpoint(ea) { var l = Math.log(ea / 0.6108); return 237.3 * l / (17.27 - l); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function sfmt(x, d) { var s = fmt(x, d); return s.charAt(0) === '-' ? '−' + s.slice(1) : s; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function setOut(id, v) { var o = document.getElementById(id); if (o) o.textContent = v; }
+  function val(id) { return +document.getElementById(id).value; }
+  function niceTicks(lo, hi, n) { var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag, step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag; var t = []; for (var v = Math.ceil(lo / step - 1e-9) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(6)); return t; }
+  function tickLabel(v) { var s = String(+v.toFixed(4)); return s.charAt(0) === '-' ? '−' + s.slice(1) : s; }
+  function panel(svg, box, xr, yr, xlab, ylab, title, opts) {
+    opts = opts || {};
+    var sx = function (x) { return box.x + (x - xr[0]) / (xr[1] - xr[0]) * box.w; };
+    var sy = function (y) { return box.y + (yr[1] - y) / (yr[1] - yr[0]) * box.h; };
+    niceTicks(yr[0], yr[1], 5).forEach(function (v) { svg.appendChild(el('line', { 'class': 'gridline', x1: box.x, x2: box.x + box.w, y1: sy(v), y2: sy(v) })); svg.appendChild(el('text', { 'class': 'tick', x: box.x - 7, y: sy(v) + 4, 'text-anchor': 'end' }, tickLabel(v))); });
+    if (!opts.noXTicks) niceTicks(xr[0], xr[1], 6).forEach(function (v) { svg.appendChild(el('line', { 'class': 'ax', x1: sx(v), x2: sx(v), y1: box.y + box.h, y2: box.y + box.h + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: sx(v), y: box.y + box.h + 17, 'text-anchor': 'middle' }, tickLabel(v))); });
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x + box.w, y1: box.y + box.h, y2: box.y + box.h }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: box.x, x2: box.x, y1: box.y, y2: box.y + box.h }));
+    if (xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: box.x + box.w / 2, y: box.y + box.h + 34, 'text-anchor': 'middle' }, xlab));
+    if (ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(' + (box.x - 44) + ',' + (box.y + box.h / 2) + ') rotate(-90)' }, ylab));
+    if (title) svg.appendChild(el('text', { 'class': 'ptitle', x: box.x + 6, y: box.y + 13 }, title));
+    return { sx: sx, sy: sy, xr: xr, yr: yr, box: box };
+  }
+  function pathXY(p, pts) { var d = ''; pts.forEach(function (q) { if (q[1] === null || !isFinite(q[1])) return; d += (d === '' ? 'M' : 'L') + p.sx(q[0]).toFixed(1) + ',' + p.sy(clamp(q[1], p.yr[0], p.yr[1])).toFixed(1); }); return d; }
+  function placeTip(tip, e) { var host = tip.parentNode.getBoundingClientRect(); var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px'; }
+  function hoverLayer(svg, tip, box, onX) {
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: box.y, y2: box.y + box.h, visibility: 'hidden' }); svg.appendChild(xh);
+    var hit = el('rect', { x: box.x, y: box.y, width: box.w, height: box.h, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) { var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY; var p = pt.matrixTransform(svg.getScreenCTM().inverse()); var fx = clamp((p.x - box.x) / box.w, 0, 1); xh.setAttribute('x1', p.x); xh.setAttribute('x2', p.x); xh.setAttribute('visibility', 'visible'); tip.innerHTML = onX(fx); tip.hidden = false; placeTip(tip, e); }
+    function leave() { xh.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('input', fn); }); }
+
+  /* ---------- Lab 1: pressure-volume ---------- */
+  (function () {
+    var svg = document.getElementById('pvSvg'), tip = document.getElementById('pvTip');
+    if (!svg) return;
+    var ids = ['vPi0', 'vEps', 'vAf'];
+    function model(rwc) { var pi0 = val('vPi0'), eps = val('vEps'), af = val('vAf'); var Rs = (rwc - af) / (1 - af); if (Rs <= 0.02) Rs = 0.02; var ps = pi0 / Rs; var pp = Math.max(0, -pi0 - eps * (1 - Rs)); return { ps: ps, pp: pp, psi: ps + pp, Rs: Rs }; }
+    function draw() {
+      setOut('vPi0O', sfmt(val('vPi0'), 2)); setOut('vEpsO', fmt(val('vEps'), 1)); setOut('vAfO', fmt(val('vAf'), 2));
+      clear(svg);
+      var pi0 = val('vPi0'), eps = val('vEps'), af = val('vAf');
+      var Rtlp = 1 + pi0 / eps, rwcTlp = af + Rtlp * (1 - af), tlp = pi0 / Rtlp;
+      var xmax = 40; // % water deficit
+      var ymin = Math.min(-5, Math.floor(model(1 - xmax / 100).psi)), ymax = Math.ceil(-pi0) + 0.5;
+      ymin = Math.max(ymin, -12);
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 24, h: 380 - 16 - 54 }, [0, xmax], [ymin, ymax], 'Relative water deficit, 1 − RWC (%)', 'Potential (MPa)');
+      svg.appendChild(el('line', { 'class': 'ax', x1: p.box.x, x2: p.box.x + p.box.w, y1: p.sy(0), y2: p.sy(0) }));
+      var ps = [], pp = [], pt = [];
+      for (var x = 0; x <= xmax; x += 0.25) { var m = model(1 - x / 100); ps.push([x, m.ps]); pp.push([x, m.pp]); pt.push([x, m.psi]); }
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-1)', d: pathXY(p, ps) }));
+      svg.appendChild(el('path', { 'class': 'ser', stroke: 'var(--series-3)', d: pathXY(p, pp) }));
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p, pt) }));
+      var xt = (1 - rwcTlp) * 100;
+      if (xt > 0 && xt < xmax) { svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(xt), x2: p.sx(xt), y1: p.box.y, y2: p.box.y + p.box.h })); svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(xt), cy: p.sy(clamp(tlp, ymin, ymax)), r: 5 })); svg.appendChild(el('text', { 'class': 'tick', x: p.sx(xt) + 8, y: p.sy(clamp(tlp, ymin, ymax)) - 10 }, 'turgor loss point: πtlp = ' + sfmt(tlp, 2) + ' MPa, RWC = ' + fmt(rwcTlp * 100, 0) + '%')); }
+      svg.appendChild(el('text', { 'class': 'dl', x: p.sx(1), y: p.sy(-pi0) - 6, fill: 'var(--series-3)' }, 'Ψp'));
+      svg.appendChild(el('text', { 'class': 'dl', x: p.sx(1), y: p.sy(pi0) + 14, fill: 'var(--series-1)' }, 'Ψs'));
+      svg.appendChild(el('text', { 'class': 'dl', x: p.sx(1), y: p.sy(0) - 6, fill: 'var(--fg)' }, 'Ψ'));
+      hoverLayer(svg, tip, p.box, function (fx) { var x = fx * xmax; var m = model(1 - x / 100); return 'RWC <b>' + fmt(100 - x, 1) + '%</b> (deficit ' + fmt(x, 1) + '%)<br>Ψ <b>' + sfmt(m.psi, 2) + '</b> · Ψs <b>' + sfmt(m.ps, 2) + '</b> · Ψp <b>' + fmt(m.pp, 2) + '</b> MPa<br>−1/Ψ = <b>' + fmt(-1 / m.psi, 2) + '</b> MPa⁻¹'; });
+      setOut('vTlp', sfmt(tlp, 2)); setOut('vRwc', fmt(rwcTlp * 100, 1) + '%'); setOut('vP0', fmt(-pi0, 2)); setOut('vChk', sfmt(pi0 * eps / (pi0 + eps), 2));
+      var cap = (1 - rwcTlp) / (-pi0 - tlp); setOut('vCap', isFinite(cap) ? fmt(cap, 3) : 'n/a');
+      var html = '<thead><tr><th class="num">RWC (%)</th><th class="num">Ψs</th><th class="num">Ψp</th><th class="num">Ψ (MPa)</th><th class="num">−1/Ψ</th></tr></thead><tbody>';
+      for (var r = 100; r >= 62; r -= 4) { var mm = model(r / 100); html += '<tr><td class="num">' + r + '</td><td class="num">' + sfmt(mm.ps, 2) + '</td><td class="num">' + fmt(mm.pp, 2) + '</td><td class="num">' + sfmt(mm.psi, 2) + '</td><td class="num">' + fmt(-1 / mm.psi, 2) + '</td></tr>'; }
+      document.getElementById('pvTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 2: SPAC resistor chain ---------- */
+  (function () {
+    var svg = document.getElementById('spSvg'), flag = document.getElementById('spFlag');
+    if (!svg) return;
+    var ids = ['sPsoil', 'sE', 'sKr', 'sKs', 'sKl', 'sH', 'sTlp', 'sP50'];
+    function draw() {
+      setOut('sPsoilO', sfmt(val('sPsoil'), 2)); setOut('sEO', fmt(val('sE'), 1)); setOut('sKrO', fmt(val('sKr'), 1)); setOut('sKsO', fmt(val('sKs'), 1)); setOut('sKlO', fmt(val('sKl'), 1)); setOut('sHO', val('sH')); setOut('sTlpO', sfmt(val('sTlp'), 1)); setOut('sP50O', sfmt(val('sP50'), 1));
+      clear(svg);
+      var Ps = val('sPsoil'), E = val('sE'), Kr = val('sKr'), Ks = val('sKs'), Kl = val('sKl'), h = val('sH'), tlp = val('sTlp'), p50 = val('sP50');
+      var g = 0.0098 * h;
+      var Proot = Ps - E / Kr, Pstem = Proot - E / Ks - g, Pleaf = Pstem - E / Kl, Pair = -94;
+      var Kt = 1 / (1 / Kr + 1 / Ks + 1 / Kl);
+      var nodes = [{ n: 'soil', v: Ps }, { n: 'root xylem', v: Proot }, { n: 'stem top', v: Pstem }, { n: 'leaf', v: Pleaf }];
+      var ymin = Math.min(-4, Math.floor(Pleaf) - 0.5, p50 - 0.5), ymax = 0.2;
+      var W = 640, L = 64, Rm = 24, top = 16, bot = 54, ph = 380 - top - bot;
+      var liqW = 380; // width for the four liquid nodes
+      var p = panel(svg, { x: L, y: top, w: W - L - Rm, h: ph }, [0, 1], [ymin, ymax], null, 'Ψ (MPa)', null, { noXTicks: true });
+      var xs = nodes.map(function (q, i) { return L + 20 + i * (liqW - 40) / 3; });
+      var xair = W - Rm - 30;
+      // reference lines
+      svg.appendChild(el('line', { 'class': 'okline', x1: L, x2: L + liqW, y1: p.sy(clamp(tlp, ymin, ymax)), y2: p.sy(clamp(tlp, ymin, ymax)) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: L + liqW - 4, y: p.sy(clamp(tlp, ymin, ymax)) - 4, 'text-anchor': 'end', fill: 'var(--accent)' }, 'turgor loss point ' + sfmt(tlp, 1)));
+      svg.appendChild(el('line', { 'class': 'warnline', x1: L, x2: L + liqW, y1: p.sy(clamp(p50, ymin, ymax)), y2: p.sy(clamp(p50, ymin, ymax)) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: L + liqW - 4, y: p.sy(clamp(p50, ymin, ymax)) - 4, 'text-anchor': 'end', fill: 'var(--accent-2)' }, 'stem P50 ' + sfmt(p50, 1)));
+      // liquid path
+      var d = '';
+      nodes.forEach(function (q, i) { d += (i === 0 ? 'M' : 'L') + xs[i] + ',' + p.sy(clamp(q.v, ymin, ymax)); });
+      svg.appendChild(el('path', { 'class': 'ser net', d: d }));
+      // vapour step, drawn to the clamped bottom with a break marker
+      var yb = p.box.y + p.box.h;
+      svg.appendChild(el('path', { 'class': 'ser dash', stroke: 'var(--muted)', d: 'M' + xs[3] + ',' + p.sy(clamp(Pleaf, ymin, ymax)) + ' L' + xair + ',' + (yb - 10) }));
+      svg.appendChild(el('path', { 'class': 'ax', d: 'M' + (xair - 8) + ',' + (yb - 14) + ' l16,-6 M' + (xair - 8) + ',' + (yb - 8) + ' l16,-6', stroke: 'var(--fg)', 'stroke-width': 2, fill: 'none' }));
+      svg.appendChild(el('text', { 'class': 'tick', x: xair, y: yb + 17, 'text-anchor': 'middle' }, 'air'));
+      svg.appendChild(el('text', { 'class': 'tick', x: W - Rm - 4, y: top + 30, 'text-anchor': 'end' }, 'Ψair ≈ −94 MPa at 50% RH (axis broken)'));
+      svg.appendChild(el('text', { 'class': 'tick', x: W - Rm - 4, y: top + 44, 'text-anchor': 'end' }, 'vapour step ≈ ' + fmt(Pleaf - Pair, 0) + ' MPa, dashed'));
+      // nodes
+      nodes.forEach(function (q, i) {
+        var bad = (i === 3 && q.v < tlp) || (i === 2 && q.v < p50);
+        svg.appendChild(el('circle', { 'class': 'node' + (bad ? ' bad' : ''), cx: xs[i], cy: p.sy(clamp(q.v, ymin, ymax)), r: 6 }));
+        svg.appendChild(el('text', { 'class': 'tick', x: xs[i], y: yb + 17, 'text-anchor': 'middle' }, q.n));
+        svg.appendChild(el('text', { 'class': 'dl', x: xs[i] + (i === 3 ? -10 : 10), y: p.sy(clamp(q.v, ymin, ymax)) - 10, 'text-anchor': i === 3 ? 'end' : 'start' }, sfmt(q.v, 2)));
+        if (i > 0) { var drop = nodes[i - 1].v - q.v; svg.appendChild(el('text', { 'class': 'tick', x: (xs[i - 1] + xs[i]) / 2, y: (p.sy(clamp(nodes[i - 1].v, ymin, ymax)) + p.sy(clamp(q.v, ymin, ymax))) / 2 + 16, 'text-anchor': 'middle' }, 'ΔΨ ' + fmt(drop, 2) + (i === 2 && g > 0 ? ' (incl. ρgh ' + fmt(g, 2) + ')' : ''))); }
+      });
+      svg.appendChild(el('text', { 'class': 'ptitle', x: L + 6, y: top + 13 }, 'E = ' + fmt(E, 1) + ' mmol m⁻² s⁻¹ through K = ' + fmt(Kt, 2) + ' mmol m⁻² s⁻¹ MPa⁻¹'));
+      setOut('sKt', fmt(Kt, 2)); setOut('sPsi', sfmt(Proot, 2) + ' · ' + sfmt(Pstem, 2) + ' · ' + sfmt(Pleaf, 2)); setOut('sG', fmt(g, 2));
+      var Etlp = (Ps - g - tlp) * Kt, Ep50 = (Ps - g - p50) / (1 / Kr + 1 / Ks);
+      setOut('sEtlp', Etlp > 0 ? fmt(Etlp, 1) + ' mmol m⁻² s⁻¹' : 'already below at E = 0');
+      setOut('sEp50', Ep50 > 0 ? fmt(Ep50, 1) + ' mmol m⁻² s⁻¹' : 'already below at E = 0');
+      setOut('sShare', fmt(100 * (1 / Kl) / (1 / Kr + 1 / Ks + 1 / Kl), 0) + '%');
+      var msgs = [];
+      if (Pstem < p50) msgs.push('Stem Ψ is below P50: more than half the xylem conductance would be lost and Kₛₜₑₘ would collapse (runaway embolism).');
+      if (Pleaf < tlp) msgs.push('Leaf Ψ is below the turgor loss point: cells are flaccid, growth stops and stomata would be closing.');
+      if (!msgs.length) msgs.push('Leaf and stem both above their thresholds. Safety margin to turgor loss ' + fmt(Pleaf - tlp, 2) + ' MPa; stem margin to P50 ' + fmt(Pstem - p50, 2) + ' MPa.');
+      flag.textContent = msgs.join(' '); flag.className = 'flag ' + (Pstem < p50 || Pleaf < tlp ? 'bad' : 'ok');
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 3: vulnerability curve ---------- */
+  (function () {
+    var svg = document.getElementById('vcSvg'), tip = document.getElementById('vcTip'), flag = document.getElementById('vcFlag');
+    if (!svg) return;
+    var ids = ['cP50', 'cSlope', 'cPmin'];
+    function draw() {
+      setOut('cP50O', sfmt(val('cP50'), 1)); setOut('cSlopeO', val('cSlope')); setOut('cPminO', sfmt(val('cPmin'), 1));
+      clear(svg);
+      var p50 = val('cP50'), a = 4 * val('cSlope') / 100, pmin = val('cPmin');
+      function plc(psi) { return 100 / (1 + Math.exp(a * (psi - p50))); }
+      var xmin = -10, xmax = 0;
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 24, h: 360 - 16 - 54 }, [xmin, xmax], [0, 100], 'Xylem water potential (MPa)', 'Loss of conductivity, PLC (%)');
+      var pts = []; for (var x = xmin; x <= xmax + 1e-9; x += 0.05) pts.push([x, plc(x)]);
+      // safety margin shading between pmin and p50
+      if (pmin > p50) svg.appendChild(el('rect', { 'class': 'area', x: p.sx(p50), y: p.box.y, width: p.sx(pmin) - p.sx(p50), height: p.box.h }));
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p, pts) }));
+      var P12 = p50 + Math.log(100 / 12 - 1) / a, P88 = p50 - Math.log(100 / 12 - 1) / a;
+      [[P12, 12, 'P12'], [p50, 50, 'P50'], [P88, 88, 'P88']].forEach(function (q) { if (q[0] < xmin || q[0] > xmax) return; svg.appendChild(el('line', { 'class': 'ref', x1: p.sx(q[0]), x2: p.sx(q[0]), y1: p.sy(q[1]), y2: p.box.y + p.box.h })); svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(q[0]), cy: p.sy(q[1]), r: 4.5 })); svg.appendChild(el('text', { 'class': 'tick', x: p.sx(q[0]) + 5, y: p.sy(q[1]) - 6 }, q[2] + ' ' + sfmt(q[0], 1))); });
+      svg.appendChild(el('line', { 'class': 'warnline', x1: p.sx(clamp(pmin, xmin, xmax)), x2: p.sx(clamp(pmin, xmin, xmax)), y1: p.box.y, y2: p.box.y + p.box.h }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(clamp(pmin, xmin, xmax)) - 5, y: p.box.y + 14, 'text-anchor': 'end', fill: 'var(--accent-2)' }, 'Ψmin ' + sfmt(pmin, 1)));
+      if (pmin > p50) svg.appendChild(el('text', { 'class': 'tick', x: (p.sx(pmin) + p.sx(p50)) / 2, y: p.box.y + p.box.h - 8, 'text-anchor': 'middle' }, 'safety margin ' + fmt(pmin - p50, 1) + ' MPa'));
+      hoverLayer(svg, tip, p.box, function (fx) { var x = xmin + fx * (xmax - xmin); return 'Ψ <b>' + sfmt(x, 2) + '</b> MPa<br>PLC <b>' + fmt(plc(x), 1) + '%</b> · K/Kmax <b>' + fmt(1 - plc(x) / 100, 2) + '</b>'; });
+      setOut('cA', fmt(a, 2)); setOut('cP12', sfmt(P12, 2) + ' · ' + sfmt(P88, 2)); setOut('cHsm', sfmt(pmin - p50, 2)); setOut('cHsm88', sfmt(pmin - P88, 2));
+      var pl = plc(pmin); setOut('cPlc', fmt(pl, 1) + '%'); setOut('cK', fmt(1 - pl / 100, 2));
+      var msg, cls;
+      if (pmin <= P88) { msg = 'Minimum field potential is beyond P88: lethal embolism for most angiosperms.'; cls = 'bad'; }
+      else if (pmin <= p50) { msg = 'Negative safety margin: the species routinely loses more than half its conductivity.'; cls = 'bad'; }
+      else if (pmin - p50 < 1) { msg = 'Safety margin under 1 MPa, like 70% of the species in Choat et al. 2012.'; cls = ''; }
+      else { msg = 'Comfortable safety margin (' + fmt(pmin - p50, 1) + ' MPa); typical of some gymnosperms.'; cls = 'ok'; }
+      flag.textContent = msg; flag.className = 'flag ' + cls;
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab 4: VPD calculator ---------- */
+  (function () {
+    var svg = document.getElementById('esSvg'), tip = document.getElementById('esTip');
+    if (!svg) return;
+    var ids = ['eTa', 'eRH', 'eDT', 'eP'];
+    function wetbulb(Ta, ea, P) { var gam = 0.000665 * P, lo = -20, hi = Ta; for (var k = 0; k < 60; k++) { var m = (lo + hi) / 2; if (esat(m) - gam * (Ta - m) > ea) hi = m; else lo = m; } return (lo + hi) / 2; }
+    function draw() {
+      setOut('eTaO', fmt(val('eTa'), 1)); setOut('eRHO', val('eRH')); setOut('eDTO', fmt(val('eDT'), 1)); setOut('ePO', fmt(val('eP'), 1));
+      clear(svg);
+      var Ta = val('eTa'), RH = val('eRH') / 100, Tl = Ta + val('eDT'), P = val('eP');
+      var es = esat(Ta), ea = RH * es, esl = esat(Tl), vpd = es - ea, vpdl = esl - ea, Td = dewpoint(ea), Tw = wetbulb(Ta, ea, P);
+      var xmin = 0, xmax = 45, ymax = Math.max(4, Math.ceil(Math.max(esat(xmax), esl) * 1.05));
+      ymax = 10;
+      var p = panel(svg, { x: 64, y: 16, w: 640 - 64 - 24, h: 380 - 16 - 54 }, [xmin, xmax], [0, ymax], 'Temperature (°C)', 'Vapour pressure (kPa)');
+      var pts = []; for (var t = xmin; t <= xmax + 1e-9; t += 0.5) pts.push([t, esat(t)]);
+      svg.appendChild(el('path', { 'class': 'ser net', d: pathXY(p, pts) }));
+      svg.appendChild(el('text', { 'class': 'dl', x: p.sx(36), y: p.sy(esat(36)) - 10, 'text-anchor': 'end' }, 'eₛ(T)'));
+      // ea line
+      svg.appendChild(el('line', { 'class': 'ref', x1: p.box.x, x2: p.sx(clamp(Tl, xmin, xmax)), y1: p.sy(ea), y2: p.sy(ea) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.box.x + 4, y: p.sy(ea) - 5 }, 'eₐ = ' + fmt(ea, 2) + ' kPa'));
+      // VPD air span
+      svg.appendChild(el('line', { 'class': 'span2', x1: p.sx(Ta), x2: p.sx(Ta), y1: p.sy(ea), y2: p.sy(clamp(es, 0, ymax)) }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Ta), cy: p.sy(clamp(es, 0, ymax)), r: 4.5 }));
+      svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Ta), cy: p.sy(ea), r: 4.5 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ta) - 6, y: p.sy((ea + Math.min(es, ymax)) / 2) + 4, 'text-anchor': 'end', fill: 'var(--series-1)' }, 'VPDₐᵢᵣ ' + fmt(vpd, 2)));
+      // leaf span
+      if (Math.abs(Tl - Ta) > 0.01) {
+        svg.appendChild(el('line', { 'class': 'span', x1: p.sx(clamp(Tl, xmin, xmax)), x2: p.sx(clamp(Tl, xmin, xmax)), y1: p.sy(ea), y2: p.sy(clamp(esl, 0, ymax)) }));
+        svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(clamp(Tl, xmin, xmax)), cy: p.sy(clamp(esl, 0, ymax)), r: 4.5 }));
+        svg.appendChild(el('text', { 'class': 'tick', x: p.sx(clamp(Tl, xmin, xmax)) + 6, y: p.sy((ea + Math.min(esl, ymax)) / 2) + 4, fill: 'var(--accent-2)' }, 'Dₗₑₐₓ ' + fmt(vpdl, 2)));
+        svg.appendChild(el('text', { 'class': 'tick', x: p.sx(clamp(Tl, xmin, xmax)) + 6, y: p.sy(clamp(esl, 0, ymax)) - 6 }, 'Tₗₑₐₓ ' + fmt(Tl, 1)));
+      }
+      svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Ta) - 6, y: p.sy(clamp(es, 0, ymax)) - 6, 'text-anchor': 'end' }, 'Tₐᵢᵣ ' + fmt(Ta, 1)));
+      // dew point
+      if (Td > xmin) { svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Td), cy: p.sy(ea), r: 4.5, fill: 'var(--series-1)' })); svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Td), y: p.sy(ea) + 16, 'text-anchor': 'middle' }, 'dew point ' + fmt(Td, 1))); }
+      // wet bulb
+      if (Tw > xmin) { svg.appendChild(el('circle', { 'class': 'op', cx: p.sx(Tw), cy: p.sy(esat(Tw)), r: 4, fill: 'var(--series-3)' })); svg.appendChild(el('text', { 'class': 'tick', x: p.sx(Tw) - 6, y: p.sy(esat(Tw)) - 8, 'text-anchor': 'end' }, 'wet bulb ' + fmt(Tw, 1))); }
+      hoverLayer(svg, tip, p.box, function (fx) { var t = xmin + fx * (xmax - xmin); return 'T <b>' + fmt(t, 1) + '</b> °C<br>eₛ Tetens <b>' + fmt(esat(t), 3) + '</b> · Buck <b>' + fmt(esBuck(t), 3) + '</b> kPa<br>Δ = deₛ/dT <b>' + fmt(4098 * esat(t) / Math.pow(t + 237.3, 2), 3) + '</b> kPa K⁻¹'; });
+      setOut('eEs', fmt(es, 3) + ' · ' + fmt(esBuck(Ta), 3)); setOut('eEa', fmt(ea, 3));
+      setOut('eVpd', fmt(vpd, 2) + ' · ' + fmt(vpd / P * 1000, 1)); setOut('eVpdL', fmt(vpdl, 2) + ' · ' + fmt(vpdl / P * 1000, 1));
+      setOut('eTd', fmt(Td, 1)); setOut('eTw', fmt(Tw, 1));
+      var psi = 8.314 * (Ta + 273.15) / 18.05e-6 * Math.log(RH) / 1e6; setOut('ePsi', sfmt(psi, 1));
+      setOut('eQ', fmt(622 * ea / (P - ea), 1));
+    }
+    bind(ids, draw); draw();
+  })();
+})();
+</script>
+</body>
+</html>

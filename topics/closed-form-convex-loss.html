@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Closed-Form Solutions and Convex Loss</title>
+<meta name="description" content="Closed-form solutions and convex loss at comprehensive-exam depth: normal equations, ridge and lasso, closed-form MLEs, convexity conditions, loss-function catalogue, KKT, and where closed forms do and do not exist in ecosystem modelling.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.4; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .pt { fill: var(--series-1); stroke: var(--surface); stroke-width: 1.5; }
+  .ch .pt.out { fill: var(--accent-2); }
+  .ch .cont { fill: none; stroke: var(--series-1); stroke-width: 1.2; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .chord { stroke: var(--series-2); stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
+  .ch .gap { stroke: var(--accent); stroke-width: 2.5; }
+  .ch .mark { stroke: var(--surface); stroke-width: 2; }
+  .ch .ttl { font-size: 12.5px; font-weight: 600; }
+  .chartbox { position: relative; }
+  .twoup { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  @media (max-width: 640px) { .twoup { grid-template-columns: 1fr; } }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.3rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .matrix { font-family: var(--font-mono); font-size: 0.8rem; background: var(--surface-2); border-radius: 8px; padding: 0.5rem 0.7rem; margin-top: 0.5rem; white-space: pre; overflow-x: auto; }
+  .verdict { font-family: var(--font-display); font-weight: 600; margin-top: 0.5rem; padding: 0.4rem 0.7rem; border-radius: 8px; background: var(--surface-2); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#stats">Statistics, ML &amp; Mathematics</a> › Closed-form solutions and convex loss</div>
+    <div class="eyebrow">Topic 3 of the Statistics, ML &amp; Mathematics section</div>
+    <h1 style="margin-top:0.3rem">Closed-Form Solutions and Convex Loss</h1>
+    <p class="lead">When can a model be fitted by writing down the answer, when must it be found by iteration, and why convexity of the loss is the property that decides whether the answer you find is the answer.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>A <strong>closed-form solution</strong> is an expression that returns the optimum in a fixed, finite number of arithmetic operations: ordinary least squares, \(\hat\beta = (X^\top X)^{-1}X^\top y\), is the canonical case, obtained by setting the gradient of a quadratic loss to zero. Ridge regression keeps that property (\((X^\top X + \lambda I)^{-1}X^\top y\)), whereas the lasso, logistic regression, Michaelis–Menten kinetics and the FvCB model do not, because their estimating equations are nonlinear in the parameters or non-differentiable. Whether or not a closed form exists, the <strong>convexity</strong> of the loss is what guarantees that any minimum you find is the global one, that a strictly convex loss has a single minimiser, and that gradient methods converge. Squared, absolute, Huber, hinge and log losses are convex in the parameters of a <em>linear</em> model; the sum-of-squares of a nonlinear process model is generally not, which is why calibrating soil carbon or photosynthesis models produces multiple local minima and equifinality. Jensen's inequality, the defining inequality of convexity, is also the reason a big-leaf canopy model driven by mean light is biased.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Three things get asked. Derive the normal equations and say what the solution means geometrically. State precisely what convexity buys you and give one example of a loss that has it and one model whose calibration does not. Explain why ridge has a closed form and lasso does not. Every other item on this page (SVD, condition numbers, KKT, Jensen) is a follow-up to one of those three.</p></div>
+  </section>
+
+  <section id="closedform">
+    <h2>What "closed form" means</h2>
+    <p>An estimator or optimum is in closed form when it can be written as a finite composition of elementary operations (arithmetic, roots, exponentials, logarithms, standard matrix operations) applied to the data. The sample mean \(\bar y\), the OLS coefficients, the two roots of a quadratic and the steady state of a linear compartment model are closed forms. The opposite is an <strong>iterative or numerical</strong> solution: a sequence \(\theta_0, \theta_1, \dots\) that converges to the answer but never reaches it exactly, stopped when some tolerance is met. Logistic regression, the lasso, and almost every nonlinear process model are solved this way, by gradient descent, Newton's method or their relatives (the next two pages and the <a href="newton-raphson.html">Newton–Raphson</a> page).</p>
+    <p>The boundary is not about difficulty but about algebra. A closed form exists when the stationarity condition \(\nabla J(\theta) = 0\) can be solved symbolically for \(\theta\). For a quadratic loss in a model that is linear in its parameters, \(\nabla J = 0\) is a <em>linear</em> system, and linear systems have the closed form \(\theta = A^{-1}b\). As soon as the parameters enter nonlinearly (an exponent, a ratio, a saturating function, a minimum of two expressions) the stationarity equations are nonlinear and in general have no symbolic solution. Even then the matrix inverse hides numerical work: computing \(A^{-1}b\) for \(p = 10^4\) parameters is itself done by factorisations, and in practice one never forms the inverse explicitly.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Problem</th><th>Closed form?</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>OLS, WLS, GLS</td><td>Yes</td><td>Quadratic loss, linear model: stationarity is a linear system</td></tr>
+        <tr><td>Ridge regression</td><td>Yes</td><td>Adds \(\lambda I\) to a linear system</td></tr>
+        <tr><td>Lasso</td><td>No (except orthonormal \(X\))</td><td>\(\ell_1\) penalty is non-differentiable at zero</td></tr>
+        <tr><td>Normal, Poisson, exponential MLE</td><td>Yes</td><td>Score equations linear in the sufficient statistics</td></tr>
+        <tr><td>Logistic regression MLE</td><td>No</td><td>Score \(X^\top(y-p(\beta))=0\) nonlinear through the sigmoid</td></tr>
+        <tr><td>Gamma shape MLE</td><td>No</td><td>Involves the digamma function</td></tr>
+        <tr><td>Michaelis–Menten, FvCB parameters</td><td>No</td><td>Parameters in a ratio or inside \(\min(\cdot)\)</td></tr>
+        <tr><td>Steady state of a linear pool model</td><td>Yes: \(X^* = -A^{-1}Bu\)</td><td>Linear ODE system</td></tr>
+        <tr><td>Richards' equation, coupled leaf energy balance</td><td>No</td><td>Nonlinear PDE / transcendental equations</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="ols">
+    <h2>Least squares: the normal equations</h2>
+    <p>Let \(y \in \mathbb{R}^n\) be the observations and \(X \in \mathbb{R}^{n\times p}\) the design matrix (a column of ones for the intercept plus \(p-1\) predictors). The model is \(y = X\beta + \varepsilon\) and the loss is the residual sum of squares</p>
+    <div class="eq">$$J(\beta) = \lVert y - X\beta\rVert_2^2 = y^\top y - 2\beta^\top X^\top y + \beta^\top X^\top X\,\beta.$$</div>
+    <p>Differentiate with respect to the vector \(\beta\) (using \(\partial(\beta^\top a)/\partial\beta = a\) and \(\partial(\beta^\top A\beta)/\partial\beta = 2A\beta\) for symmetric \(A\)):</p>
+    <div class="eq">$$\nabla_\beta J = -2X^\top y + 2X^\top X\beta = 0 \;\;\Longrightarrow\;\; X^\top X\,\hat\beta = X^\top y \;\;\Longrightarrow\;\; \hat\beta = (X^\top X)^{-1}X^\top y.$$</div>
+    <p>The system \(X^\top X\hat\beta = X^\top y\) is the <strong>normal equations</strong>. The Hessian \(\nabla^2 J = 2X^\top X\) is positive semi-definite for any \(X\) (because \(v^\top X^\top X v = \lVert Xv\rVert^2 \ge 0\)), so \(J\) is convex and the stationary point is a global minimum. If \(X\) has full column rank the Hessian is positive definite, \(J\) is strictly convex, and \(\hat\beta\) is unique.</p>
+
+    <h3>The geometric picture</h3>
+    <p>The fitted values \(\hat y = X\hat\beta = X(X^\top X)^{-1}X^\top y = Hy\) are the <strong>orthogonal projection</strong> of \(y\) onto the column space of \(X\); \(H\) is the "hat matrix", symmetric and idempotent (\(H^2 = H\)), with trace equal to \(p\), the number of parameters. The residual \(e = y - \hat y\) is orthogonal to every column of \(X\): rewriting the normal equations as \(X^\top(y - X\hat\beta) = 0\) says exactly that. Two consequences used constantly: with an intercept column the residuals sum to zero, and the residuals are uncorrelated with each predictor. Least squares is therefore "the closest point in the model subspace", and the Pythagorean decomposition \(\lVert y\rVert^2 = \lVert \hat y\rVert^2 + \lVert e\rVert^2\) is the ANOVA identity behind \(R^2\).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 1 · Least-squares geometry: the loss surface and its closed-form minimum</h3><span class="small muted">Hover the loss map to read SSE</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="twoup">
+            <div class="chartbox figwrap"><svg class="ch" id="lsqData" viewBox="0 0 400 320" role="img" aria-label="Soil respiration versus soil temperature with the user's line and the ordinary least squares line"></svg></div>
+            <div class="chartbox figwrap"><svg class="ch" id="lsqLoss" viewBox="0 0 400 320" role="img" aria-label="Contour map of the residual sum of squares as a function of intercept and slope with the closed-form minimum marked"></svg><div class="chart-tip" id="lsqTip" hidden></div></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">data (seeded)</span><span style="--c:var(--series-2)">your line β₀ + β₁T</span><span style="--c:var(--fg)">closed-form OLS line</span><span style="--c:var(--series-1)">SSE contours</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="lsqTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="lsB0"><span>Intercept \(\beta_0\) (µmol m⁻² s⁻¹)</span><output id="lsB0O">1.5</output></label><input type="range" id="lsB0" min="-2" max="4" step="0.02" value="1.5"></div>
+          <div class="ctrl"><label for="lsB1"><span>Slope \(\beta_1\) (µmol m⁻² s⁻¹ °C⁻¹)</span><output id="lsB1O">0.05</output></label><input type="range" id="lsB1" min="-0.1" max="0.4" step="0.002" value="0.05"></div>
+          <dl class="readout">
+            <dt>SSE at your \((\beta_0,\beta_1)\)</dt><dd id="lsSSEu"></dd>
+            <dt>SSE at the closed-form minimum</dt><dd id="lsSSEm"></dd>
+            <dt>\(\hat\beta_0,\ \hat\beta_1\)</dt><dd id="lsBhat"></dd>
+            <dt>\(\sum e_i\) (yours · OLS)</dt><dd id="lsSe"></dd>
+            <dt>\(\sum x_i e_i\) (yours · OLS)</dt><dd id="lsSxe"></dd>
+            <dt>\(R^2\) of OLS fit</dt><dd id="lsR2"></dd>
+            <dt>Gradient norm at your point</dt><dd id="lsGrad"></dd>
+          </dl>
+          <button class="btn small" id="lsSnap" type="button">Snap sliders to \(\hat\beta\)</button>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Fourteen seeded "soil respiration vs soil temperature" points. The right-hand map is \(J(\beta_0,\beta_1)\); the ellipses are its level sets, elongated because intercept and slope are correlated when \(T\) is not centred. Suggested experiments: move only \(\beta_1\) and watch the gradient component in \(\beta_0\) stay non-zero; find the minimum by eye, then press Snap and compare the two orthogonality sums; note that the ellipse axes are not aligned with the parameter axes, which is exactly what makes gradient descent zig-zag on the next page.</p>
+    </div>
+
+    <h3>When the inverse does not exist: rank, multicollinearity and the SVD</h3>
+    <p>\(X^\top X\) is invertible if and only if the columns of \(X\) are linearly independent, which requires \(n \ge p\) and no exact collinearity. Exact collinearity (two predictors in the same units summed, a dummy for every category plus an intercept) makes infinitely many \(\beta\) give the same fitted values. Near-collinearity (\(\text{LAI}\) and canopy height, soil clay and CEC, \(V_{cmax}\) and \(J_{max}\) across leaves) is more insidious: \(X^\top X\) is invertible but <strong>ill-conditioned</strong>. Its condition number \(\kappa(X^\top X) = \sigma_{\max}^2/\sigma_{\min}^2 = \kappa(X)^2\) measures how much relative error in the data is amplified in the solution, and the coefficient covariance \(\mathrm{Var}(\hat\beta) = \sigma^2 (X^\top X)^{-1}\) inflates along the nearly-collinear direction (Lab 4).</p>
+    <p>The <strong>singular value decomposition</strong> \(X = U\Sigma V^\top\) (with \(U \in \mathbb{R}^{n\times p}\) orthonormal columns, \(\Sigma = \mathrm{diag}(\sigma_1 \ge \dots \ge \sigma_p \ge 0)\), \(V\) orthogonal) gives the solution in every case:</p>
+    <div class="eq">$$\hat\beta = V\Sigma^{+}U^\top y = \sum_{i:\sigma_i>0} \frac{u_i^\top y}{\sigma_i}\,v_i ,$$</div>
+    <p>where \(\Sigma^+\) inverts the non-zero singular values and leaves the zero ones at zero. This is the <strong>Moore–Penrose pseudo-inverse</strong> \(X^+\). When \(X\) has full rank it equals \((X^\top X)^{-1}X^\top\); when it is rank-deficient it returns the minimum-norm solution among the infinitely many least-squares solutions. The formula also shows where instability comes from: each component of the data is divided by \(\sigma_i\), so a small singular value turns a small noise component \(u_i^\top\varepsilon\) into a large coefficient error along \(v_i\).</p>
+
+    <h3>Computational cost and numerical stability</h3>
+    <p>Forming \(X^\top X\) costs \(O(np^2)\) flops and solving the \(p\times p\) system costs \(O(p^3)\), so the closed form is \(O(np^2 + p^3)\). For \(n = 10^6\) half-hourly flux records and \(p = 10\) predictors this is trivial; for \(p = 10^5\) (a pixel-wise regression, or a neural network's last layer) the \(p^3\) term dominates and gradient methods at \(O(np)\) per iteration become preferable even though they need many iterations. Three ways of solving the normal equations are standard:</p>
+    <ul>
+      <li><strong>Cholesky</strong> on \(X^\top X = LL^\top\): fastest (\(p^3/3\)), but works with \(X^\top X\), whose condition number is \(\kappa(X)^2\), so it loses roughly twice as many significant digits as the problem inherently demands.</li>
+      <li><strong>QR</strong>: \(X = QR\) with \(Q\) orthonormal, so \(\hat\beta = R^{-1}Q^\top y\) by back-substitution. Costs about \(2np^2\), never forms \(X^\top X\), and its error grows with \(\kappa(X)\), not \(\kappa(X)^2\). This is what <code>lm()</code> in R and <code>numpy.linalg.lstsq</code> use.</li>
+      <li><strong>SVD</strong>: most expensive (several times QR) but the only route that diagnoses rank deficiency reliably and allows truncation of small singular values.</li>
+    </ul>
+    <p>The practical rule: never invert \(X^\top X\) explicitly; solve the system. The closed form is a statement about the <em>existence</em> of an exact answer, not an instruction to call <code>inv()</code>.</p>
+
+    <h3>Weighted and generalised least squares</h3>
+    <p>If the errors have unequal variances \(\mathrm{Var}(\varepsilon_i) = \sigma^2/w_i\) (eddy-covariance fluxes are noisier at night; soil respiration variance grows with the mean) the appropriate loss is \(J = \sum_i w_i (y_i - x_i^\top\beta)^2 = (y - X\beta)^\top W (y - X\beta)\). The same differentiation gives the <strong>weighted least squares</strong> closed form</p>
+    <div class="eq">$$\hat\beta_{WLS} = (X^\top W X)^{-1} X^\top W y, \qquad W = \mathrm{diag}(w_i).$$</div>
+    <p>If the errors are also correlated, \(\mathrm{Var}(\varepsilon) = \sigma^2\Sigma\) (autocorrelated residuals in a time series of soil moisture, spatially correlated plots), <strong>generalised least squares</strong> uses the Mahalanobis loss \((y - X\beta)^\top\Sigma^{-1}(y - X\beta)\):</p>
+    <div class="eq">$$\hat\beta_{GLS} = (X^\top \Sigma^{-1} X)^{-1} X^\top \Sigma^{-1} y, \qquad \mathrm{Var}(\hat\beta_{GLS}) = \sigma^2 (X^\top\Sigma^{-1}X)^{-1}.$$</div>
+    <p>GLS is the best linear unbiased estimator (Gauss–Markov with a general covariance); OLS remains unbiased under heteroscedasticity or correlation but loses efficiency and, more damagingly, reports wrong standard errors. These two closed forms reappear as the inner loop of IRLS for GLMs and robust regression (Lab 2), where \(W\) is recomputed at each iteration, and as the Gauss–Newton step for nonlinear models.</p>
+  </section>
+
+  <section id="regularised">
+    <h2>Regularisation: why ridge has a closed form and lasso does not</h2>
+    <p><strong>Ridge regression</strong> (Hoerl &amp; Kennard 1970 [7]) adds a squared penalty, \(J_\lambda(\beta) = \lVert y - X\beta\rVert^2 + \lambda\lVert\beta\rVert_2^2\). The penalty is quadratic, so the gradient stays linear:</p>
+    <div class="eq">$$\nabla J_\lambda = -2X^\top y + 2X^\top X\beta + 2\lambda\beta = 0 \;\Longrightarrow\; \hat\beta_{ridge} = (X^\top X + \lambda I)^{-1}X^\top y.$$</div>
+    <p>For any \(\lambda > 0\) the matrix \(X^\top X + \lambda I\) has eigenvalues \(\sigma_i^2 + \lambda > 0\) and is therefore always invertible, even when \(p > n\) or predictors are collinear. In the SVD basis the ridge estimate is</p>
+    <div class="eq">$$\hat\beta_{ridge} = \sum_i \frac{\sigma_i}{\sigma_i^2 + \lambda}\,(u_i^\top y)\,v_i = \sum_i \frac{\sigma_i^2}{\sigma_i^2+\lambda}\cdot\frac{u_i^\top y}{\sigma_i}\,v_i,$$</div>
+    <p>so each OLS component is shrunk by \(\sigma_i^2/(\sigma_i^2+\lambda)\): directions with large singular values (well determined by the data) are barely touched, directions with small singular values (the ill-conditioned ones) are shrunk hard. Ridge trades a little bias, \(\mathbb{E}[\hat\beta_{ridge}] - \beta = -\lambda(X^\top X + \lambda I)^{-1}\beta\), for a large variance reduction; the <a href="bias-variance.html">bias–variance</a> page quantifies the exchange.</p>
+    <p>The <strong>lasso</strong> (Tibshirani 1996 [8]) replaces the penalty with \(\lambda\lVert\beta\rVert_1 = \lambda\sum_j|\beta_j|\). The loss is still convex (a convex quadratic plus a convex norm), so a global minimum exists and is found reliably, but \(|\beta_j|\) is not differentiable at \(\beta_j = 0\), which is precisely where the lasso wants to put coefficients. The stationarity condition becomes a <em>subgradient</em> inclusion, \(0 \in -2X^\top(y - X\beta) + \lambda\,\partial\lVert\beta\rVert_1\), a set of piecewise-linear conditions whose active set depends on the solution itself. There is no matrix formula. The one case with a closed form is an orthonormal design, \(X^\top X = I\), for which the coordinates decouple and each becomes a one-dimensional problem \(\min_b \tfrac12(b - \hat\beta_j^{OLS})^2 + \lambda|b|\) with solution the <strong>soft-thresholding</strong> operator</p>
+    <div class="eq">$$\hat\beta_j^{lasso} = S_\lambda(\hat\beta_j^{OLS}) = \operatorname{sign}(\hat\beta_j^{OLS})\,\max\!\big(|\hat\beta_j^{OLS}| - \lambda,\, 0\big).$$</div>
+    <p>Compare ridge in the same setting, \(\hat\beta_j^{OLS}/(1+\lambda)\): ridge scales every coefficient by the same factor and never reaches zero; the lasso subtracts a constant and sets small coefficients exactly to zero. For a general \(X\) the soft-thresholding step is applied one coordinate at a time with the other coordinates held fixed, which is <strong>coordinate descent</strong>, the algorithm behind <code>glmnet</code> (see the <a href="gradient-descent.html">gradient-descent</a> page).</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 4 · Multicollinearity, the condition number and the ridge fix</h3><span class="small muted">Hover the right chart</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="twoup">
+            <div class="chartbox figwrap"><svg class="ch" id="cndCloud" viewBox="0 0 400 320" role="img" aria-label="Sampling distribution of two regression coefficients under OLS and ridge for correlated predictors"></svg></div>
+            <div class="chartbox figwrap"><svg class="ch" id="cndVar" viewBox="0 0 400 320" role="img" aria-label="Variance of a regression coefficient versus predictor correlation for OLS and ridge"></svg><div class="chart-tip" id="cndTip" hidden></div></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">OLS β̂ over 300 noise draws</span><span style="--c:var(--series-2)">ridge β̂<sub>λ</sub>, same draws</span><span style="--c:var(--fg)">true β = (1, 1)</span></div>
+          <div class="matrix" id="cndMat"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cndTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cnRho"><span>Correlation of the two predictors, \(\rho\)</span><output id="cnRhoO">0.90</output></label><input type="range" id="cnRho" min="0" max="0.995" step="0.005" value="0.9"></div>
+          <div class="ctrl"><label for="cnLam"><span>Ridge penalty \(\lambda\) (log₁₀ scale)</span><output id="cnLamO">1.0</output></label><input type="range" id="cnLam" min="-2" max="2.5" step="0.05" value="0"></div>
+          <dl class="readout">
+            <dt>\(\kappa(X^\top X)\) (standardised)</dt><dd id="cnKappa"></dd>
+            <dt>Variance inflation factor \(1/(1-\rho^2)\)</dt><dd id="cnVIF"></dd>
+            <dt>sd(\(\hat\beta_1\)) OLS · ridge (theory)</dt><dd id="cnSd"></dd>
+            <dt>sd(\(\hat\beta_1\)) OLS · ridge (300 draws)</dt><dd id="cnSdEmp"></dd>
+            <dt>Ridge bias in \(\beta_1\)</dt><dd id="cnBias"></dd>
+            <dt>MSE(\(\hat\beta_1\)) OLS · ridge</dt><dd id="cnMSE"></dd>
+            <dt>Shrinkage factors \(\sigma_i^2/(\sigma_i^2+\lambda)\)</dt><dd id="cnShr"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">\(n = 60\), predictors standardised, \(y = x_1 + x_2 + \varepsilon\) with \(\sigma = 1\). Left: the sampling cloud of \((\hat\beta_1, \hat\beta_2)\) elongates along \(\beta_1 = -\beta_2\) as \(\rho \to 1\) because the data cannot tell the two predictors apart, only their sum. Right: coefficient variance versus \(\rho\) (log axis). Suggested experiments: at \(\rho = 0.99\) raise \(\lambda\) until the ridge MSE falls below the OLS MSE, then keep going until bias takes over; at \(\rho = 0\) confirm that ridge only adds bias; read the two shrinkage factors and relate them to the two eigenvalues \(n(1\pm\rho)\).</p>
+    </div>
+  </section>
+
+  <section id="mle">
+    <h2>Closed-form maximum likelihood, and the models that lack it</h2>
+    <p>Maximum likelihood (the <a href="maximum-likelihood.html">MLE page</a>) turns a probability model into a loss, \(-\ell(\theta) = -\sum_i\log p(y_i\mid\theta)\). A closed form exists when the score equations \(\partial\ell/\partial\theta = 0\) can be solved for \(\theta\), which happens when the log-likelihood depends on the data only through sufficient statistics that enter linearly:</p>
+    <ul>
+      <li><strong>Normal</strong> \(y_i \sim N(\mu,\sigma^2)\): \(\ell = -\tfrac n2\log(2\pi\sigma^2) - \tfrac{1}{2\sigma^2}\sum(y_i-\mu)^2\). Setting \(\partial\ell/\partial\mu = \sigma^{-2}\sum(y_i - \mu) = 0\) gives \(\hat\mu = \bar y\); then \(\partial\ell/\partial\sigma^2 = 0\) gives \(\hat\sigma^2 = \tfrac1n\sum(y_i-\bar y)^2\) (biased by the factor \((n-1)/n\)). OLS is this with \(\mu_i = x_i^\top\beta\): Gaussian MLE and least squares coincide.</li>
+      <li><strong>Poisson</strong> counts (seedlings per quadrat) \(y_i\sim\mathrm{Pois}(\lambda)\): \(\ell = \sum(y_i\log\lambda - \lambda - \log y_i!)\), so \(\partial\ell/\partial\lambda = \sum y_i/\lambda - n = 0\), \(\hat\lambda = \bar y\).</li>
+      <li><strong>Exponential</strong> waiting times (gap between fires, residence time in a pool) \(y_i\sim\mathrm{Exp}(\lambda)\): \(\ell = n\log\lambda - \lambda\sum y_i\), \(\hat\lambda = 1/\bar y\).</li>
+    </ul>
+    <p>Closed forms disappear as soon as the parameter is inside a nonlinear function of a covariate or inside a special function:</p>
+    <ul>
+      <li><strong>Logistic regression</strong>: the score is \(X^\top(y - p(\beta)) = 0\) with \(p_i = 1/(1+e^{-x_i^\top\beta})\). It looks like the normal equations but \(p\) depends nonlinearly on \(\beta\); solved by Newton's method, which for this model is iteratively reweighted least squares with \(W = \mathrm{diag}(p_i(1-p_i))\). The log-likelihood is concave, so the iteration converges to the unique global optimum (unless the classes are perfectly separable, when no finite maximiser exists).</li>
+      <li><strong>Gamma shape</strong>: for \(y\sim\Gamma(\alpha,\beta)\) the score for \(\alpha\) reduces to \(\log\alpha - \psi(\alpha) = \log\bar y - \overline{\log y}\), where \(\psi\) is the digamma function; it has a unique root but no elementary expression.</li>
+      <li><strong>Michaelis–Menten</strong> \(v = V_{max}S/(K_m + S)\) with Gaussian errors: the SSE is quadratic in \(V_{max}\) for fixed \(K_m\) (closed form \(\hat V_{max} = \sum v_i g_i/\sum g_i^2\) with \(g_i = S_i/(K_m+S_i)\)) but non-quadratic, and in fact non-convex, in \(K_m\) (Lab 3). The same holds for the FvCB model: conditional on the kinetic constants and on knowing which points are Rubisco-limited, \(A = V_{cmax}\,\frac{C_i-\Gamma^*}{C_i + K_c(1+O/K_o)} - R_d\) is <em>linear</em> in \((V_{cmax}, R_d)\) and has a closed form; what destroys it is the unknown switch point of \(\min(A_c, A_j, A_p)\), the temperature parameters, and mesophyll conductance.</li>
+    </ul>
+    <div class="keybox"><h3>Why the Lineweaver–Burk linearisation is a bad closed form</h3>
+      <p>Taking reciprocals, \(1/v = (K_m/V_{max})(1/S) + 1/V_{max}\), makes the model linear in \((K_m/V_{max}, 1/V_{max})\) and OLS gives a closed-form answer. But the transformation also transforms the errors: if \(v\) has constant error variance, \(\mathrm{Var}(1/v) \approx \mathrm{Var}(v)/v^4\), so the smallest rates (lowest substrate, the least reliable points) receive enormous leverage, and the estimates of \(K_m\) in particular are biased and wildly variable. Dowd &amp; Riggs (1965) [11] showed by simulation that it is the worst of the classical linearisations; Hanes–Woolf (\(S/v\) against \(S\)) is far better and direct nonlinear least squares, with no closed form, is best. The lesson generalises: a closed form obtained by transforming the response changes the loss you are minimising, and the question is always whether that new loss matches the error structure. Fitting \(\log\) of soil respiration against temperature to extract \(Q_{10}\) is the same trade.</p></div>
+  </section>
+
+  <section id="ecoclosed">
+    <h2>Closed forms in ecosystem science, and where iteration is unavoidable</h2>
+    <p>Several results that an ecosystem modeller uses daily are closed forms, and recognising them avoids pointless iteration:</p>
+    <ul>
+      <li><strong>Steady state of a linear compartment model.</strong> Any first-order pool model, Century, RothC, CLM's soil carbon, can be written \(\dot X = A X + B u\), with \(X\) the pool vector, \(A\) the (negative) transfer-and-decay matrix, \(B\) the allocation of input \(u\). At steady state \(\dot X = 0\), so \(X^* = -A^{-1}Bu\). Luo et al. (2017) [13] use this "matrix approach" to spin models up instantly and to decompose the equilibrium carbon storage into input × residence time. The transient solution is also closed: \(X(t) = e^{At}X_0 + \int_0^t e^{A(t-s)}Bu(s)\,ds\).</li>
+      <li><strong>Beer's law inverted for LAI.</strong> \(I/I_0 = e^{-kL}\) gives \(L = -\ln(I/I_0)/k\), the basis of every ceptometer and of indirect LAI estimation. The inversion is exact but the nonlinearity matters: averaging transmittance over a heterogeneous canopy and then inverting underestimates mean LAI (Jensen again, because \(-\ln\) is convex).</li>
+      <li><strong>Penman–Monteith inverted for surface conductance.</strong> From \(\lambda E = \dfrac{\Delta(R_n-G) + \rho c_p D\, g_a}{\Delta + \gamma(1 + g_a/g_s)}\), solve for \(g_s\): writing \(N = \Delta(R_n-G) + \rho c_p D g_a\),
+        \(g_s = \dfrac{\gamma\, g_a\, \lambda E}{N - \lambda E(\Delta+\gamma)}\). This is how canopy conductance is retrieved from eddy-covariance \(\lambda E\) and then fitted with a Ball–Berry or Medlyn model.</li>
+      <li><strong>Coupled A–C<sub>i</sub> with prescribed conductance.</strong> Combining Rubisco-limited demand \(A = V_{cmax}\frac{C_i-\Gamma^*}{C_i+K} - R_d\) with supply \(A = g_{sc}(C_a - C_i)\): substituting \(C_i = C_a - A/g_{sc}\) gives the quadratic
+        \(A^2 - A\,[g_{sc}(C_a+K) + V_{cmax} - R_d] + g_{sc}[V_{cmax}(C_a-\Gamma^*) - R_d(C_a+K)] = 0\), whose smaller root is the physical solution. When \(g_s\) itself depends on \(A\) (Ball–Berry) the system becomes a cubic, still solvable in closed form (Baldocchi 1994) though most codes iterate, and the <a href="newton-raphson.html">Newton page</a> shows how.</li>
+      <li><strong>\(Q_{10}\) from two temperatures.</strong> If \(R(T) = R_{ref}Q_{10}^{(T-T_{ref})/10}\), then two measurements give \(Q_{10} = (R_2/R_1)^{10/(T_2-T_1)}\) exactly. With more than two points it becomes a regression on \(\log R\), again a closed form but with the transformed-error caveat above.</li>
+    </ul>
+    <p>Iteration is unavoidable when the governing equation is nonlinear in the state. <strong>Richards' equation</strong> for soil water, \(\partial\theta/\partial t = \nabla\cdot[K(\psi)\nabla(\psi + z)]\), has \(K\) and \(\theta\) as strongly nonlinear functions of \(\psi\), so each implicit time step is a nonlinear system solved by Picard or Newton iteration. The <strong>coupled leaf energy balance</strong> has leaf temperature inside the saturation vapour pressure (Clausius–Clapeyron, exponential), inside longwave emission (\(T^4\)) and inside the Arrhenius temperature functions of \(V_{cmax}\), so \(T_{leaf}\), \(C_i\) and \(g_s\) must be found simultaneously by iteration. Land-surface models spend most of their run time on these two loops.</p>
+  </section>
+
+  <section id="convexity">
+    <h2>Convexity: definitions and what it guarantees</h2>
+    <p>A set \(C\subseteq\mathbb{R}^p\) is <strong>convex</strong> if the segment between any two of its points lies inside it: \(x, y \in C \Rightarrow \theta x + (1-\theta)y \in C\) for all \(\theta\in[0,1]\). A function \(f\) with convex domain is <strong>convex</strong> if its chords lie on or above its graph,</p>
+    <div class="eq">$$f(\theta x + (1-\theta)y) \le \theta f(x) + (1-\theta) f(y), \qquad \theta\in[0,1],$$</div>
+    <p>and <strong>strictly convex</strong> if the inequality is strict for \(x\ne y\), \(\theta\in(0,1)\). Equivalently, the epigraph \(\{(x,t): t\ge f(x)\}\) is a convex set. For differentiable \(f\) two further characterisations are more useful in practice:</p>
+    <div class="eq">$$\text{(first order)}\quad f(y) \ge f(x) + \nabla f(x)^\top (y - x)\quad\forall x,y; \qquad\qquad \text{(second order)}\quad \nabla^2 f(x) \succeq 0\quad\forall x.$$</div>
+    <p>The first-order condition says the tangent plane is a global under-estimator; the second says the Hessian is positive semi-definite everywhere (all eigenvalues \(\ge 0\); positive definite everywhere implies strict convexity). <strong>Strong convexity</strong> with parameter \(\mu>0\) strengthens the first-order condition to \(f(y)\ge f(x) + \nabla f(x)^\top(y-x) + \tfrac{\mu}{2}\lVert y-x\rVert^2\), equivalently \(\nabla^2 f \succeq \mu I\): the function is at least as curved as a parabola of curvature \(\mu\). Least squares with full-rank \(X\) is strongly convex with \(\mu = 2\sigma_{\min}^2(X)\); ridge adds \(2\lambda\) to it.</p>
+    <p><strong>Jensen's inequality</strong> is the probabilistic form of the defining inequality: for convex \(f\) and any random variable \(Z\), \(f(\mathbb{E}[Z]) \le \mathbb{E}[f(Z)]\), with the reverse for concave \(f\). With a two-point distribution it is the chord inequality; with a continuous one it says the function of the mean is not the mean of the function.</p>
+
+    <h3>Why convexity matters</h3>
+    <ol>
+      <li><strong>Every local minimum is global.</strong> Suppose \(x^*\) is a local minimiser and some \(y\) has \(f(y) \lt f(x^*)\). Then for small \(\theta\), \(f(x^* + \theta(y - x^*)) \le (1-\theta)f(x^*) + \theta f(y) \lt f(x^*)\), contradicting local minimality. So a convex problem has no "wrong valley" to get stuck in.</li>
+      <li><strong>Stationary points are minimisers.</strong> From the first-order condition, \(\nabla f(x^*) = 0\) implies \(f(y)\ge f(x^*)\) for every \(y\). This is what licenses the normal-equation derivation: setting the gradient to zero is sufficient, not just necessary.</li>
+      <li><strong>Uniqueness.</strong> If \(f\) is strictly convex the minimiser (when it exists) is unique: two minimisers \(x^*, y^*\) would give \(f(\tfrac12 x^* + \tfrac12 y^*) \lt f(x^*)\). This is identifiability in disguise: a strictly convex loss has no flat directions in parameter space.</li>
+      <li><strong>Convergence guarantees.</strong> For convex \(f\) with Lipschitz gradient (constant \(L\)) gradient descent with step \(1/L\) satisfies \(f(x_k) - f^* \le L\lVert x_0 - x^*\rVert^2/(2k)\); with strong convexity the rate becomes linear with factor \(1 - \mu/L\). The next page derives both.</li>
+    </ol>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 3 · Convexity checker: chords, Jensen's inequality and a non-convex SSE</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap"><svg class="ch" id="cvxSvg" viewBox="0 0 640 360" role="img" aria-label="A chosen function with a chord between two points, illustrating the convexity inequality"></svg><div class="chart-tip" id="cvxTip" hidden></div></div>
+          <div class="legend"><span style="--c:var(--fg)">f(x)</span><span style="--c:var(--series-2)">chord θf(x₁) + (1−θ)f(x₂)</span><span style="--c:var(--accent)">gap at x<sub>θ</sub></span></div>
+          <div class="verdict" id="cvxVerdict"></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cvxTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cvFn"><span>Function</span></label><select id="cvFn">
+            <option value="sq">x² (convex)</option>
+            <option value="abs">|x| (convex, not differentiable at 0)</option>
+            <option value="quartic" selected>x⁴ − x² (two minima)</option>
+            <option value="sin">sin x (neither convex nor concave)</option>
+            <option value="lse">log(1 + eˣ), log-sum-exp (convex)</option>
+            <option value="mmV">Michaelis–Menten SSE vs V<sub>max</sub> (K<sub>m</sub> fixed)</option>
+            <option value="mmK">Michaelis–Menten SSE vs K<sub>m</sub> (V<sub>max</sub> fixed)</option>
+          </select></div>
+          <div class="ctrl"><label for="cvX1"><span>\(x_1\) (fraction of domain)</span><output id="cvX1O">0.20</output></label><input type="range" id="cvX1" min="0" max="1" step="0.005" value="0.2"></div>
+          <div class="ctrl"><label for="cvX2"><span>\(x_2\) (fraction of domain)</span><output id="cvX2O">0.80</output></label><input type="range" id="cvX2" min="0" max="1" step="0.005" value="0.8"></div>
+          <div class="ctrl"><label for="cvTh"><span>\(\theta\) (weight on \(x_1\))</span><output id="cvThO">0.50</output></label><input type="range" id="cvTh" min="0" max="1" step="0.01" value="0.5"></div>
+          <dl class="readout">
+            <dt>x<sub>θ</sub> = θx₁ + (1−θ)x₂</dt><dd id="cvXt"></dd>
+            <dt>f(x<sub>θ</sub>)</dt><dd id="cvFt"></dd>
+            <dt>Chord value at x<sub>θ</sub></dt><dd id="cvCh"></dd>
+            <dt>Jensen gap, chord − f</dt><dd id="cvGap"></dd>
+            <dt>min(chord − f) on [x₁, x₂]</dt><dd id="cvMin"></dd>
+            <dt>Sign of f″ on the domain</dt><dd id="cvHess"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">For a convex function the dashed chord never dips below the curve, whatever two points you pick: that is Jensen's inequality with a two-point distribution. Suggested experiments: on x⁴ − x² pick \(x_1, x_2\) on opposite sides of zero (chord above, looks convex) then both near 0.3 and 0.7 of the domain (chord cuts below: not convex). On the Michaelis–Menten SSE, compare the \(V_{max}\) slice (a parabola, closed-form minimum) with the \(K_m\) slice, which flattens toward \(\sum v_i^2\) as \(K_m\to\infty\) and is convex only near its minimum; a gradient method started far to the right crawls along the plateau. The data are seven seeded substrate levels with \(V_{max} = 30\), \(K_m = 4\).</p>
+    </div>
+  </section>
+
+  <section id="losses">
+    <h2>A catalogue of loss functions</h2>
+    <p>A loss \(\mathcal{L}(y, f)\) scores one prediction; the empirical risk \(J(\theta) = \tfrac1n\sum_i \mathcal{L}(y_i, f(x_i;\theta))\) is what we minimise. For regression write the residual \(r = y - f\); for binary classification with labels \(y\in\{-1,+1\}\) and a real-valued score \(f\), write the margin \(m = yf\) (positive when correct, large when confidently correct).</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Loss</th><th>Formula</th><th>Derivative</th><th>Convex?</th><th>Properties</th></tr></thead>
+      <tbody>
+        <tr><td>Squared</td><td>\(\tfrac12 r^2\)</td><td>\(-r\) w.r.t. \(f\)</td><td>Yes, strongly</td><td>Gaussian MLE; mean regression; influence grows linearly with \(r\), so outliers dominate</td></tr>
+        <tr><td>Absolute</td><td>\(|r|\)</td><td>\(-\operatorname{sign}(r)\)</td><td>Yes</td><td>Laplace MLE; median regression; bounded influence; not differentiable at 0, no closed form</td></tr>
+        <tr><td>Huber (\(\delta\))</td><td>\(\tfrac12 r^2\) if \(|r|\le\delta\), else \(\delta(|r| - \tfrac\delta2)\)</td><td>\(-r\) or \(-\delta\operatorname{sign}(r)\)</td><td>Yes</td><td>Quadratic near zero, linear in the tails; once differentiable; Huber 1964 [9]</td></tr>
+        <tr><td>Quantile (pinball, \(\tau\))</td><td>\(r(\tau - \mathbb{1}[r \lt 0])\)</td><td>\(-\tau\) or \(1-\tau\)</td><td>Yes</td><td>Estimates the \(\tau\)-quantile; \(\tau = 0.5\) is absolute loss ×½</td></tr>
+        <tr><td>Hinge</td><td>\(\max(0, 1 - m)\)</td><td>\(-y\) if \(m \lt 1\), else 0</td><td>Yes</td><td>Support vector machines; zero loss beyond the margin; sparse in the data (support vectors)</td></tr>
+        <tr><td>Logistic / log-loss</td><td>\(\log(1 + e^{-m})\)</td><td>\(-y\,\sigma(-m)\)</td><td>Yes, strictly</td><td>Bernoulli MLE; cross-entropy \(-[y\log p + (1-y)\log(1-p)]\) with \(y\in\{0,1\}\); smooth; gives probabilities</td></tr>
+        <tr><td>Exponential</td><td>\(e^{-m}\)</td><td>\(-y\,e^{-m}\)</td><td>Yes</td><td>AdaBoost; very sensitive to mislabelled points</td></tr>
+        <tr><td>Cross-entropy (K classes)</td><td>\(-\sum_k y_k \log p_k\), \(p = \operatorname{softmax}(z)\)</td><td>\(p - y\) w.r.t. logits</td><td>Yes in \(z\)</td><td>Log-sum-exp is convex; the standard neural-network classification loss</td></tr>
+        <tr><td>0–1</td><td>\(\mathbb{1}[m \le 0]\)</td><td>0 almost everywhere</td><td><strong>No</strong></td><td>What we actually care about; piecewise constant, NP-hard to minimise; the convex losses above are its surrogates</td></tr>
+      </tbody></table></div>
+    <p>Robustness is read off the derivative (the <em>influence function</em>): squared loss lets a single residual of 10 pull as hard as a hundred residuals of 1, absolute and Huber cap the pull at a constant. The price is efficiency when the errors really are Gaussian (the median has \(\pi/2\approx 1.57\) times the variance of the mean) and the loss of the closed form: absolute and Huber regression are solved by linear programming or by <strong>iteratively reweighted least squares</strong>, in which each residual receives the weight \(w_i = \psi(r_i)/r_i\) (\(1/|r_i|\) for absolute, \(\min(1, \delta/|r_i|)\) for Huber) and a WLS closed form is applied repeatedly. Lab 2 runs that iteration.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab 2 · Loss gallery and the effect of one outlier</h3><span class="small muted">Hover the loss curves</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="twoup">
+            <div class="chartbox figwrap"><svg class="ch" id="lossReg" viewBox="0 0 400 260" role="img" aria-label="Squared, absolute and Huber losses against the residual"></svg><div class="chart-tip" id="lossRegTip" hidden></div></div>
+            <div class="chartbox figwrap"><svg class="ch" id="lossCls" viewBox="0 0 400 260" role="img" aria-label="Hinge, logistic, exponential and zero-one losses against the margin"></svg><div class="chart-tip" id="lossClsTip" hidden></div></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">squared ½r² · hinge</span><span style="--c:var(--series-2)">absolute |r| · logistic</span><span style="--c:var(--series-3)">Huber · exponential</span><span style="--c:var(--muted)">0–1 loss</span></div>
+          <div class="chartbox figwrap" style="margin-top:0.75rem"><svg class="ch" id="lossFit" viewBox="0 0 640 330" role="img" aria-label="Regression lines fitted by squared, absolute and Huber loss to data containing one adjustable outlier"></svg></div>
+          <div class="legend"><span style="--c:var(--series-1)">squared-loss fit (closed form)</span><span style="--c:var(--series-2)">absolute-loss fit (IRLS)</span><span style="--c:var(--series-3)">Huber fit (IRLS)</span><span style="--c:var(--accent-2)">the outlier</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="lossTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="loOut"><span>Outlier offset (units of \(y\))</span><output id="loOutO">6.0</output></label><input type="range" id="loOut" min="-12" max="12" step="0.25" value="6"></div>
+          <div class="ctrl"><label for="loDel"><span>Huber \(\delta\) (residual units)</span><output id="loDelO">1.0</output></label><input type="range" id="loDel" min="0.1" max="5" step="0.05" value="1"></div>
+          <dl class="readout">
+            <dt>True line</dt><dd>2.00 + 0.50 x</dd>
+            <dt>Squared: \(\hat\beta_0,\ \hat\beta_1\)</dt><dd id="loSq"></dd>
+            <dt>Absolute: \(\hat\beta_0,\ \hat\beta_1\)</dt><dd id="loAb"></dd>
+            <dt>Huber: \(\hat\beta_0,\ \hat\beta_1\)</dt><dd id="loHu"></dd>
+            <dt>Outlier residual (sq · abs · Huber)</dt><dd id="loRes"></dd>
+            <dt>Outlier weight in final IRLS (abs · Huber)</dt><dd id="loW"></dd>
+            <dt>IRLS iterations (abs · Huber)</dt><dd id="loIt"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Twenty seeded points around \(y = 2 + 0.5x\) with noise sd 0.6; the point at \(x\approx 8\) is displaced by the offset slider. Suggested experiments: push the offset to ±12 and watch the squared-loss slope follow it while the absolute and Huber fits barely move; set \(\delta = 5\) so that Huber becomes squared loss, then \(\delta = 0.1\) so that it becomes (almost) absolute loss; set the offset to 0 and note that all three agree, so robustness costs nothing visible here but would cost efficiency with many Gaussian points.</p>
+    </div>
+
+    <h3>Non-convex losses and non-convex models</h3>
+    <p>Two different things can break convexity. The <em>loss</em> can be non-convex (the 0–1 loss, or a bounded "redescending" robust loss such as Tukey's biweight), or the <em>model</em> can be nonlinear in its parameters so that even a squared loss becomes non-convex in \(\theta\). The second case is the norm in ecosystem modelling. Fitting the FvCB model to an A–C<sub>i</sub> curve by nonlinear least squares, calibrating the decay rates and transfer coefficients of a soil carbon model to respiration and stock data, or tuning a stomatal slope and a soil hydraulic parameter jointly to eddy-covariance fluxes all produce SSE surfaces with ridges, plateaus and multiple local minima. Different starting points converge to different parameter sets that fit the data equally well: <strong>equifinality</strong> (Beven 2006 [12]). Convexity is lost because the composition of a convex loss with a nonlinear model is not convex, and because parameters that trade off (\(V_{cmax}\) against \(g_m\); turnover rate against transfer efficiency) create flat valleys where the Hessian is nearly singular. Neural networks are the extreme case: millions of parameters, a highly non-convex landscape, and yet gradient methods work in practice, for reasons the <a href="gradient-descent.html">gradient-descent</a> page discusses.</p>
+  </section>
+
+  <section id="convexopt">
+    <h2>Convex optimisation: building blocks, constraints and relaxations</h2>
+    <h3>Operations that preserve convexity</h3>
+    <p>You rarely check the Hessian directly; you recognise a convex function as built from convex pieces by operations that preserve convexity:</p>
+    <ul>
+      <li><strong>Non-negative weighted sums</strong>: \(\sum_i w_i f_i\) with \(w_i\ge0\). An empirical risk is a sum of per-observation losses, so if each term is convex in \(\theta\), so is the risk. Adding a convex penalty (\(\lambda\lVert\beta\rVert_2^2\), \(\lambda\lVert\beta\rVert_1\)) keeps convexity.</li>
+      <li><strong>Composition with an affine map</strong>: if \(g\) is convex, \(f(\theta) = g(A\theta + b)\) is convex. This is the whole reason linear models are easy: \(r_i = y_i - x_i^\top\theta\) is affine in \(\theta\), and any convex loss of an affine function of \(\theta\) is convex in \(\theta\). Replace \(x_i^\top\theta\) with a nonlinear \(f(x_i;\theta)\) and the guarantee is gone.</li>
+      <li><strong>Pointwise maximum</strong>: \(\max(f_1, f_2)\) of convex functions is convex (the epigraph is the intersection of two convex sets). Hinge loss is \(\max(0, 1-m)\); the absolute value is \(\max(r, -r)\). Note that the pointwise <em>minimum</em> does not preserve convexity, which is one reason the FvCB \(\min(A_c, A_j, A_p)\) is awkward to fit.</li>
+      <li><strong>Composition rules</strong>: \(h(g(\theta))\) is convex if \(h\) is convex and non-decreasing and \(g\) is convex (e.g. \(e^{g}\)), or \(h\) convex and non-increasing and \(g\) concave. Log-sum-exp \(\log\sum_k e^{z_k}\) is convex, which makes softmax cross-entropy convex in the logits.</li>
+    </ul>
+
+    <h3>The standard form, Lagrangian and KKT conditions</h3>
+    <p>A convex optimisation problem is</p>
+    <div class="eq">$$\min_{\theta}\; f_0(\theta)\quad\text{subject to}\quad f_i(\theta)\le 0,\; i=1,\dots,m,\qquad A\theta = b,$$</div>
+    <p>with \(f_0, \dots, f_m\) convex and the equality constraints affine. The feasible set is then convex, and the problem has the "local = global" property. To handle constraints one forms the <strong>Lagrangian</strong> \(\mathcal{L}(\theta,\lambda,\nu) = f_0(\theta) + \sum_i\lambda_i f_i(\theta) + \nu^\top(A\theta - b)\). For a convex problem satisfying a mild regularity condition (Slater's), \(\theta^*\) is optimal if and only if multipliers exist such that the <strong>Karush–Kuhn–Tucker</strong> conditions hold:</p>
+    <div class="eq">$$\begin{aligned}
+    &f_i(\theta^*)\le 0,\;\; A\theta^*=b &&\text{(primal feasibility)}\\
+    &\lambda_i^*\ge 0 &&\text{(dual feasibility)}\\
+    &\lambda_i^* f_i(\theta^*) = 0 &&\text{(complementary slackness)}\\
+    &\nabla f_0(\theta^*) + \textstyle\sum_i \lambda_i^*\nabla f_i(\theta^*) + A^\top\nu^* = 0 &&\text{(stationarity)}
+    \end{aligned}$$</div>
+    <p>Complementary slackness says each constraint is either inactive (\(\lambda_i = 0\), it did not matter) or active (\(f_i = 0\), and it pushes back with force \(\lambda_i\)). The typical ecological constraint is non-negativity: decay rates, conductances, \(V_{cmax}\) must be \(\ge 0\). Writing \(f_j(\theta) = -\theta_j\le 0\), KKT says that at the optimum either \(\theta_j>0\) and \(\partial f_0/\partial\theta_j = 0\) (an interior, unconstrained optimum in that coordinate) or \(\theta_j = 0\) and \(\partial f_0/\partial\theta_j = \lambda_j \ge 0\) (the loss would decrease if \(\theta_j\) could go negative, and the constraint is holding it). Non-negative least squares (Lawson–Hanson) is exactly this problem; in matrix pool models it is what keeps fitted transfer coefficients physical.</p>
+
+    <h3>Penalised and constrained forms are the same problem</h3>
+    <p>Ridge can be written either as \(\min\lVert y-X\beta\rVert^2 + \lambda\lVert\beta\rVert_2^2\) or as \(\min\lVert y-X\beta\rVert^2\) subject to \(\lVert\beta\rVert_2^2\le t\). The penalised form is the Lagrangian of the constrained one with \(\lambda\) the multiplier, and for every \(t\) (where the constraint binds) there is a \(\lambda\) giving the same solution. The classic picture: elliptical contours of the squared loss expanding from \(\hat\beta_{OLS}\) until they first touch the constraint region, a disc for ridge and a diamond \(\lVert\beta\rVert_1\le t\) for the lasso. The disc is touched at a point with both coordinates non-zero; the diamond is usually touched at a corner, where one coordinate is exactly zero. That geometric fact, not any statistical argument, is why the lasso selects variables. A Bayesian reads the same two penalties as Gaussian and Laplace priors on \(\beta\), and the penalised estimate as the posterior mode.</p>
+
+    <h3>Convex relaxation</h3>
+    <p>When the problem you want is non-convex, a standard move is to replace it with the nearest convex problem and hope the solutions agree. The lasso is a relaxation of best-subset selection (the \(\ell_0\) "norm" counting non-zero coefficients, combinatorial) by the \(\ell_1\) norm, its convex envelope on the unit box. Hinge and logistic losses are convex surrogates for the 0–1 loss; minimising them is tractable and, for well-specified problems, consistent for the same classifier. For nonlinear process models the relaxation is local rather than global: Gauss–Newton and Levenberg–Marquardt replace the non-convex SSE by a sequence of convex quadratic models built from the Jacobian, each solved in closed form (the <a href="newton-raphson.html">Newton page</a>), and 4D-Var data assimilation linearises the model around a trajectory for the same reason.</p>
+  </section>
+
+  <section id="connections">
+    <h2>Connections to ecosystem modelling</h2>
+    <ul>
+      <li><strong>Spin-up and steady states.</strong> CLM, ORCHIDEE, JULES and CABLE have all adopted semi-analytical spin-up based on the linear-compartment closed form \(X^* = -A^{-1}Bu\) (Xia et al. 2012; Luo et al. 2017 [13]), cutting thousands of simulated years to a single matrix solve per grid cell. The same algebra gives the traceability decomposition: equilibrium carbon = NPP × ecosystem residence time, with residence time read from \(-A^{-1}\).</li>
+      <li><strong>Parameter estimation for FvCB.</strong> Tools such as <code>plantecophys</code> fit A–C<sub>i</sub> curves by nonlinear least squares with multiple starts because the \(\min()\) structure and the \(g_m\) and temperature parameters make the SSE non-convex; the Rubisco-limited segment alone is a linear problem in \((V_{cmax}, R_d)\), and good software exploits that as a starting point.</li>
+      <li><strong>Inverting canopy conductance.</strong> The Penman–Monteith inversion gives \(g_s\) in closed form from eddy-covariance \(\lambda E\); the subsequent fit of the Medlyn model \(g_s = g_0 + 1.6(1 + g_1/\sqrt D)A/C_a\) is linear in \((g_0, g_1)\) given \(A\), \(D\) and \(C_a\), so it too is a closed form, but with heteroscedastic errors that call for WLS.</li>
+      <li><strong>Jensen's inequality in upscaling.</strong> Leaf photosynthesis is concave in absorbed light, so \(A(\bar Q) \ge \overline{A(Q)}\): a big-leaf model driven by mean canopy irradiance overestimates canopy photosynthesis. Sun/shade models (de Pury &amp; Farquhar 1997) exist to repair this aggregation error; Rastetter et al. (1992) [14] formalise the general problem and its corrections, and the <a href="canopy-upscaling.html">canopy-upscaling</a> page works through it. The same bias appears when hourly temperature responses (convex Arrhenius or \(Q_{10}\) functions) are driven by daily means: respiration is underestimated because \(e^{k\bar T} \le \overline{e^{kT}}\).</li>
+      <li><strong>Equifinality in calibration.</strong> Soil carbon models fitted to incubation or stock data (Century, RothC, MIMICS, MEND) show strong parameter trade-offs; the non-convex SSE surface has elongated valleys, and single-point "optimal" parameters are not identifiable. Bayesian calibration (MCMC) or GLUE samples the whole valley instead of reporting one point.</li>
+      <li><strong>Loss choice in data assimilation.</strong> 4D-Var and Kalman-filter land data assimilation minimise a quadratic (Gaussian) loss, which is convex in the state increments after linearisation; robust (Huber-type) observation terms are used when flux data contain spikes, and the loss of closed form is accepted in exchange.</li>
+      <li><strong>Regularisation as prior.</strong> Ridge-type penalties appear in land models as background terms \((\theta - \theta_b)^\top B^{-1}(\theta-\theta_b)\) in the CCDAS cost function, keeping poorly constrained parameters near their prior values exactly as ridge keeps poorly determined coefficients near zero.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Formulas and numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Item</th><th class="num">Expression / value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>OLS</td><td class="num">\(\hat\beta = (X^\top X)^{-1}X^\top y\)</td><td>From \(\nabla J = 2X^\top(X\beta - y) = 0\); projection \(\hat y = Hy\), \(\operatorname{tr}H = p\)</td></tr>
+        <tr><td>OLS covariance</td><td class="num">\(\sigma^2(X^\top X)^{-1}\)</td><td>Inflates along directions of small singular values</td></tr>
+        <tr><td>WLS / GLS</td><td class="num">\((X^\top WX)^{-1}X^\top Wy\), \(W = \Sigma^{-1}\)</td><td>Inner loop of IRLS and Gauss–Newton</td></tr>
+        <tr><td>Ridge</td><td class="num">\((X^\top X + \lambda I)^{-1}X^\top y\)</td><td>Shrinkage factor \(\sigma_i^2/(\sigma_i^2+\lambda)\) per SVD direction</td></tr>
+        <tr><td>Lasso, orthonormal \(X\)</td><td class="num">\(\operatorname{sign}(b)\max(|b|-\lambda, 0)\)</td><td>Soft thresholding of \(b = \hat\beta_{OLS}\); general case needs coordinate descent</td></tr>
+        <tr><td>Cost of closed form</td><td class="num">\(O(np^2 + p^3)\)</td><td>vs \(O(np)\) per gradient-descent iteration</td></tr>
+        <tr><td>Condition number</td><td class="num">\(\kappa(X^\top X) = \kappa(X)^2\)</td><td>Why QR beats Cholesky-on-normal-equations for accuracy</td></tr>
+        <tr><td>VIF for two predictors</td><td class="num">\(1/(1-\rho^2)\)</td><td>\(\rho = 0.9\): 5.3; \(\rho = 0.99\): 50</td></tr>
+        <tr><td>Convexity, 1st order</td><td class="num">\(f(y)\ge f(x)+\nabla f(x)^\top(y-x)\)</td><td>Tangent plane under-estimates</td></tr>
+        <tr><td>Convexity, 2nd order</td><td class="num">\(\nabla^2 f\succeq 0\)</td><td>\(\succeq \mu I\) is \(\mu\)-strong convexity</td></tr>
+        <tr><td>Jensen</td><td class="num">\(f(\mathbb{E}Z)\le\mathbb{E}f(Z)\)</td><td>Reverse for concave; the aggregation bias in canopy models</td></tr>
+        <tr><td>Huber loss</td><td class="num">\(\tfrac12r^2\) (\(|r|\le\delta\)); \(\delta(|r|-\delta/2)\)</td><td>\(\delta\approx 1.345\sigma\) gives 95% Gaussian efficiency</td></tr>
+        <tr><td>Steady state of pool model</td><td class="num">\(X^* = -A^{-1}Bu\)</td><td>Matrix spin-up; residence times from \(-A^{-1}\)</td></tr>
+        <tr><td>LAI from Beer's law</td><td class="num">\(L = -\ln(I/I_0)/k\)</td><td>\(k\approx 0.5\) for spherical leaf angle distribution at high sun</td></tr>
+        <tr><td>\(Q_{10}\) from two points</td><td class="num">\((R_2/R_1)^{10/(T_2-T_1)}\)</td><td>Typical soil respiration \(Q_{10}\approx 2\)</td></tr>
+        <tr><td>Efficiency of median vs mean</td><td class="num">\(\pi/2 \approx 1.57\)</td><td>Variance ratio under Gaussian errors: the price of robustness</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Derive the ordinary least squares estimator from first principles and show that it is a global minimum. What does the solution mean geometrically?</span></summary><div class="a"><p>Write \(J(\beta) = (y - X\beta)^\top(y - X\beta) = y^\top y - 2\beta^\top X^\top y + \beta^\top X^\top X\beta\). The gradient is \(\nabla J = -2X^\top y + 2X^\top X\beta\); setting it to zero gives the normal equations \(X^\top X\beta = X^\top y\) and, if \(X\) has full column rank, \(\hat\beta = (X^\top X)^{-1}X^\top y\). The Hessian is \(2X^\top X\), and \(v^\top X^\top Xv = \lVert Xv\rVert^2\ge 0\) for all \(v\), so \(J\) is convex; with full rank the inequality is strict for \(v\neq0\), so \(J\) is strictly convex and the stationary point is the unique global minimiser. Geometrically \(\hat y = X\hat\beta = X(X^\top X)^{-1}X^\top y\) is the orthogonal projection of \(y\) onto the column space of \(X\); the normal equations \(X^\top(y - X\hat\beta) = 0\) state that the residual is orthogonal to every column of \(X\), so least squares picks the point in the model subspace closest to the data in Euclidean distance. If \(X\) is rank-deficient the normal equations still hold but have infinitely many solutions; the SVD pseudo-inverse returns the minimum-norm one.</p></div></details>
+    <details class="q"><summary><span>2. Ridge regression has a closed form and the lasso does not. Explain why, derive both in the orthonormal case, and say what the difference means for variable selection.</span></summary><div class="a"><p>Ridge minimises \(\lVert y - X\beta\rVert^2 + \lambda\lVert\beta\rVert_2^2\). The penalty is quadratic and differentiable, so the gradient \(2X^\top X\beta - 2X^\top y + 2\lambda\beta\) is linear in \(\beta\) and vanishes at \(\hat\beta = (X^\top X + \lambda I)^{-1}X^\top y\), which exists for every \(\lambda>0\) because the eigenvalues \(\sigma_i^2 + \lambda\) are positive. The lasso penalty \(\lambda\sum|\beta_j|\) is not differentiable at zero; stationarity is the subgradient condition \(0\in -2X^\top(y-X\beta) + \lambda\partial\lVert\beta\rVert_1\), whose form depends on which coefficients are zero, so no single matrix expression solves it. When \(X^\top X = I\) the problem separates by coordinate: ridge gives \(\hat\beta_j = b_j/(1+\lambda)\) with \(b = X^\top y\) the OLS estimate; the lasso minimises \(\tfrac12(\beta_j - b_j)^2 + \lambda|\beta_j|\), whose solution is soft thresholding \(\operatorname{sign}(b_j)\max(|b_j| - \lambda, 0)\) (check the three cases \(\beta_j>0\), \(\beta_j \lt 0\), \(\beta_j = 0\) with the subgradient \([-1,1]\)). Ridge shrinks all coefficients proportionally and never to zero; the lasso translates them toward zero and sets those with \(|b_j|\le\lambda\) exactly to zero, hence it performs selection. Geometrically the \(\ell_1\) ball has corners on the axes where the elliptical loss contours typically make first contact.</p></div></details>
+    <details class="q"><summary><span>3. State the first- and second-order conditions for convexity and prove that for a convex function every local minimum is a global minimum. Why does this matter for fitting a soil carbon model?</span></summary><div class="a"><p>A differentiable \(f\) is convex iff \(f(y)\ge f(x) + \nabla f(x)^\top(y-x)\) for all \(x,y\); a twice-differentiable \(f\) is convex iff its Hessian is positive semi-definite everywhere. Proof of local = global: let \(x^*\) be a local minimiser and suppose \(f(y) \lt f(x^*)\) for some \(y\). For \(\theta\in(0,1]\), convexity gives \(f(x^* + \theta(y-x^*)) \le (1-\theta)f(x^*) + \theta f(y) \lt f(x^*)\). As \(\theta\to0\) the point \(x^* + \theta(y - x^*)\) enters every neighbourhood of \(x^*\) with a strictly smaller value, contradicting local minimality. Hence no such \(y\) exists. For a soil carbon model such as Century or MIMICS, the SSE between simulated and observed respiration and stocks is a squared loss composed with a nonlinear function of the decay rates, transfer fractions and temperature sensitivities, and composition with a nonlinear map does not preserve convexity. The SSE therefore typically has several local minima and long flat valleys where parameters trade off (fast decay with low transfer efficiency versus slow decay with high efficiency). A local optimiser started from different initial values converges to different "best" parameter sets, each fitting equally well: equifinality. One cannot claim the fitted parameters are the parameters; one must use multiple starts, profile the likelihood, or sample the posterior.</p></div></details>
+    <details class="q"><summary><span>4. A colleague estimates \(K_m\) and \(V_{max}\) of a soil enzyme by a Lineweaver–Burk plot because "it has a closed form". Critique this.</span></summary><div class="a"><p>The reciprocal transformation \(1/v = (K_m/V_{max})(1/S) + 1/V_{max}\) does make the model linear in its new parameters, so OLS gives a closed-form answer. But OLS on the transformed data minimises \(\sum(1/v_i - \widehat{1/v_i})^2\), not \(\sum(v_i - \hat v_i)^2\). By the delta method \(\mathrm{Var}(1/v)\approx\mathrm{Var}(v)/v^4\), so if the raw measurement error is roughly constant, the transformed errors are enormously heteroscedastic: the lowest-substrate points, with the smallest and least precise \(v\), have the largest \(1/v\) and the largest \(1/S\) and so dominate both the leverage and the residual variance. The estimates, particularly of \(K_m\) (slope/intercept ratio), are biased and have inflated variance; Dowd and Riggs (1965) showed by simulation that Lineweaver–Burk is the worst of the linearisations and that even Hanes–Woolf (\(S/v\) vs \(S\)) is far better. The correct approach is nonlinear least squares on \(v\) directly (no closed form, but convex in \(V_{max}\) for given \(K_m\) and well behaved with a sensible start, for example from a Hanes–Woolf fit), or weighted linear regression with weights \(v^4\) if the linearisation is kept. The general lesson: a closed form bought by transforming the response changes the loss, and the new loss must match the error structure.</p></div></details>
+    <details class="q"><summary><span>5. Explain multicollinearity in terms of the singular values of \(X\). How does it affect \(\hat\beta\) and its variance, and in what sense does ridge regression "fix" it?</span></summary><div class="a"><p>With \(X = U\Sigma V^\top\), \(\hat\beta_{OLS} = \sum_i (u_i^\top y/\sigma_i)v_i\) and \(\mathrm{Var}(\hat\beta) = \sigma^2(X^\top X)^{-1} = \sigma^2\sum_i v_iv_i^\top/\sigma_i^2\). Collinearity means some direction \(v_p\) in predictor space along which the columns of \(X\) barely vary, so \(\sigma_p\) is small; the data component \(u_p^\top\varepsilon\) of the noise is then divided by a small number and the coefficient estimate along \(v_p\) has variance \(\sigma^2/\sigma_p^2\). For two standardised predictors with correlation \(\rho\), the eigenvalues of \(X^\top X\) are \(n(1\pm\rho)\), the condition number is \((1+\rho)/(1-\rho)\), and each coefficient variance is inflated by \(1/(1-\rho^2)\) (the VIF). Predictions \(\hat y\) are not affected, only the attribution between the collinear predictors. Ridge replaces \(1/\sigma_i\) by \(\sigma_i/(\sigma_i^2+\lambda)\), so the dangerous small-\(\sigma\) directions are shrunk toward zero while the well-determined directions are left nearly alone; variance falls from \(\sigma^2/\sigma_i^2\) to \(\sigma^2\sigma_i^2/(\sigma_i^2+\lambda)^2\) at the price of bias \(-\lambda(X^\top X+\lambda I)^{-1}\beta\). The fix is a bias–variance trade, not a recovery of information the data do not contain: the sum \(\beta_1+\beta_2\) is estimated well either way, the difference \(\beta_1 - \beta_2\) is simply regularised toward zero.</p></div></details>
+    <details class="q"><summary><span>6. Write down the KKT conditions for least squares with non-negative coefficients and interpret them. Why would you impose such a constraint when fitting a compartment model?</span></summary><div class="a"><p>The problem is \(\min_\beta \tfrac12\lVert y-X\beta\rVert^2\) subject to \(-\beta_j\le 0\) for all \(j\). Lagrangian: \(\mathcal{L} = \tfrac12\lVert y-X\beta\rVert^2 - \lambda^\top\beta\), \(\lambda\ge0\). KKT: (i) primal feasibility \(\beta\ge0\); (ii) dual feasibility \(\lambda\ge0\); (iii) complementary slackness \(\lambda_j\beta_j = 0\); (iv) stationarity \(X^\top(X\beta - y) = \lambda\). Interpretation: for each coefficient either \(\beta_j>0\) and the corresponding component of the gradient \(X^\top(X\beta-y)\) is zero (an ordinary unconstrained optimum in that coordinate), or \(\beta_j = 0\) and the gradient component is \(\lambda_j\ge0\), meaning the unconstrained minimiser would have liked to go negative and the constraint is actively holding it at zero with "force" \(\lambda_j\). Because the objective is convex and the constraints are linear, these conditions are necessary and sufficient, and the active-set algorithm of Lawson and Hanson finds the solution exactly. In a compartment model the coefficients are transfer fractions or decay rates: a negative value would mean carbon flowing uphill or a pool growing without input, so the constraint encodes mass balance and physical meaning. Unconstrained OLS on noisy pool data routinely produces negative rates when pools are collinear; NNLS returns zero instead, which also tells you the data do not support that pathway.</p></div></details>
+    <details class="q"><summary><span>7. Use Jensen's inequality to explain why a big-leaf canopy model driven by mean irradiance overestimates canopy photosynthesis, and give one other example of the same error in ecosystem modelling.</span></summary><div class="a"><p>Leaf net photosynthesis as a function of absorbed irradiance, \(A(Q)\), is concave: it rises steeply at low light and saturates (the non-rectangular hyperbola for \(J\), then the \(\min\) with Rubisco limitation). For a concave function Jensen's inequality reads \(A(\mathbb{E}[Q])\ge\mathbb{E}[A(Q)]\). Within a canopy at any instant, irradiance is distributed very unevenly between sunlit leaves (direct beam plus diffuse) and shaded leaves (diffuse only), so \(Q\) has a high-variance distribution. A big-leaf model computes \(A\) at the mean \(Q\) and therefore returns a value at or above the true average over leaves, with the error largest when the mean sits near the knee of the light response, around midday in a dense canopy. The sun/shade model of de Pury and Farquhar (1997) fixes this by evaluating \(A\) separately for the two populations, which is a two-point approximation of \(\mathbb{E}[A(Q)]\); Rastetter et al. (1992) describe this as an aggregation error and give general corrections (moment expansions, partial transformations). The same structure appears in temperature: respiration and \(V_{cmax}\) are convex (exponential or Arrhenius) in \(T\), so driving them with daily mean temperature underestimates the daily total, \(\overline{e^{kT}}\ge e^{k\bar T}\), and in soil moisture, where a nonlinear moisture response evaluated at the grid-mean water content misrepresents a landscape with wet and dry patches.</p></div></details>
+    <details class="q"><summary><span>8. For each of the following say whether a closed-form solution exists and justify briefly: (a) the steady-state pools of a Century-type model; (b) \(C_i\) in a leaf with prescribed \(g_s\) and Rubisco-limited photosynthesis; (c) \(C_i\) and \(T_{leaf}\) for a leaf with Ball–Berry conductance and full energy balance; (d) MLE of logistic regression; (e) MLE of a Poisson rate.</span></summary><div class="a"><p>(a) Yes. The model is \(\dot X = AX + Bu\), linear in \(X\); at steady state \(X^* = -A^{-1}Bu\), which exists because \(A\) (decay rates on the diagonal, non-negative transfers off it) is invertible for any positive decay rates. (b) Yes. Equating demand \(V_{cmax}(C_i-\Gamma^*)/(C_i+K) - R_d\) with supply \(g_{sc}(C_a - C_i)\) and eliminating \(C_i\) gives a quadratic in \(A\) (or in \(C_i\)); the smaller root is physical. (c) No, in general. \(g_s\) depends on \(A\) and on the humidity at the leaf surface, which depends on \(T_{leaf}\); \(T_{leaf}\) enters the saturation vapour pressure exponentially, the longwave term as \(T^4\), and the kinetic constants through Arrhenius functions. Baldocchi (1994) obtained a cubic for the isothermal Ball–Berry case, but once energy balance is included the system is transcendental and must be solved by Newton or fixed-point iteration. (d) No. The score \(X^\top(y-p(\beta)) = 0\) is nonlinear in \(\beta\) through the logistic function; the log-likelihood is concave, so Newton's method (IRLS) converges to the unique maximiser, but no formula gives it. (e) Yes. \(\ell(\lambda) = \sum y_i\log\lambda - n\lambda + \text{const}\), so \(\partial\ell/\partial\lambda = \sum y_i/\lambda - n = 0\) gives \(\hat\lambda = \bar y\); the log-likelihood is concave in \(\lambda\), so this is the global maximum.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Boyd S, Vandenberghe L (2004). <em>Convex Optimization</em>. Cambridge University Press. Free at stanford.edu/~boyd/cvxbook. <span class="why">The standard text: chapters 2–5 for convex sets, functions, problems, duality and KKT; chapter 9 for unconstrained methods.</span></li>
+      <li>Hastie T, Tibshirani R, Friedman J (2009). <em>The Elements of Statistical Learning</em>, 2nd ed. Springer. Chapter 3. <span class="why">Least squares, ridge and lasso with the SVD view of shrinkage and the geometry of the constraint regions.</span></li>
+      <li>Bishop CM (2006). <em>Pattern Recognition and Machine Learning</em>. Springer. Chapters 3 and 4. <span class="why">Linear models as maximum likelihood, regularisation as a prior, and the loss functions for classification.</span></li>
+      <li>Strang G (2016). <em>Introduction to Linear Algebra</em>, 5th ed. Wellesley-Cambridge Press. <span class="why">Projections, the four subspaces and least squares as "the closest point", with the SVD treated geometrically.</span></li>
+      <li>Golub GH, Van Loan CF (2013). <em>Matrix Computations</em>, 4th ed. Johns Hopkins University Press. <span class="why">Cholesky, QR and SVD algorithms for least squares, flop counts and the conditioning argument against the normal equations.</span></li>
+      <li>Nocedal J, Wright SJ (2006). <em>Numerical Optimization</em>, 2nd ed. Springer. <span class="why">Chapters 10 and 12 for nonlinear least squares and the theory of constrained optimisation (KKT) as used by practitioners.</span></li>
+      <li>Hoerl AE, Kennard RW (1970). Ridge regression: biased estimation for nonorthogonal problems. <em>Technometrics</em> 12: 55–67. <a href="https://doi.org/10.1080/00401706.1970.10488634">doi:10.1080/00401706.1970.10488634</a><span class="why">The original ridge paper, with the bias–variance argument for shrinking under collinearity.</span></li>
+      <li>Tibshirani R (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society B</em> 58: 267–288. <a href="https://doi.org/10.1111/j.2517-6161.1996.tb02080.x">doi:10.1111/j.2517-6161.1996.tb02080.x</a><span class="why">Introduces the \(\ell_1\) penalty, the orthonormal soft-thresholding solution and the diamond-versus-disc picture.</span></li>
+      <li>Huber PJ (1964). Robust estimation of a location parameter. <em>Annals of Mathematical Statistics</em> 35: 73–101. <a href="https://doi.org/10.1214/aoms/1177703732">doi:10.1214/aoms/1177703732</a><span class="why">The Huber loss and the minimax argument for it.</span></li>
+      <li>Rockafellar RT (1970). <em>Convex Analysis</em>. Princeton University Press. <span class="why">The rigorous reference for subgradients, conjugates and duality if you want the proofs behind Boyd and Vandenberghe.</span></li>
+      <li>Dowd JE, Riggs DS (1965). A comparison of estimates of Michaelis–Menten kinetic constants from various linear transformations. <em>Journal of Biological Chemistry</em> 240: 863–869. <span class="why">The simulation study showing Lineweaver–Burk gives the worst estimates; the reason a closed form from a transformed response can be a bad idea.</span></li>
+      <li>Beven K (2006). A manifesto for the equifinality thesis. <em>Journal of Hydrology</em> 320: 18–36. <a href="https://doi.org/10.1016/j.jhydrol.2005.07.007">doi:10.1016/j.jhydrol.2005.07.007</a><span class="why">Why calibrating non-convex process models yields many equally good parameter sets, and what to do about it.</span></li>
+      <li>Luo Y, Shi Z, Lu X, et al. (2017). Transient dynamics of terrestrial carbon storage: mathematical foundation and its applications. <em>Biogeosciences</em> 14: 145–161. <a href="https://doi.org/10.5194/bg-14-145-2017">doi:10.5194/bg-14-145-2017</a><span class="why">The matrix formulation of land carbon models and the closed-form steady state used for semi-analytical spin-up and traceability.</span></li>
+      <li>Rastetter EB, King AW, Cosby BJ, Hornberger GM, O'Neill RV, Hobbie JE (1992). Aggregating fine-scale ecological knowledge to model coarser-scale attributes of ecosystems. <em>Ecological Applications</em> 2: 55–70. <a href="https://doi.org/10.2307/1941889">doi:10.2307/1941889</a><span class="why">The aggregation-error problem (Jensen's inequality in disguise) and methods to correct it when upscaling nonlinear process models.</span></li>
+      <li>Ruimy A, Jarvis PG, Baldocchi DD, Saugier B (1995). CO₂ fluxes over plant canopies and solar radiation: a review. <em>Advances in Ecological Research</em> 26: 1–68. <span class="why">Shows how canopy light-response curves differ from leaf curves because of the light distribution, the empirical face of the Jensen bias.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="decision-trees-random-forest.html">← Previous: Decision trees and random forests</a><a href="gradient-descent.html">Next: Gradient descent →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#closedform">What "closed form" means</a></li>
+      <li><a href="#ols">Least squares &amp; normal equations</a></li>
+      <li><a href="#regularised">Ridge and lasso</a></li>
+      <li><a href="#mle">Closed-form MLEs</a></li>
+      <li><a href="#ecoclosed">Closed forms in ecosystem science</a></li>
+      <li><a href="#convexity">Convexity</a></li>
+      <li><a href="#losses">Loss functions</a></li>
+      <li><a href="#convexopt">Convex optimisation &amp; KKT</a></li>
+      <li><a href="#connections">Connections to ecosystem modelling</a></li>
+      <li><a href="#numbers">Formulas to remember</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use small seeded synthetic datasets (mulberry32) so that every reload shows the same numbers. IRLS fits stop at a relative change of 10⁻⁸ or 100 iterations.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 2 : d); }
+  function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function randn(rng) { var u = 1 - rng(), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  /* ---------- generic chart scaffold ---------- */
+  function chart(svg, o) {
+    var c = { svg: svg, o: o };
+    c.pw = o.W - o.mL - o.mR; c.ph = o.H - o.mT - o.mB;
+    c.sx = function (x) { return o.mL + (x - o.x0) / (o.x1 - o.x0) * c.pw; };
+    c.sy = function (y) { return o.mT + (o.y1 - y) / (o.y1 - o.y0) * c.ph; };
+    c.ix = function (px) { return o.x0 + (px - o.mL) / c.pw * (o.x1 - o.x0); };
+    c.axes = function (xt, yt, xfmt, yfmt) {
+      yt.forEach(function (y) { svg.appendChild(el('line', { 'class': 'gridline', x1: o.mL, x2: o.mL + c.pw, y1: c.sy(y), y2: c.sy(y) })); svg.appendChild(el('text', { 'class': 'tick', x: o.mL - 6, y: c.sy(y) + 4, 'text-anchor': 'end' }, yfmt ? yfmt(y) : y)); });
+      xt.forEach(function (x) { svg.appendChild(el('line', { 'class': 'ax', x1: c.sx(x), x2: c.sx(x), y1: o.mT + c.ph, y2: o.mT + c.ph + 4 })); svg.appendChild(el('text', { 'class': 'tick', x: c.sx(x), y: o.mT + c.ph + 16, 'text-anchor': 'middle' }, xfmt ? xfmt(x) : x)); });
+      svg.appendChild(el('line', { 'class': 'ax', x1: o.mL, x2: o.mL + c.pw, y1: o.mT + c.ph, y2: o.mT + c.ph }));
+      svg.appendChild(el('line', { 'class': 'ax', x1: o.mL, x2: o.mL, y1: o.mT, y2: o.mT + c.ph }));
+      if (o.xlab) svg.appendChild(el('text', { 'class': 'axlbl', x: o.mL + c.pw / 2, y: o.H - 6, 'text-anchor': 'middle' }, o.xlab));
+      if (o.ylab) svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(13,' + (o.mT + c.ph / 2) + ') rotate(-90)' }, o.ylab));
+      if (o.title) svg.appendChild(el('text', { 'class': 'ttl', x: o.mL, y: 14 }, o.title));
+    };
+    c.curve = function (fn, n, cls, stroke) {
+      var d = '', pen = false;
+      for (var i = 0; i <= n; i++) { var x = o.x0 + (o.x1 - o.x0) * i / n; var y = fn(x); if (!isFinite(y)) { pen = false; continue; } var yc = clamp(y, o.y0, o.y1); d += (pen ? 'L' : 'M') + c.sx(x).toFixed(1) + ',' + c.sy(yc).toFixed(1); pen = true; }
+      var p = el('path', { 'class': 'ser ' + (cls || ''), d: d }); if (stroke) p.setAttribute('stroke', stroke); svg.appendChild(p); return p;
+    };
+    c.hitbox = function () { var h = el('rect', { x: o.mL, y: o.mT, width: c.pw, height: c.ph, fill: 'transparent' }); svg.appendChild(h); return h; };
+    return c;
+  }
+  // hover crosshair + tooltip for x-indexed curves
+  function hover(c, tip, html, dots) {
+    var svg = c.svg, o = c.o;
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: o.mT, y2: o.mT + c.ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var ds = []; for (var i = 0; i < (dots || 0); i++) { var d = el('circle', { r: 3.5, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(d); ds.push(d); }
+    var hit = c.hitbox();
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var x = clamp(c.ix(p.x), o.x0, o.x1);
+      xh.setAttribute('x1', c.sx(x)); xh.setAttribute('x2', c.sx(x)); xh.setAttribute('visibility', 'visible');
+      var r = html(x, p); tip.innerHTML = r.html; tip.hidden = false;
+      (r.ys || []).forEach(function (y, i) { if (ds[i]) { if (isFinite(y)) { ds[i].setAttribute('cx', c.sx(x)); ds[i].setAttribute('cy', c.sy(clamp(y, o.y0, o.y1))); ds[i].setAttribute('visibility', 'visible'); } else ds[i].setAttribute('visibility', 'hidden'); } });
+      var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); ds.forEach(function (d) { d.setAttribute('visibility', 'hidden'); }); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+  }
+  // marching-squares contours of F(x,y) on the chart's domain
+  function contours(c, F, nx, ny, levels, strokeFn) {
+    var o = c.o, g = [], i, j;
+    var dx = (o.x1 - o.x0) / nx, dy = (o.y1 - o.y0) / ny;
+    for (i = 0; i <= nx; i++) { g[i] = []; for (j = 0; j <= ny; j++) g[i][j] = F(o.x0 + i * dx, o.y0 + j * dy); }
+    var segs = { 1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]], 5: [[3, 0], [1, 2]], 6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[0, 2]], 10: [[0, 1], [2, 3]], 11: [[1, 2]], 12: [[3, 1]], 13: [[0, 1]], 14: [[3, 0]] };
+    levels.forEach(function (lev, li) {
+      var d = '';
+      for (i = 0; i < nx; i++) for (j = 0; j < ny; j++) {
+        var a = g[i][j], b = g[i + 1][j], cc = g[i + 1][j + 1], dd = g[i][j + 1];
+        var idx = (a >= lev ? 1 : 0) | (b >= lev ? 2 : 0) | (cc >= lev ? 4 : 0) | (dd >= lev ? 8 : 0);
+        if (idx === 0 || idx === 15) continue;
+        var x0 = o.x0 + i * dx, y0 = o.y0 + j * dy;
+        function pt(e) {
+          var t;
+          if (e === 0) { t = (lev - a) / (b - a); return [x0 + t * dx, y0]; }
+          if (e === 1) { t = (lev - b) / (cc - b); return [x0 + dx, y0 + t * dy]; }
+          if (e === 2) { t = (lev - dd) / (cc - dd); return [x0 + t * dx, y0 + dy]; }
+          t = (lev - a) / (dd - a); return [x0, y0 + t * dy];
+        }
+        segs[idx].forEach(function (s) { var p = pt(s[0]), q = pt(s[1]); d += 'M' + c.sx(p[0]).toFixed(1) + ',' + c.sy(p[1]).toFixed(1) + 'L' + c.sx(q[0]).toFixed(1) + ',' + c.sy(q[1]).toFixed(1); });
+      }
+      var p = el('path', { 'class': 'cont', d: d }); if (strokeFn) { var s = strokeFn(li, levels.length); if (s.stroke) p.setAttribute('stroke', s.stroke); if (s.opacity !== undefined) p.setAttribute('opacity', s.opacity); }
+      c.svg.appendChild(p);
+    });
+  }
+  // 2x2 helpers
+  function inv2(m) { var det = m[0][0] * m[1][1] - m[0][1] * m[1][0]; return [[m[1][1] / det, -m[0][1] / det], [-m[1][0] / det, m[0][0] / det]]; }
+  function mul2v(m, v) { return [m[0][0] * v[0] + m[0][1] * v[1], m[1][0] * v[0] + m[1][1] * v[1]]; }
+  function mul2(a, b) { return [[a[0][0] * b[0][0] + a[0][1] * b[1][0], a[0][0] * b[0][1] + a[0][1] * b[1][1]], [a[1][0] * b[0][0] + a[1][1] * b[1][0], a[1][0] * b[0][1] + a[1][1] * b[1][1]]]; }
+  // weighted least squares for a straight line: returns [b0, b1]
+  function wls(x, y, w) {
+    var sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (var i = 0; i < x.length; i++) { sw += w[i]; sx += w[i] * x[i]; sy += w[i] * y[i]; sxx += w[i] * x[i] * x[i]; sxy += w[i] * x[i] * y[i]; }
+    var det = sw * sxx - sx * sx;
+    return [(sxx * sy - sx * sxy) / det, (sw * sxy - sx * sy) / det];
+  }
+
+  /* ---------- Lab 1: least-squares geometry ---------- */
+  (function () {
+    var rng = mulberry32(20240601);
+    var n = 14, T = [], R = [];
+    for (var i = 0; i < n; i++) { var t = 5 + 20 * rng(); T.push(t); R.push(0.5 + 0.15 * t + 0.35 * randn(rng)); }
+    var ones = []; for (i = 0; i < n; i++) ones.push(1);
+    var bh = wls(T, R, ones);
+    function sse(b0, b1) { var s = 0; for (var i = 0; i < n; i++) { var e = R[i] - b0 - b1 * T[i]; s += e * e; } return s; }
+    var sseMin = sse(bh[0], bh[1]);
+    var ybar = 0; for (i = 0; i < n; i++) ybar += R[i] / n; var sst = 0; for (i = 0; i < n; i++) sst += (R[i] - ybar) * (R[i] - ybar);
+    var sB0 = document.getElementById('lsB0'), sB1 = document.getElementById('lsB1');
+    var svgD = document.getElementById('lsqData'), svgL = document.getElementById('lsqLoss'), tip = document.getElementById('lsqTip');
+    var cL = null;
+    function draw() {
+      var b0 = +sB0.value, b1 = +sB1.value;
+      document.getElementById('lsB0O').textContent = fmt(b0); document.getElementById('lsB1O').textContent = fmt(b1, 3);
+      // data chart
+      clear(svgD);
+      var cD = chart(svgD, { W: 400, H: 320, mL: 46, mR: 12, mT: 22, mB: 40, x0: 0, x1: 30, y0: -1, y1: 6, xlab: 'Soil temperature (°C)', ylab: 'Soil respiration (µmol m⁻² s⁻¹)', title: 'Data and two lines' });
+      cD.axes([0, 10, 20, 30], [-1, 0, 1, 2, 3, 4, 5, 6]);
+      cD.curve(function (x) { return b0 + b1 * x; }, 2, '', 'var(--series-2)');
+      cD.curve(function (x) { return bh[0] + bh[1] * x; }, 2, 'net');
+      for (var i = 0; i < n; i++) {
+        svgD.appendChild(el('line', { x1: cD.sx(T[i]), x2: cD.sx(T[i]), y1: cD.sy(clamp(R[i], -1, 6)), y2: cD.sy(clamp(b0 + b1 * T[i], -1, 6)), stroke: 'var(--series-2)', 'stroke-width': 1, opacity: 0.6 }));
+        svgD.appendChild(el('circle', { 'class': 'pt', cx: cD.sx(T[i]), cy: cD.sy(clamp(R[i], -1, 6)), r: 4 }));
+      }
+      svgD.appendChild(el('text', { 'class': 'dl', x: cD.sx(29), y: cD.sy(clamp(bh[0] + bh[1] * 29, -1, 6)) - 6, 'text-anchor': 'end', fill: 'var(--fg)' }, 'OLS'));
+      svgD.appendChild(el('text', { 'class': 'dl', x: cD.sx(29), y: cD.sy(clamp(b0 + b1 * 29, -1, 6)) + 14, 'text-anchor': 'end', fill: 'var(--series-2)' }, 'yours'));
+      // loss map
+      clear(svgL);
+      cL = chart(svgL, { W: 400, H: 320, mL: 46, mR: 12, mT: 22, mB: 40, x0: -2, x1: 4, y0: -0.1, y1: 0.4, xlab: 'Intercept β₀', ylab: 'Slope β₁', title: 'Loss surface J(β₀, β₁) = SSE' });
+      cL.axes([-2, -1, 0, 1, 2, 3, 4], [-0.1, 0, 0.1, 0.2, 0.3, 0.4], null, function (v) { return fmt(v, 1); });
+      var levels = []; for (var k = 1; k <= 14; k++) levels.push(sseMin + 1.0 * k * k);
+      contours(cL, sse, 72, 72, levels, function (li, nl) { return { opacity: 0.35 + 0.6 * (1 - li / nl) }; });
+      svgL.appendChild(el('circle', { 'class': 'mark', cx: cL.sx(bh[0]), cy: cL.sy(bh[1]), r: 5.5, fill: 'var(--fg)' }));
+      svgL.appendChild(el('text', { 'class': 'dl', x: cL.sx(bh[0]) + 9, y: cL.sy(bh[1]) - 8, fill: 'var(--fg)' }, 'β̂ (closed form)'));
+      svgL.appendChild(el('circle', { 'class': 'mark', cx: cL.sx(b0), cy: cL.sy(b1), r: 5.5, fill: 'var(--series-2)' }));
+      // gradient arrow (negative gradient direction, scaled)
+      var g0 = 0, g1 = 0; for (i = 0; i < n; i++) { var e = R[i] - b0 - b1 * T[i]; g0 += -2 * e; g1 += -2 * e * T[i]; }
+      var gn = Math.hypot(g0, g1 / 12);
+      if (gn > 1e-6) { var ax = -g0 / gn * 28, ay = -(g1 / 12) / gn * 28; svgL.appendChild(el('line', { x1: cL.sx(b0), y1: cL.sy(b1), x2: cL.sx(b0) + ax, y2: cL.sy(b1) - ay, stroke: 'var(--series-2)', 'stroke-width': 2 })); }
+      // hover
+      hover(cL, tip, function (x, p) { var y = cL.o.y0 + (cL.o.mT + cL.ph - p.y) / cL.ph * (cL.o.y1 - cL.o.y0); return { html: 'β₀ <b>' + fmt(x) + '</b> · β₁ <b>' + fmt(y, 3) + '</b><br>SSE <b>' + fmt(sse(x, y), 2) + '</b> (min ' + fmt(sseMin, 2) + ')' }; }, 0);
+      // readouts
+      var se = [0, 0], sxe = [0, 0];
+      for (i = 0; i < n; i++) { var eu = R[i] - b0 - b1 * T[i], eo = R[i] - bh[0] - bh[1] * T[i]; se[0] += eu; se[1] += eo; sxe[0] += T[i] * eu; sxe[1] += T[i] * eo; }
+      document.getElementById('lsSSEu').textContent = fmt(sse(b0, b1), 2);
+      document.getElementById('lsSSEm').textContent = fmt(sseMin, 2);
+      document.getElementById('lsBhat').textContent = fmt(bh[0], 3) + ', ' + fmt(bh[1], 4);
+      document.getElementById('lsSe').textContent = fmt(se[0], 2) + ' · ' + (Math.abs(se[1]) < 1e-9 ? '0.00' : fmt(se[1], 2));
+      document.getElementById('lsSxe').textContent = fmt(sxe[0], 1) + ' · ' + (Math.abs(sxe[1]) < 1e-8 ? '0.0' : fmt(sxe[1], 1));
+      document.getElementById('lsR2').textContent = fmt(1 - sseMin / sst, 3);
+      document.getElementById('lsGrad').textContent = fmt(Math.hypot(g0, g1), 1);
+      var tb = document.getElementById('lsqTable'), html = '<thead><tr><th class="num">T (°C)</th><th class="num">R obs</th><th class="num">R̂ OLS</th><th class="num">e OLS</th><th class="num">e yours</th></tr></thead><tbody>';
+      for (i = 0; i < n; i++) html += '<tr><td class="num">' + fmt(T[i], 1) + '</td><td class="num">' + fmt(R[i]) + '</td><td class="num">' + fmt(bh[0] + bh[1] * T[i]) + '</td><td class="num">' + fmt(R[i] - bh[0] - bh[1] * T[i]) + '</td><td class="num">' + fmt(R[i] - b0 - b1 * T[i]) + '</td></tr>';
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sB0, sB1].forEach(function (s) { s.addEventListener('input', draw); });
+    document.getElementById('lsSnap').addEventListener('click', function () { sB0.value = bh[0].toFixed(2); sB1.value = bh[1].toFixed(3); draw(); });
+    draw();
+  })();
+
+  /* ---------- Lab 2: loss gallery ---------- */
+  (function () {
+    var rng = mulberry32(777);
+    var n = 20, X = [], Y0 = [];
+    for (var i = 0; i < n; i++) { var x = 10 * (i + 0.5) / n + 0.3 * (rng() - 0.5); X.push(x); Y0.push(2 + 0.5 * x + 0.6 * randn(rng)); }
+    var oi = 15; // outlier index (x ≈ 8)
+    var ones = []; for (i = 0; i < n; i++) ones.push(1);
+    var sOut = document.getElementById('loOut'), sDel = document.getElementById('loDel');
+    var svgR = document.getElementById('lossReg'), svgC = document.getElementById('lossCls'), svgF = document.getElementById('lossFit');
+    var tipR = document.getElementById('lossRegTip'), tipC = document.getElementById('lossClsTip');
+    function huber(r, d) { return Math.abs(r) <= d ? 0.5 * r * r : d * (Math.abs(r) - 0.5 * d); }
+    function irls(X, Y, wfn) {
+      var b = wls(X, Y, ones), it = 0, w = ones.slice();
+      for (it = 1; it <= 100; it++) {
+        w = []; for (var i = 0; i < X.length; i++) { var r = Y[i] - b[0] - b[1] * X[i]; w.push(wfn(r)); }
+        var nb = wls(X, Y, w);
+        var ch = Math.abs(nb[0] - b[0]) + Math.abs(nb[1] - b[1]); b = nb;
+        if (ch < 1e-8 * (1 + Math.abs(b[0]) + Math.abs(b[1]))) break;
+      }
+      return { b: b, w: w, it: it };
+    }
+    function draw() {
+      var off = +sOut.value, d = +sDel.value;
+      document.getElementById('loOutO').textContent = fmt(off, 1); document.getElementById('loDelO').textContent = fmt(d, 2);
+      // regression losses
+      clear(svgR);
+      var cR = chart(svgR, { W: 400, H: 260, mL: 40, mR: 12, mT: 22, mB: 38, x0: -4, x1: 4, y0: 0, y1: 6, xlab: 'Residual r = y − f', ylab: 'Loss', title: 'Regression losses' });
+      cR.axes([-4, -2, 0, 2, 4], [0, 2, 4, 6]);
+      cR.curve(function (r) { return 0.5 * r * r; }, 160, '', 'var(--series-1)');
+      cR.curve(function (r) { return Math.abs(r); }, 160, '', 'var(--series-2)');
+      cR.curve(function (r) { return huber(r, d); }, 160, '', 'var(--series-3)');
+      svgR.appendChild(el('text', { 'class': 'dl', x: cR.sx(3.2), y: cR.sy(5.6), fill: 'var(--series-1)', 'text-anchor': 'end' }, '½r²'));
+      svgR.appendChild(el('text', { 'class': 'dl', x: cR.sx(3.9), y: cR.sy(3.9) - 4, fill: 'var(--series-2)', 'text-anchor': 'end' }, '|r|'));
+      svgR.appendChild(el('text', { 'class': 'dl', x: cR.sx(3.9), y: cR.sy(huber(3.9, d)) + 14, fill: 'var(--series-3)', 'text-anchor': 'end' }, 'Huber δ=' + fmt(d, 1)));
+      hover(cR, tipR, function (r) { return { html: 'r <b>' + fmt(r) + '</b><br>½r² <b>' + fmt(0.5 * r * r) + '</b> · |r| <b>' + fmt(Math.abs(r)) + '</b> · Huber <b>' + fmt(huber(r, d)) + '</b>', ys: [0.5 * r * r, Math.abs(r), huber(r, d)] }; }, 3);
+      // classification losses
+      clear(svgC);
+      var cC = chart(svgC, { W: 400, H: 260, mL: 40, mR: 12, mT: 22, mB: 38, x0: -3, x1: 3, y0: 0, y1: 4, xlab: 'Margin m = y·f', ylab: 'Loss', title: 'Classification losses' });
+      cC.axes([-3, -2, -1, 0, 1, 2, 3], [0, 1, 2, 3, 4]);
+      cC.curve(function (m) { return m <= 0 ? 1 : 0; }, 600, '', 'var(--muted)');
+      cC.curve(function (m) { return Math.max(0, 1 - m); }, 160, '', 'var(--series-1)');
+      cC.curve(function (m) { return Math.log(1 + Math.exp(-m)); }, 160, '', 'var(--series-2)');
+      cC.curve(function (m) { return Math.exp(-m); }, 160, '', 'var(--series-3)');
+      svgC.appendChild(el('text', { 'class': 'dl', x: cC.sx(-2.1), y: cC.sy(3.1) - 4, fill: 'var(--series-1)' }, 'hinge'));
+      svgC.appendChild(el('text', { 'class': 'dl', x: cC.sx(-2.9), y: cC.sy(Math.log(1 + Math.exp(2.9))) + 14, fill: 'var(--series-2)' }, 'logistic'));
+      svgC.appendChild(el('text', { 'class': 'dl', x: cC.sx(-1.2), y: cC.sy(3.6), fill: 'var(--series-3)' }, 'exp'));
+      svgC.appendChild(el('text', { 'class': 'dl', x: cC.sx(1.4), y: cC.sy(0.35), fill: 'var(--muted)' }, '0–1'));
+      hover(cC, tipC, function (m) { return { html: 'm <b>' + fmt(m) + '</b><br>hinge <b>' + fmt(Math.max(0, 1 - m)) + '</b> · logistic <b>' + fmt(Math.log(1 + Math.exp(-m))) + '</b> · exp <b>' + fmt(Math.exp(-m)) + '</b> · 0–1 <b>' + (m <= 0 ? 1 : 0) + '</b>', ys: [Math.max(0, 1 - m), Math.log(1 + Math.exp(-m)), Math.exp(-m)] }; }, 3);
+      // fits
+      var Y = Y0.slice(); Y[oi] += off;
+      var bsq = wls(X, Y, ones);
+      var lad = irls(X, Y, function (r) { return 1 / Math.max(Math.abs(r), 1e-4); });
+      var hub = irls(X, Y, function (r) { return Math.min(1, d / Math.max(Math.abs(r), 1e-12)); });
+      clear(svgF);
+      var cF = chart(svgF, { W: 640, H: 330, mL: 46, mR: 14, mT: 22, mB: 40, x0: 0, x1: 10.5, y0: -6, y1: 20, xlab: 'x', ylab: 'y', title: 'Three fits to the same data' });
+      cF.axes([0, 2, 4, 6, 8, 10], [-5, 0, 5, 10, 15, 20]);
+      cF.curve(function (x) { return bsq[0] + bsq[1] * x; }, 2, '', 'var(--series-1)');
+      cF.curve(function (x) { return lad.b[0] + lad.b[1] * x; }, 2, '', 'var(--series-2)');
+      cF.curve(function (x) { return hub.b[0] + hub.b[1] * x; }, 2, '', 'var(--series-3)');
+      for (var i = 0; i < n; i++) svgF.appendChild(el('circle', { 'class': 'pt' + (i === oi ? ' out' : ''), cx: cF.sx(X[i]), cy: cF.sy(clamp(Y[i], -6, 20)), r: i === oi ? 6 : 4 }));
+      var labs = [{ t: 'squared', y: bsq[0] + bsq[1] * 10.3, c: 'var(--series-1)' }, { t: 'absolute', y: lad.b[0] + lad.b[1] * 10.3, c: 'var(--series-2)' }, { t: 'Huber', y: hub.b[0] + hub.b[1] * 10.3, c: 'var(--series-3)' }];
+      labs.forEach(function (L) { L.py = cF.sy(clamp(L.y, -6, 20)); }); labs.sort(function (a, b) { return a.py - b.py; });
+      for (i = 1; i < labs.length; i++) if (labs[i].py - labs[i - 1].py < 13) labs[i].py = labs[i - 1].py + 13;
+      labs.forEach(function (L) { svgF.appendChild(el('text', { 'class': 'dl', x: cF.sx(10.3), y: L.py - 4, fill: L.c, 'text-anchor': 'end' }, L.t)); });
+      document.getElementById('loSq').textContent = fmt(bsq[0]) + ', ' + fmt(bsq[1], 3);
+      document.getElementById('loAb').textContent = fmt(lad.b[0]) + ', ' + fmt(lad.b[1], 3);
+      document.getElementById('loHu').textContent = fmt(hub.b[0]) + ', ' + fmt(hub.b[1], 3);
+      var ro = [Y[oi] - bsq[0] - bsq[1] * X[oi], Y[oi] - lad.b[0] - lad.b[1] * X[oi], Y[oi] - hub.b[0] - hub.b[1] * X[oi]];
+      document.getElementById('loRes').textContent = fmt(ro[0], 1) + ' · ' + fmt(ro[1], 1) + ' · ' + fmt(ro[2], 1);
+      document.getElementById('loW').textContent = fmt(lad.w[oi], 3) + ' · ' + fmt(hub.w[oi], 3);
+      document.getElementById('loIt').textContent = lad.it + ' · ' + hub.it;
+      var tb = document.getElementById('lossTable'), html = '<thead><tr><th class="num">x</th><th class="num">y</th><th class="num">r (sq)</th><th class="num">r (abs)</th><th class="num">r (Huber)</th><th class="num">w (Huber)</th></tr></thead><tbody>';
+      for (i = 0; i < n; i++) html += '<tr><td class="num">' + fmt(X[i], 2) + '</td><td class="num">' + fmt(Y[i]) + '</td><td class="num">' + fmt(Y[i] - bsq[0] - bsq[1] * X[i]) + '</td><td class="num">' + fmt(Y[i] - lad.b[0] - lad.b[1] * X[i]) + '</td><td class="num">' + fmt(Y[i] - hub.b[0] - hub.b[1] * X[i]) + '</td><td class="num">' + fmt(hub.w[i], 3) + '</td></tr>';
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sOut, sDel].forEach(function (s) { s.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ---------- Lab 3: convexity checker ---------- */
+  (function () {
+    var rng = mulberry32(4242);
+    var S = [0.5, 1, 2, 4, 8, 16, 32], V = [];
+    S.forEach(function (s) { V.push(30 * s / (4 + s) + 1.5 * randn(rng)); });
+    function sseV(vm) { var t = 0; S.forEach(function (s, i) { var e = V[i] - vm * s / (4 + s); t += e * e; }); return t; }
+    function sseK(km) { var t = 0; S.forEach(function (s, i) { var e = V[i] - 30 * s / (km + s); t += e * e; }); return t; }
+    var F = {
+      sq: { f: function (x) { return x * x; }, x0: -2, x1: 2, y0: -0.5, y1: 4.5, xl: 'x', yl: 'f(x) = x²', xt: [-2, -1, 0, 1, 2], yt: [0, 1, 2, 3, 4] },
+      abs: { f: Math.abs, x0: -2, x1: 2, y0: -0.3, y1: 2.3, xl: 'x', yl: 'f(x) = |x|', xt: [-2, -1, 0, 1, 2], yt: [0, 0.5, 1, 1.5, 2] },
+      quartic: { f: function (x) { return Math.pow(x, 4) - x * x; }, x0: -1.4, x1: 1.4, y0: -0.4, y1: 2, xl: 'x', yl: 'f(x) = x⁴ − x²', xt: [-1, -0.5, 0, 0.5, 1], yt: [0, 0.5, 1, 1.5, 2] },
+      sin: { f: Math.sin, x0: -4, x1: 7, y0: -1.3, y1: 1.3, xl: 'x', yl: 'f(x) = sin x', xt: [-4, -2, 0, 2, 4, 6], yt: [-1, -0.5, 0, 0.5, 1] },
+      lse: { f: function (x) { return Math.log(1 + Math.exp(x)); }, x0: -4, x1: 4, y0: -0.3, y1: 4.3, xl: 'x', yl: 'f(x) = log(1 + eˣ)', xt: [-4, -2, 0, 2, 4], yt: [0, 1, 2, 3, 4] },
+      mmV: { f: sseV, x0: 0, x1: 60, y0: 0, y1: 1500, xl: 'Vmax (fixed Km = 4)', yl: 'SSE of Michaelis–Menten fit', xt: [0, 15, 30, 45, 60], yt: [0, 500, 1000, 1500] },
+      mmK: { f: sseK, x0: 0.05, x1: 40, y0: 0, y1: 2000, xl: 'Km (fixed Vmax = 30)', yl: 'SSE of Michaelis–Menten fit', xt: [0, 10, 20, 30, 40], yt: [0, 500, 1000, 1500, 2000] }
+    };
+    var sel = document.getElementById('cvFn'), sX1 = document.getElementById('cvX1'), sX2 = document.getElementById('cvX2'), sTh = document.getElementById('cvTh');
+    var svg = document.getElementById('cvxSvg'), tip = document.getElementById('cvxTip');
+    function draw() {
+      var o = F[sel.value], f = o.f;
+      var x1 = o.x0 + (o.x1 - o.x0) * +sX1.value, x2 = o.x0 + (o.x1 - o.x0) * +sX2.value, th = +sTh.value;
+      document.getElementById('cvX1O').textContent = fmt(+sX1.value); document.getElementById('cvX2O').textContent = fmt(+sX2.value); document.getElementById('cvThO').textContent = fmt(th);
+      clear(svg);
+      var c = chart(svg, { W: 640, H: 360, mL: 56, mR: 16, mT: 16, mB: 42, x0: o.x0, x1: o.x1, y0: o.y0, y1: o.y1, xlab: o.xl, ylab: o.yl });
+      c.axes(o.xt, o.yt);
+      c.curve(f, 400, 'net');
+      var f1 = f(x1), f2 = f(x2);
+      var xt = th * x1 + (1 - th) * x2, ft = f(xt), ch = th * f1 + (1 - th) * f2;
+      svg.appendChild(el('path', { 'class': 'chord', d: 'M' + c.sx(x1) + ',' + c.sy(clamp(f1, o.y0, o.y1)) + 'L' + c.sx(x2) + ',' + c.sy(clamp(f2, o.y0, o.y1)) }));
+      svg.appendChild(el('line', { 'class': 'gap', x1: c.sx(xt), x2: c.sx(xt), y1: c.sy(clamp(ft, o.y0, o.y1)), y2: c.sy(clamp(ch, o.y0, o.y1)) }));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(x1), cy: c.sy(clamp(f1, o.y0, o.y1)), r: 5, fill: 'var(--series-2)' }));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(x2), cy: c.sy(clamp(f2, o.y0, o.y1)), r: 5, fill: 'var(--series-2)' }));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(xt), cy: c.sy(clamp(ft, o.y0, o.y1)), r: 4.5, fill: 'var(--fg)' }));
+      svg.appendChild(el('circle', { 'class': 'mark', cx: c.sx(xt), cy: c.sy(clamp(ch, o.y0, o.y1)), r: 4.5, fill: 'var(--series-2)' }));
+      svg.appendChild(el('text', { 'class': 'dl', x: c.sx(x1), y: c.sy(clamp(f1, o.y0, o.y1)) - 10, 'text-anchor': 'middle', fill: 'var(--series-2)' }, 'x₁'));
+      svg.appendChild(el('text', { 'class': 'dl', x: c.sx(x2), y: c.sy(clamp(f2, o.y0, o.y1)) - 10, 'text-anchor': 'middle', fill: 'var(--series-2)' }, 'x₂'));
+      svg.appendChild(el('text', { 'class': 'dl', x: c.sx(xt) + 8, y: c.sy(clamp((ft + ch) / 2, o.y0, o.y1)) + 4, fill: 'var(--accent)' }, 'gap ' + fmt(ch - ft, 3)));
+      // numeric checks
+      var lo = Math.min(x1, x2), hi = Math.max(x1, x2), minGap = Infinity;
+      for (var k = 0; k <= 200; k++) { var x = lo + (hi - lo) * k / 200; var t = (hi - lo) > 1e-12 ? (x2 - x) / (x2 - x1) : 0.5; var chord = t * f1 + (1 - t) * f2; minGap = Math.min(minGap, chord - f(x)); }
+      var h = (o.x1 - o.x0) / 2000, pos = 0, neg = 0;
+      for (k = 1; k < 400; k++) { var xx = o.x0 + (o.x1 - o.x0) * k / 400; var d2 = (f(xx + h) - 2 * f(xx) + f(xx - h)) / (h * h); if (d2 > 1e-6) pos++; else if (d2 < -1e-6) neg++; }
+      var hessTxt = neg === 0 ? 'f″ ≥ 0 everywhere: convex' : (pos === 0 ? 'f″ ≤ 0 everywhere: concave' : 'f″ changes sign: not convex on the domain');
+      document.getElementById('cvXt').textContent = fmt(xt, 3);
+      document.getElementById('cvFt').textContent = fmt(ft, 3);
+      document.getElementById('cvCh').textContent = fmt(ch, 3);
+      document.getElementById('cvGap').textContent = fmt(ch - ft, 4);
+      document.getElementById('cvMin').textContent = fmt(minGap, 4);
+      document.getElementById('cvHess').textContent = neg === 0 ? 'f″ ≥ 0: convex' : (pos === 0 ? 'f″ ≤ 0: concave' : 'changes sign');
+      document.getElementById('cvxVerdict').textContent = (minGap >= -1e-9 ? 'On [x₁, x₂] the chord lies on or above the curve: the convexity inequality holds here. ' : 'The chord dips below the curve between x₁ and x₂: the convexity inequality fails. ') + hessTxt + '.';
+      hover(c, tip, function (x) { return { html: 'x <b>' + fmt(x, 3) + '</b> · f(x) <b>' + fmt(f(x), 3) + '</b>', ys: [f(x)] }; }, 1);
+      var tb = document.getElementById('cvxTable'), html = '<thead><tr><th class="num">x</th><th class="num">f(x)</th><th class="num">chord</th><th class="num">chord − f</th></tr></thead><tbody>';
+      for (k = 0; k <= 10; k++) { var xv = lo + (hi - lo) * k / 10; var tt = (hi - lo) > 1e-12 ? (x2 - xv) / (x2 - x1) : 0.5; var cv = tt * f1 + (1 - tt) * f2; html += '<tr><td class="num">' + fmt(xv, 3) + '</td><td class="num">' + fmt(f(xv), 3) + '</td><td class="num">' + fmt(cv, 3) + '</td><td class="num">' + fmt(cv - f(xv), 4) + '</td></tr>'; }
+      tb.innerHTML = html + '</tbody>';
+    }
+    sel.addEventListener('change', draw);
+    [sX1, sX2, sTh].forEach(function (s) { s.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ---------- Lab 4: multicollinearity & ridge ---------- */
+  (function () {
+    var n = 60, nd = 300, sig = 1;
+    var rng = mulberry32(99);
+    var z1 = [], z2 = [], eps = [];
+    for (var i = 0; i < n; i++) { z1.push(randn(rng)); z2.push(randn(rng)); }
+    for (var d = 0; d < nd; d++) { var e = []; for (i = 0; i < n; i++) e.push(randn(rng)); eps.push(e); }
+    function stdz(v) { var m = 0, s = 0; v.forEach(function (x) { m += x / v.length; }); v.forEach(function (x) { s += (x - m) * (x - m); }); s = Math.sqrt(s / v.length); return v.map(function (x) { return (x - m) / s; }); }
+    var sRho = document.getElementById('cnRho'), sLam = document.getElementById('cnLam');
+    var svgC = document.getElementById('cndCloud'), svgV = document.getElementById('cndVar'), tip = document.getElementById('cndTip');
+    function theory(rho, lam) {
+      var XtX = [[n, n * rho], [n * rho, n]];
+      var A = inv2([[n + lam, n * rho], [n * rho, n + lam]]);
+      var olsVar = sig * sig * inv2(XtX)[0][0];
+      var M = mul2(mul2(A, XtX), A); // (X'X+λI)^-1 X'X (X'X+λI)^-1
+      var ridgeVar = sig * sig * M[0][0];
+      var shr = mul2(A, XtX); var bias = mul2v(shr, [1, 1]); // E[β_ridge] = (X'X+λI)^-1 X'X β
+      return { olsVar: olsVar, ridgeVar: ridgeVar, bias1: bias[0] - 1, kappa: (1 + rho) / (1 - rho) };
+    }
+    function draw() {
+      var rho = +sRho.value, lam = Math.pow(10, +sLam.value);
+      document.getElementById('cnRhoO').textContent = fmt(rho, 3); document.getElementById('cnLamO').textContent = lam >= 10 ? fmt(lam, 0) : fmt(lam, 2);
+      var x1 = stdz(z1), x2raw = z1.map(function (v, i) { return rho * v + Math.sqrt(1 - rho * rho) * z2[i]; }), x2 = stdz(x2raw);
+      var s11 = 0, s12 = 0, s22 = 0; for (var i = 0; i < n; i++) { s11 += x1[i] * x1[i]; s12 += x1[i] * x2[i]; s22 += x2[i] * x2[i]; }
+      var XtX = [[s11, s12], [s12, s22]], XtXi = inv2(XtX), Ri = inv2([[s11 + lam, s12], [s12, s22 + lam]]);
+      var ols = [], rid = [];
+      for (var d = 0; d < nd; d++) { var t1 = 0, t2 = 0; for (i = 0; i < n; i++) { var y = x1[i] + x2[i] + sig * eps[d][i]; t1 += x1[i] * y; t2 += x2[i] * y; } ols.push(mul2v(XtXi, [t1, t2])); rid.push(mul2v(Ri, [t1, t2])); }
+      // cloud
+      clear(svgC);
+      var c = chart(svgC, { W: 400, H: 320, mL: 46, mR: 12, mT: 22, mB: 40, x0: -2, x1: 4, y0: -2, y1: 4, xlab: 'β̂₁', ylab: 'β̂₂', title: 'Sampling cloud of (β̂₁, β̂₂)' });
+      c.axes([-2, -1, 0, 1, 2, 3, 4], [-2, -1, 0, 1, 2, 3, 4]);
+      svgC.appendChild(el('line', { 'class': 'gridline', x1: c.sx(-2), x2: c.sx(4), y1: c.sy(4), y2: c.sy(-2), 'stroke-dasharray': '3 4' }));
+      svgC.appendChild(el('text', { 'class': 'tick', x: c.sx(3.4), y: c.sy(-1.3), 'text-anchor': 'end' }, 'β₁ + β₂ = 2'));
+      ols.forEach(function (b) { svgC.appendChild(el('circle', { cx: c.sx(clamp(b[0], -2, 4)), cy: c.sy(clamp(b[1], -2, 4)), r: 2.2, fill: 'var(--series-1)', opacity: 0.55 })); });
+      rid.forEach(function (b) { svgC.appendChild(el('circle', { cx: c.sx(clamp(b[0], -2, 4)), cy: c.sy(clamp(b[1], -2, 4)), r: 2.2, fill: 'var(--series-2)', opacity: 0.55 })); });
+      svgC.appendChild(el('circle', { 'class': 'mark', cx: c.sx(1), cy: c.sy(1), r: 5.5, fill: 'var(--fg)' }));
+      svgC.appendChild(el('text', { 'class': 'dl', x: c.sx(1) + 9, y: c.sy(1) + 4, fill: 'var(--fg)' }, 'true β'));
+      // variance curve
+      clear(svgV);
+      var cv = chart(svgV, { W: 400, H: 320, mL: 50, mR: 12, mT: 22, mB: 40, x0: 0, x1: 1, y0: -2.3, y1: 1.3, xlab: 'Predictor correlation ρ', ylab: 'Var(β̂₁)  (log₁₀)', title: 'Coefficient variance vs ρ' });
+      cv.axes([0, 0.2, 0.4, 0.6, 0.8, 1], [-2, -1, 0, 1], null, function (v) { return Math.pow(10, v) >= 1 ? Math.pow(10, v) : Math.pow(10, v).toFixed(2); });
+      cv.curve(function (r) { return r >= 0.9995 ? NaN : Math.log10(theory(r, 0).olsVar); }, 300, '', 'var(--series-1)');
+      cv.curve(function (r) { return r >= 0.9995 ? NaN : Math.log10(theory(r, lam).ridgeVar); }, 300, '', 'var(--series-2)');
+      svgV.appendChild(el('text', { 'class': 'dl', x: cv.sx(0.05), y: cv.sy(Math.log10(theory(0.05, 0).olsVar)) - 8, fill: 'var(--series-1)' }, 'OLS'));
+      svgV.appendChild(el('text', { 'class': 'dl', x: cv.sx(0.05), y: cv.sy(Math.log10(theory(0.05, lam).ridgeVar)) + 14, fill: 'var(--series-2)' }, 'ridge'));
+      var th = theory(rho, lam);
+      svgV.appendChild(el('line', { 'class': 'xh', x1: cv.sx(rho), x2: cv.sx(rho), y1: cv.o.mT, y2: cv.o.mT + cv.ph, 'stroke-dasharray': '3 3' }));
+      svgV.appendChild(el('circle', { 'class': 'mark', cx: cv.sx(rho), cy: cv.sy(clamp(Math.log10(th.olsVar), -2.3, 1.3)), r: 5, fill: 'var(--series-1)' }));
+      svgV.appendChild(el('circle', { 'class': 'mark', cx: cv.sx(rho), cy: cv.sy(clamp(Math.log10(th.ridgeVar), -2.3, 1.3)), r: 5, fill: 'var(--series-2)' }));
+      hover(cv, tip, function (r) { var t = theory(Math.min(r, 0.999), lam); return { html: 'ρ <b>' + fmt(r, 3) + '</b> · VIF <b>' + fmt(1 / (1 - r * r), 1) + '</b><br>Var OLS <b>' + fmt(t.olsVar, 4) + '</b> · Var ridge <b>' + fmt(t.ridgeVar, 4) + '</b>', ys: [Math.log10(t.olsVar), Math.log10(t.ridgeVar)] }; }, 2);
+      // readouts
+      function sd(arr, k) { var m = 0; arr.forEach(function (b) { m += b[k] / arr.length; }); var s = 0; arr.forEach(function (b) { s += (b[k] - m) * (b[k] - m); }); return Math.sqrt(s / (arr.length - 1)); }
+      var e1 = s11 + s12, e2 = s11 - s12; // eigenvalues for standardised, nearly n(1±ρ)
+      document.getElementById('cnKappa').textContent = fmt(Math.max(e1, e2) / Math.max(1e-9, Math.min(e1, e2)), 1);
+      document.getElementById('cnVIF').textContent = fmt(1 / (1 - rho * rho), 2);
+      document.getElementById('cnSd').textContent = fmt(Math.sqrt(sig * sig * XtXi[0][0]), 3) + ' · ' + fmt(Math.sqrt(sig * sig * mul2(mul2(Ri, XtX), Ri)[0][0]), 3);
+      document.getElementById('cnSdEmp').textContent = fmt(sd(ols, 0), 3) + ' · ' + fmt(sd(rid, 0), 3);
+      var bias = mul2v(mul2(Ri, XtX), [1, 1])[0] - 1;
+      document.getElementById('cnBias').textContent = fmt(bias, 3);
+      var vO = sig * sig * XtXi[0][0], vR = sig * sig * mul2(mul2(Ri, XtX), Ri)[0][0];
+      document.getElementById('cnMSE').textContent = fmt(vO, 4) + ' · ' + fmt(vR + bias * bias, 4);
+      document.getElementById('cnShr').textContent = fmt(e1 / (e1 + lam), 3) + ', ' + fmt(e2 / (e2 + lam), 3);
+      document.getElementById('cndMat').textContent = 'XᵀX        = [' + fmt(s11, 1) + '  ' + fmt(s12, 1) + ' ; ' + fmt(s12, 1) + '  ' + fmt(s22, 1) + ']   eigenvalues n(1±ρ) ≈ ' + fmt(e1, 1) + ', ' + fmt(e2, 1) + '\n(XᵀX)⁻¹    = [' + fmt(XtXi[0][0], 4) + '  ' + fmt(XtXi[0][1], 4) + ' ; ' + fmt(XtXi[1][0], 4) + '  ' + fmt(XtXi[1][1], 4) + ']\n(XᵀX+λI)⁻¹ = [' + fmt(Ri[0][0], 4) + '  ' + fmt(Ri[0][1], 4) + ' ; ' + fmt(Ri[1][0], 4) + '  ' + fmt(Ri[1][1], 4) + ']';
+      var tb = document.getElementById('cndTable'), html = '<thead><tr><th class="num">ρ</th><th class="num">VIF</th><th class="num">κ</th><th class="num">sd OLS</th><th class="num">sd ridge (λ=' + (lam >= 10 ? fmt(lam, 0) : fmt(lam, 2)) + ')</th><th class="num">ridge bias</th></tr></thead><tbody>';
+      [0, 0.5, 0.8, 0.9, 0.95, 0.98, 0.99, 0.995].forEach(function (r) { var t = theory(r, lam); html += '<tr><td class="num">' + r + '</td><td class="num">' + fmt(1 / (1 - r * r), 1) + '</td><td class="num">' + fmt(t.kappa, 1) + '</td><td class="num">' + fmt(Math.sqrt(t.olsVar), 3) + '</td><td class="num">' + fmt(Math.sqrt(t.ridgeVar), 3) + '</td><td class="num">' + fmt(t.bias1, 3) + '</td></tr>'; });
+      tb.innerHTML = html + '</tbody>';
+    }
+    [sRho, sLam].forEach(function (s) { s.addEventListener('input', draw); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

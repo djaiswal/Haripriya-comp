@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The FvCB Model</title>
+<meta name="description" content="The Farquhar–von Caemmerer–Berry model at comprehensive-exam depth: derivation from Rubisco kinetics, the three limiting rates, light and temperature functions, mesophyll conductance, coupling to diffusion, parameter estimation and use in land-surface models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .ch text { font-family: var(--font-display); fill: var(--fg); }
+  .ch .gridline { stroke: var(--grid); stroke-width: 1; }
+  .ch .ax { stroke: var(--line); }
+  .ch .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .ch .axlbl { font-size: 12px; fill: var(--muted); }
+  .ch .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .ch .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .ch .ref { stroke-dasharray: 3 4; stroke-width: 1.4; opacity: 0.9; }
+  .ch .net { stroke: var(--fg); stroke-width: 2.6; }
+  .ch .dl { font-size: 11.5px; font-weight: 600; }
+  .ch .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .ch .mk { stroke: var(--surface); stroke-width: 2; }
+  .ch .ca { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .ch .xh { stroke: var(--muted); stroke-width: 1; }
+  .ch .note { font-size: 11px; fill: var(--muted); }
+  .chartbox { position: relative; }
+  .toggle { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .toggle .btn[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .ctrl.check label { justify-content: flex-start; align-items: center; cursor: pointer; }
+  .ctrl.check input { accent-color: var(--accent); margin: 0; }
+  .ctrl select { width: 100%; font-family: var(--font-display); font-size: 0.85rem; padding: 0.25rem 0.4rem; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .presets { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › The FvCB model</div>
+    <div class="eyebrow">Topic 4 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">The FvCB Model</h1>
+    <p class="lead">The Farquhar–von Caemmerer–Berry model in full: how three enzyme-level statements about Rubisco, RuBP regeneration and phosphate recycling become the A–C<sub>i</sub> curve, how temperature, light, mesophyll conductance and stomata enter, and how the result is fitted, parameterised and embedded in land-surface models.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>FvCB [1] writes net CO₂ assimilation as carboxylation minus photorespiratory release minus mitochondrial respiration, A = V<sub>c</sub> − 0.5V<sub>o</sub> − R<sub>d</sub>, and uses Rubisco kinetics to turn the oxygenation term into a function of chloroplast CO₂: V<sub>o</sub>/V<sub>c</sub> = 2Γ*/C<sub>c</sub>. The carboxylation rate itself is set by whichever of three processes is slowest: the amount and kinetics of Rubisco (V<sub>cmax</sub>, K<sub>c</sub>, K<sub>o</sub>), the regeneration of RuBP by electron transport (J, saturating at J<sub>max</sub>), or the export of triose phosphate and return of inorganic phosphate (T<sub>p</sub>). Four leaf parameters (V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub>, R<sub>d</sub>), a set of "universal" kinetic constants with Arrhenius temperature functions, and a light-response function for J therefore predict A for any C<sub>c</sub>, irradiance, temperature and O₂. Coupled with CO₂ diffusion through stomata and mesophyll (A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>) = g<sub>m</sub>(C<sub>i</sub> − C<sub>c</sub>)) and a stomatal model, it gives leaf gas exchange; integrated over a canopy it is the photosynthesis scheme of CLM, JULES, ORCHIDEE, BioCro and most other process models.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Four things are asked again and again: (i) derive something (the 4 and 8, Γ*, the TPU equation with α<sub>g</sub>, T<sub>opt</sub> of the peaked Arrhenius function, the g<sub>m</sub> quadratic); (ii) name the assumptions behind each rate and say when they fail; (iii) explain what can and cannot be identified from an A–C<sub>i</sub> curve; (iv) say exactly how a named land-surface model implements the scheme and where the implementation is weakest. This page is organised around those four.</p></div>
+  </section>
+
+  <section id="kinetics">
+    <h2>From Rubisco kinetics to A = V<sub>c</sub> − 0.5V<sub>o</sub> − R<sub>d</sub></h2>
+    <p>CO₂ and O₂ compete for the same enediol intermediate of RuBP at the Rubisco active site. Each reaction therefore follows Michaelis–Menten kinetics with the other gas as a <strong>competitive inhibitor</strong>, and both assume RuBP is saturating (which is what "Rubisco-limited" means):</p>
+    <div class="eq">$$V_c = \frac{V_{cmax}\,C_c}{C_c + K_c\left(1 + O/K_o\right)}, \qquad V_o = \frac{V_{omax}\,O}{O + K_o\left(1 + C_c/K_c\right)}$$</div>
+    <p>Dividing the two rates, the denominators cancel (multiply top and bottom of V<sub>o</sub> by K<sub>c</sub>/K<sub>o</sub> to see it), leaving</p>
+    <div class="eq">$$\frac{V_o}{V_c} = \frac{V_{omax}K_c}{V_{cmax}K_o}\,\frac{O}{C_c} = \frac{1}{S_{c/o}}\,\frac{O}{C_c}, \qquad S_{c/o} = \frac{V_{cmax}K_o}{V_{omax}K_c}$$</div>
+    <p>S<sub>c/o</sub>, the <strong>specificity factor</strong>, is a property of the enzyme and of temperature, independent of how much Rubisco the leaf holds. Two oxygenations yield two 2-phosphoglycolate, and the photorespiratory pathway converts these to one 3-PGA plus one CO₂ (glycine decarboxylase), so each oxygenation releases 0.5 CO₂. The C<sub>c</sub> at which release balances fixation (0.5V<sub>o</sub> = V<sub>c</sub>) is</p>
+    <div class="eq">$$\Gamma^* = \frac{0.5\,O}{S_{c/o}} \quad\Rightarrow\quad \frac{V_o}{V_c} = \frac{2\Gamma^*}{C_c}$$</div>
+    <p>Substituting into the carbon balance A = V<sub>c</sub> − 0.5V<sub>o</sub> − R<sub>d</sub> gives the single expression every FvCB equation shares:</p>
+    <div class="eq">$$A = V_c\left(1 - \frac{\Gamma^*}{C_c}\right) - R_d = V_c\,\frac{C_c - \Gamma^*}{C_c} - R_d$$</div>
+    <p>Everything else in the model is a statement about what sets V<sub>c</sub>. The assumptions already made are worth listing because examiners probe them: steady state; Rubisco fully activated (carbamylated, activase keeping up); 0.5 CO₂ per oxygenation, i.e. all glycolate carbon except the decarboxylated half returns to the chloroplast (relaxed below with α<sub>g</sub>); R<sub>d</sub> is the <em>non-photorespiratory</em> CO₂ release in the light, not dark respiration; and C<sub>c</sub> is the CO₂ partial pressure at the enzyme, which is not C<sub>i</sub>. With Bernacchi's constants (K<sub>c</sub> = 405 µbar, K<sub>o</sub> = 278 mbar, Γ* = 42.75 µbar at 25 °C [8]) S<sub>c/o</sub> ≈ 2,450 on a partial-pressure basis, and in air the effective K<sub>m</sub> for CO₂, K<sub>c</sub>(1 + O/K<sub>o</sub>), is ≈ 710 µbar, three times C<sub>c</sub>: Rubisco is always substrate-limited in a C3 leaf.</p>
+    <p>V<sub>cmax</sub> is k<sub>cat</sub> times the number of active sites, roughly 60 µmol CO₂ g⁻¹ Rubisco s⁻¹ at 25 °C, which is why it tracks Rubisco content and hence leaf nitrogen (see <a href="#scaling">scaling</a>).</p>
+  </section>
+
+  <section id="limits">
+    <h2>The three limiting rates</h2>
+    <h3>Rubisco-limited (A<sub>c</sub>)</h3>
+    <div class="eq">$$A_c = \frac{V_{cmax}\,(C_c - \Gamma^*)}{C_c + K_c\left(1 + O/K_o\right)} - R_d$$</div>
+    <p>This is the initial, steeply rising part of the A–C<sub>c</sub> curve. Its slope at the compensation point is V<sub>cmax</sub>/(Γ* + K<sub>m</sub>) and its curvature is set entirely by the kinetic constants, so with K<sub>c</sub>, K<sub>o</sub> and Γ* fixed the only free quantity is V<sub>cmax</sub>.</p>
+    <h3>RuBP-regeneration-limited (A<sub>j</sub>)</h3>
+    <p>If RuBP is not saturating, carboxylation is paced by how fast the Calvin cycle can regenerate it, which at saturating CO₂ is paced by the supply of NADPH and ATP from electron transport. Reducing the two 3-PGA from one carboxylation costs 2 NADPH = 4 e⁻; the 3-PGA plus phosphoglycolate from one oxygenation cost the same 4 e⁻ once the glycolate is salvaged. So J = 4V<sub>c</sub> + 4V<sub>o</sub> = 4V<sub>c</sub>(1 + 2Γ*/C<sub>c</sub>), hence V<sub>c</sub> = JC<sub>c</sub>/(4C<sub>c</sub> + 8Γ*) and</p>
+    <div class="eq">$$A_j = \frac{J\,(C_c - \Gamma^*)}{4C_c + 8\Gamma^*} - R_d \quad\text{(NADPH-limited form)}$$</div>
+    <div class="eq">$$A_j = \frac{J\,(C_c - \Gamma^*)}{4.5\,C_c + 10.5\,\Gamma^*} - R_d \quad\text{(ATP-limited form, 3 ATP per } V_c,\ 3.5 \text{ per } V_o\text{)}$$</div>
+    <p>The ATP form divides by 3 ATP per carboxylation and 3.5 per oxygenation and converts ATP to electrons at 3 ATP per 4 e⁻ (von Caemmerer 2000 [3]). Which form to use depends on whether reductant or ATP limits the thylakoid; the NADPH form is almost universal in land models. J is the <em>potential</em> electron transport rate at the current irradiance, which saturates at J<sub>max</sub>; its light response is the subject of the next section. Note that A<sub>j</sub> still rises with C<sub>c</sub>, through the Γ* terms: more CO₂ diverts electrons from oxygenation to carboxylation.</p>
+    <h3>Triose-phosphate-utilisation-limited (A<sub>p</sub>)</h3>
+    <p>Every three CO₂ fixed export one triose phosphate, whose consumption in sucrose and starch synthesis releases the P<sub>i</sub> the cycle needs for ATP regeneration. If export (T<sub>p</sub>, µmol triose-P m⁻² s⁻¹) cannot keep up, A is capped at 3T<sub>p</sub> − R<sub>d</sub> regardless of CO₂. Harley &amp; Sharkey (1991) generalised this to allow a fraction α<sub>g</sub> of glycolate carbon to leave the cycle as glycine/serine instead of returning as glycerate, which provides an outlet that bypasses the P<sub>i</sub> bottleneck:</p>
+    <div class="eq">$$A_p = \frac{3\,T_p\,(C_c - \Gamma^*)}{C_c - (1 + 3\alpha_g)\Gamma^*} - R_d$$</div>
+    <details class="q"><summary><span>Derivation of the α<sub>g</sub> form (and why A falls with CO₂ under TPU limitation)</span></summary><div class="a">
+      <p>Per oxygenation two carbons leave the cycle as 2-phosphoglycolate; 1.5 return as glycerate and 0.5 is released as CO₂. If a fraction α<sub>g</sub> of the glycerate carbon does not return, the return is 1.5(1 − α<sub>g</sub>)V<sub>o</sub> and the cycle's carbon balance at steady state is V<sub>c</sub> − 2V<sub>o</sub> + 1.5(1 − α<sub>g</sub>)V<sub>o</sub> = 3T<sub>p</sub>, i.e. V<sub>c</sub> − 0.5V<sub>o</sub> − 1.5α<sub>g</sub>V<sub>o</sub> = 3T<sub>p</sub>. The leaf balance is still A + R<sub>d</sub> = V<sub>c</sub> − 0.5V<sub>o</sub>, so A + R<sub>d</sub> = 3T<sub>p</sub> + 1.5α<sub>g</sub>V<sub>o</sub>. Substitute V<sub>o</sub> = 2Γ*V<sub>c</sub>/C<sub>c</sub> and V<sub>c</sub> = (A + R<sub>d</sub>)C<sub>c</sub>/(C<sub>c</sub> − Γ*): A + R<sub>d</sub> = 3T<sub>p</sub> + 3α<sub>g</sub>Γ*(A + R<sub>d</sub>)/(C<sub>c</sub> − Γ*). Rearranging gives the equation above. Because the factor (C<sub>c</sub> − Γ*)/(C<sub>c</sub> − (1 + 3α<sub>g</sub>)Γ*) decreases towards 1 as C<sub>c</sub> rises, A<sub>p</sub> <em>declines</em> with CO₂ when α<sub>g</sub> &gt; 0 and <em>rises</em> when O₂ increases: the "reversed sensitivity" seen in TPU-limited leaves. Busch, Sage &amp; Farquhar (2018) extend the same logic to separate glycine and serine export (α<sub>G</sub>, α<sub>S</sub>).</p></div></details>
+    <div class="keybox"><h3>The model in one line</h3>
+      <div class="rxn">A = min(A<sub>c</sub>, A<sub>j</sub>, A<sub>p</sub>),  with  A<sub>x</sub> = (C<sub>c</sub> − Γ*) · a<sub>x</sub> / (C<sub>c</sub> + b<sub>x</sub>) − R<sub>d</sub></div>
+      <p style="margin-top:0.75rem">All three rates have the same hyperbolic form with (a, b) = (V<sub>cmax</sub>, K<sub>c</sub>(1 + O/K<sub>o</sub>)) for Rubisco, (J/4, 2Γ*) for RuBP regeneration, and (3T<sub>p</sub>, −(1 + 3α<sub>g</sub>)Γ*) for TPU. This shared form is what makes the mesophyll-conductance quadratic and the coupled stomatal solution below apply to all three limitations with the same algebra.</p></div>
+  </section>
+
+  <section id="light">
+    <h2>The light dependence of J</h2>
+    <p>FvCB treats the whole thylakoid as one saturating function of absorbed light. The usual choice is the non-rectangular hyperbola, the smaller root of θJ² − (I₂ + J<sub>max</sub>)J + I₂J<sub>max</sub> = 0:</p>
+    <div class="eq">$$J = \frac{I_2 + J_{max} - \sqrt{(I_2 + J_{max})^2 - 4\theta\,I_2\,J_{max}}}{2\theta}, \qquad I_2 = Q\,\alpha_{abs}\,\frac{1 - f}{2}$$</div>
+    <p>Q is incident PPFD, α<sub>abs</sub> ≈ 0.85 is leaf absorptance, f ≈ 0.15 corrects for the spectral quality of light (photons absorbed by non-photosynthetic pigments or lost at the reaction centre) and the ½ shares photons between two photosystems, so the maximum efficiency is 0.5 × 0.85 × 0.85 ≈ 0.36 e⁻ per incident photon, i.e. 0.09 CO₂ per photon in the absence of photorespiration. θ (0 to 1) sets how sharply the curve turns: θ = 0 is a rectangular hyperbola, θ = 1 a Blackman (two straight lines) response; measured values are 0.7–0.9. In the limit of low light J → I₂ (quantum efficiency), at high light J → J<sub>max</sub>. Some models (Collatz 1991 [4], JULES) skip J<sub>max</sub> entirely and write the light-limited rate as αQ(C<sub>c</sub> − Γ*)/(C<sub>c</sub> + 2Γ*) with α ≈ 0.08 mol CO₂ mol⁻¹ photon, relying on the co-limitation with Rubisco to produce saturation.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab D · Light response of electron transport</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="jSvg" viewBox="0 0 640 340" role="img" aria-label="Electron transport rate J versus incident PPFD as a non-rectangular hyperbola with its initial tangent and Jmax asymptote"></svg>
+            <div class="chart-tip" id="jTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-2)">J(Q), θ as set</span><span style="--c:var(--series-1)">θ = 0 (rectangular hyperbola)</span><span style="--c:var(--muted)">Initial tangent and J<sub>max</sub> asymptote</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="jTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="dJm"><span>J<sub>max</sub> (µmol e⁻ m⁻² s⁻¹)</span><output id="dJmO">150</output></label><input type="range" id="dJm" min="40" max="400" step="5" value="150"></div>
+          <div class="ctrl"><label for="dTh"><span>Curvature θ</span><output id="dThO">0.7</output></label><input type="range" id="dTh" min="0" max="0.99" step="0.01" value="0.7"></div>
+          <div class="ctrl"><label for="dAb"><span>Absorptance α<sub>abs</sub></span><output id="dAbO">0.85</output></label><input type="range" id="dAb" min="0.6" max="0.95" step="0.01" value="0.85"></div>
+          <div class="ctrl"><label for="dF"><span>Spectral loss f</span><output id="dFO">0.15</output></label><input type="range" id="dF" min="0" max="0.35" step="0.01" value="0.15"></div>
+          <dl class="readout">
+            <dt>Initial slope (e⁻ per incident photon)</dt><dd id="dSlope"></dd>
+            <dt>Max quantum yield of CO₂ (no photorespiration)</dt><dd id="dPhi"></dd>
+            <dt>Q at which J = 0.9 J<sub>max</sub></dt><dd id="dQ90"></dd>
+            <dt>J at Q = 500 · 1500 · 2000</dt><dd id="dJq"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Suggested experiments: set θ = 0 and watch how far below J<sub>max</sub> the curve sits at full sun (a rectangular hyperbola never comes close to saturating); set θ = 0.95 to approximate Blackman kinetics; halve α<sub>abs</sub> to mimic a chlorotic or senescing leaf and note that the initial slope, not J<sub>max</sub>, changes.</p>
+    </div>
+  </section>
+
+  <section id="colimit">
+    <h2>Choosing between the rates: minimum versus smoothing</h2>
+    <p>Taking the strict minimum makes A switch limitation at a sharp corner. A real leaf is a population of chloroplasts with different light, CO₂ and Rubisco contents, and the whole-leaf curve is rounded. Kirschbaum &amp; Farquhar (1984) and then Collatz et al. [4] therefore co-limit with a quadratic: the smoothed rate is the smaller root of</p>
+    <div class="eq">$$\theta_{cj}\,A_i^2 - (A_c + A_j)\,A_i + A_c A_j = 0, \qquad \theta_{ip}\,A^2 - (A_i + A_p)\,A + A_i A_p = 0$$</div>
+    <p>Collatz used θ = 0.98 for the Rubisco–RuBP pair and β = 0.95 for the export pair; CLM4.5/CLM5 use θ<sub>cj</sub> = 0.98 (C3) or 0.80 (C4) and θ<sub>ip</sub> = 0.95, applied to the gross rates before R<sub>d</sub> is subtracted. The effect is a few percent reduction in A near the transition, which matters for two reasons: at ambient CO₂ a well-acclimated leaf operates <em>at</em> the A<sub>c</sub>/A<sub>j</sub> transition (co-limitation is what optimal allocation of N between Rubisco and thylakoids predicts), and parameters fitted with a strict minimum are not interchangeable with parameters used in a smoothing model. In curve fitting the minimum is standard; in canopy models smoothing is standard. Know which your numbers came from.</p>
+  </section>
+
+  <section id="temperature">
+    <h2>Temperature functions</h2>
+    <p>Every kinetic quantity in the model is temperature dependent. Enzyme constants (K<sub>c</sub>, K<sub>o</sub>, Γ*) and respiration follow an <strong>Arrhenius</strong> function, normalised to 25 °C with activation energy H<sub>a</sub> (kJ mol⁻¹):</p>
+    <div class="eq">$$k(T) = k_{25}\,\exp\!\left[\frac{H_a\,(T - 298.15)}{298.15\,R\,T}\right] \;=\; \exp\!\left(c - \frac{H_a}{RT}\right)$$</div>
+    <p>with T in kelvin and R = 8.314 J mol⁻¹ K⁻¹; H<sub>a</sub> = 65 kJ mol⁻¹ corresponds to a Q₁₀ of about 2.4 at 25 °C. Capacities (V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub>, g<sub>m</sub>) rise, peak and fall, which the <strong>peaked Arrhenius</strong> (modified Arrhenius, Johnson–Eyring–Williams) function captures with a deactivation enthalpy H<sub>d</sub> and an entropy term ΔS (kJ mol⁻¹ K⁻¹):</p>
+    <div class="eq">$$k(T) = k_{25}\,\exp\!\left[\frac{H_a(T - 298.15)}{298.15\,R\,T}\right]\;\frac{1 + \exp\!\left(\dfrac{298.15\,\Delta S - H_d}{298.15\,R}\right)}{1 + \exp\!\left(\dfrac{T\,\Delta S - H_d}{R\,T}\right)}$$</div>
+    <div class="keybox"><h3>Where the peak is</h3>
+      <p>Setting d ln k/dT = 0 gives the optimum temperature (Medlyn et al. 2002 [10]):</p>
+      <div class="eq">$$T_{opt} = \frac{H_d}{\Delta S - R\,\ln\!\left(\dfrac{H_a}{H_d - H_a}\right)}$$</div>
+      <p style="margin-bottom:0">H<sub>a</sub> sets how fast the function rises below the optimum, H<sub>d</sub> how abruptly it collapses above it, and ΔS shifts the optimum: a 0.01 kJ mol⁻¹ K⁻¹ decrease in ΔS moves T<sub>opt</sub> up by about 5 °C. H<sub>d</sub> and ΔS are strongly correlated in fits, so almost every study fixes H<sub>d</sub> = 200 kJ mol⁻¹ and fits ΔS.</p></div>
+    <p><strong>Bernacchi et al. 2001 [8]</strong> measured, in transgenic tobacco with reduced Rubisco (so A was Rubisco-limited across the range), in vivo Arrhenius functions for K<sub>c</sub> (H<sub>a</sub> = 79.43), K<sub>o</sub> (36.38), Γ* (37.83), V<sub>cmax</sub> (65.33) and R<sub>d</sub> (46.39 kJ mol⁻¹), with 25 °C values of 404.9 µbar, 278.4 mbar and 42.75 µbar. These are C<sub>i</sub>-based (g<sub>m</sub> assumed infinite). Bernacchi et al. 2002 [9] repeated the analysis with g<sub>m</sub> measured by fluorescence, giving C<sub>c</sub>-based constants (K<sub>c</sub> ≈ 272 µbar, K<sub>o</sub> ≈ 166 mbar, Γ* ≈ 37.4 µbar) and a peaked function for g<sub>m</sub> itself. <strong>Bernacchi et al. 2003 [11]</strong> added peaked functions for J<sub>max</sub> (H<sub>a</sub> = 43.9, H<sub>d</sub> = 152.3, ΔS = 0.495) and T<sub>p</sub> (53.1, 201.8, 0.65), and a temperature dependence of θ. <strong>Medlyn et al. 2002 [10]</strong> compiled parameters from 19 datasets and standardised on the peaked function with H<sub>d</sub> = 200 kJ mol⁻¹; <strong>Kattge &amp; Knorr 2007 [12]</strong> reanalysed 36 species and found that ΔS, and hence T<sub>opt</sub>, shifts linearly with growth temperature: ΔS<sub>V</sub> = 668.39 − 1.07T<sub>g</sub> and ΔS<sub>J</sub> = 659.70 − 0.75T<sub>g</sub> (J mol⁻¹ K⁻¹, T<sub>g</sub> in °C), with H<sub>a</sub> = 71.5 (V<sub>cmax</sub>) and 49.9 (J<sub>max</sub>) kJ mol⁻¹, and J<sub>max,25</sub>/V<sub>cmax,25</sub> = 2.59 − 0.035T<sub>g</sub>. CLM4.5 and CLM5 use exactly these.</p>
+
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Quantity</th><th class="num">H<sub>a</sub> (kJ mol⁻¹)</th><th class="num">H<sub>d</sub> (kJ mol⁻¹)</th><th class="num">ΔS (kJ mol⁻¹ K⁻¹)</th><th class="num">T<sub>opt</sub> (°C)</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>K<sub>c</sub></td><td class="num">79.43</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>Bernacchi 2001 [8], Arrhenius; 59.4 in Farquhar 1980</td></tr>
+        <tr><td>K<sub>o</sub></td><td class="num">36.38</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>[8]</td></tr>
+        <tr><td>Γ*</td><td class="num">37.83</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>[8]; 24.46 for the C<sub>c</sub>-based set [9]</td></tr>
+        <tr><td>R<sub>d</sub></td><td class="num">46.39</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td>[8]; many models use Q₁₀ = 2 instead</td></tr>
+        <tr><td>V<sub>cmax</sub></td><td class="num">65.3 (Bernacchi) · 71.5 (K&amp;K) · ≈ 50–90 range</td><td class="num">200</td><td class="num">0.635–0.66</td><td class="num">≈ 32–42</td><td>Medlyn 2002 compilation [10]; Kattge &amp; Knorr [12]: ΔS = 0.668 − 0.00107 T<sub>g</sub></td></tr>
+        <tr><td>J<sub>max</sub></td><td class="num">43.9 (Bernacchi) · 49.9 (K&amp;K) · ≈ 30–60 range</td><td class="num">152–200</td><td class="num">0.495–0.66</td><td class="num">≈ 30–40</td><td>[10, 11, 12]; always peaks below V<sub>cmax</sub></td></tr>
+        <tr><td>T<sub>p</sub></td><td class="num">53.1</td><td class="num">201.8</td><td class="num">0.65</td><td class="num">≈ 38</td><td>Bernacchi 2003 [11]</td></tr>
+        <tr><td>g<sub>m</sub></td><td class="num">49.6</td><td class="num">437.4</td><td class="num">1.40</td><td class="num">≈ 36</td><td>Bernacchi 2002 [9]; sharp optimum</td></tr>
+      </tbody></table></div>
+    <p class="small muted">Ranges are indicative of the spread across species in the compilations; use the source for a specific species. A Q₁₀ of 2 equals H<sub>a</sub> ≈ 51 kJ mol⁻¹ at 25 °C.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab B · Arrhenius versus peaked Arrhenius</h3><div class="presets"><button class="btn small" type="button" data-preset="bern">Bernacchi 2001/2003</button><button class="btn small" type="button" data-preset="kk15">Kattge &amp; Knorr, T<sub>g</sub> = 15 °C</button><button class="btn small" type="button" data-preset="kk25">Kattge &amp; Knorr, T<sub>g</sub> = 25 °C</button><button class="btn small" type="button" data-preset="harley">Harley 1992 (cotton)</button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="tSvg" viewBox="0 0 640 360" role="img" aria-label="Normalised temperature response of Vcmax and Jmax using Arrhenius and peaked Arrhenius functions, with optimum temperatures marked"></svg>
+            <div class="chart-tip" id="tTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">V<sub>cmax</sub> peaked (dashed: Arrhenius only)</span><span style="--c:var(--series-2)">J<sub>max</sub> peaked (dashed: Arrhenius only)</span><span style="--c:var(--fg)">● T<sub>opt</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="tTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="tHaV"><span>V<sub>cmax</sub>: H<sub>a</sub> (kJ mol⁻¹)</span><output id="tHaVO">71.5</output></label><input type="range" id="tHaV" min="30" max="120" step="0.5" value="71.5"></div>
+          <div class="ctrl"><label for="tHdV"><span>V<sub>cmax</sub>: H<sub>d</sub> (kJ mol⁻¹)</span><output id="tHdVO">200</output></label><input type="range" id="tHdV" min="120" max="320" step="1" value="200"></div>
+          <div class="ctrl"><label for="tSV"><span>V<sub>cmax</sub>: ΔS (kJ mol⁻¹ K⁻¹)</span><output id="tSVO">0.642</output></label><input type="range" id="tSV" min="0.55" max="0.75" step="0.001" value="0.642"></div>
+          <div class="ctrl"><label for="tHaJ"><span>J<sub>max</sub>: H<sub>a</sub> (kJ mol⁻¹)</span><output id="tHaJO">49.9</output></label><input type="range" id="tHaJ" min="20" max="120" step="0.5" value="49.9"></div>
+          <div class="ctrl"><label for="tHdJ"><span>J<sub>max</sub>: H<sub>d</sub> (kJ mol⁻¹)</span><output id="tHdJO">200</output></label><input type="range" id="tHdJ" min="120" max="320" step="1" value="200"></div>
+          <div class="ctrl"><label for="tSJ"><span>J<sub>max</sub>: ΔS (kJ mol⁻¹ K⁻¹)</span><output id="tSJO">0.641</output></label><input type="range" id="tSJ" min="0.55" max="0.75" step="0.001" value="0.641"></div>
+          <dl class="readout">
+            <dt>T<sub>opt</sub>(V<sub>cmax</sub>) = H<sub>d</sub>/(ΔS − R ln(H<sub>a</sub>/(H<sub>d</sub>−H<sub>a</sub>)))</dt><dd id="tToV"></dd>
+            <dt>T<sub>opt</sub>(J<sub>max</sub>)</dt><dd id="tToJ"></dd>
+            <dt>f(T) at 35 °C: V<sub>cmax</sub> · J<sub>max</sub></dt><dd id="t35"></dd>
+            <dt>(J<sub>max</sub>/V<sub>cmax</sub>) at 35 °C ÷ at 25 °C</dt><dd id="tRatio"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Curves are normalised to 1 at 25 °C. Suggested experiments: load the two Kattge &amp; Knorr presets and read how T<sub>opt</sub> moves with growth temperature (about 0.4 °C per °C); raise H<sub>d</sub> to 320 and see the fall become a cliff while T<sub>opt</sub> barely moves; lower ΔS by 0.01 and watch T<sub>opt</sub> rise about 5 °C. The dashed Arrhenius curves show what a model without deactivation predicts above 35 °C: the heart of the "hot leaf" bias in older land models.</p>
+    </div>
+  </section>
+
+  <section id="gm">
+    <h2>Mesophyll conductance: C<sub>c</sub> is not C<sub>i</sub></h2>
+    <p>Between the intercellular air space and the Rubisco active site CO₂ must dissolve, cross the cell wall, plasma membrane, cytosol, chloroplast envelope and stroma. The lumped <strong>mesophyll conductance</strong> g<sub>m</sub> (mol m⁻² s⁻¹ bar⁻¹) is of the same order as stomatal conductance (0.1–0.5), so the drawdown C<sub>i</sub> − C<sub>c</sub> = A/g<sub>m</sub> is typically 50–100 µbar, a quarter of C<sub>i</sub>. Gas exchange measures C<sub>i</sub>; the biochemistry responds to C<sub>c</sub>. Ethier &amp; Livingston [13] showed that substituting C<sub>c</sub> = C<sub>i</sub> − A/g<sub>m</sub> into any of the three rates turns the hyperbola in C<sub>c</sub> into a <strong>non-rectangular hyperbola in C<sub>i</sub></strong>. For the Rubisco-limited rate:</p>
+    <div class="eq">$$A = \frac{-b + \sqrt{b^2 - 4ac}}{2a}, \quad a = -\frac{1}{g_m}, \quad b = \frac{V_{cmax} - R_d}{g_m} + C_i + K_m, \quad c = R_d\,(C_i + K_m) - V_{cmax}\,(C_i - \Gamma^*)$$</div>
+    <p>with K<sub>m</sub> = K<sub>c</sub>(1 + O/K<sub>o</sub>); the A<sub>j</sub> form follows by replacing V<sub>cmax</sub> with J/4 and K<sub>m</sub> with 2Γ*, and the TPU form by 3T<sub>p</sub> and −(1 + 3α<sub>g</sub>)Γ*. The consequences for interpretation are large and frequently examined. (i) A C<sub>i</sub>-based fit attributes the curvature caused by finite g<sub>m</sub> to the Michaelis–Menten curvature, so "apparent" V<sub>cmax</sub> is 20–50% below the C<sub>c</sub>-based value and the apparent K<sub>m</sub> is inflated. (ii) Because g<sub>m</sub> has its own peaked temperature response [9], a C<sub>i</sub>-based V<sub>cmax</sub>(T) is distorted; this is one reason activation energies for V<sub>cmax</sub> scatter so widely across studies. (iii) The CO₂ compensation point measured by the Laisk method is in C<sub>i</sub>: C<sub>i</sub>* = Γ* − R<sub>d</sub>/g<sub>m</sub>, slightly below Γ*. (iv) Constants must match: Bernacchi 2001 constants go with C<sub>c</sub> = C<sub>i</sub>; Bernacchi 2002 constants go with a finite g<sub>m</sub>. Mixing them is a common error.</p>
+    <p>g<sub>m</sub> is estimated by the variable-J method (fluorescence gives J, which with A fixes C<sub>c</sub>; Harley et al. 1992 [7]), by ¹³C discrimination, by curve-fitting the Ethier–Livingston form, or from anatomy. It declines under drought and salinity, rises with temperature to about 35 °C, and is partly regulated by aquaporins and carbonic anhydrase. Most land-surface models still set C<sub>c</sub> = C<sub>i</sub> (and use C<sub>i</sub>-based constants), which is internally consistent but means their V<sub>cmax</sub> is the apparent, not the biochemical, value [16, 17].</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab A · Full FvCB explorer with mesophyll conductance</h3><div class="toggle" role="group" aria-label="x-axis variable"><button class="btn small" id="fAxCi" type="button" aria-pressed="true">x = C<sub>i</sub></button><button class="btn small" id="fAxCc" type="button" aria-pressed="false">x = C<sub>c</sub></button></div></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="fSvg" viewBox="0 0 640 400" role="img" aria-label="Net assimilation versus intercellular or chloroplast CO2 with Rubisco-, RuBP-regeneration- and TPU-limited rates, with finite mesophyll conductance"></svg>
+            <div class="chart-tip" id="fTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">A<sub>c</sub></span><span style="--c:var(--series-2)">A<sub>j</sub></span><span style="--c:var(--series-3)">A<sub>p</sub></span><span style="--c:var(--fg)">A = min</span><span style="--c:var(--muted)">grey dashed: A with g<sub>m</sub> → ∞ for comparison</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="fTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="fV"><span>V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="fVO">90</output></label><input type="range" id="fV" min="15" max="200" step="1" value="90"></div>
+          <div class="ctrl"><label for="fJ"><span>J<sub>max,25</sub> (µmol e⁻ m⁻² s⁻¹)</span><output id="fJO">160</output></label><input type="range" id="fJ" min="30" max="400" step="1" value="160"></div>
+          <div class="ctrl"><label for="fP"><span>T<sub>p,25</sub> (µmol m⁻² s⁻¹)</span><output id="fPO">10</output></label><input type="range" id="fP" min="2" max="25" step="0.5" value="10"></div>
+          <div class="ctrl"><label for="fAg"><span>α<sub>g</sub> (glycolate carbon not returned)</span><output id="fAgO">0</output></label><input type="range" id="fAg" min="0" max="0.5" step="0.01" value="0"></div>
+          <div class="ctrl"><label for="fR"><span>R<sub>d,25</sub> (µmol m⁻² s⁻¹)</span><output id="fRO">1.2</output></label><input type="range" id="fR" min="0.2" max="4" step="0.1" value="1.2"></div>
+          <div class="ctrl"><label for="fG"><span>g<sub>m,25</sub> (mol m⁻² s⁻¹ bar⁻¹)</span><output id="fGO">0.25</output></label><input type="range" id="fG" min="0.05" max="1.5" step="0.01" value="0.25"></div>
+          <div class="ctrl check"><label for="fInf"><input type="checkbox" id="fInf"><span>g<sub>m</sub> → ∞ (C<sub>c</sub> = C<sub>i</sub>)</span></label></div>
+          <div class="ctrl"><label for="fQ"><span>PPFD, Q (µmol m⁻² s⁻¹)</span><output id="fQO">1500</output></label><input type="range" id="fQ" min="0" max="2200" step="25" value="1500"></div>
+          <div class="ctrl"><label for="fT"><span>Leaf temperature (°C)</span><output id="fTO">25</output></label><input type="range" id="fT" min="5" max="45" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="fO"><span>O₂ (mbar)</span><output id="fOO">210</output></label><input type="range" id="fO" min="10" max="400" step="5" value="210"></div>
+          <div class="ctrl"><label for="fK"><span>Kinetic constants</span></label><select id="fK"><option value="2001">Bernacchi 2001 (C<sub>i</sub>-based)</option><option value="2002">Bernacchi 2002 (C<sub>c</sub>-based)</option></select></div>
+          <dl class="readout">
+            <dt>V<sub>cmax</sub>(T) · J · g<sub>m</sub>(T)</dt><dd id="fRates"></dd>
+            <dt>Γ* · K<sub>c</sub>(1+O/K<sub>o</sub>)</dt><dd id="fConst"></dd>
+            <dt>Operating point (C<sub>i</sub> = 0.7 C<sub>a</sub>)</dt><dd id="fOp"></dd>
+            <dt>Drawdown C<sub>i</sub> − C<sub>c</sub></dt><dd id="fDraw"></dd>
+            <dt>A<sub>c</sub> = A<sub>j</sub> crossover</dt><dd id="fXcj"></dd>
+            <dt>A<sub>j</sub> = A<sub>p</sub> crossover</dt><dd id="fXjp"></dd>
+            <dt>Γ (C<sub>i</sub> at A = 0) · C<sub>i</sub>*</dt><dd id="fGam"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Temperature functions: Arrhenius for K<sub>c</sub>, K<sub>o</sub>, Γ*, R<sub>d</sub> [8, 9]; peaked for V<sub>cmax</sub>, J<sub>max</sub>, T<sub>p</sub> [11] and g<sub>m</sub> [9]. θ = 0.7, α<sub>abs</sub> = 0.85, f = 0.15, C<sub>a</sub> = 420 µbar. Suggested experiments: with the axis on C<sub>i</sub>, lower g<sub>m</sub> from 1.5 to 0.1 and watch the initial slope flatten although V<sub>cmax</sub> has not changed, then switch the axis to C<sub>c</sub> and see the curves return to the pure biochemistry; set α<sub>g</sub> = 0.3 and raise CO₂ to see the TPU-limited decline; raise T to 38 °C and lower Q to 400 to find conditions where all three limitations appear in one curve; compare the 2001 and 2002 constant sets at the same V<sub>cmax</sub>.</p>
+    </div>
+  </section>
+
+  <section id="rd">
+    <h2>Respiration in the light</h2>
+    <p>R<sub>d</sub> in the model is the rate of mitochondrial, non-photorespiratory CO₂ release <em>while the leaf is illuminated</em>, often written R<sub>day</sub> or R<sub>L</sub>. It is not dark respiration. Light inhibits leaf respiration, typically by 30–50% (sometimes more), as the TCA cycle is partly bypassed and pyruvate dehydrogenase is down-regulated; this is the <strong>Kok effect</strong>, the break in the slope of the A–Q curve at very low light, first reported by Kok in 1948. Methods to estimate R<sub>d</sub> (the Kok, Laisk and Yin methods) are covered on the <a href="response-curves.html">response-curves page</a>. In models R<sub>d</sub> is usually a fixed fraction of V<sub>cmax</sub> at 25 °C (0.015 in CLM and Collatz for C3; 0.011 in some others) with its own Arrhenius or Q₁₀ ≈ 2 temperature response, and some models now apply a light-inhibition factor during the day. Because R<sub>d</sub> is small (1–2 µmol m⁻² s⁻¹) relative to A it is hard to fit from A–C<sub>i</sub> data, but it controls the compensation point Γ ≈ Γ* + R<sub>d</sub>K<sub>m</sub>/V<sub>cmax</sub> and the low-light behaviour, so canopy GPP under dense shade is sensitive to it.</p>
+  </section>
+
+  <section id="coupling">
+    <h2>Coupling to diffusion: supply meets demand</h2>
+    <p>FvCB gives the <em>demand</em> for CO₂ as a function of C<sub>c</sub>. The <em>supply</em> is Fick's law through the boundary layer and stomata, A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>) with g<sub>sc</sub> = g<sub>sw</sub>/1.6 (and a boundary-layer term g<sub>bc</sub> = g<sub>bw</sub>/1.37 in series when the leaf is not in a well-stirred cuvette). The leaf operates where the two agree. In the A–C<sub>i</sub> plane the supply function is a straight line from (C<sub>a</sub>, 0) with slope −g<sub>sc</sub>, and the operating point is its intersection with the demand curve. Farquhar &amp; Sharkey (1982) defined the <strong>stomatal limitation</strong> as l = (A<sub>∞</sub> − A)/A<sub>∞</sub>, where A<sub>∞</sub> is the demand-curve value at C<sub>i</sub> = C<sub>a</sub>, i.e. the assimilation the leaf would have with infinite stomatal conductance.</p>
+    <p>Solving the system: if g<sub>sc</sub> is known, substitute C<sub>i</sub> = C<sub>a</sub> − A/g<sub>sc</sub> into each rate; the algebra is identical to the g<sub>m</sub> quadratic with g<sub>sc</sub> in place of g<sub>m</sub> (or 1/(1/g<sub>sc</sub> + 1/g<sub>m</sub>) when both are finite). If g<sub>sc</sub> itself depends on A, as in Ball–Berry (g<sub>sw</sub> = g₀ + g₁ A h<sub>s</sub>/C<sub>s</sub>) or Medlyn 2011 (g<sub>sw</sub> = g₀ + 1.6(1 + g₁/√D) A/C<sub>a</sub>), substitution gives a cubic in A (Baldocchi 1994 derived it analytically; Yin &amp; Struik 2009 did the same with g<sub>m</sub> included, the form ORCHIDEE uses). Most models instead iterate: guess C<sub>i</sub>, compute A from FvCB, compute g<sub>s</sub> from the stomatal model, update C<sub>i</sub> from the diffusion equation, repeat. CLM uses a hybrid Newton–Brent root finder on C<sub>i</sub>; BioCro iterates to a tolerance; older schemes use fixed-point iteration, which can oscillate at low light. Iteration must also enclose the leaf energy balance when T<sub>leaf</sub> is solved rather than prescribed.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Lab C · Supply and demand</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="ch" id="cSvg" viewBox="0 0 640 380" role="img" aria-label="FvCB demand curve and stomatal supply line in the A versus Ci plane with the operating point marked"></svg>
+            <div class="chart-tip" id="cTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--fg)">Demand A(C<sub>i</sub>) from FvCB</span><span style="--c:var(--accent-2)">Supply A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>)</span><span style="--c:var(--series-1)">A<sub>c</sub></span><span style="--c:var(--series-2)">A<sub>j</sub></span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="cTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="cCa"><span>Ambient CO₂, C<sub>a</sub> (µbar)</span><output id="cCaO">420</output></label><input type="range" id="cCa" min="150" max="1200" step="10" value="420"></div>
+          <div class="ctrl"><label for="cGs"><span>g<sub>sc</sub> (mol CO₂ m⁻² s⁻¹)</span><output id="cGsO">0.20</output></label><input type="range" id="cGs" min="0.02" max="0.8" step="0.01" value="0.20"></div>
+          <div class="ctrl"><label for="cV"><span>V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="cVO">80</output></label><input type="range" id="cV" min="15" max="200" step="1" value="80"></div>
+          <div class="ctrl"><label for="cJ"><span>J<sub>max,25</sub> (µmol e⁻ m⁻² s⁻¹)</span><output id="cJO">150</output></label><input type="range" id="cJ" min="30" max="400" step="1" value="150"></div>
+          <div class="ctrl"><label for="cQ"><span>PPFD, Q (µmol m⁻² s⁻¹)</span><output id="cQO">1500</output></label><input type="range" id="cQ" min="0" max="2200" step="25" value="1500"></div>
+          <dl class="readout">
+            <dt>Operating C<sub>i</sub></dt><dd id="cCi"></dd>
+            <dt>C<sub>i</sub>/C<sub>a</sub></dt><dd id="cRat"></dd>
+            <dt>A at operating point</dt><dd id="cA"></dd>
+            <dt>Limiting process</dt><dd id="cLim"></dd>
+            <dt>A<sub>∞</sub> (C<sub>i</sub> = C<sub>a</sub>)</dt><dd id="cAinf"></dd>
+            <dt>Stomatal limitation l</dt><dd id="cL"></dd>
+            <dt>g<sub>sw</sub> = 1.6 g<sub>sc</sub></dt><dd id="cGsw"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">25 °C, 210 mbar O₂, C<sub>c</sub> = C<sub>i</sub>, Bernacchi 2001 constants, R<sub>d</sub> = 0.015 V<sub>cmax</sub>, T<sub>p</sub> = V<sub>cmax</sub>/6, θ = 0.7. The operating point is found by bisection on A<sub>demand</sub>(C<sub>i</sub>) − g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>). Suggested experiments: halve g<sub>sc</sub> (drought) and watch C<sub>i</sub>/C<sub>a</sub> fall and the limitation move to Rubisco; double C<sub>a</sub> at fixed g<sub>sc</sub> and note that A rises less than proportionally because the operating point slides onto the A<sub>j</sub> plateau; lower Q to 300 and see why stomatal limitation is small under shade.</p>
+    </div>
+  </section>
+
+  <section id="fitting">
+    <h2>Estimating parameters from A–C<sub>i</sub> curves</h2>
+    <p>The model has four leaf parameters (five with g<sub>m</sub>, six with α<sub>g</sub>) and a measured A–C<sub>i</sub> curve has 10–15 points. Fitting is nonlinear least squares, but it is not a routine regression because each point must first be assigned a limitation state, and the state is itself a function of the parameters being estimated.</p>
+    <ul>
+      <li><strong>Sharkey et al. 2007 [14]</strong> formalised the standard workflow: convert to C<sub>c</sub> with g<sub>m</sub> and use C<sub>c</sub>-based constants [9]; assign points below roughly 300 µbar to Rubisco limitation and higher points to RuBP regeneration, with any flat or declining tail as TPU; minimise the summed squared error over V<sub>cmax</sub>, J, T<sub>p</sub>, R<sub>d</sub> and g<sub>m</sub>; then check that the fitted A<sub>c</sub> is indeed the minimum at the Rubisco-assigned points and vice versa, reassigning if not.</li>
+      <li><strong>Gu et al. 2010 [15]</strong> made the assignment part of the estimation: enumerate every admissible partition of the points into the three states (an "admissible" fit is one whose fitted rates are consistent with the assignment), fit each, and keep the best. This avoids the subjective 300 µbar rule and shows how often a curve is consistent with several assignments.</li>
+      <li><strong>Duursma 2015 [16]</strong> (plantecophys, R) fits V<sub>cmax</sub>, J<sub>max</sub> and optionally R<sub>d</sub>, T<sub>p</sub> and g<sub>m</sub>, with a default method that searches for the transition C<sub>i</sub> and a fast "bilinear" method that linearises each limitation; it exposes the parameter covariance so the V<sub>cmax</sub>–J<sub>max</sub>–R<sub>d</sub> correlations can be inspected.</li>
+    </ul>
+    <p><strong>Identifiability</strong> is the real difficulty. K<sub>c</sub>, K<sub>o</sub> and Γ* cannot be estimated from one curve and must be fixed from the literature. V<sub>cmax</sub> and g<sub>m</sub> both control the curvature of the initial region, so they are strongly negatively correlated: a low g<sub>m</sub> with a high V<sub>cmax</sub> fits almost as well as the reverse, and g<sub>m</sub> from curve fitting alone has wide confidence intervals unless there are many points at low C<sub>i</sub>. V<sub>cmax</sub> and R<sub>d</sub> trade off through the intercept. J and T<sub>p</sub> both set the plateau height; with α<sub>g</sub> = 0 the TPU line is flat and can only be distinguished from A<sub>j</sub> if the curve continues to C<sub>i</sub> ≈ 1,500 µbar where A<sub>j</sub> still rises. Good practice: at least four points in the Rubisco-limited region, points to 1,500 µbar or beyond, R<sub>d</sub> or g<sub>m</sub> measured independently where possible, and parameter uncertainty reported (profile or bootstrap intervals, not just standard errors) when treatments are compared.</p>
+  </section>
+
+  <section id="scaling">
+    <h2>Scaling relations and typical values</h2>
+    <p>Because leaves allocate nitrogen between Rubisco and the thylakoid so that neither limits grossly, the parameters are correlated across species, which is what lets models carry fewer numbers. <strong>J<sub>max,25</sub>/V<sub>cmax,25</sub></strong> is 1.6–2.0 (Wullschleger's 1993 survey of 109 species gives ≈ 1.64; Medlyn et al. [10] 1.67; Kattge &amp; Knorr [12] 2.59 − 0.035T<sub>g</sub>, i.e. 1.7 at 25 °C and 2.1 at 15 °C) and declines with growth temperature. <strong>T<sub>p,25</sub></strong> ≈ V<sub>cmax,25</sub>/6 (0.167, used in CLM). <strong>R<sub>d,25</sub></strong> ≈ 0.01–0.02 V<sub>cmax,25</sub>. <strong>V<sub>cmax</sub> and leaf N</strong>: Rubisco holds 15–30% of leaf N, so V<sub>cmax,25</sub> rises roughly linearly with area-based N (N<sub>a</sub>, g m⁻²). Kattge et al. 2009 [17] fitted V<sub>cmax,25</sub> = i + sN<sub>a</sub> per plant functional type using the TRY database and found that models of the time used V<sub>cmax</sub> values for tropical trees (≈ 65) well above the data (≈ 41 µmol m⁻² s⁻¹). Walker et al. 2014 [18] showed with a global dataset that P modulates the N relation (log V<sub>cmax</sub> ≈ 3.7 + 0.65 log N + 0.15 log P with an interaction) and that J<sub>max</sub> scales almost isometrically with V<sub>cmax</sub>. CLM uses a mechanistic chain instead: V<sub>cmax,25</sub> = N<sub>a</sub> × F<sub>LNR</sub> × F<sub>NR</sub> × a<sub>R25</sub>, where F<sub>LNR</sub> is the fraction of leaf N in Rubisco (PFT parameter), F<sub>NR</sub> = 7.16 g Rubisco g⁻¹ N and a<sub>R25</sub> = 60 µmol CO₂ g⁻¹ Rubisco s⁻¹; CLM5 can alternatively predict V<sub>cmax</sub> and J<sub>max</sub> with the LUNA optimality model.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Plant functional type</th><th class="num">V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</th><th class="num">J<sub>max,25</sub>/V<sub>cmax,25</sub></th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Tropical broadleaf evergreen tree</td><td class="num">≈ 40</td><td class="num">≈ 1.7–1.9</td><td>Kattge 2009 [17]: much lower than the 60–65 used in earlier models</td></tr>
+        <tr><td>Temperate broadleaf deciduous tree</td><td class="num">≈ 55–60</td><td class="num">≈ 1.8–2.0</td><td>[17]</td></tr>
+        <tr><td>Needleleaf evergreen tree</td><td class="num">≈ 60</td><td class="num">≈ 1.9–2.1</td><td>[17]; cool growth temperature raises the ratio</td></tr>
+        <tr><td>C3 grass / herb</td><td class="num">≈ 75–80</td><td class="num">≈ 1.8</td><td>[17]</td></tr>
+        <tr><td>C3 crop (wheat, soybean, rice)</td><td class="num">≈ 100 (80–150)</td><td class="num">≈ 1.7–2.0</td><td>[17]; high N supply</td></tr>
+        <tr><td>Any C3 leaf: T<sub>p,25</sub>, R<sub>d,25</sub>, g<sub>m,25</sub></td><td class="num">V<sub>cmax</sub>/6 · 0.015 V<sub>cmax</sub> · 0.1–0.5 mol m⁻² s⁻¹ bar⁻¹</td><td class="num">–</td><td>Model defaults; g<sub>m</sub> roughly proportional to A<sub>sat</sub></td></tr>
+      </tbody></table></div>
+    <p class="small muted">Values are approximate PFT means read from Kattge et al. 2009; within-PFT standard deviations are 30–50% of the mean, which is the point of that paper.</p>
+  </section>
+
+  <section id="models">
+    <h2>Connections to ecosystem models</h2>
+    <p><strong>CLM5</strong> (and CLM4.5) implements FvCB per sunlit and shaded leaf: V<sub>cmax,25</sub> from leaf N or LUNA; Kattge &amp; Knorr acclimation of ΔS and J<sub>max</sub>/V<sub>cmax</sub> to the 10-day mean air temperature (T<sub>g</sub> clipped to 11–35 °C); Bernacchi constants; J from the non-rectangular hyperbola with θ = 0.7; T<sub>p</sub> = 0.167V<sub>cmax</sub>; the two smoothing quadratics (θ<sub>cj</sub> = 0.98, θ<sub>ip</sub> = 0.95); R<sub>d</sub> = 0.015V<sub>cmax</sub> (with light inhibition in CLM5); the Medlyn 2011 stomatal model (Ball–Berry in CLM4.5); C<sub>c</sub> = C<sub>i</sub>; and a Newton–Brent iteration on C<sub>i</sub> nested inside the leaf energy balance. Soil-moisture stress multiplies V<sub>cmax</sub> (CLM4.5) or acts through plant hydraulics on g<sub>s</sub> (CLM5). <strong>JULES</strong> follows Collatz 1991/1992: Rubisco-, light- and export-limited rates co-limited with θ = 0.83–0.98, V<sub>cmax</sub> from leaf N (n<sub>e</sub> parameter) with a Q₁₀ rise and logistic high- and low-temperature cut-offs (T<sub>upp</sub>, T<sub>low</sub>), a light-limited rate αQ without J<sub>max</sub>, and a Jacobs/Cowan-type closure on C<sub>i</sub>/C<sub>a</sub> and humidity deficit. <strong>ORCHIDEE</strong> (since the Vuichard et al. 2019 revision) uses the Yin &amp; Struik 2009 analytical solution of FvCB coupled to stomatal and mesophyll conductance, with Kattge &amp; Knorr acclimation. <strong>BioCro</strong> uses FvCB with Bernacchi temperature functions and Ball–Berry stomata for C3 (solved iteratively for C<sub>i</sub>) and the Collatz 1992 C4 model for maize and Miscanthus, integrated through a multilayer canopy at hourly steps. <strong>Big-leaf and two-leaf models</strong> (SiB2, de Pury &amp; Farquhar 1997) scale V<sub>cmax</sub> with canopy N and absorbed light, exploiting the fact that FvCB's A<sub>c</sub> is linear in V<sub>cmax</sub> and A<sub>j</sub> nearly linear in J at low light. The <strong>P-model</strong> and other optimality schemes do not prescribe V<sub>cmax</sub> at all: they assume the coordination hypothesis (A<sub>c</sub> = A<sub>j</sub> at mean daytime conditions) and solve FvCB for the V<sub>cmax</sub> that satisfies it. In every case the FvCB layer is the one that converts CO₂, light and temperature into carbon, so its parameter uncertainty (above all V<sub>cmax,25</sub> and its temperature response) is the largest single source of spread in modelled GPP [19].</p>
+  </section>
+
+  <section id="weaknesses">
+    <h2>Known weaknesses</h2>
+    <ul>
+      <li><strong>Acclimation.</strong> V<sub>cmax,25</sub>, J<sub>max,25</sub> and the temperature parameters are treated as fixed, but leaves adjust them over days to weeks in response to growth temperature, CO₂, light and N. Kattge &amp; Knorr and Kumarathunge et al. (2019) provide empirical corrections; the <a href="acclimation-thermal-response.html">acclimation page</a> covers them.</li>
+      <li><strong>TPU at low temperature and high CO₂.</strong> Phosphate limitation is common below ~20 °C and under elevated CO₂, and when α<sub>g</sub> &gt; 0 produces A that falls with rising CO₂. Most land models either omit A<sub>p</sub> or use a flat 3T<sub>p</sub>, so they overestimate the CO₂ response in cool conditions and miss sink limitation entirely.</li>
+      <li><strong>Sink and feedback limitation.</strong> Under elevated CO₂ the long-term down-regulation of V<sub>cmax</sub> (less Rubisco per unit N, N dilution) is not emergent in FvCB; it must be imposed through an N cycle or empirical factor.</li>
+      <li><strong>Steady state.</strong> Photosynthetic induction, Rubisco activation and stomatal lags (minutes) are ignored, which biases GPP under fluctuating light inside canopies.</li>
+      <li><strong>Universal constants.</strong> K<sub>c</sub>, K<sub>o</sub>, Γ* and their activation energies come from one tobacco dataset and are applied to every species; the Rubisco kinetics of cold-adapted and warm-adapted species differ measurably.</li>
+      <li><strong>Mesophyll conductance.</strong> C<sub>c</sub> = C<sub>i</sub> makes V<sub>cmax</sub> "apparent" and distorts its temperature response; including g<sub>m</sub> changes the simulated CO₂ fertilisation and the inferred V<sub>cmax</sub>–N relation.</li>
+      <li><strong>High temperature.</strong> The decline above ~38 °C is attributed to peaked Arrhenius kinetics, but mechanistically Rubisco activase failure and membrane leakiness dominate, and the recovery (hysteresis) is not represented.</li>
+    </ul>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value (25 °C unless noted)</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>K<sub>c</sub>, K<sub>o</sub>, Γ* (C<sub>i</sub>-based)</td><td class="num">404.9 µbar, 278.4 mbar, 42.75 µbar</td><td>Bernacchi 2001 [8]</td></tr>
+        <tr><td>K<sub>c</sub>, K<sub>o</sub>, Γ* (C<sub>c</sub>-based)</td><td class="num">≈ 272 µbar, 166 mbar, 37.4 µbar</td><td>Bernacchi 2002 [9]; von Caemmerer 2000 gives Γ* ≈ 37 µbar</td></tr>
+        <tr><td>Activation energies K<sub>c</sub>, K<sub>o</sub>, Γ*, R<sub>d</sub></td><td class="num">79.4, 36.4, 37.8, 46.4 kJ mol⁻¹</td><td>[8]</td></tr>
+        <tr><td>V<sub>cmax</sub>: H<sub>a</sub>, H<sub>d</sub>, ΔS</td><td class="num">≈ 65–72, 200, 0.64–0.65 kJ mol⁻¹ (K⁻¹)</td><td>[8, 10, 12]; T<sub>opt</sub> ≈ 32–42 °C depending on ΔS</td></tr>
+        <tr><td>J<sub>max</sub>: H<sub>a</sub>, H<sub>d</sub>, ΔS</td><td class="num">≈ 44–50, 152–200, 0.50–0.65</td><td>[10, 11, 12]; T<sub>opt</sub> ≈ 33–37 °C</td></tr>
+        <tr><td>Kattge &amp; Knorr acclimation</td><td class="num">ΔS<sub>V</sub> = 668.4 − 1.07T<sub>g</sub>; ΔS<sub>J</sub> = 659.7 − 0.75T<sub>g</sub> J mol⁻¹ K⁻¹</td><td>[12]; J<sub>max</sub>/V<sub>cmax</sub> = 2.59 − 0.035T<sub>g</sub></td></tr>
+        <tr><td>Electron stoichiometry</td><td class="num">4 e⁻ per V<sub>c</sub> and per V<sub>o</sub>; 3 and 3.5 ATP</td><td>Gives 4C<sub>c</sub> + 8Γ* and 4.5C<sub>c</sub> + 10.5Γ*</td></tr>
+        <tr><td>Light response of J</td><td class="num">θ ≈ 0.7–0.9; α<sub>abs</sub> 0.85; f 0.15; max 0.36 e⁻ photon⁻¹</td><td>[1, 3]; CLM uses θ = 0.7</td></tr>
+        <tr><td>Co-limitation parameters</td><td class="num">θ<sub>cj</sub> = 0.98 (C3), 0.80 (C4); θ<sub>ip</sub> = 0.95</td><td>Collatz 1991 [4]; CLM</td></tr>
+        <tr><td>J<sub>max</sub>/V<sub>cmax</sub>, T<sub>p</sub>/V<sub>cmax</sub>, R<sub>d</sub>/V<sub>cmax</sub></td><td class="num">1.6–2.0, ≈ 0.167, ≈ 0.015</td><td>[10, 12, 17]; CLM defaults</td></tr>
+        <tr><td>g<sub>m</sub></td><td class="num">0.1–0.5 mol m⁻² s⁻¹ bar⁻¹; drawdown 50–100 µbar</td><td>[13]; C<sub>i</sub>* = Γ* − R<sub>d</sub>/g<sub>m</sub></td></tr>
+        <tr><td>Diffusivity ratios</td><td class="num">g<sub>sc</sub> = g<sub>sw</sub>/1.6; g<sub>bc</sub> = g<sub>bw</sub>/1.37</td><td>Molecular vs boundary-layer (2/3 power) diffusion</td></tr>
+        <tr><td>Operating state, C3 leaf in air</td><td class="num">C<sub>i</sub>/C<sub>a</sub> ≈ 0.7; C<sub>c</sub> ≈ 200–250 µbar; near A<sub>c</sub>/A<sub>j</sub> transition</td><td>Co-limitation / coordination hypothesis</td></tr>
+        <tr><td>V<sub>cmax,25</sub> by PFT</td><td class="num">tropical trees ≈ 40; temperate trees ≈ 60; C3 crops ≈ 100</td><td>Kattge 2009 [17]</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary><span>1. Starting from Michaelis–Menten kinetics with competitive inhibition, derive A = V<sub>c</sub>(1 − Γ*/C<sub>c</sub>) − R<sub>d</sub> and define Γ* in terms of enzyme properties.</span></summary><div class="a"><p>Write V<sub>c</sub> = V<sub>cmax</sub>C<sub>c</sub>/[C<sub>c</sub> + K<sub>c</sub>(1 + O/K<sub>o</sub>)] and V<sub>o</sub> = V<sub>omax</sub>O/[O + K<sub>o</sub>(1 + C<sub>c</sub>/K<sub>c</sub>)]. Multiplying numerator and denominator of V<sub>o</sub> by K<sub>c</sub>/K<sub>o</sub> shows both rates share the denominator C<sub>c</sub> + K<sub>c</sub> + K<sub>c</sub>O/K<sub>o</sub> (up to a factor), so V<sub>o</sub>/V<sub>c</sub> = (V<sub>omax</sub>K<sub>c</sub>/V<sub>cmax</sub>K<sub>o</sub>)(O/C<sub>c</sub>) = O/(S<sub>c/o</sub>C<sub>c</sub>). The photorespiratory pathway releases one CO₂ per two oxygenations, so the net rate is A = V<sub>c</sub> − 0.5V<sub>o</sub> − R<sub>d</sub>. Define Γ* as the C<sub>c</sub> at which 0.5V<sub>o</sub> = V<sub>c</sub>, i.e. Γ* = 0.5O/S<sub>c/o</sub>; then V<sub>o</sub>/V<sub>c</sub> = 2Γ*/C<sub>c</sub> and A = V<sub>c</sub>(1 − Γ*/C<sub>c</sub>) − R<sub>d</sub>. Γ* therefore depends only on the specificity factor (a property of the enzyme, falling with temperature) and O₂; it is independent of Rubisco amount, light and RuBP supply, which is why A–C<sub>i</sub> curves at different irradiances intersect at the same C<sub>c</sub>. Assumptions: steady state, fully activated Rubisco, complete return of glycolate carbon other than the decarboxylated half.</p></div></details>
+    <details class="q"><summary><span>2. Derive the coefficients 4 and 8 in A<sub>j</sub>, then the 4.5 and 10.5 of the ATP-limited form. When would you prefer the ATP form?</span></summary><div class="a"><p>Each carboxylation yields two 3-PGA, each needing one ATP and one NADPH for reduction to triose phosphate, plus a further ATP in regeneration: 3 ATP and 2 NADPH (4 e⁻) per V<sub>c</sub>. Each oxygenation yields one 3-PGA (1 ATP, 1 NADPH) and one phosphoglycolate; recycling the glycolate costs a further ATP (glycerate kinase) and NADPH-equivalent (hydroxypyruvate reduction and NH₃ re-assimilation), with the regenerated RuBP costing 1 more ATP: 3.5 ATP and 2 NADPH (4 e⁻) per V<sub>o</sub> in the FvCB accounting. Electron demand J = 4V<sub>c</sub> + 4V<sub>o</sub> = 4V<sub>c</sub>(1 + 2Γ*/C<sub>c</sub>), so V<sub>c</sub> = JC<sub>c</sub>/(4C<sub>c</sub> + 8Γ*) and A<sub>j</sub> = J(C<sub>c</sub> − Γ*)/(4C<sub>c</sub> + 8Γ*) − R<sub>d</sub>. For ATP: demand = 3V<sub>c</sub> + 3.5V<sub>o</sub> = V<sub>c</sub>(3 + 7Γ*/C<sub>c</sub>); converting ATP supply to electron equivalents at 4 e⁻ per 3 ATP (linear flow with Q-cycle) gives J(3/4) ≡ ATP, hence V<sub>c</sub> = J C<sub>c</sub>/(4.5C<sub>c</sub> + 10.5Γ*). Use the ATP form when ATP, not reductant, is expected to limit, e.g. when alternative electron sinks (nitrate reduction, Mehler reaction) supply ATP-free reductant demand or when cyclic flow is restricted; most models use the NADPH form because its parameters were fitted that way.</p></div></details>
+    <details class="q"><summary><span>3. Show that under TPU limitation with α<sub>g</sub> &gt; 0, net assimilation decreases when CO₂ rises. Why does this matter for projecting photosynthesis under elevated CO₂ in cool climates?</span></summary><div class="a"><p>Carbon balance of the Calvin cycle under phosphate limitation: V<sub>c</sub> − 0.5V<sub>o</sub> − 1.5α<sub>g</sub>V<sub>o</sub> = 3T<sub>p</sub>, where 1.5α<sub>g</sub>V<sub>o</sub> is glycolate-derived carbon leaving as amino acids. Leaf balance: A + R<sub>d</sub> = V<sub>c</sub> − 0.5V<sub>o</sub>. Hence A + R<sub>d</sub> = 3T<sub>p</sub> + 1.5α<sub>g</sub>V<sub>o</sub>; with V<sub>o</sub> = 2Γ*V<sub>c</sub>/C<sub>c</sub> and V<sub>c</sub> = (A + R<sub>d</sub>)C<sub>c</sub>/(C<sub>c</sub> − Γ*) this rearranges to A = 3T<sub>p</sub>(C<sub>c</sub> − Γ*)/(C<sub>c</sub> − (1 + 3α<sub>g</sub>)Γ*) − R<sub>d</sub>. Differentiating, dA/dC<sub>c</sub> = −9α<sub>g</sub>T<sub>p</sub>Γ*/(C<sub>c</sub> − (1 + 3α<sub>g</sub>)Γ*)² &lt; 0: raising CO₂ suppresses oxygenation, closing the amino-acid outlet, so more carbon must leave as triose phosphate, which is exactly the step that is saturated. The same logic gives a positive response to O₂ ("reversed sensitivity"). TPU limitation is most common at low temperature (T<sub>p</sub> has a steep temperature response and sink demand is low), so in cool climates or seasons a model without A<sub>p</sub>, or with A<sub>p</sub> = 3T<sub>p</sub> − R<sub>d</sub>, will overestimate the CO₂ fertilisation of GPP.</p></div></details>
+    <details class="q"><summary><span>4. Derive the optimum temperature of the peaked Arrhenius function. Explain the roles of H<sub>a</sub>, H<sub>d</sub> and ΔS and summarise what Kattge &amp; Knorr (2007) found.</span></summary><div class="a"><p>Write ln k = const + H<sub>a</sub>(T − 298.15)/(298.15RT) − ln[1 + exp((TΔS − H<sub>d</sub>)/RT)]. Differentiating: d ln k/dT = H<sub>a</sub>/(RT²) − [exp(x)/(1 + exp(x))]·(H<sub>d</sub>/RT²), where x = (TΔS − H<sub>d</sub>)/RT (note dx/dT = H<sub>d</sub>/RT²). Setting to zero: exp(x)/(1 + exp(x)) = H<sub>a</sub>/H<sub>d</sub>, so exp(x) = H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>), i.e. (T<sub>opt</sub>ΔS − H<sub>d</sub>)/RT<sub>opt</sub> = ln[H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>)], giving T<sub>opt</sub> = H<sub>d</sub>/[ΔS − R ln(H<sub>a</sub>/(H<sub>d</sub> − H<sub>a</sub>))]. H<sub>a</sub> controls the exponential rise (a Q₁₀ of 2.4 at 65 kJ mol⁻¹); H<sub>d</sub> controls how sharply activity collapses above the optimum and is poorly identifiable, so it is fixed at 200 kJ mol⁻¹; ΔS shifts the optimum (lower ΔS, higher T<sub>opt</sub>, about 5 °C per 0.01 kJ mol⁻¹ K⁻¹). Kattge &amp; Knorr re-fitted 36 species grown at known temperatures and found that H<sub>a</sub> was approximately constant but ΔS of both V<sub>cmax</sub> and J<sub>max</sub> decreased linearly with growth temperature (ΔS<sub>V</sub> = 668.39 − 1.07T<sub>g</sub>, ΔS<sub>J</sub> = 659.70 − 0.75T<sub>g</sub> J mol⁻¹ K⁻¹), so T<sub>opt</sub> rises about 0.4 °C per °C of growth temperature, and that J<sub>max</sub>/V<sub>cmax</sub> at 25 °C fell with growth temperature (2.59 − 0.035T<sub>g</sub>). These relations are CLM's representation of thermal acclimation.</p></div></details>
+    <details class="q"><summary><span>5. A colleague fits V<sub>cmax</sub> from A–C<sub>i</sub> data assuming C<sub>c</sub> = C<sub>i</sub>. Derive the correct expression when g<sub>m</sub> is finite and explain, with the Laisk intersection as an example, how the assumption biases parameters.</span></summary><div class="a"><p>With A = g<sub>m</sub>(C<sub>i</sub> − C<sub>c</sub>), substitute C<sub>c</sub> = C<sub>i</sub> − A/g<sub>m</sub> into A = V<sub>cmax</sub>(C<sub>c</sub> − Γ*)/(C<sub>c</sub> + K<sub>m</sub>) − R<sub>d</sub>. Multiplying out gives a quadratic in A: (−1/g<sub>m</sub>)A² + [(V<sub>cmax</sub> − R<sub>d</sub>)/g<sub>m</sub> + C<sub>i</sub> + K<sub>m</sub>]A + [R<sub>d</sub>(C<sub>i</sub> + K<sub>m</sub>) − V<sub>cmax</sub>(C<sub>i</sub> − Γ*)] = 0, solved with the root that tends to the g<sub>m</sub> → ∞ limit (Ethier &amp; Livingston 2004). The C<sub>i</sub>-based curve is thus a non-rectangular hyperbola that bends earlier than the Michaelis–Menten curve in C<sub>c</sub>. If one ignores g<sub>m</sub>, the extra curvature is absorbed into the fit as a smaller V<sub>cmax</sub> (apparent V<sub>cmax</sub> can be 20–50% low) and an apparently larger K<sub>m</sub>; because g<sub>m</sub> has its own temperature response, the apparent activation energy of V<sub>cmax</sub> is wrong too. The Laisk intersection illustrates the offset directly: at C<sub>c</sub> = Γ* the net rate is −R<sub>d</sub> irrespective of light, but the corresponding C<sub>i</sub> is Γ* − R<sub>d</sub>/g<sub>m</sub> = C<sub>i</sub>*, so the intersection sits below Γ* by a few µbar; using C<sub>i</sub>* as Γ* biases everything downstream. The remedy is to measure g<sub>m</sub> independently (variable J, isotopes) or to fit the Ethier–Livingston form with the C<sub>c</sub>-based kinetic constants of Bernacchi 2002, remembering that V<sub>cmax</sub> and g<sub>m</sub> are strongly negatively correlated in such fits.</p></div></details>
+    <details class="q"><summary><span>6. Explain how a land-surface model solves for the leaf operating point when FvCB is coupled to a stomatal model, and define stomatal limitation. Sketch the A–C<sub>i</sub> diagram.</span></summary><div class="a"><p>The diagram has A on the y-axis and C<sub>i</sub> on the x-axis. The demand curve is the FvCB A(C<sub>i</sub>): negative at C<sub>i</sub> = 0, through Γ, rising steeply (Rubisco-limited) then bending to a plateau (RuBP-limited). The supply line comes from A = g<sub>sc</sub>(C<sub>a</sub> − C<sub>i</sub>): it starts at (C<sub>a</sub>, 0) and rises to the left with slope −g<sub>sc</sub>. The operating point is their intersection. Stomatal limitation (Farquhar &amp; Sharkey 1982) is l = (A<sub>∞</sub> − A)/A<sub>∞</sub> with A<sub>∞</sub> the demand-curve value at C<sub>i</sub> = C<sub>a</sub>: the relative loss attributable to stomata. Because g<sub>s</sub> in Ball–Berry or Medlyn depends on A, the model has three unknowns (A, C<sub>i</sub>, g<sub>s</sub>) and three equations (FvCB, diffusion, stomatal model). Substitution gives a cubic in A (Baldocchi 1994) that can be solved analytically, but most models iterate: guess C<sub>i</sub>; compute A from FvCB (co-limited); compute g<sub>s</sub> from the stomatal model using A and the leaf-surface humidity and CO₂; recompute C<sub>i</sub> = C<sub>s</sub> − 1.6A/g<sub>sw</sub>; repeat until C<sub>i</sub> converges (CLM uses a hybrid Newton–Brent method on the residual in C<sub>i</sub>). The whole loop sits inside the leaf energy balance because T<sub>leaf</sub> sets the kinetics and the vapour deficit, and inside the canopy radiative transfer because Q differs for sunlit and shaded leaves.</p></div></details>
+    <details class="q"><summary><span>7. Which FvCB parameters can be identified from a single A–C<sub>i</sub> curve, which cannot, and how would you design a measurement campaign to compare V<sub>cmax</sub> between two treatments?</span></summary><div class="a"><p>Identifiable: V<sub>cmax</sub> (from the initial, Rubisco-limited points, provided K<sub>c</sub>, K<sub>o</sub>, Γ* are fixed), J (from the plateau), and R<sub>d</sub> weakly (from the intercept; strongly correlated with V<sub>cmax</sub>). Conditionally identifiable: T<sub>p</sub>, only if the curve extends to ≥ 1,500 µbar and the plateau is flatter than A<sub>j</sub> predicts or declines; g<sub>m</sub>, only with many low-C<sub>i</sub> points and even then with wide intervals because of the V<sub>cmax</sub>–g<sub>m</sub> trade-off. Not identifiable: K<sub>c</sub>, K<sub>o</sub>, Γ*, θ, α<sub>g</sub> (fixed from literature or from separate experiments at 2% O₂ and multiple irradiances). Design: measure at a common leaf temperature and saturating light; use ≥ 12 C<sub>i</sub> steps with ≥ 4 below 250 µbar and points to 1,500–2,000 µbar; estimate R<sub>d</sub> independently (Laisk or Yin method) and fix it; use a consistent fitting procedure (Sharkey 2007 or Gu 2010 state assignment, or plantecophys) with the same constants for both treatments; treat each leaf (not each point) as the replicate; report V<sub>cmax</sub> with profile-likelihood or bootstrap confidence intervals; and compare treatments with a mixed model or t-test on leaf-level estimates, checking that the comparison is unchanged when g<sub>m</sub> is included or excluded. Report whether values are C<sub>i</sub>- or C<sub>c</sub>-based.</p></div></details>
+    <details class="q"><summary><span>8. Describe how CLM5 implements the FvCB model and give three criticisms of that implementation with the evidence behind them.</span></summary><div class="a"><p>CLM5 computes A for sunlit and shaded leaf fractions each time step. V<sub>cmax,25</sub> comes from leaf N via F<sub>LNR</sub>, F<sub>NR</sub> and a<sub>R25</sub> (or from the LUNA optimality module); J<sub>max,25</sub> = (2.59 − 0.035T<sub>g</sub>)V<sub>cmax,25</sub>; T<sub>p,25</sub> = 0.167V<sub>cmax,25</sub>; R<sub>d,25</sub> = 0.015V<sub>cmax,25</sub>. Temperature functions are peaked Arrhenius with H<sub>d</sub> = 200 and Kattge &amp; Knorr ΔS that acclimate to the 10-day running mean air temperature; K<sub>c</sub>, K<sub>o</sub>, Γ* follow Bernacchi 2001 (C<sub>c</sub> = C<sub>i</sub>). J is the non-rectangular hyperbola with θ = 0.7 and 0.85 absorptance; the three rates are co-limited by two quadratics (0.98, 0.95). Stomata follow Medlyn et al. 2011 with PFT-specific g₁, and C<sub>i</sub> is solved by hybrid Newton–Brent iteration inside the leaf energy balance. Water stress enters through plant hydraulics acting on g<sub>s</sub>. Criticisms: (i) V<sub>cmax,25</sub> values by PFT were historically too high for tropical forests and too variable within PFTs to be captured by one number (Kattge 2009; Rogers 2017), and the N-based chain assumes a fixed F<sub>LNR</sub>; (ii) acclimation is only through ΔS and the J/V ratio, so H<sub>a</sub> and R<sub>d</sub> acclimation (Kumarathunge 2019, Atkin 2015) and CO₂ acclimation are absent or imposed; (iii) C<sub>c</sub> = C<sub>i</sub> means the model's V<sub>cmax</sub> is apparent, and the fixed TPU ratio with α<sub>g</sub> = 0 misses low-temperature sink limitation and reversed CO₂ sensitivity; more generally the scheme is steady state and applies tobacco kinetic constants globally.</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Farquhar GD, von Caemmerer S, Berry JA (1980). A biochemical model of photosynthetic CO₂ assimilation in leaves of C3 species. <em>Planta</em> 149: 78–90. <a href="https://doi.org/10.1007/BF00386231">doi:10.1007/BF00386231</a><span class="why">The original. Sections on Rubisco kinetics, electron-transport accounting and the light response are still the clearest derivations.</span></li>
+      <li>von Caemmerer S, Farquhar GD (1981). Some relationships between the biochemistry of photosynthesis and the gas exchange of leaves. <em>Planta</em> 153: 376–387. <a href="https://doi.org/10.1007/BF00384257">doi:10.1007/BF00384257</a><span class="why">Links the model to measurable gas exchange; source of the standard A, E, C<sub>i</sub> calculation equations.</span></li>
+      <li>von Caemmerer S (2000). <em>Biochemical Models of Leaf Photosynthesis</em>. CSIRO Publishing, Collingwood. <span class="why">The textbook: ATP-limited forms, TPU with α, C<sub>i</sub>* and g<sub>m</sub>, parameter tables, C4 and C3–C4 extensions.</span></li>
+      <li>Collatz GJ, Ball JT, Grivet C, Berry JA (1991). Physiological and environmental regulation of stomatal conductance, photosynthesis and transpiration: a model that includes a laminar boundary layer. <em>Agricultural and Forest Meteorology</em> 54: 107–136. <a href="https://doi.org/10.1016/0168-1923(91)90002-8">doi:10.1016/0168-1923(91)90002-8</a><span class="why">The coupled FvCB–Ball–Berry–energy-balance scheme with quadratic co-limitation that JULES, SiB and CLM descend from.</span></li>
+      <li>von Caemmerer S (2013). Steady-state models of photosynthesis. <em>Plant, Cell &amp; Environment</em> 36: 1617–1630. <a href="https://doi.org/10.1111/pce.12098">doi:10.1111/pce.12098</a><span class="why">Compact modern review of the C3 and C4 models, their assumptions and open questions.</span></li>
+      <li>Farquhar GD, Sharkey TD (1982). Stomatal conductance and photosynthesis. <em>Annual Review of Plant Physiology</em> 33: 317–345. <a href="https://doi.org/10.1146/annurev.pp.33.060182.001533">doi:10.1146/annurev.pp.33.060182.001533</a><span class="why">The supply–demand diagram and the definition of stomatal limitation.</span></li>
+      <li>Harley PC, Loreto F, Di Marco G, Sharkey TD (1992). Theoretical considerations when estimating the mesophyll conductance to CO₂ flux by analysis of the response of photosynthesis to CO₂. <em>Plant Physiology</em> 98: 1429–1436. <a href="https://doi.org/10.1104/pp.98.4.1429">doi:10.1104/pp.98.4.1429</a><span class="why">The variable-J and constant-J methods for g<sub>m</sub>. Harley et al. 1992 <em>Plant Cell Environ</em> 15: 271–282 is the companion cotton modelling paper with the widely used peaked-Arrhenius parameters.</span></li>
+      <li>Bernacchi CJ, Singsaas EL, Pimentel C, Portis AR Jr, Long SP (2001). Improved temperature response functions for models of Rubisco-limited photosynthesis. <em>Plant, Cell &amp; Environment</em> 24: 253–259. <a href="https://doi.org/10.1111/j.1365-3040.2001.00668.x">doi:10.1111/j.1365-3040.2001.00668.x</a><span class="why">The C<sub>i</sub>-based K<sub>c</sub>, K<sub>o</sub>, Γ*, V<sub>cmax</sub> and R<sub>d</sub> functions used by nearly every land model.</span></li>
+      <li>Bernacchi CJ, Portis AR, Nakano H, von Caemmerer S, Long SP (2002). Temperature response of mesophyll conductance: implications for the determination of Rubisco enzyme kinetics and for limitations to photosynthesis in vivo. <em>Plant Physiology</em> 130: 1992–1998. <a href="https://doi.org/10.1104/pp.008250">doi:10.1104/pp.008250</a><span class="why">C<sub>c</sub>-based constants and the peaked temperature response of g<sub>m</sub>.</span></li>
+      <li>Medlyn BE, Dreyer E, Ellsworth D, et al. (2002). Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data. <em>Plant, Cell &amp; Environment</em> 25: 1167–1179. <a href="https://doi.org/10.1046/j.1365-3040.2002.00891.x">doi:10.1046/j.1365-3040.2002.00891.x</a><span class="why">The parameter compilation and the T<sub>opt</sub> formula; argues for fixing H<sub>d</sub> = 200 kJ mol⁻¹.</span></li>
+      <li>Bernacchi CJ, Pimentel C, Long SP (2003). In vivo temperature response functions of parameters required to model RuBP-limited photosynthesis. <em>Plant, Cell &amp; Environment</em> 26: 1419–1430. <a href="https://doi.org/10.1046/j.0016-8025.2003.01050.x">doi:10.1046/j.0016-8025.2003.01050.x</a><span class="why">Peaked functions for J<sub>max</sub> and T<sub>p</sub>, and the temperature dependence of θ.</span></li>
+      <li>Kattge J, Knorr W (2007). Temperature acclimation in a biochemical model of photosynthesis: a reanalysis of data from 36 species. <em>Plant, Cell &amp; Environment</em> 30: 1176–1190. <a href="https://doi.org/10.1111/j.1365-3040.2007.01690.x">doi:10.1111/j.1365-3040.2007.01690.x</a><span class="why">ΔS and J<sub>max</sub>/V<sub>cmax</sub> as linear functions of growth temperature; the acclimation scheme in CLM.</span></li>
+      <li>Ethier GJ, Livingston NJ (2004). On the need to incorporate sensitivity to CO₂ transfer conductance into the Farquhar–von Caemmerer–Berry leaf photosynthesis model. <em>Plant, Cell &amp; Environment</em> 27: 137–153. <a href="https://doi.org/10.1111/j.1365-3040.2004.01140.x">doi:10.1111/j.1365-3040.2004.01140.x</a><span class="why">The non-rectangular hyperbola in C<sub>i</sub> that results from finite g<sub>m</sub>, and the bias in C<sub>i</sub>-based V<sub>cmax</sub>.</span></li>
+      <li>Sharkey TD, Bernacchi CJ, Farquhar GD, Singsaas EL (2007). Fitting photosynthetic carbon dioxide response curves for C3 leaves. <em>Plant, Cell &amp; Environment</em> 30: 1035–1040. <a href="https://doi.org/10.1111/j.1365-3040.2007.01710.x">doi:10.1111/j.1365-3040.2007.01710.x</a><span class="why">The standard fitting workflow (and spreadsheet) for V<sub>cmax</sub>, J, T<sub>p</sub>, R<sub>d</sub>, g<sub>m</sub>.</span></li>
+      <li>Gu L, Pallardy SG, Tu K, Law BE, Wullschleger SD (2010). Reliable estimation of biochemical parameters from C3 leaf photosynthesis–intercellular carbon dioxide response curves. <em>Plant, Cell &amp; Environment</em> 33: 1852–1874. <a href="https://doi.org/10.1111/j.1365-3040.2010.02192.x">doi:10.1111/j.1365-3040.2010.02192.x</a><span class="why">Exhaustive limitation-state assignment and the admissibility criterion.</span></li>
+      <li>Duursma RA (2015). Plantecophys – an R package for analysing and modelling leaf gas exchange data. <em>PLoS ONE</em> 10: e0143346. <a href="https://doi.org/10.1371/journal.pone.0143346">doi:10.1371/journal.pone.0143346</a><span class="why">Open fitting code (fitaci, fitacis) and a coupled leaf model; useful for checking your own fits.</span></li>
+      <li>Kattge J, Knorr W, Raddatz T, Wirth C (2009). Quantifying photosynthetic capacity and its relationship to leaf nitrogen content for global-scale terrestrial biosphere models. <em>Global Change Biology</em> 15: 976–991. <a href="https://doi.org/10.1111/j.1365-2486.2008.01744.x">doi:10.1111/j.1365-2486.2008.01744.x</a><span class="why">PFT means of V<sub>cmax,25</sub> and V<sub>cmax</sub>–N slopes from TRY; the tropical-tree correction.</span></li>
+      <li>Walker AP, Beckerman AP, Gu L, et al. (2014). The relationship of leaf photosynthetic traits – V<sub>cmax</sub> and J<sub>max</sub> – to leaf nitrogen, leaf phosphorus, and specific leaf area: a meta-analysis and modeling study. <em>Ecology and Evolution</em> 4: 3218–3235. <a href="https://doi.org/10.1002/ece3.1173">doi:10.1002/ece3.1173</a><span class="why">N × P control of V<sub>cmax</sub> and the J<sub>max</sub>–V<sub>cmax</sub> scaling.</span></li>
+      <li>Rogers A, Medlyn BE, Dukes JS, et al. (2017). A roadmap for improving the representation of photosynthesis in Earth system models. <em>New Phytologist</em> 213: 22–42. <a href="https://doi.org/10.1111/nph.14283">doi:10.1111/nph.14283</a><span class="why">Where the FvCB implementations in ESMs differ and what the priorities for improvement are.</span></li>
+      <li>Busch FA, Sage RF, Farquhar GD (2018). Plants increase CO₂ uptake by assimilating nitrogen via the photorespiratory pathway. <em>Nature Plants</em> 4: 46–54. <a href="https://doi.org/10.1038/s41477-017-0065-x">doi:10.1038/s41477-017-0065-x</a><span class="why">Modern treatment of glycine and serine export (α<sub>G</sub>, α<sub>S</sub>) in the TPU equation.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="cam-photosynthesis.html">← CAM photosynthesis</a><a href="response-curves.html">Next: A–C<sub>i</sub>, A–Q and A–T response curves →</a></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#kinetics">Rubisco kinetics</a></li>
+      <li><a href="#limits">Three limiting rates</a></li>
+      <li><a href="#light">Light response of J</a></li>
+      <li><a href="#colimit">Co-limitation</a></li>
+      <li><a href="#temperature">Temperature functions</a></li>
+      <li><a href="#gm">Mesophyll conductance</a></li>
+      <li><a href="#rd">Respiration in the light</a></li>
+      <li><a href="#coupling">Supply and demand</a></li>
+      <li><a href="#fitting">Parameter estimation</a></li>
+      <li><a href="#scaling">Scaling and typical values</a></li>
+      <li><a href="#models">Ecosystem models</a></li>
+      <li><a href="#weaknesses">Known weaknesses</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use Bernacchi et al. 2001/2002/2003 kinetic and temperature functions with fixed θ = 0.7, α<sub>abs</sub> = 0.85 and f = 0.15; they are for intuition, not for fitting data.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var R = 0.008314; // kJ mol-1 K-1
+  var T25 = 298.15;
+  var NS = 'http://www.w3.org/2000/svg';
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  function el(name, attrs, text) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  // temperature functions
+  function arrN(Ha, Tk) { return Math.exp(Ha * (Tk - T25) / (T25 * R * Tk)); }
+  function peakN(Ha, Hd, dS, Tk) {
+    var num = 1 + Math.exp((T25 * dS - Hd) / (T25 * R));
+    var den = 1 + Math.exp((Tk * dS - Hd) / (Tk * R));
+    return arrN(Ha, Tk) * num / den;
+  }
+  function topt(Ha, Hd, dS) { if (Hd <= Ha) return NaN; return Hd / (dS - R * Math.log(Ha / (Hd - Ha))) - 273.15; }
+  // kinetic constant sets (value at 25 C, Ha)
+  var KSET = {
+    '2001': { Kc: 404.9, HKc: 79.43, Ko: 278.4, HKo: 36.38, G: 42.75, HG: 37.83 },
+    '2002': { Kc: 272.38, HKc: 80.99, Ko: 165.82, HKo: 23.72, G: 37.43, HG: 24.46 }
+  };
+  function consts(set, Tk, O) {
+    var k = KSET[set];
+    var kc = k.Kc * arrN(k.HKc, Tk), ko = k.Ko * arrN(k.HKo, Tk), gs = k.G * arrN(k.HG, Tk) * (O / 210);
+    return { kc: kc, ko: ko, gs: gs, km: kc * (1 + O / ko) };
+  }
+  function Jlight(Q, Jm, th, abs, f) {
+    var I2 = Q * abs * (1 - f) / 2;
+    if (th <= 0) return I2 * Jm / (I2 + Jm);
+    return (I2 + Jm - Math.sqrt((I2 + Jm) * (I2 + Jm) - 4 * th * I2 * Jm)) / (2 * th);
+  }
+  function bisect(f, lo, hi) {
+    var flo = f(lo), fhi = f(hi);
+    if (!(isFinite(flo) && isFinite(fhi)) || flo * fhi > 0) return null;
+    for (var i = 0; i < 70; i++) { var mid = (lo + hi) / 2, fm = f(mid); if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; } }
+    return (lo + hi) / 2;
+  }
+
+  /* ---------- generic chart ---------- */
+  function chart(svg, cfg) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var W = cfg.W, H = cfg.H, mL = cfg.mL, mR = cfg.mR, mT = cfg.mT, mB = cfg.mB;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    function sx(x) { return mL + (x - cfg.xmin) / (cfg.xmax - cfg.xmin) * pw; }
+    function sy(y) { return mT + (cfg.ymax - y) / (cfg.ymax - cfg.ymin) * ph; }
+    for (var y = Math.ceil(cfg.ymin / cfg.ystep) * cfg.ystep; y <= cfg.ymax + 1e-9; y += cfg.ystep) {
+      svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(y), y2: sy(y) }));
+      svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(y) + 4, 'text-anchor': 'end' }, cfg.yfmt ? cfg.yfmt(y) : Math.round(y * 100) / 100));
+    }
+    for (var x = cfg.xmin; x <= cfg.xmax + 1e-9; x += cfg.xstep) {
+      svg.appendChild(el('text', { 'class': 'tick', x: sx(x), y: mT + ph + 18, 'text-anchor': 'middle' }, Math.round(x * 100) / 100));
+      svg.appendChild(el('line', { 'class': 'ax', x1: sx(x), x2: sx(x), y1: mT + ph, y2: mT + ph + 4 }));
+    }
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(cfg.yzero === undefined ? 0 : cfg.yzero), y2: sy(cfg.yzero === undefined ? 0 : cfg.yzero) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 8, 'text-anchor': 'middle' }, cfg.xlabel));
+    svg.appendChild(el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, cfg.ylabel));
+    var ch = { sx: sx, sy: sy, pw: pw, ph: ph, mL: mL, mT: mT, mR: mR };
+    ch.path = function (fn, attrs, step) {
+      var d = '', pen = false, st = step || (cfg.xmax - cfg.xmin) / 150;
+      for (var x = cfg.xmin; x <= cfg.xmax + 1e-9; x += st) {
+        var v = fn(x);
+        if (!isFinite(v)) { pen = false; continue; }
+        var yv = clamp(v, cfg.ymin, cfg.ymax);
+        d += (pen ? 'L' : 'M') + sx(x).toFixed(1) + ',' + sy(yv).toFixed(1); pen = true;
+      }
+      var p = el('path', attrs); p.setAttribute('d', d); svg.appendChild(p); return p;
+    };
+    ch.labels = function (labs) { // [{t, y, col}] at right edge
+      labs = labs.filter(function (L) { return isFinite(L.y); }).map(function (L) { return { t: L.t, y: sy(clamp(L.y, cfg.ymin, cfg.ymax)), col: L.col }; });
+      labs.sort(function (p, q) { return p.y - q.y; });
+      for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+      labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    };
+    ch.hover = function (tip, html, yOf) {
+      var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+      var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+      var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+      function move(evt) {
+        var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+        var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+        var x = clamp(cfg.xmin + (p.x - mL) / pw * (cfg.xmax - cfg.xmin), cfg.xmin, cfg.xmax);
+        xh.setAttribute('x1', sx(x)); xh.setAttribute('x2', sx(x)); xh.setAttribute('visibility', 'visible');
+        var yv = yOf(x);
+        if (isFinite(yv)) { dot.setAttribute('cx', sx(x)); dot.setAttribute('cy', sy(clamp(yv, cfg.ymin, cfg.ymax))); dot.setAttribute('visibility', 'visible'); } else dot.setAttribute('visibility', 'hidden');
+        tip.innerHTML = html(x); tip.hidden = false;
+        var host = tip.parentNode.getBoundingClientRect();
+        var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+        tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+      }
+      function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+      hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+      hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+    };
+    return ch;
+  }
+  function bind(ids, fn) { ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener(id === 'fK' ? 'change' : 'input', fn); }); }
+  function outs(ids) { ids.forEach(function (id) { var o = document.getElementById(id + 'O'), i = document.getElementById(id); if (o && i) o.textContent = i.value; }); }
+  function val(id) { return +document.getElementById(id).value; }
+
+  /* ---------- Lab D: light response of J ---------- */
+  (function () {
+    var svg = document.getElementById('jSvg'), tip = document.getElementById('jTip');
+    if (!svg) return;
+    var ids = ['dJm', 'dTh', 'dAb', 'dF'];
+    function draw() {
+      outs(ids);
+      var Jm = val('dJm'), th = val('dTh'), ab = val('dAb'), f = val('dF');
+      var slope = ab * (1 - f) / 2;
+      var J = function (Q) { return Jlight(Q, Jm, th, ab, f); };
+      var J0 = function (Q) { return Jlight(Q, Jm, 0, ab, f); };
+      var ymax = Math.max(100, Math.ceil(Jm * 1.15 / 50) * 50);
+      var ch = chart(svg, { W: 640, H: 340, mL: 56, mR: 70, mT: 18, mB: 44, xmin: 0, xmax: 2500, xstep: 500, ymin: 0, ymax: ymax, ystep: ymax / 5, xlabel: 'Incident PPFD, Q (µmol photons m⁻² s⁻¹)', ylabel: 'Electron transport, J (µmol e⁻ m⁻² s⁻¹)' });
+      ch.path(function () { return Jm; }, { 'class': 'ser ref', stroke: 'var(--muted)' });
+      ch.path(function (Q) { return slope * Q; }, { 'class': 'ser ref', stroke: 'var(--muted)' });
+      ch.path(J0, { 'class': 'ser pot', stroke: 'var(--series-1)' });
+      ch.path(J, { 'class': 'ser', stroke: 'var(--series-2)' });
+      ch.labels([{ t: 'J(Q)', y: J(2500), col: 'var(--series-2)' }, { t: 'θ = 0', y: J0(2500), col: 'var(--series-1)' }, { t: 'Jmax', y: Jm, col: 'var(--muted)' }]);
+      svg.appendChild(el('text', { 'class': 'note', x: ch.sx(Math.min(2400, ymax / slope * 0.9)) - 4, y: ch.sy(Math.min(ymax * 0.9, slope * Math.min(2400, ymax / slope * 0.9))) - 6, 'text-anchor': 'end' }, 'slope = αabs(1−f)/2'));
+      var q90 = bisect(function (Q) { return J(Q) - 0.9 * Jm; }, 1, 50000);
+      document.getElementById('dSlope').textContent = fmt(slope, 3);
+      document.getElementById('dPhi').textContent = fmt(slope / 4, 3) + ' CO₂ photon⁻¹';
+      document.getElementById('dQ90').textContent = q90 === null ? '> 50 000' : fmt(q90, 0) + ' µmol m⁻² s⁻¹';
+      document.getElementById('dJq').textContent = fmt(J(500), 0) + ' · ' + fmt(J(1500), 0) + ' · ' + fmt(J(2000), 0);
+      ch.hover(tip, function (Q) { return 'Q <b>' + fmt(Q, 0) + '</b><br>J <b>' + fmt(J(Q), 1) + '</b> (' + fmt(100 * J(Q) / Jm, 0) + '% of Jmax)<br>rectangular (θ=0): <b>' + fmt(J0(Q), 1) + '</b>'; }, J);
+      var html = '<thead><tr><th class="num">Q</th><th class="num">J</th><th class="num">J / Jmax</th><th class="num">θ = 0</th></tr></thead><tbody>';
+      for (var Q = 0; Q <= 2500; Q += 250) html += '<tr><td class="num">' + Q + '</td><td class="num">' + fmt(J(Q)) + '</td><td class="num">' + fmt(J(Q) / Jm, 2) + '</td><td class="num">' + fmt(J0(Q)) + '</td></tr>';
+      document.getElementById('jTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab B: temperature functions ---------- */
+  (function () {
+    var svg = document.getElementById('tSvg'), tip = document.getElementById('tTip');
+    if (!svg) return;
+    var ids = ['tHaV', 'tHdV', 'tSV', 'tHaJ', 'tHdJ', 'tSJ'];
+    var presets = {
+      bern: [65.33, 200, 0.65, 43.9, 152.3, 0.495],
+      kk15: [71.513, 200, 0.66234, 49.884, 200, 0.64845],
+      kk25: [71.513, 200, 0.64164, 49.884, 200, 0.64095],
+      harley: [116.3, 202.9, 0.650, 79.5, 201.0, 0.650]
+    };
+    function setPreset(p) { ids.forEach(function (id, i) { document.getElementById(id).value = presets[p][i]; }); draw(); }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function (b) { b.addEventListener('click', function () { setPreset(b.getAttribute('data-preset')); }); });
+    function draw() {
+      ids.forEach(function (id) { var e = document.getElementById(id); document.getElementById(id + 'O').textContent = id === 'tSV' || id === 'tSJ' ? fmt(+e.value, 3) : e.value; });
+      var HaV = val('tHaV'), HdV = val('tHdV'), SV = val('tSV'), HaJ = val('tHaJ'), HdJ = val('tHdJ'), SJ = val('tSJ');
+      var fV = function (T) { return peakN(HaV, HdV, SV, T + 273.15); }, aV = function (T) { return arrN(HaV, T + 273.15); };
+      var fJ = function (T) { return peakN(HaJ, HdJ, SJ, T + 273.15); }, aJ = function (T) { return arrN(HaJ, T + 273.15); };
+      var ch = chart(svg, { W: 640, H: 360, mL: 56, mR: 80, mT: 18, mB: 44, xmin: 0, xmax: 50, xstep: 5, ymin: 0, ymax: 3, ystep: 0.5, xlabel: 'Leaf temperature (°C)', ylabel: 'Rate relative to 25 °C' });
+      svg.appendChild(el('line', { 'class': 'ca', x1: ch.sx(25), x2: ch.sx(25), y1: ch.mT, y2: ch.mT + ch.ph }));
+      ch.path(aV, { 'class': 'ser pot', stroke: 'var(--series-1)' });
+      ch.path(aJ, { 'class': 'ser pot', stroke: 'var(--series-2)' });
+      ch.path(fV, { 'class': 'ser', stroke: 'var(--series-1)' });
+      ch.path(fJ, { 'class': 'ser', stroke: 'var(--series-2)' });
+      var toV = topt(HaV, HdV, SV), toJ = topt(HaJ, HdJ, SJ);
+      if (isFinite(toV) && toV >= 0 && toV <= 50) { svg.appendChild(el('circle', { 'class': 'mk', cx: ch.sx(toV), cy: ch.sy(clamp(fV(toV), 0, 3)), r: 5, fill: 'var(--series-1)' })); svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(toV), y: ch.sy(clamp(fV(toV), 0, 3)) - 10, 'text-anchor': 'middle' }, 'Topt ' + fmt(toV, 1) + ' °C')); }
+      if (isFinite(toJ) && toJ >= 0 && toJ <= 50) { svg.appendChild(el('circle', { 'class': 'mk', cx: ch.sx(toJ), cy: ch.sy(clamp(fJ(toJ), 0, 3)), r: 5, fill: 'var(--series-2)' })); svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(toJ), y: ch.sy(clamp(fJ(toJ), 0, 3)) + 18, 'text-anchor': 'middle' }, 'Topt ' + fmt(toJ, 1) + ' °C')); }
+      ch.labels([{ t: 'Vcmax', y: fV(50), col: 'var(--series-1)' }, { t: 'Jmax', y: fJ(50), col: 'var(--series-2)' }, { t: 'Arrh. V', y: aV(50), col: 'var(--series-1)' }, { t: 'Arrh. J', y: aJ(50), col: 'var(--series-2)' }]);
+      document.getElementById('tToV').textContent = isFinite(toV) ? fmt(toV, 1) + ' °C' : 'none (Hd ≤ Ha)';
+      document.getElementById('tToJ').textContent = isFinite(toJ) ? fmt(toJ, 1) + ' °C' : 'none (Hd ≤ Ha)';
+      document.getElementById('t35').textContent = fmt(fV(35), 2) + ' · ' + fmt(fJ(35), 2);
+      document.getElementById('tRatio').textContent = fmt(fJ(35) / fV(35), 2);
+      ch.hover(tip, function (T) { return 'T <b>' + fmt(T, 1) + ' °C</b><br>Vcmax peaked <b>' + fmt(fV(T), 2) + '</b> · Arrhenius <b>' + fmt(aV(T), 2) + '</b><br>Jmax peaked <b>' + fmt(fJ(T), 2) + '</b> · Arrhenius <b>' + fmt(aJ(T), 2) + '</b>'; }, fV);
+      var html = '<thead><tr><th class="num">T (°C)</th><th class="num">Vcmax peaked</th><th class="num">Vcmax Arrhenius</th><th class="num">Jmax peaked</th><th class="num">Jmax Arrhenius</th></tr></thead><tbody>';
+      for (var T = 0; T <= 50; T += 5) html += '<tr><td class="num">' + T + '</td><td class="num">' + fmt(fV(T), 2) + '</td><td class="num">' + fmt(aV(T), 2) + '</td><td class="num">' + fmt(fJ(T), 2) + '</td><td class="num">' + fmt(aJ(T), 2) + '</td></tr>';
+      document.getElementById('tTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab A: full FvCB explorer with gm ---------- */
+  (function () {
+    var svg = document.getElementById('fSvg'), tip = document.getElementById('fTip');
+    if (!svg) return;
+    var ids = ['fV', 'fJ', 'fP', 'fAg', 'fR', 'fG', 'fQ', 'fT', 'fO'];
+    var axis = 'Ci';
+    var Ca = 420, Xmax = 1500;
+    document.getElementById('fAxCi').addEventListener('click', function () { axis = 'Ci'; draw(); });
+    document.getElementById('fAxCc').addEventListener('click', function () { axis = 'Cc'; draw(); });
+    document.getElementById('fInf').addEventListener('change', draw);
+    document.getElementById('fK').addEventListener('change', draw);
+    // W = A + Rd for a limitation with (a, b): W = a (Cc - G*) / (Cc + b), Cc = Ci - (W - Rd)/gm
+    function solveW(a, b, Ci, p) {
+      if (!isFinite(p.gm)) { if (b < 0 && Ci <= -b + 1e-9) return Infinity; return a * (Ci - p.gs) / (Ci + b); }
+      var S = p.gm * (Ci + b) + p.Rd + a, P = a * (p.gm * (Ci - p.gs) + p.Rd);
+      var disc = S * S - 4 * P; if (disc < 0) return Infinity;
+      var W1 = (S - Math.sqrt(disc)) / 2, W2 = (S + Math.sqrt(disc)) / 2;
+      if (b >= 0) return W1; // Rubisco- and RuBP-limited: smaller root is physical
+      // TPU-limited (pole at Cc = -b): keep the smallest root whose Cc lies above the pole
+      var best = Infinity;
+      [W1, W2].forEach(function (W) { var Cc = Ci - (W - p.Rd) / p.gm; if (Cc > -b + 1e-6 && W < best) best = W; });
+      return best;
+    }
+    function model() {
+      var T = val('fT'), Tk = T + 273.15, O = val('fO'), Q = val('fQ');
+      var set = document.getElementById('fK').value;
+      var k = consts(set, Tk, O);
+      var p = {
+        Vc: val('fV') * peakN(65.33, 200, 0.65, Tk),
+        Jm: val('fJ') * peakN(43.9, 152.3, 0.495, Tk),
+        Tp: val('fP') * peakN(53.1, 201.8, 0.65, Tk),
+        Rd: val('fR') * arrN(46.39, Tk),
+        gm: document.getElementById('fInf').checked ? Infinity : val('fG') * peakN(49.6, 437.4, 1.4, Tk),
+        ag: val('fAg'), gs: k.gs, km: k.km, kc: k.kc, ko: k.ko
+      };
+      p.J = Jlight(Q, p.Jm, 0.7, 0.85, 0.15);
+      p.bp = -(1 + 3 * p.ag) * p.gs;
+      // rates as functions of Ci (with gm) and of Cc (direct)
+      var inf = { gm: Infinity, Rd: p.Rd, gs: p.gs };
+      p.ci = {
+        Ac: function (Ci) { return solveW(p.Vc, p.km, Ci, p) - p.Rd; },
+        Aj: function (Ci) { return solveW(p.J / 4, 2 * p.gs, Ci, p) - p.Rd; },
+        Ap: function (Ci) { return solveW(3 * p.Tp, p.bp, Ci, p) - p.Rd; }
+      };
+      p.cc = {
+        Ac: function (Cc) { return solveW(p.Vc, p.km, Cc, inf) - p.Rd; },
+        Aj: function (Cc) { return solveW(p.J / 4, 2 * p.gs, Cc, inf) - p.Rd; },
+        Ap: function (Cc) { return solveW(3 * p.Tp, p.bp, Cc, inf) - p.Rd; }
+      };
+      function minOf(r) { return function (x) { return Math.min(r.Ac(x), r.Aj(x), r.Ap(x)); }; }
+      function limOf(r) { return function (x) { var a = r.Ac(x), j = r.Aj(x), q = r.Ap(x), m = Math.min(a, j, q); return m === a ? 'Rubisco (Ac)' : (m === j ? 'RuBP regeneration (Aj)' : 'TPU (Ap)'); }; }
+      p.ci.A = minOf(p.ci); p.ci.lim = limOf(p.ci); p.cc.A = minOf(p.cc); p.cc.lim = limOf(p.cc);
+      return p;
+    }
+    function draw() {
+      outs(ids);
+      document.getElementById('fAxCi').setAttribute('aria-pressed', axis === 'Ci');
+      document.getElementById('fAxCc').setAttribute('aria-pressed', axis === 'Cc');
+      var p = model();
+      var r = axis === 'Ci' ? p.ci : p.cc;
+      var ymax = Math.max(20, Math.ceil(Math.max(p.ci.A(Xmax), 3 * p.Tp, p.Vc * 0.5) * 1.15 / 10) * 10);
+      ymax = Math.min(ymax, 80);
+      var ch = chart(svg, { W: 640, H: 400, mL: 56, mR: 110, mT: 18, mB: 48, xmin: 0, xmax: Xmax, xstep: 250, ymin: -5, ymax: ymax, ystep: ymax >= 60 ? 20 : 10, xlabel: axis === 'Ci' ? 'Intercellular CO₂, Ci (µbar)' : 'Chloroplast CO₂, Cc (µbar)', ylabel: 'Net assimilation, A (µmol CO₂ m⁻² s⁻¹)' });
+      if (axis === 'Ci') { svg.appendChild(el('line', { 'class': 'ca', x1: ch.sx(Ca), x2: ch.sx(Ca), y1: ch.mT, y2: ch.mT + ch.ph })); svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(Ca) + 4, y: ch.mT + 12 }, 'Ca = 420')); }
+      if (axis === 'Ci' && isFinite(p.gm)) ch.path(p.cc.A, { 'class': 'ser ref', stroke: 'var(--muted)' });
+      ch.path(r.Ac, { 'class': 'ser pot', stroke: 'var(--series-1)' });
+      ch.path(r.Aj, { 'class': 'ser pot', stroke: 'var(--series-2)' });
+      ch.path(r.Ap, { 'class': 'ser pot', stroke: 'var(--series-3)' });
+      ch.path(r.A, { 'class': 'ser net' });
+      ch.labels([{ t: 'Ac', y: r.Ac(Xmax), col: 'var(--series-1)' }, { t: 'Aj', y: r.Aj(Xmax), col: 'var(--series-2)' }, { t: 'Ap', y: r.Ap(Xmax), col: 'var(--series-3)' }]);
+      // operating point
+      var Ciop = 0.7 * Ca, Aop = p.ci.A(Ciop), Ccop = isFinite(p.gm) ? Ciop - Aop / p.gm : Ciop;
+      var xop = axis === 'Ci' ? Ciop : Ccop;
+      svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(xop), cy: ch.sy(clamp(Aop, -5, ymax)), r: 5 }));
+      svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(xop) + 10, y: ch.sy(clamp(Aop, -5, ymax)) + 16 }, 'operating point'));
+      // crossovers in current axis variable
+      var lo = p.gs + 1;
+      var xcj = bisect(function (x) { return r.Ac(x) - r.Aj(x); }, lo, Xmax);
+      var xjp = bisect(function (x) { var d = r.Aj(x) - r.Ap(x); return isFinite(d) ? d : -1; }, lo, Xmax);
+      var gam = bisect(p.ci.A, 1, 400);
+      var cistar = isFinite(p.gm) ? p.gs - p.Rd / p.gm : p.gs;
+      [{ x: xcj, c1: 'var(--series-1)' }, { x: xjp, c1: 'var(--series-3)' }].forEach(function (m) { if (m.x !== null) svg.appendChild(el('circle', { 'class': 'mk', cx: ch.sx(m.x), cy: ch.sy(clamp(r.A(m.x), -5, ymax)), r: 4, fill: m.c1 })); });
+      var unit = axis === 'Ci' ? ' µbar Ci' : ' µbar Cc';
+      document.getElementById('fRates').textContent = fmt(p.Vc, 0) + ' · ' + fmt(p.J, 0) + ' · ' + (isFinite(p.gm) ? fmt(p.gm, 2) : '∞');
+      document.getElementById('fConst').textContent = fmt(p.gs, 1) + ' · ' + fmt(p.km, 0) + ' µbar';
+      document.getElementById('fOp').textContent = 'A = ' + fmt(Aop, 1) + ', ' + p.ci.lim(Ciop);
+      document.getElementById('fDraw').textContent = isFinite(p.gm) ? fmt(Ciop - Ccop, 0) + ' µbar (Cc = ' + fmt(Ccop, 0) + ')' : '0 (Cc = Ci)';
+      document.getElementById('fXcj').textContent = xcj === null ? 'none in range' : fmt(xcj, 0) + unit + ', A = ' + fmt(r.A(xcj), 1);
+      document.getElementById('fXjp').textContent = xjp === null ? 'none in range' : fmt(xjp, 0) + unit + ', A = ' + fmt(r.A(xjp), 1);
+      document.getElementById('fGam').textContent = (gam === null ? 'n/a' : fmt(gam, 1)) + ' · ' + fmt(cistar, 1) + ' µbar (Γ* = ' + fmt(p.gs, 1) + ')';
+      ch.hover(tip, function (x) { var cc = axis === 'Ci' && isFinite(p.gm) ? '<br>Cc <b>' + fmt(x - r.A(x) / p.gm, 0) + '</b>' : ''; return (axis === 'Ci' ? 'Ci' : 'Cc') + ' <b>' + fmt(x, 0) + '</b> µbar' + cc + '<br>A <b>' + fmt(r.A(x), 1) + '</b> · Ac <b>' + fmt(r.Ac(x), 1) + '</b> · Aj <b>' + fmt(r.Aj(x), 1) + '</b> · Ap <b>' + (isFinite(r.Ap(x)) ? fmt(r.Ap(x), 1) : '—') + '</b><br>limiting: ' + r.lim(x); }, r.A);
+      var html = '<thead><tr><th class="num">' + axis + '</th>' + (axis === 'Ci' ? '<th class="num">Cc</th>' : '') + '<th class="num">Ac</th><th class="num">Aj</th><th class="num">Ap</th><th class="num">A</th><th>Limiting</th></tr></thead><tbody>';
+      for (var x = 100; x <= Xmax; x += 100) html += '<tr><td class="num">' + x + '</td>' + (axis === 'Ci' ? '<td class="num">' + fmt(isFinite(p.gm) ? x - r.A(x) / p.gm : x, 0) + '</td>' : '') + '<td class="num">' + fmt(r.Ac(x)) + '</td><td class="num">' + fmt(r.Aj(x)) + '</td><td class="num">' + (isFinite(r.Ap(x)) ? fmt(r.Ap(x)) : '—') + '</td><td class="num">' + fmt(r.A(x)) + '</td><td>' + r.lim(x) + '</td></tr>';
+      document.getElementById('fTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+
+  /* ---------- Lab C: supply and demand ---------- */
+  (function () {
+    var svg = document.getElementById('cSvg'), tip = document.getElementById('cTip');
+    if (!svg) return;
+    var ids = ['cCa', 'cGs', 'cV', 'cJ', 'cQ'];
+    function draw() {
+      outs(ids); document.getElementById('cGsO').textContent = fmt(val('cGs'), 2);
+      var Ca = val('cCa'), gsc = val('cGs'), Vc = val('cV'), Jm = val('cJ'), Q = val('cQ');
+      var k = consts('2001', T25, 210), Rd = 0.015 * Vc, Tp = Vc / 6, J = Jlight(Q, Jm, 0.7, 0.85, 0.15);
+      var Ac = function (C) { return Vc * (C - k.gs) / (C + k.km) - Rd; };
+      var Aj = function (C) { return J * (C - k.gs) / (4 * C + 8 * k.gs) - Rd; };
+      var Ap = function () { return 3 * Tp - Rd; };
+      var A = function (C) { return Math.min(Ac(C), Aj(C), Ap()); };
+      var lim = function (C) { var a = Ac(C), j = Aj(C), q = Ap(), m = Math.min(a, j, q); return m === a ? 'Rubisco (Ac)' : (m === j ? 'RuBP regeneration (Aj)' : 'TPU (Ap)'); };
+      var sup = function (C) { return gsc * (Ca - C); };
+      var Ci = bisect(function (C) { return A(C) - sup(C); }, 0, Ca);
+      var Xmax = 1200, ymax = Math.max(20, Math.ceil(Math.max(A(Xmax), 3 * Tp) * 1.2 / 10) * 10); ymax = Math.min(ymax, 80);
+      var ch = chart(svg, { W: 640, H: 380, mL: 56, mR: 110, mT: 18, mB: 48, xmin: 0, xmax: Xmax, xstep: 200, ymin: -5, ymax: ymax, ystep: ymax >= 60 ? 20 : 10, xlabel: 'Intercellular CO₂, Ci (µbar)', ylabel: 'Net assimilation, A (µmol CO₂ m⁻² s⁻¹)' });
+      svg.appendChild(el('line', { 'class': 'ca', x1: ch.sx(Ca), x2: ch.sx(Ca), y1: ch.mT, y2: ch.mT + ch.ph }));
+      svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(Ca) + 4, y: ch.mT + 12 }, 'Ca = ' + Ca));
+      ch.path(Ac, { 'class': 'ser pot', stroke: 'var(--series-1)' });
+      ch.path(Aj, { 'class': 'ser pot', stroke: 'var(--series-2)' });
+      ch.path(A, { 'class': 'ser net' });
+      // supply line: from (Ca, 0) to where it leaves the plot box
+      var Cleft = Math.max(0, Ca - ymax / gsc);
+      svg.appendChild(el('line', { 'class': 'ser', stroke: 'var(--accent-2)', x1: ch.sx(Cleft), y1: ch.sy(sup(Cleft)), x2: ch.sx(Math.min(Ca + 5 / gsc, Xmax)), y2: ch.sy(sup(Math.min(Ca + 5 / gsc, Xmax))) }));
+      ch.labels([{ t: 'Ac', y: Ac(Xmax), col: 'var(--series-1)' }, { t: 'Aj', y: Aj(Xmax), col: 'var(--series-2)' }]);
+      svg.appendChild(el('text', { 'class': 'dl', x: ch.sx(Ca) + 8, y: ch.sy(0) + 16, fill: 'var(--accent-2)' }, 'supply line, slope −gsc'));
+      var Aop = Ci === null ? NaN : A(Ci), Ainf = A(Ca);
+      if (Ci !== null) {
+        svg.appendChild(el('circle', { 'class': 'op', cx: ch.sx(Ci), cy: ch.sy(clamp(Aop, -5, ymax)), r: 6 }));
+        svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(Ci) + 10, y: ch.sy(clamp(Aop, -5, ymax)) + 18 }, 'operating point'));
+        svg.appendChild(el('circle', { 'class': 'mk', cx: ch.sx(Ca), cy: ch.sy(clamp(Ainf, -5, ymax)), r: 4, fill: 'var(--muted)' }));
+        svg.appendChild(el('text', { 'class': 'tick', x: ch.sx(Ca) + 8, y: ch.sy(clamp(Ainf, -5, ymax)) - 6 }, 'A∞'));
+      }
+      document.getElementById('cCi').textContent = Ci === null ? 'no solution' : fmt(Ci, 0) + ' µbar';
+      document.getElementById('cRat').textContent = Ci === null ? '—' : fmt(Ci / Ca, 2);
+      document.getElementById('cA').textContent = Ci === null ? '—' : fmt(Aop, 1) + ' µmol m⁻² s⁻¹';
+      document.getElementById('cLim').textContent = Ci === null ? '—' : lim(Ci);
+      document.getElementById('cAinf').textContent = fmt(Ainf, 1) + ' µmol m⁻² s⁻¹';
+      document.getElementById('cL').textContent = Ci === null || Ainf <= 0 ? '—' : fmt(100 * (Ainf - Aop) / Ainf, 0) + '%';
+      document.getElementById('cGsw').textContent = fmt(1.6 * gsc, 2) + ' mol m⁻² s⁻¹';
+      ch.hover(tip, function (C) { return 'Ci <b>' + fmt(C, 0) + '</b> µbar<br>demand A <b>' + fmt(A(C), 1) + '</b> (' + lim(C) + ')<br>supply <b>' + fmt(sup(C), 1) + '</b>'; }, A);
+      var html = '<thead><tr><th class="num">Ci</th><th class="num">Demand A</th><th class="num">Supply</th><th>Limiting</th></tr></thead><tbody>';
+      for (var C = 0; C <= Xmax; C += 100) html += '<tr><td class="num">' + C + '</td><td class="num">' + fmt(A(C)) + '</td><td class="num">' + fmt(sup(C)) + '</td><td>' + lim(C) + '</td></tr>';
+      document.getElementById('cTable').innerHTML = html + '</tbody>';
+    }
+    bind(ids, draw); draw();
+  })();
+})();
+</script>
+</body>
+</html>
