@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comprehensive Exam Study Site</title>
+<meta name="description" content="Interactive study notes for a PhD comprehensive exam in ecosystem modelling: soil-plant-atmosphere continuum, soil biogeochemistry, and statistics/ML.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="#spac">SPAC</a><a href="#biogeo">Biogeochemistry</a><a href="#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="eyebrow">PhD comprehensive exam · Ecosystem modelling</div>
+    <h1>Read it. Check the source. Play with it.</h1>
+    <p class="lead">One page per syllabus concept. Each page gives a compact explanation at exam depth, the equations you will be expected to derive or interpret, small interactive figures to build intuition, exam-style questions with hidden answers, and the primary references.</p>
+  </div>
+
+  <div class="callout">
+    <div class="eyebrow">How to use these pages</div>
+    <p>Read a page once without touching the controls. Then move every slider and predict what will happen before you look. If a prediction is wrong, that is the gap to study. Close with the exam questions and write your answers before revealing them.</p>
+  </div>
+
+  <section class="section-block" id="spac">
+    <div class="eyebrow">Section 1</div>
+    <h2 style="margin-top:0.25rem">Soil–Plant–Atmosphere Continuum</h2>
+    <div class="cards">
+      <a class="card" href="topics/c3-photosynthesis.html"><span class="pill ready">Ready</span><span class="title">C3 photosynthesis</span><span class="desc">Light reactions, Calvin–Benson cycle, Rubisco kinetics, photorespiration, and how biochemistry becomes an A–C<sub>i</sub> curve.</span></a>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">C4 photosynthesis</span><span class="desc">CO₂ concentrating mechanism, bundle sheath, leakiness.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">CAM photosynthesis</span><span class="desc">Temporal separation, four phases, water-use efficiency.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">FvCB model</span><span class="desc">Full derivation, parameter fitting, temperature functions.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">A–C<sub>i</sub>, A–Q, A–T curves</span><span class="desc">Response curves and what each parameter controls.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Stomatal conductance models</span><span class="desc">Ball–Berry, Leuning, Medlyn.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Canopy upscaling</span><span class="desc">Big-leaf, two-leaf, multilayer, Beer's law, clumping.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Acclimation &amp; thermal response</span><span class="desc">Peaked Arrhenius, growth-temperature acclimation.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Water potential &amp; VPD</span><span class="desc">Components of Ψ, vapour pressure deficit.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Transpiration &amp; Penman–Monteith</span><span class="desc">Energy balance, aerodynamic and surface resistance.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Soil water dynamics</span><span class="desc">Saturated/unsaturated flow, Darcy, Richards' equation.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Drought response &amp; LAI</span><span class="desc">Hydraulic limits, leaf area index.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Nutrients: sources, forms, availability</span><span class="desc">Macro/micronutrients, pH and salinity effects, NUE.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Root–microbe interactions</span><span class="desc">Mycorrhizal symbiosis, biological nutrient acquisition.</span></div>
+    </div>
+  </section>
+
+  <section class="section-block" id="biogeo">
+    <div class="eyebrow">Section 2</div>
+    <h2 style="margin-top:0.25rem">Soil Biogeochemistry</h2>
+    <div class="cards">
+      <div class="card planned"><span class="pill">Planned</span><span class="title">SOM pools and fluxes</span><span class="desc">Active/slow/passive; decomposable/resistant/microbial/humus.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Microbial-explicit models</span><span class="desc">Carbon-use efficiency, necromass.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">MAOM and POM</span><span class="desc">Formation pathways, saturation behaviour.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">C:N:P stoichiometry</span><span class="desc">Plants, microbes, soil organic matter.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Nitrogen cycling</span><span class="desc">Fixation and transformations.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Phosphorus loss and retention</span><span class="desc">Sorption, occlusion, losses.</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Carbon cycle overview</span><span class="desc">Pools, fluxes, residence times.</span></div>
+    </div>
+  </section>
+
+  <section class="section-block" id="stats">
+    <div class="eyebrow">Section 3</div>
+    <h2 style="margin-top:0.25rem">Statistics, Machine Learning, and Mathematics</h2>
+    <div class="cards">
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Hypothesis testing &amp; confidence intervals</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Decision trees &amp; random forest</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Closed-form solutions &amp; convex loss</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Gradient descent</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Maximum-likelihood estimation</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Bias–variance analysis</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Logistic regression</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Newton–Raphson method</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">k-means clustering</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Gaussian mixture models</span></div>
+      <div class="card planned"><span class="pill">Planned</span><span class="title">Principal component analysis</span></div>
+    </div>
+  </section>
+</main>
+<footer class="site"><div class="wrap">Study material prepared for a PhD comprehensive exam. Interactive figures use simplified parameterisations and are for intuition, not for publication-grade modelling.</div></footer>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C3 Photosynthesis</title>
+<meta name="description" content="C3 photosynthesis at comprehensive-exam depth: light reactions, Calvin–Benson–Bassham cycle, Rubisco kinetics, photorespiration, and the path to the FvCB A–Ci curve.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="../assets/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="../assets/site.js"></script>
+<style>
+  /* page-specific */
+  .zsvg text, .cycsvg text, .aci text { font-family: var(--font-display); fill: var(--fg); }
+  .zsvg .lbl { font-size: 12px; } .zsvg .sub { font-size: 10.5px; fill: var(--muted); }
+  .zsvg .carrier { fill: var(--surface-2); stroke: var(--line); }
+  .zsvg .wire { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+  .zsvg .photon { stroke: #eda100; stroke-width: 2.5; fill: none; }
+  .zsvg .axis { stroke: var(--line); }
+  .zsvg .e { fill: var(--series-1); stroke: var(--surface); stroke-width: 2; }
+  .cycsvg .node rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; transition: fill .3s, stroke .3s; }
+  .cycsvg .node text { font-size: 13.5px; font-weight: 600; }
+  .cycsvg .node .sub { font-size: 10.5px; font-weight: 400; fill: var(--muted); }
+  .cycsvg .node.on rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+  .cycsvg .arc { fill: none; stroke: var(--line); stroke-width: 2.5; transition: stroke .3s; }
+  .cycsvg .arc.on { stroke: var(--accent); }
+  .cycsvg .io { font-size: 11.5px; fill: var(--muted); }
+  .cycsvg .io.on { fill: var(--fg); font-weight: 600; }
+  .cycsvg .ioarrow { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+  .cycsvg .ioarrow.on { stroke: var(--accent-2); stroke-width: 2.2; }
+  .cycsvg .enz { font-size: 10.5px; fill: var(--accent); font-style: italic; opacity: 0; transition: opacity .3s; }
+  .cycsvg .enz.on { opacity: 1; }
+  .counters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .counter { background: var(--surface-2); border-radius: 8px; padding: 0.4rem 0.7rem; font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); min-width: 92px; }
+  .counter b { display: block; font-family: var(--font-mono); font-size: 1.1rem; color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .split { height: 26px; border-radius: 6px; overflow: hidden; display: flex; background: var(--surface-2); border: 1px solid var(--line); }
+  .split .vc { background: var(--accent); transition: width .2s; } .split .vo { background: var(--accent-2); transition: width .2s; }
+  .splitlbl { display: flex; justify-content: space-between; font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem; }
+  .aci .gridline { stroke: var(--grid); stroke-width: 1; }
+  .aci .ax { stroke: var(--line); }
+  .aci .tick { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .aci .axlbl { font-size: 12px; fill: var(--muted); }
+  .aci .ser { fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .aci .pot { stroke-dasharray: 5 4; opacity: 0.85; }
+  .aci .net { stroke: var(--fg); stroke-width: 2.6; }
+  .aci .dl { font-size: 11.5px; font-weight: 600; }
+  .aci .op { fill: var(--fg); stroke: var(--surface); stroke-width: 2; }
+  .aci .ca { stroke: var(--muted); stroke-dasharray: 2 4; }
+  .aci .xh { stroke: var(--muted); stroke-width: 1; }
+  .chartbox { position: relative; }
+  .rxn { font-family: var(--font-mono); font-size: 0.92rem; background: var(--surface-2); padding: 0.6rem 0.9rem; border-radius: 8px; overflow-x: auto; }
+  .cmp td:first-child { font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../index.html"><svg class="leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3c-7 0-13 3-15 9-1 3 0 6 1 8 1-3 4-7 9-9-4 3-7 7-8 10 2 1 5 1 8-1 6-3 7-10 5-17z"/></svg>Comp Exam Notes</a>
+  <nav class="topnav"><a href="../index.html#spac">SPAC</a><a href="../index.html#biogeo">Biogeochemistry</a><a href="../index.html#stats">Stats &amp; ML</a><button class="btn small" id="themeBtn" type="button">Dark mode</button></nav>
+</div></header>
+
+<main class="page wrap">
+  <div class="pagehead">
+    <div class="crumbs"><a href="../index.html">Home</a> › <a href="../index.html#spac">Soil–Plant–Atmosphere Continuum</a> › C3 photosynthesis</div>
+    <div class="eyebrow">Topic 1 of the SPAC section</div>
+    <h1 style="margin-top:0.3rem">C3 Photosynthesis</h1>
+    <p class="lead">How a C3 leaf turns photons and CO₂ into triose phosphate, why Rubisco makes that process leaky, and how those two facts produce the A–C<sub>i</sub> curve that every leaf-to-ecosystem model is built on.</p>
+  </div>
+
+  <div class="layout">
+  <article class="prose">
+
+  <section id="overview">
+    <h2 style="margin-top:0.5rem">The one-paragraph version</h2>
+    <p>Light reactions in the thylakoid split water, pump protons, and deliver electrons to NADP⁺, producing <strong>ATP and NADPH</strong>. The Calvin–Benson–Bassham (CBB) cycle in the stroma spends them to fix CO₂: Rubisco adds CO₂ to the five-carbon sugar RuBP and the product immediately splits into two molecules of the <strong>three-carbon acid 3-phosphoglycerate</strong>. That first stable product is why the pathway is called "C3". Three turns of the cycle (3 CO₂, 9 ATP, 6 NADPH) export one triose phosphate and regenerate the RuBP. Rubisco also reacts with O₂, and the salvage pathway for that mistake (photorespiration) releases roughly one CO₂ for every two oxygenations. Because C3 leaves expose Rubisco directly to atmospheric CO₂ and O₂, their assimilation rate is sensitive to CO₂, O₂ and temperature in exactly the way the Farquhar–von Caemmerer–Berry (FvCB) model describes.</p>
+    <div class="callout"><div class="eyebrow">Examiner's lens</div><p>Expect to be asked to move between scales: from a reaction (Rubisco carboxylation) to a leaf-level flux (A), to a model parameter (V<sub>cmax</sub>, J<sub>max</sub>, Γ*), to an ecosystem prediction (CO₂ fertilisation, temperature response). Every section below ends with that link.</p></div>
+  </section>
+
+  <section id="pathway">
+    <h2>Where carbon enters: a diffusion plus biochemistry system</h2>
+    <p>CO₂ reaches Rubisco by diffusing from the bulk air (C<sub>a</sub>) through the boundary layer and stomata to the intercellular air spaces (C<sub>i</sub>), then dissolving and crossing the cell wall, plasma membrane, cytosol and chloroplast envelope to the stroma (C<sub>c</sub>). At steady state the same flux passes every stage:</p>
+    <div class="eq">$$A = g_{sc}\,(C_a - C_i) = g_m\,(C_i - C_c), \qquad g_{sc} = g_{sw}/1.6$$</div>
+    <p>The factor 1.6 is the ratio of the diffusivities of water vapour and CO₂ in air. Because stomatal conductance is normally measured for water vapour, this conversion appears everywhere in coupled photosynthesis–conductance models. In a C3 leaf under typical conditions C<sub>i</sub>/C<sub>a</sub> ≈ 0.7 and C<sub>c</sub> is a further 50–100 µbar lower, so Rubisco sees roughly 200–280 µbar CO₂ when the air is at 420 µbar. That gap is the root of almost every C3 property discussed on this page: Rubisco operates well below its K<sub>c</sub>, so carboxylation is substrate-limited and O₂ competes effectively.</p>
+    <p>The biochemistry sets the <em>demand</em> for CO₂ (how fast the chloroplast can use it at a given C<sub>c</sub>); diffusion sets the <em>supply</em>. The operating point is where the two agree. Keep this picture in mind for the stomatal-conductance and canopy pages: they are all about the supply side, while this page is about the demand side.</p>
+  </section>
+
+  <section id="light">
+    <h2>Light reactions: making ATP and NADPH</h2>
+    <p>Two photosystems work in series. Photosystem II (P680) uses photon energy to pull electrons out of water, releasing O₂ and protons into the lumen. The electrons pass through plastoquinone (PQ), the cytochrome b₆f complex (which pumps more protons across the membrane), and plastocyanin (PC) to photosystem I (P700). A second photon lifts them to a very negative redox potential, and ferredoxin (Fd) and ferredoxin–NADP⁺ reductase (FNR) deliver them to NADP⁺. The proton gradient drives ATP synthase. Plotted against redox potential the path draws a "Z", hence the <strong>Z-scheme</strong>.</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Z-scheme: linear electron transport</h3><button class="btn small" id="zBtn" type="button">Pause</button></div>
+      <div class="figwrap">
+      <svg class="zsvg" viewBox="0 0 760 330" role="img" aria-label="Z-scheme of linear electron transport from water through photosystem II, plastoquinone, cytochrome b6f, plastocyanin, photosystem I, ferredoxin and FNR to NADP+">
+        <line class="axis" x1="28" y1="300" x2="28" y2="20"/>
+        <polygon points="28,14 23,24 33,24" fill="var(--line)"/>
+        <text class="sub" transform="translate(14,290) rotate(-90)">redox potential: higher energy ↑ (more negative E′)</text>
+        <path id="epath" class="wire" d="M70,262 L105,70 L160,100 L220,138 L288,172 L350,198 L410,214 L452,36 L540,78 L600,100 L680,124"/>
+        <path class="photon" d="M62,150 l10,-16 l-8,0 l10,-16" /><text class="sub" x="40" y="112">hν</text>
+        <path class="photon" d="M425,120 l10,-16 l-8,0 l10,-16" /><text class="sub" x="403" y="82">hν</text>
+        <g class="carriers">
+          <rect class="carrier" x="42" y="250" width="56" height="26" rx="6"/><text class="lbl" x="70" y="267" text-anchor="middle">P680</text>
+          <text class="sub" x="70" y="296" text-anchor="middle">PSII</text>
+          <text class="sub" x="135" y="296" text-anchor="middle">2 H₂O → O₂ + 4 H⁺ + 4 e⁻</text>
+          <rect class="carrier" x="77" y="56" width="56" height="26" rx="6"/><text class="lbl" x="105" y="73" text-anchor="middle">P680*</text>
+          <rect class="carrier" x="132" y="86" width="56" height="26" rx="6"/><text class="lbl" x="160" y="103" text-anchor="middle">Pheo/Q</text>
+          <rect class="carrier" x="192" y="124" width="56" height="26" rx="6"/><text class="lbl" x="220" y="141" text-anchor="middle">PQ</text>
+          <rect class="carrier" x="256" y="158" width="64" height="26" rx="6"/><text class="lbl" x="288" y="175" text-anchor="middle">Cyt b₆f</text>
+          <text class="sub" x="288" y="205" text-anchor="middle">H⁺ pumped → ΔpH → ATP synthase</text>
+          <rect class="carrier" x="322" y="184" width="56" height="26" rx="6"/><text class="lbl" x="350" y="201" text-anchor="middle">PC</text>
+          <rect class="carrier" x="382" y="200" width="56" height="26" rx="6"/><text class="lbl" x="410" y="217" text-anchor="middle">P700</text>
+          <text class="sub" x="410" y="246" text-anchor="middle">PSI</text>
+          <rect class="carrier" x="424" y="22" width="56" height="26" rx="6"/><text class="lbl" x="452" y="39" text-anchor="middle">P700*</text>
+          <rect class="carrier" x="512" y="64" width="56" height="26" rx="6"/><text class="lbl" x="540" y="81" text-anchor="middle">Fd</text>
+          <rect class="carrier" x="572" y="86" width="56" height="26" rx="6"/><text class="lbl" x="600" y="103" text-anchor="middle">FNR</text>
+          <rect class="carrier" x="644" y="110" width="104" height="26" rx="6"/><text class="lbl" x="696" y="127" text-anchor="middle">NADP⁺ → NADPH</text>
+          <text class="sub" x="540" y="140" text-anchor="middle">cyclic flow: Fd → PQ (ATP only)</text>
+          <path class="wire" d="M540,96 C520,150 300,170 232,152" stroke-dasharray="3 4"/>
+        </g>
+        <circle class="e anim" r="5"><animateMotion dur="7s" repeatCount="indefinite" rotate="0"><mpath href="#epath"/></animateMotion></circle>
+        <circle class="e anim" r="5"><animateMotion dur="7s" begin="3.5s" repeatCount="indefinite"><mpath href="#epath"/></animateMotion></circle>
+      </svg>
+      </div>
+      <p class="small muted" style="margin:0.5rem 0 0">Each dot is one electron. Two photons (one per photosystem) move one electron from H₂O to NADP⁺; four electrons per O₂ released; two electrons per NADPH. The dashed return from Fd to PQ is cyclic electron flow, which makes ATP without NADPH.</p>
+    </div>
+
+    <h3>What the Calvin cycle demands from the light reactions</h3>
+    <p>Per CO₂ fixed the cycle consumes 3 ATP and 2 NADPH, an ATP:NADPH ratio of 1.5. Linear electron flow alone yields about 1.28 ATP per NADPH (with 4 H⁺ per ATP and 14 c-subunits in the ATP synthase ring, 12 H⁺ per 2 NADPH gives ~2.57 ATP), so some additional ATP must come from cyclic electron flow around PSI, the Q-cycle, or the water–water cycle. Photorespiration raises the ATP demand further. This balance is why the <strong>ATP-limited</strong> form of the RuBP-regeneration equation, J(C<sub>c</sub> − Γ*)/(4.5 C<sub>c</sub> + 10.5 Γ*), exists alongside the NADPH-limited form with 4 and 8.</p>
+    <p>In FvCB the variable <strong>J</strong> (electron transport rate, µmol e⁻ m⁻² s⁻¹) summarises the whole thylakoid. It saturates at J<sub>max</sub> and depends on absorbed irradiance through a non-rectangular hyperbola:</p>
+    <div class="eq">$$J = \frac{I_2 + J_{max} - \sqrt{(I_2 + J_{max})^2 - 4\theta I_2 J_{max}}}{2\theta}, \qquad I_2 = Q \cdot \alpha_{abs}\,\frac{1-f}{2}$$</div>
+    <p>with absorptance α<sub>abs</sub> ≈ 0.85, a spectral-quality correction f ≈ 0.15, the factor ½ because two photosystems share the photons, and curvature θ ≈ 0.7–0.9. The quantum requirement is therefore at least 8 photons per CO₂ (4 e⁻ × 2 photosystems), and in practice 9–10 at low O₂ and 12–14 in air once photorespiration is paid for.</p>
+  </section>
+
+  <section id="calvin">
+    <h2>The Calvin–Benson–Bassham cycle</h2>
+    <p>The cycle has three phases. <strong>Carboxylation</strong>: Rubisco (ribulose-1,5-bisphosphate carboxylase/oxygenase) adds CO₂ to RuBP; the six-carbon intermediate hydrolyses to two 3-phosphoglycerate (3-PGA). <strong>Reduction</strong>: 3-PGA is phosphorylated by ATP (PGA kinase) and reduced by NADPH (G3P dehydrogenase) to glyceraldehyde-3-phosphate (G3P, a triose phosphate). <strong>Regeneration</strong>: five of every six G3P are rearranged by aldolase, transketolase, and phosphatases into three ribulose-5-phosphate, which phosphoribulokinase (PRK) phosphorylates with ATP back to RuBP. Step through the stoichiometry:</p>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Cycle stepper (stoichiometry per 3 CO₂)</h3>
+        <div class="steps"><button class="btn small" id="cycPrev" type="button">‹ Back</button><button class="btn small primary" id="cycNext" type="button">Next step ›</button><button class="btn small" id="cycReset" type="button">Reset</button></div>
+      </div>
+      <div class="lab-grid">
+        <div class="figwrap">
+        <svg class="cycsvg" viewBox="0 0 520 340" role="img" aria-label="Diagram of the Calvin–Benson–Bassham cycle with RuBP, 3-PGA, 1,3-bisphosphoglycerate, G3P and regeneration">
+          <!-- arcs around centre (260,170) r 105 -->
+          <path id="arc1" class="arc" d="M 260 65 A 105 105 0 0 1 365 170"/>
+          <path id="arc2" class="arc" d="M 365 170 A 105 105 0 0 1 300 265"/>
+          <path id="arc3" class="arc" d="M 300 265 A 105 105 0 0 1 220 265"/>
+          <path id="arc4" class="arc" d="M 220 265 A 105 105 0 0 1 155 170"/>
+          <path id="arc5" class="arc" d="M 155 170 A 105 105 0 0 1 260 65"/>
+          <!-- arrows heads along arcs -->
+          <polygon points="365,160 371,172 359,172" fill="var(--line)"/>
+          <polygon points="205,268 215,274 215,262" fill="var(--line)"/>
+          <!-- CO2 in -->
+          <path id="io1" class="ioarrow" d="M 395 60 L 335 100"/><polygon points="332,102 342,102 336,94" fill="var(--muted)"/>
+          <text id="iot1" class="io" x="400" y="52">3 CO₂ in</text>
+          <!-- ATP in (reduction) -->
+          <path id="io2" class="ioarrow" d="M 440 240 L 372 228"/><polygon points="368,227 378,222 378,233" fill="var(--muted)"/>
+          <text id="iot2" class="io" x="420" y="262">6 ATP</text>
+          <!-- NADPH in -->
+          <path id="io3" class="ioarrow" d="M 370 318 L 300 290"/><polygon points="296,288 306,286 302,296" fill="var(--muted)"/>
+          <text id="iot3" class="io" x="372" y="332">6 NADPH</text>
+          <!-- export -->
+          <path id="io4" class="ioarrow" d="M 230 290 L 150 322"/><polygon points="146,324 156,324 152,316" fill="var(--muted)"/>
+          <text id="iot4" class="io" x="30" y="336">1 G3P out → sucrose, starch</text>
+          <!-- ATP regeneration -->
+          <path id="io5" class="ioarrow" d="M 70 110 L 150 130"/><polygon points="154,131 144,135 146,125" fill="var(--muted)"/>
+          <text id="iot5" class="io" x="30" y="100">3 ATP</text>
+          <!-- nodes -->
+          <g class="node" id="n1" transform="translate(260,62)"><rect x="-48" y="-22" width="96" height="40" rx="8"/><text y="-3" text-anchor="middle">3 RuBP</text><text class="sub" y="12" text-anchor="middle">C5 · 15 C</text></g>
+          <g class="node" id="n2" transform="translate(372,170)"><rect x="-48" y="-22" width="96" height="40" rx="8"/><text y="-3" text-anchor="middle">6 × 3-PGA</text><text class="sub" y="12" text-anchor="middle">C3 · 18 C</text></g>
+          <g class="node" id="n3" transform="translate(300,268)"><rect x="-52" y="-20" width="104" height="40" rx="8"/><text y="-3" text-anchor="middle">6 × 1,3-BPG</text><text class="sub" y="12" text-anchor="middle">phosphorylated</text></g>
+          <g class="node" id="n4" transform="translate(200,268)"><rect x="-44" y="-20" width="88" height="40" rx="8"/><text y="-3" text-anchor="middle">6 G3P</text><text class="sub" y="12" text-anchor="middle">triose-P · 18 C</text></g>
+          <g class="node" id="n5" transform="translate(150,170)"><rect x="-50" y="-22" width="100" height="44" rx="8"/><text y="-5" text-anchor="middle">5 G3P → 3 Ru5P</text><text class="sub" y="10" text-anchor="middle">15 C shuffle</text></g>
+          <!-- enzyme labels -->
+          <text id="e1" class="enz" x="300" y="100" text-anchor="middle">Rubisco</text>
+          <text id="e2" class="enz" x="372" y="228" text-anchor="end">PGA kinase</text>
+          <text id="e3" class="enz" x="250" y="300" text-anchor="middle">G3P dehydrogenase</text>
+          <text id="e4" class="enz" x="170" y="236" text-anchor="middle">aldolase · transketolase · SBPase</text>
+          <text id="e5" class="enz" x="190" y="110" text-anchor="middle">PRK</text>
+          <text x="260" y="165" text-anchor="middle" style="font-size:13px;font-weight:600">CBB cycle</text>
+          <text x="260" y="183" text-anchor="middle" class="io">stroma</text>
+        </svg>
+        </div>
+        <div>
+          <div class="stepnote"><div class="eyebrow" id="cycTitle">Start</div><p id="cycText">Three RuBP molecules are ready. All counts on this diagram are per three CO₂ fixed, which is the smallest whole-number stoichiometry that exports one triose phosphate.</p></div>
+          <div class="counters">
+            <div class="counter">CO₂ fixed<b id="cCO2">0</b></div>
+            <div class="counter">ATP used<b id="cATP">0</b></div>
+            <div class="counter">NADPH used<b id="cNADPH">0</b></div>
+            <div class="counter">G3P exported<b id="cG3P">0</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keybox"><h3>Net reaction</h3>
+      <div class="rxn">3 CO₂ + 9 ATP + 6 NADPH + 5 H₂O → 1 G3P (C₃H₇O₆P) + 9 ADP + 8 Pᵢ + 6 NADP⁺ + 3 H⁺</div>
+      <p style="margin-top:0.75rem">Per CO₂: 3 ATP and 2 NADPH, or 4 electrons through the chain (2 per NADPH). This 4 e⁻ per carboxylation is where the "4" in A<sub>j</sub> = J(C<sub>c</sub> − Γ*)/(4C<sub>c</sub> + 8Γ*) comes from. The "8" arrives in the next section.</p></div>
+    <p>Two regulatory facts worth knowing for the exam. Rubisco must be activated by carbamylation of a lysine and Mg²⁺ binding, maintained by <strong>Rubisco activase</strong>, an ATP-dependent enzyme that is itself heat-sensitive and is one explanation for the decline of photosynthesis above ~35 °C. Several cycle enzymes (G3P dehydrogenase, FBPase, SBPase, PRK) are switched on in the light by the ferredoxin–thioredoxin system, so the cycle runs only when electrons are flowing.</p>
+  </section>
+
+  <section id="rubisco">
+    <h2>Rubisco and photorespiration</h2>
+    <p>Rubisco is slow (k<sub>cat</sub> ≈ 3 s⁻¹ per active site), which is why it can be 25–50% of soluble leaf protein and a large share of leaf nitrogen. More importantly it cannot fully discriminate between CO₂ and O₂. The oxygenation of RuBP produces one 3-PGA and one <strong>2-phosphoglycolate</strong>, a two-carbon compound the cycle cannot use. The <strong>C2 (photorespiratory) pathway</strong> salvages it across three organelles: chloroplast (2-PG → glycolate), peroxisome (glycolate → glyoxylate → glycine), mitochondrion (2 glycine → serine + CO₂ + NH₃ via glycine decarboxylase), back through the peroxisome (serine → hydroxypyruvate → glycerate) to the chloroplast (glycerate → 3-PGA). Net: two oxygenations lose one carbon as CO₂, release one NH₃ that must be re-assimilated at a cost of ATP and reductant, and recover one 3-PGA.</p>
+    <p>Both reactions follow Michaelis–Menten kinetics with competitive inhibition by the other gas:</p>
+    <div class="eq">$$V_c = \frac{V_{cmax}\,C_c}{C_c + K_c\left(1 + O/K_o\right)}, \qquad \frac{V_o}{V_c} = \frac{1}{S_{c/o}}\frac{O}{C_c} = \frac{2\,\Gamma^*}{C_c}$$</div>
+    <p>S<sub>c/o</sub> is the specificity factor, a property of the enzyme (and of temperature). <strong>Γ*</strong> is the C<sub>c</sub> at which the CO₂ released by photorespiration (0.5 V<sub>o</sub>) exactly equals the CO₂ fixed (V<sub>c</sub>), so net chloroplast CO₂ exchange is zero in the absence of mitochondrial respiration: Γ* = 0.5 O / S<sub>c/o</sub>. Because 0.5 V<sub>o</sub> is released per carboxylation-unit of enzyme activity, the net carboxylation per unit V<sub>c</sub> is 1 − 0.5 V<sub>o</sub>/V<sub>c</sub> = 1 − Γ*/C<sub>c</sub>, giving the universal FvCB form</p>
+    <div class="eq">$$A = V_c\left(1 - \frac{\Gamma^*}{C_c}\right) - R_d = V_c\,\frac{C_c - \Gamma^*}{C_c} - R_d.$$</div>
+
+    <div class="lab">
+      <div class="lab-head"><h3>Rubisco explorer: how much carbon does photorespiration cost?</h3></div>
+      <div class="lab-grid">
+        <div>
+          <div class="split" aria-hidden="true"><div class="vc" id="barVc" style="width:85%"></div><div class="vo" id="barVo" style="width:15%"></div></div>
+          <div class="splitlbl"><span>■ carboxylation (V<sub>c</sub>)</span><span>oxygenation (V<sub>o</sub>) ■</span></div>
+          <dl class="readout" style="margin-top:1rem">
+            <dt>K<sub>c</sub> (µbar)</dt><dd id="rKc">405</dd>
+            <dt>K<sub>o</sub> (mbar)</dt><dd id="rKo">278</dd>
+            <dt>Γ* (µbar)</dt><dd id="rGs">42.8</dd>
+            <dt>V<sub>o</sub> / V<sub>c</sub></dt><dd id="rRatio">0.34</dd>
+            <dt>Share of reactions that are oxygenations</dt><dd id="rFrac">25%</dd>
+            <dt>CO₂ re-released per CO₂ fixed (Γ*/C<sub>c</sub>)</dt><dd id="rLoss">17%</dd>
+            <dt>Effective K<sub>m</sub> for CO₂, K<sub>c</sub>(1+O/K<sub>o</sub>) (µbar)</dt><dd id="rKeff">710</dd>
+            <dt>V<sub>c</sub> / V<sub>cmax</sub> at this C<sub>c</sub></dt><dd id="rSat">0.26</dd>
+          </dl>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="rCc"><span>Chloroplast CO₂, C<sub>c</sub> (µbar)</span><output id="rCcO">250</output></label><input type="range" id="rCc" min="40" max="1200" step="5" value="250"></div>
+          <div class="ctrl"><label for="rT"><span>Leaf temperature (°C)</span><output id="rTO">25</output></label><input type="range" id="rT" min="5" max="42" step="0.5" value="25"></div>
+          <div class="ctrl"><label for="rO"><span>O₂ partial pressure (mbar)</span><output id="rOO">210</output></label><input type="range" id="rO" min="10" max="400" step="5" value="210"></div>
+          <p class="small muted" style="margin:0">Try: C<sub>c</sub> = 250 at 25 °C (today's leaf), then 40 °C (why hot C3 leaves struggle), then O₂ = 20 mbar (the classic low-O₂ experiment), then C<sub>c</sub> = 1000 (the C4 bundle sheath or a future atmosphere). Kinetic constants from Bernacchi et al. 2001 [3]; Γ* scaled with O₂.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>Three consequences follow directly from the kinetics and the explorer. <strong>Temperature</strong> raises Γ* (S<sub>c/o</sub> declines, and CO₂ solubility falls faster than O₂ solubility), so photorespiration takes a growing share as leaves warm. <strong>Low C<sub>c</sub></strong>, as under drought when stomata close, has the same effect. <strong>High CO₂</strong> suppresses oxygenation and simultaneously relieves substrate limitation, which is why C3 plants, unlike C4 plants, respond strongly to CO₂ enrichment [10]. Walker et al. [6] estimate photorespiration costs US wheat and soybean 20–36% of potential yield, and the fraction is largest in warm, dry years.</p>
+  </section>
+
+  <section id="gasx">
+    <h2>From enzyme kinetics to an A–C<sub>i</sub> curve</h2>
+    <p>FvCB [1] states that at any moment the carboxylation rate is set by whichever of three processes is slowest. Substituting each into A = V<sub>c</sub>(1 − Γ*/C<sub>c</sub>) − R<sub>d</sub>:</p>
+    <div class="eq">$$A_c = \frac{V_{cmax}\,(C_c - \Gamma^*)}{C_c + K_c(1 + O/K_o)} - R_d \quad\text{(Rubisco-limited)}$$</div>
+    <div class="eq">$$A_j = \frac{J\,(C_c - \Gamma^*)}{4C_c + 8\Gamma^*} - R_d \quad\text{(RuBP-regeneration, i.e. electron-transport, limited)}$$</div>
+    <div class="eq">$$A_p = 3\,T_p - R_d \quad\text{(triose-phosphate-utilisation limited)}$$</div>
+<div class="eq">$$A = \min(A_c,\; A_j,\; A_p)$$</div>
+    <details class="q"><summary>Where do the 4 and the 8 come from? (derivation examiners like)</summary><div class="a">
+      <p>Each carboxylation produces two 3-PGA which need 2 NADPH = 4 e⁻ to reduce. Each oxygenation produces one 3-PGA plus one 2-PG; reducing the 3-PGA and processing the glycolate back to 3-PGA also costs the equivalent of 4 e⁻ in the original FvCB accounting. So J = 4V<sub>c</sub> + 4V<sub>o</sub>. Substitute V<sub>o</sub> = 2Γ*V<sub>c</sub>/C<sub>c</sub>: J = 4V<sub>c</sub>(1 + 2Γ*/C<sub>c</sub>), so V<sub>c</sub> = J C<sub>c</sub>/(4C<sub>c</sub> + 8Γ*). Multiply by (C<sub>c</sub> − Γ*)/C<sub>c</sub> and subtract R<sub>d</sub>. If instead ATP is limiting, 3 ATP per carboxylation and 3.5 per oxygenation give 4.5 and 10.5 (von Caemmerer 2000 [2]).</p></div></details>
+
+    <div class="lab">
+      <div class="lab-head"><h3>A–C<sub>i</sub> explorer (C<sub>c</sub> = C<sub>i</sub>, infinite g<sub>m</sub>)</h3><span class="small muted">Hover the chart to read values</span></div>
+      <div class="lab-grid">
+        <div>
+          <div class="chartbox figwrap">
+            <svg class="aci" id="aciSvg" viewBox="0 0 640 380" role="img" aria-label="Net assimilation versus intercellular CO2 showing Rubisco-limited, RuBP-regeneration-limited and TPU-limited rates"></svg>
+            <div class="chart-tip" id="aciTip" hidden></div>
+          </div>
+          <div class="legend"><span style="--c:var(--series-1)">A<sub>c</sub> Rubisco-limited</span><span style="--c:var(--series-2)">A<sub>j</sub> RuBP-regeneration-limited</span><span style="--c:var(--series-3)">A<sub>p</sub> TPU-limited</span><span style="--c:var(--fg)">A = min(A<sub>c</sub>, A<sub>j</sub>, A<sub>p</sub>)</span></div>
+          <details style="margin-top:0.6rem"><summary class="small muted" style="cursor:pointer">Table of values</summary><div class="tablewrap"><table id="aciTable"></table></div></details>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><label for="aV"><span>V<sub>cmax,25</sub> (µmol m⁻² s⁻¹)</span><output id="aVO">80</output></label><input type="range" id="aV" min="15" max="180" step="1" value="80"></div>
+          <div class="ctrl"><label for="aJ"><span>J<sub>max,25</sub> (µmol e⁻ m⁻² s⁻¹)</span><output id="aJO">140</output></label><input type="range" id="aJ" min="30" max="350" step="1" value="140"></div>
+          <div class="ctrl"><label for="aP"><span>T<sub>p,25</sub> (µmol m⁻² s⁻¹)</span><output id="aPO">9</output></label><input type="range" id="aP" min="2" max="25" step="0.5" value="9"></div>
+          <div class="ctrl"><label for="aR"><span>R<sub>d,25</sub> (µmol m⁻² s⁻¹)</span><output id="aRO">1.0</output></label><input type="range" id="aR" min="0.2" max="4" step="0.1" value="1"></div>
+          <div class="ctrl"><label for="aQ"><span>PPFD, Q (µmol photons m⁻² s⁻¹)</span><output id="aQO">1500</output></label><input type="range" id="aQ" min="0" max="2200" step="25" value="1500"></div>
+          <div class="ctrl"><label for="aT"><span>Leaf temperature (°C)</span><output id="aTO">25</output></label><input type="range" id="aT" min="8" max="42" step="0.5" value="25"></div>
+          <dl class="readout">
+            <dt>V<sub>cmax</sub>(T)</dt><dd id="oV"></dd>
+            <dt>J<sub>max</sub>(T) · J(Q)</dt><dd id="oJ"></dd>
+            <dt>Γ* · K<sub>c</sub></dt><dd id="oG"></dd>
+            <dt>A at C<sub>i</sub> = 294 µbar</dt><dd id="oA"></dd>
+            <dt>Limiting process</dt><dd id="oL"></dd>
+            <dt>A<sub>c</sub> = A<sub>j</sub> crossover</dt><dd id="oX"></dd>
+            <dt>Γ (compensation point)</dt><dd id="oC"></dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0.75rem 0 0">Temperature functions: Arrhenius for K<sub>c</sub>, K<sub>o</sub>, Γ*, R<sub>d</sub> [3]; peaked Arrhenius for V<sub>cmax</sub> and J<sub>max</sub> [3, 4], all normalised to the 25 °C values you set. J uses θ = 0.7, α<sub>abs</sub> = 0.85, f = 0.15. The TPU line ignores glycolate export (α<sub>g</sub> = 0). Suggested experiments: lower Q until A<sub>j</sub> controls the whole curve; raise T to 38 °C and watch Γ and the initial slope; set J<sub>max</sub>/V<sub>cmax</sub> to 1.6–2.0 and note where the crossover falls relative to the operating point.</p>
+    </div>
+
+    <h3>Reading a measured curve</h3>
+    <ul>
+      <li><strong>Initial slope</strong> (C<sub>i</sub> below ~250 µbar) is Rubisco-limited and gives V<sub>cmax</sub>; its curvature comes from K<sub>c</sub>(1 + O/K<sub>o</sub>).</li>
+      <li><strong>The bend and plateau</strong> are RuBP-regeneration-limited and give J (hence J<sub>max</sub> under saturating light). A flat or slightly declining tail at very high C<sub>i</sub> signals TPU limitation.</li>
+      <li><strong>x-intercept</strong> is the CO₂ compensation point Γ, which exceeds Γ* by roughly R<sub>d</sub>K<sub>c</sub>(1 + O/K<sub>o</sub>)/V<sub>cmax</sub>. Γ* itself is found from the common intersection of A–C<sub>i</sub> curves measured at several irradiances (the Laisk method).</li>
+      <li>Leaves usually operate near the A<sub>c</sub>/A<sub>j</sub> crossover at ambient CO₂, which is the co-limitation that optimal-allocation arguments predict and that gives J<sub>max</sub>/V<sub>cmax</sub> ≈ 1.6–2.0 at 25 °C [4, 11].</li>
+      <li>Fitting C3 curves properly requires deciding which points belong to which limitation and accounting for g<sub>m</sub>; see Sharkey et al. [5].</li>
+    </ul>
+  </section>
+
+  <section id="env">
+    <h2>Why C3 behaves the way it does, and where C4 and CAM step in</h2>
+    <p>Every environmental response of C3 photosynthesis traces to Rubisco being exposed to the ambient CO₂/O₂ mixture at a C<sub>c</sub> well below K<sub>c</sub>. <strong>CO₂</strong>: A rises steeply with C<sub>i</sub> and has not saturated at today's 420 µbar. <strong>Temperature</strong>: V<sub>cmax</sub> and J<sub>max</sub> rise with T, but so do K<sub>c</sub> and Γ*, so the optimum of A is cooler than the optimum of V<sub>cmax</sub> and shifts upward under elevated CO₂. <strong>Drought and high VPD</strong>: stomatal closure lowers C<sub>i</sub>, increasing the photorespiratory share and lowering A per unit Rubisco. <strong>Nitrogen</strong>: V<sub>cmax</sub> scales with leaf N because Rubisco is a large N sink, which is the basis of the N-based V<sub>cmax</sub> parameterisations in land-surface models [12].</p>
+    <p>C4 and CAM plants add a CO₂-concentrating mechanism in front of Rubisco (spatially in C4, temporally in CAM) so that C<sub>c</sub> is several thousand µbar and oxygenation nearly vanishes, at an extra cost of about 2 ATP per CO₂. The comparison table is the usual exam shorthand; the dedicated pages will go deeper.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Property</th><th>C3</th><th>C4</th><th>CAM</th></tr></thead>
+      <tbody>
+        <tr><td>First stable product</td><td>3-PGA (3 C)</td><td>Oxaloacetate → malate/aspartate (4 C)</td><td>Malate at night (4 C)</td></tr>
+        <tr><td>Primary carboxylase</td><td>Rubisco</td><td>PEP carboxylase, then Rubisco</td><td>PEPC (night), Rubisco (day)</td></tr>
+        <tr><td>CO₂ at Rubisco</td><td>~200–280 µbar</td><td>~1000–3000 µbar (bundle sheath)</td><td>High (behind closed stomata)</td></tr>
+        <tr><td>Photorespiration</td><td>Substantial, 20–30% at 25 °C</td><td>Near zero</td><td>Near zero</td></tr>
+        <tr><td>C<sub>i</sub>/C<sub>a</sub></td><td>~0.7</td><td>~0.4</td><td>Variable</td></tr>
+        <tr><td>CO₂ compensation point</td><td>40–55 µbar</td><td>0–5 µbar</td><td>Low</td></tr>
+        <tr><td>Energy cost per CO₂</td><td>3 ATP, 2 NADPH (+ photorespiration)</td><td>5 ATP, 2 NADPH</td><td>~5.5–6.5 ATP, 2 NADPH</td></tr>
+        <tr><td>Water-use efficiency</td><td>Lowest</td><td>Intermediate (~2× C3)</td><td>Highest</td></tr>
+        <tr><td>δ¹³C of leaf tissue</td><td>−22 to −35‰</td><td>−9 to −16‰</td><td>−10 to −28‰ (depends on CAM share)</td></tr>
+        <tr><td>Temperature optimum</td><td>~20–30 °C</td><td>~30–40 °C</td><td>Warm nights unfavourable</td></tr>
+        <tr><td>Share of species / productivity</td><td>~85–90% of species</td><td>~3% of species, ~25% of terrestrial GPP</td><td>~6–7% of species</td></tr>
+        <tr><td>Examples</td><td>Wheat, rice, soybean, most trees</td><td>Maize, sorghum, sugarcane, Miscanthus</td><td>Agave, cacti, pineapple</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="numbers">
+    <h2>Numbers to remember</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Quantity</th><th class="num">Value (25 °C unless noted)</th><th>Source / note</th></tr></thead>
+      <tbody>
+        <tr><td>K<sub>c</sub></td><td class="num">404.9 µbar</td><td>Bernacchi et al. 2001 [3], tobacco in vivo</td></tr>
+        <tr><td>K<sub>o</sub></td><td class="num">278.4 mbar</td><td>[3]</td></tr>
+        <tr><td>Γ*</td><td class="num">42.75 µbar</td><td>[3]; 37 µbar in von Caemmerer 2000 [2]. Doubles roughly every 15 °C.</td></tr>
+        <tr><td>Effective K<sub>m</sub>(CO₂) in air</td><td class="num">≈ 710 µbar</td><td>K<sub>c</sub>(1 + 210/K<sub>o</sub>); well above C<sub>c</sub>, hence substrate limitation</td></tr>
+        <tr><td>V<sub>cmax,25</sub> C3 crops / trees</td><td class="num">50–150 / 20–80 µmol m⁻² s⁻¹</td><td>Broad ranges; scales with leaf N</td></tr>
+        <tr><td>J<sub>max</sub>/V<sub>cmax</sub></td><td class="num">1.6–2.0</td><td>Declines with growth temperature [4, 11]</td></tr>
+        <tr><td>R<sub>d</sub>/V<sub>cmax</sub></td><td class="num">≈ 0.01–0.02</td><td>Common model assumption</td></tr>
+        <tr><td>Per CO₂ fixed</td><td class="num">3 ATP, 2 NADPH, ≥ 8 photons</td><td>Stoichiometry; measured requirement 9–10 at low O₂</td></tr>
+        <tr><td>Maximum quantum yield of CO₂</td><td class="num">≈ 0.093 (2% O₂), ≈ 0.05–0.07 (air)</td><td>Per absorbed photon</td></tr>
+        <tr><td>Rubisco k<sub>cat</sub></td><td class="num">≈ 3 s⁻¹ site⁻¹</td><td>Slow; 25–50% of soluble leaf protein</td></tr>
+        <tr><td>Photorespiratory loss</td><td class="num">≈ 25–30% of gross carboxylation</td><td>At 25 °C, 21% O₂, ambient CO₂ [6]</td></tr>
+        <tr><td>C<sub>i</sub>/C<sub>a</sub></td><td class="num">≈ 0.7</td><td>Well-watered C3; 0.4 for C4</td></tr>
+        <tr><td>Drawdown C<sub>i</sub> − C<sub>c</sub></td><td class="num">50–100 µbar</td><td>Mesophyll conductance g<sub>m</sub> ≈ 0.1–0.4 mol m⁻² s⁻¹ bar⁻¹</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section id="questions">
+    <h2>Exam-style questions</h2>
+    <p class="muted">Write your answer first, then open the model answer.</p>
+    <details class="q"><summary>1. Why is the pathway called "C3", and in what sense do C4 plants also use it?</summary><div class="a"><p>The first stable product of CO₂ fixation is the three-carbon acid 3-phosphoglycerate, formed when the six-carbon product of Rubisco carboxylation of RuBP splits in two. C4 plants first fix CO₂ into a four-carbon acid (oxaloacetate, via PEP carboxylase in the mesophyll), but that acid is only a shuttle: it is decarboxylated in the bundle sheath and the released CO₂ is refixed by Rubisco through the same Calvin–Benson–Bassham cycle. Every photosynthetic organism reduces carbon through the C3 cycle; C4 and CAM are CO₂-concentrating front ends.</p></div></details>
+    <details class="q"><summary>2. Derive the ATP and NADPH requirement per CO₂ fixed and explain why the ratio matters for the thylakoid.</summary><div class="a"><p>Per 3 CO₂: carboxylation makes 6 × 3-PGA; reduction costs 6 ATP (PGA kinase) and 6 NADPH (G3P dehydrogenase); regeneration of 3 RuBP from 5 G3P costs 3 ATP (PRK). Total 9 ATP + 6 NADPH per 3 CO₂, i.e. 3 ATP and 2 NADPH per CO₂, ratio 1.5. Linear electron flow produces roughly 1.28 ATP per NADPH (12 H⁺ per 2 NADPH with Q-cycle; 4.67 H⁺ per ATP with a 14-subunit c-ring), so the deficit is met by cyclic electron flow around PSI or other alternative sinks. Photorespiration and nitrate assimilation increase the ATP demand further, which is why ATP-limited and NADPH-limited versions of A<sub>j</sub> exist.</p></div></details>
+    <details class="q"><summary>3. Define Γ* and explain how it differs from the CO₂ compensation point Γ. How would you measure each?</summary><div class="a"><p>Γ* is the chloroplast CO₂ partial pressure at which photorespiratory CO₂ release (0.5 V<sub>o</sub>) equals carboxylation (V<sub>c</sub>), so net chloroplast CO₂ exchange is zero in the absence of mitochondrial respiration: Γ* = 0.5 O/S<sub>c/o</sub>. Γ is the C<sub>i</sub> at which net leaf CO₂ exchange is zero including R<sub>d</sub>; since R<sub>d</sub> must also be covered, Γ &gt; Γ*, approximately Γ ≈ Γ* + R<sub>d</sub>K<sub>c</sub>(1 + O/K<sub>o</sub>)/V<sub>cmax</sub>. Γ is simply the x-intercept of a measured A–C<sub>i</sub> curve. Γ* is the C<sub>i</sub> where A–C<sub>i</sub> curves measured at different irradiances intersect (Laisk method), because at that point A is independent of V<sub>c</sub>; the common A at the intersection estimates −R<sub>d</sub>. Strictly the method gives C<sub>i</sub>*, which must be corrected for g<sub>m</sub> to obtain Γ*.</p></div></details>
+    <details class="q"><summary>4. Why does rising atmospheric CO₂ stimulate C3 photosynthesis but barely affect C4?</summary><div class="a"><p>In C3 leaves C<sub>c</sub> (≈ 250 µbar) is far below the effective K<sub>m</sub> of Rubisco for CO₂ in air (≈ 700 µbar), so more CO₂ increases V<sub>c</sub> almost linearly (substrate effect) and at the same time lowers V<sub>o</sub>/V<sub>c</sub> = 2Γ*/C<sub>c</sub> (suppression of photorespiration). Both terms in A = V<sub>c</sub>(1 − Γ*/C<sub>c</sub>) − R<sub>d</sub> improve. Under Rubisco limitation the stimulation is largest; under RuBP-regeneration limitation it is smaller but still positive through the Γ* term. In C4 leaves Rubisco already operates at several thousand µbar in the bundle sheath, so it is CO₂-saturated and photorespiration is negligible; any C4 response to elevated CO₂ comes indirectly, through reduced stomatal conductance and improved water status. Long-term responses are moderated by acclimation (down-regulation of V<sub>cmax</sub>) and nutrient limitation [10].</p></div></details>
+    <details class="q"><summary>5. Explain mechanistically why photorespiration increases with temperature, and what this implies for the temperature optimum of C3 photosynthesis.</summary><div class="a"><p>Three effects act in the same direction. (i) Rubisco specificity S<sub>c/o</sub> declines with temperature, raising Γ*. (ii) The solubility of CO₂ in water falls faster than that of O₂ as temperature rises, so the dissolved O₂/CO₂ ratio at the enzyme increases. (iii) K<sub>c</sub> rises faster with temperature than K<sub>o</sub> (activation energies ≈ 79 vs 36 kJ mol⁻¹), so the effective K<sub>m</sub> for CO₂ increases and V<sub>c</sub> becomes more substrate-limited. Consequently the fraction of Rubisco reactions that are oxygenations and the CO₂ loss per carboxylation both climb. Although V<sub>cmax</sub> keeps increasing to ~40 °C, net A peaks earlier (typically 20–30 °C) and the optimum shifts to higher temperatures under elevated CO₂, which suppresses the oxygenation term. Above ~35 °C Rubisco activase and membrane integrity add further limitations.</p></div></details>
+    <details class="q"><summary>6. Sketch an A–C<sub>i</sub> curve and state what each region reveals.</summary><div class="a"><p>Starting at A = −R<sub>d</sub> near C<sub>i</sub> = 0, A rises steeply and nearly linearly through Γ (x-intercept, ~45 µbar) because carboxylation is Rubisco-limited; the slope and curvature give V<sub>cmax</sub> given K<sub>c</sub>, K<sub>o</sub>, Γ*. Around 250–400 µbar the curve bends as regeneration of RuBP (electron transport, J) becomes limiting, and A approaches a plateau whose height is set by J (so J<sub>max</sub> at saturating light). If A flattens completely or declines at very high C<sub>i</sub>, triose-phosphate utilisation limits. The ambient operating point (C<sub>i</sub> ≈ 290 µbar) typically sits near the Rubisco/RuBP transition. Switching the leaf to 2% O₂ steepens the initial slope and raises the plateau because Γ* and the competitive inhibition term shrink, which confirms the role of photorespiration.</p></div></details>
+    <details class="q"><summary>7. Trace the photorespiratory (C2) pathway and account for its carbon and nitrogen costs.</summary><div class="a"><p>Oxygenation of RuBP yields 3-PGA plus 2-phosphoglycolate. In the chloroplast 2-PG is dephosphorylated to glycolate, which moves to the peroxisome and is oxidised to glyoxylate (producing H₂O₂, removed by catalase) and transaminated to glycine. In the mitochondrion glycine decarboxylase and serine hydroxymethyltransferase convert two glycines to one serine, releasing one CO₂ and one NH₃ and reducing NAD⁺. Serine returns to the peroxisome, is converted to hydroxypyruvate then glycerate, which enters the chloroplast and is phosphorylated (1 ATP) to 3-PGA. Balance per two oxygenations: 4 carbons in two 2-PG become 3 carbons in one 3-PGA plus 1 CO₂, so 25% of the carbon diverted is lost and net fixation falls by 0.5 CO₂ per oxygenation. The NH₃ is re-assimilated by glutamine synthetase/GOGAT at 1 ATP and 1 reductant equivalent, and the glycerate kinase step costs 1 ATP, so the pathway consumes about 3.5 ATP and 2 NADPH-equivalents per oxygenation.</p></div></details>
+    <details class="q"><summary>8. A land-surface model represents C3 photosynthesis with FvCB. What are the three or four most uncertain inputs, and how do they connect to the biochemistry on this page?</summary><div class="a"><p>(i) V<sub>cmax,25</sub>: the Rubisco capacity, usually predicted from leaf N or plant functional type, with large within-type variance [12]. (ii) Its temperature response and acclimation (activation and deactivation energies, entropy term), which set how K<sub>c</sub>, Γ* and V<sub>cmax</sub> trade off as climate warms. (iii) J<sub>max</sub>/V<sub>cmax</sub> and the light-response curvature, which decide where the Rubisco/RuBP transition sits relative to the operating C<sub>i</sub>. (iv) Mesophyll conductance, which most models omit (C<sub>c</sub> = C<sub>i</sub>) and which biases fitted V<sub>cmax</sub> and the apparent temperature response. Coupled to a stomatal model, these determine simulated CO₂ fertilisation and transpiration, so their uncertainty propagates straight into projections of the land carbon sink [13].</p></div></details>
+  </section>
+
+  <section id="refs">
+    <h2>References and further reading</h2>
+    <ol class="refs">
+      <li>Farquhar GD, von Caemmerer S, Berry JA (1980). A biochemical model of photosynthetic CO₂ assimilation in leaves of C3 species. <em>Planta</em> 149: 78–90. <a href="https://doi.org/10.1007/BF00386231">doi:10.1007/BF00386231</a><span class="why">The original FvCB paper. Read sections on the Rubisco-limited and RuBP-limited rates and the electron-transport accounting.</span></li>
+      <li>von Caemmerer S (2000). <em>Biochemical Models of Leaf Photosynthesis</em>. CSIRO Publishing, Collingwood. <span class="why">The standard textbook treatment of C3, C4 and C3–C4 models, with the ATP-limited forms and parameter tables.</span></li>
+      <li>Bernacchi CJ, Singsaas EL, Pimentel C, Portis AR Jr, Long SP (2001). Improved temperature response functions for models of Rubisco-limited photosynthesis. <em>Plant, Cell &amp; Environment</em> 24: 253–259. <a href="https://doi.org/10.1111/j.1365-3040.2001.00668.x">doi:10.1111/j.1365-3040.2001.00668.x</a><span class="why">In vivo K<sub>c</sub>, K<sub>o</sub>, Γ* and their Arrhenius parameters, used by most land models and by the explorers on this page.</span></li>
+      <li>Bernacchi CJ, Pimentel C, Long SP (2003). In vivo temperature response functions of parameters required to model RuBP-limited photosynthesis. <em>Plant, Cell &amp; Environment</em> 26: 1419–1430. <a href="https://doi.org/10.1046/j.0016-8025.2003.01050.x">doi:10.1046/j.0016-8025.2003.01050.x</a><span class="why">Temperature response of J<sub>max</sub> and θ.</span></li>
+      <li>Sharkey TD, Bernacchi CJ, Farquhar GD, Singsaas EL (2007). Fitting photosynthetic carbon dioxide response curves for C3 leaves. <em>Plant, Cell &amp; Environment</em> 30: 1035–1040. <a href="https://doi.org/10.1111/j.1365-3040.2007.01710.x">doi:10.1111/j.1365-3040.2007.01710.x</a><span class="why">Practical guide to extracting V<sub>cmax</sub>, J, TPU, R<sub>d</sub> and g<sub>m</sub> from A–C<sub>i</sub> data.</span></li>
+      <li>Walker BJ, VanLoocke A, Bernacchi CJ, Ort DR (2016). The costs of photorespiration to food production now and in the future. <em>Annual Review of Plant Biology</em> 67: 107–129. <a href="https://doi.org/10.1146/annurev-arplant-043015-111709">doi:10.1146/annurev-arplant-043015-111709</a><span class="why">Quantifies photorespiratory losses at regional scale and their climate sensitivity.</span></li>
+      <li>Bauwe H, Hagemann M, Fernie AR (2010). Photorespiration: players, partners and origin. <em>Trends in Plant Science</em> 15: 330–336. <a href="https://doi.org/10.1016/j.tplants.2010.03.006">doi:10.1016/j.tplants.2010.03.006</a><span class="why">Clear account of the C2 pathway enzymes and organelles.</span></li>
+      <li>Tcherkez GGB, Farquhar GD, Andrews TJ (2006). Despite slow catalysis and confused substrate specificity, all ribulose bisphosphate carboxylases may be nearly perfectly optimized. <em>PNAS</em> 103: 7246–7251. <a href="https://doi.org/10.1073/pnas.0600605103">doi:10.1073/pnas.0600605103</a><span class="why">Why Rubisco's speed–specificity trade-off exists.</span></li>
+      <li>Sage RF (2004). The evolution of C4 photosynthesis. <em>New Phytologist</em> 161: 341–370. <a href="https://doi.org/10.1111/j.1469-8137.2004.00974.x">doi:10.1111/j.1469-8137.2004.00974.x</a><span class="why">Context for the C3 vs C4 comparison and the conditions that make C3 photorespiration costly.</span></li>
+      <li>Long SP, Ainsworth EA, Rogers A, Ort DR (2004). Rising atmospheric carbon dioxide: plants FACE the future. <em>Annual Review of Plant Biology</em> 55: 591–628. <a href="https://doi.org/10.1146/annurev.arplant.55.031903.141610">doi:10.1146/annurev.arplant.55.031903.141610</a><span class="why">CO₂ fertilisation of C3 photosynthesis and its acclimation, from FACE experiments.</span></li>
+      <li>Kattge J, Knorr W (2007). Temperature acclimation in a biochemical model of photosynthesis: a reanalysis of data from 36 species. <em>Plant, Cell &amp; Environment</em> 30: 1176–1190. <a href="https://doi.org/10.1111/j.1365-3040.2007.01690.x">doi:10.1111/j.1365-3040.2007.01690.x</a><span class="why">Peaked temperature functions and the growth-temperature dependence of J<sub>max</sub>/V<sub>cmax</sub>.</span></li>
+      <li>Rogers A, Medlyn BE, Dukes JS, et al. (2017). A roadmap for improving the representation of photosynthesis in Earth system models. <em>New Phytologist</em> 213: 22–42. <a href="https://doi.org/10.1111/nph.14283">doi:10.1111/nph.14283</a><span class="why">How V<sub>cmax</sub>, its temperature response and g<sub>m</sub> are handled (and mishandled) in global models.</span></li>
+      <li>Bernacchi CJ, Bagley JE, Serbin SP, Ruiz-Vera UM, Rosenthal DM, VanLoocke A (2013). Modelling C3 photosynthesis from the chloroplast to the ecosystem. <em>Plant, Cell &amp; Environment</em> 36: 1641–1657. <a href="https://doi.org/10.1111/pce.12118">doi:10.1111/pce.12118</a><span class="why">The scaling chain this page follows, written for modellers.</span></li>
+      <li>Taiz L, Zeiger E, Møller IM, Murphy A (2015). <em>Plant Physiology and Development</em>, 6th ed. Sinauer, Sunderland. Chapters 7–9. <span class="why">Textbook background on the light reactions, Calvin cycle and photorespiration.</span></li>
+    </ol>
+    <p class="small muted">DOI links were written from memory of the literature; please confirm each resolves before passing the list on.</p>
+  </section>
+
+  <nav class="pager"><a href="../index.html">← Back to all topics</a><span class="muted">Next: C4 photosynthesis (planned)</span></nav>
+  </article>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#overview">One-paragraph version</a></li>
+      <li><a href="#pathway">Diffusion plus biochemistry</a></li>
+      <li><a href="#light">Light reactions</a></li>
+      <li><a href="#calvin">Calvin–Benson cycle</a></li>
+      <li><a href="#rubisco">Rubisco &amp; photorespiration</a></li>
+      <li><a href="#gasx">To the A–C<sub>i</sub> curve</a></li>
+      <li><a href="#env">Environment, C4, CAM</a></li>
+      <li><a href="#numbers">Numbers</a></li>
+      <li><a href="#questions">Exam questions</a></li>
+      <li><a href="#refs">References</a></li>
+    </ol>
+  </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Interactive figures use simplified parameterisations (C<sub>c</sub> = C<sub>i</sub>, fixed θ, no α<sub>g</sub>) chosen for intuition. Constants follow Bernacchi et al. 2001/2003.</div></footer>
+
+<script>
+(function () {
+  'use strict';
+  var R = 0.008314; // kJ mol-1 K-1
+  var T25 = 298.15;
+  function arr(c, Ha, Tk) { return Math.exp(c - Ha / (R * Tk)); }
+  // Bernacchi 2001 absolute functions
+  function Kc(Tk) { return arr(38.05, 79.43, Tk); }          // ubar
+  function Ko(Tk) { return arr(20.30, 36.38, Tk); }          // mbar
+  function Gstar(Tk, O) { return arr(19.02, 37.83, Tk) * (O / 210); } // ubar, scaled with O2
+  // normalised (=1 at 25C) temperature scalars
+  function arrN(Ha, Tk) { return Math.exp(Ha * (Tk - T25) / (T25 * R * Tk)); }
+  function peakN(Ha, Hd, dS, Tk) {
+    var num = 1 + Math.exp((T25 * dS - Hd) / (T25 * R));
+    var den = 1 + Math.exp((Tk * dS - Hd) / (Tk * R));
+    return arrN(Ha, Tk) * num / den;
+  }
+  function fmt(x, d) { return Number(x).toFixed(d === undefined ? 1 : d); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Z-scheme play/pause ---------- */
+  var zsvg = document.querySelector('.zsvg'), zBtn = document.getElementById('zBtn');
+  if (zsvg && zBtn) {
+    var paused = false;
+    function setZ(p) { paused = p; if (p) zsvg.pauseAnimations(); else zsvg.unpauseAnimations(); zBtn.textContent = p ? 'Play' : 'Pause'; }
+    if (reduced) setZ(true);
+    zBtn.addEventListener('click', function () { setZ(!paused); });
+  }
+
+  /* ---------- Calvin cycle stepper ---------- */
+  var steps = [
+    { t: 'Start', x: 'Three RuBP molecules are ready. All counts on this diagram are per three CO₂ fixed, which is the smallest whole-number stoichiometry that exports one triose phosphate.', on: ['n1'], c: [0, 0, 0, 0] },
+    { t: 'Carboxylation', x: 'Rubisco adds CO₂ to each RuBP (C5). The unstable six-carbon intermediate splits into two 3-phosphoglycerate (3-PGA). Three CO₂ + 15 carbons in RuBP → 18 carbons in six 3-PGA. 3-PGA is the first stable product, hence "C3".', on: ['n1', 'n2', 'arc1', 'io1', 'iot1', 'e1'], c: [3, 0, 0, 0] },
+    { t: 'Reduction, step 1', x: 'Phosphoglycerate kinase spends one ATP per 3-PGA to make 1,3-bisphosphoglycerate. Six ATP so far. The acid is now activated for reduction.', on: ['n2', 'n3', 'arc2', 'io2', 'iot2', 'e2'], c: [3, 6, 0, 0] },
+    { t: 'Reduction, step 2', x: 'NADP-glyceraldehyde-3-phosphate dehydrogenase reduces each 1,3-BPG with one NADPH to glyceraldehyde-3-phosphate (G3P), releasing Pi. Six NADPH, twelve electrons: that is 4 e⁻ per CO₂, the "4" in the Aj equation.', on: ['n3', 'n4', 'arc3', 'io3', 'iot3', 'e3'], c: [3, 6, 6, 0] },
+    { t: 'Export', x: 'One of the six G3P (3 carbons, exactly the 3 CO₂ that entered) leaves the cycle to make sucrose in the cytosol or starch in the stroma. Triose-phosphate export must be matched by Pi return through the triose-P/Pi translocator; when it is not, the leaf is TPU-limited.', on: ['n4', 'io4', 'iot4'], c: [3, 6, 6, 1] },
+    { t: 'Regeneration', x: 'The remaining five G3P (15 carbons) are rearranged by aldolase, transketolase, FBPase and SBPase into three ribulose-5-phosphate, and phosphoribulokinase spends one ATP each to remake three RuBP. Total: 9 ATP and 6 NADPH per 3 CO₂, i.e. 3 ATP and 2 NADPH per CO₂.', on: ['n4', 'n5', 'n1', 'arc4', 'arc5', 'io5', 'iot5', 'e4', 'e5'], c: [3, 9, 6, 1] },
+    { t: 'Summary', x: '3 CO₂ + 9 ATP + 6 NADPH → 1 G3P. ATP:NADPH = 1.5, more than linear electron flow supplies, so cyclic electron flow is needed. Every oxygenation by Rubisco diverts carbon out of this loop and adds to the ATP bill, which is the subject of the next section.', on: ['n1', 'n2', 'n3', 'n4', 'n5', 'arc1', 'arc2', 'arc3', 'arc4', 'arc5'], c: [3, 9, 6, 1] }
+  ];
+  var si = 0;
+  var cycIds = ['n1', 'n2', 'n3', 'n4', 'n5', 'arc1', 'arc2', 'arc3', 'arc4', 'arc5', 'io1', 'io2', 'io3', 'io4', 'io5', 'iot1', 'iot2', 'iot3', 'iot4', 'iot5', 'e1', 'e2', 'e3', 'e4', 'e5'];
+  function showStep(i) {
+    si = Math.max(0, Math.min(steps.length - 1, i));
+    var s = steps[si];
+    cycIds.forEach(function (id) { var el = document.getElementById(id); if (el) el.classList.toggle('on', s.on.indexOf(id) >= 0); });
+    document.getElementById('cycTitle').textContent = 'Step ' + si + ' of ' + (steps.length - 1) + ' · ' + s.t;
+    document.getElementById('cycText').textContent = s.x;
+    document.getElementById('cCO2').textContent = s.c[0];
+    document.getElementById('cATP').textContent = s.c[1];
+    document.getElementById('cNADPH').textContent = s.c[2];
+    document.getElementById('cG3P').textContent = s.c[3];
+    document.getElementById('cycPrev').disabled = si === 0;
+    document.getElementById('cycNext').disabled = si === steps.length - 1;
+  }
+  document.getElementById('cycNext').addEventListener('click', function () { showStep(si + 1); });
+  document.getElementById('cycPrev').addEventListener('click', function () { showStep(si - 1); });
+  document.getElementById('cycReset').addEventListener('click', function () { showStep(0); });
+  showStep(0);
+
+  /* ---------- Rubisco explorer ---------- */
+  var rCc = document.getElementById('rCc'), rT = document.getElementById('rT'), rO = document.getElementById('rO');
+  function rub() {
+    var C = +rCc.value, T = +rT.value, O = +rO.value, Tk = T + 273.15;
+    document.getElementById('rCcO').textContent = C; document.getElementById('rTO').textContent = T; document.getElementById('rOO').textContent = O;
+    var kc = Kc(Tk), ko = Ko(Tk), gs = Gstar(Tk, O);
+    var ratio = 2 * gs / C;                 // Vo/Vc
+    var frac = ratio / (1 + ratio);         // Vo/(Vc+Vo)
+    var keff = kc * (1 + O / ko);
+    var sat = C / (C + keff);
+    document.getElementById('rKc').textContent = fmt(kc, 0);
+    document.getElementById('rKo').textContent = fmt(ko, 0);
+    document.getElementById('rGs').textContent = fmt(gs, 1);
+    document.getElementById('rRatio').textContent = fmt(ratio, 2);
+    document.getElementById('rFrac').textContent = fmt(frac * 100, 0) + '%';
+    document.getElementById('rLoss').textContent = fmt(Math.min(gs / C, 9.99) * 100, 0) + '%' + (gs >= C ? ' (net loss)' : '');
+    document.getElementById('rKeff').textContent = fmt(keff, 0);
+    document.getElementById('rSat').textContent = fmt(sat, 2);
+    document.getElementById('barVc').style.width = ((1 - frac) * 100) + '%';
+    document.getElementById('barVo').style.width = (frac * 100) + '%';
+  }
+  [rCc, rT, rO].forEach(function (el) { el.addEventListener('input', rub); });
+  rub();
+
+  /* ---------- A-Ci explorer ---------- */
+  var ids = ['aV', 'aJ', 'aP', 'aR', 'aQ', 'aT'];
+  var inp = {}; ids.forEach(function (id) { inp[id] = document.getElementById(id); });
+  var svg = document.getElementById('aciSvg'), tip = document.getElementById('aciTip');
+  var W = 640, H = 380, mL = 56, mR = 110, mT = 18, mB = 48;
+  var pw = W - mL - mR, ph = H - mT - mB;
+  var Cmax = 1500, Amin = -5, Amax = 45;
+  var O2 = 210;
+  function sx(c) { return mL + c / Cmax * pw; }
+  function sy(a) { return mT + (Amax - a) / (Amax - Amin) * ph; }
+  var model = null;
+  function compute() {
+    var V25 = +inp.aV.value, J25 = +inp.aJ.value, P25 = +inp.aP.value, Rd25 = +inp.aR.value, Q = +inp.aQ.value, T = +inp.aT.value;
+    var Tk = T + 273.15;
+    var kc = Kc(Tk), ko = Ko(Tk), gs = Gstar(Tk, O2);
+    var Vc = V25 * peakN(65.33, 200, 0.65, Tk);
+    var Jm = J25 * peakN(43.9, 152.3, 0.495, Tk);
+    var Tp = P25 * peakN(53.1, 201.8, 0.65, Tk);
+    var Rd = Rd25 * arrN(46.39, Tk);
+    var I2 = Q * 0.85 * (1 - 0.15) / 2, th = 0.7;
+    var J = (I2 + Jm - Math.sqrt((I2 + Jm) * (I2 + Jm) - 4 * th * I2 * Jm)) / (2 * th);
+    var keff = kc * (1 + O2 / ko);
+    function Ac(C) { return Vc * (C - gs) / (C + keff) - Rd; }
+    function Aj(C) { return J * (C - gs) / (4 * C + 8 * gs) - Rd; }
+    function Ap() { return 3 * Tp - Rd; }
+    function A(C) { return Math.min(Ac(C), Aj(C), Ap()); }
+    function lim(C) { var a = Ac(C), j = Aj(C), p = Ap(); var m = Math.min(a, j, p); return m === a ? 'Rubisco (Ac)' : (m === j ? 'RuBP regeneration (Aj)' : 'TPU (Ap)'); }
+    // crossover Ac = Aj : solve by bisection on [gs, Cmax]
+    var xo = null; var f = function (C) { return Ac(C) - Aj(C); };
+    if (f(gs + 1) * f(Cmax) < 0) { var lo = gs + 1, hi = Cmax; for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2; if (f(lo) * f(mid) <= 0) hi = mid; else lo = mid; } xo = (lo + hi) / 2; }
+    // compensation point: A = 0 on [0, 400]
+    var gam = null; if (A(1) < 0 && A(400) > 0) { var l2 = 1, h2 = 400; for (var k2 = 0; k2 < 60; k2++) { var m2 = (l2 + h2) / 2; if (A(l2) * A(m2) <= 0) h2 = m2; else l2 = m2; } gam = (l2 + h2) / 2; }
+    model = { Vc: Vc, Jm: Jm, J: J, Tp: Tp, Rd: Rd, kc: kc, ko: ko, gs: gs, Ac: Ac, Aj: Aj, Ap: Ap, A: A, lim: lim, xo: xo, gam: gam, T: T, Q: Q };
+    return model;
+  }
+  function path(fn) {
+    var d = ''; for (var C = 0; C <= Cmax; C += 10) { var a = Math.max(Amin, Math.min(Amax, fn(C))); d += (C === 0 ? 'M' : 'L') + sx(C).toFixed(1) + ',' + sy(a).toFixed(1); } return d;
+  }
+  function el(name, attrs, text) { var e = document.createElementNS('http://www.w3.org/2000/svg', name); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; }
+  function draw() {
+    var m = compute();
+    ids.forEach(function (id) { var o = document.getElementById(id + 'O'); if (o) o.textContent = inp[id].value; });
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    // grid + axes
+    for (var a = 0; a <= Amax; a += 10) { svg.appendChild(el('line', { 'class': 'gridline', x1: mL, x2: mL + pw, y1: sy(a), y2: sy(a) })); svg.appendChild(el('text', { 'class': 'tick', x: mL - 8, y: sy(a) + 4, 'text-anchor': 'end' }, a)); }
+    for (var c = 0; c <= Cmax; c += 250) { svg.appendChild(el('text', { 'class': 'tick', x: sx(c), y: mT + ph + 18, 'text-anchor': 'middle' }, c)); svg.appendChild(el('line', { 'class': 'ax', x1: sx(c), x2: sx(c), y1: mT + ph, y2: mT + ph + 4 })); }
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL + pw, y1: sy(0), y2: sy(0) }));
+    svg.appendChild(el('line', { 'class': 'ax', x1: mL, x2: mL, y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'axlbl', x: mL + pw / 2, y: H - 10, 'text-anchor': 'middle' }, 'Intercellular CO₂, Ci (µbar)'));
+    var yl = el('text', { 'class': 'axlbl', 'text-anchor': 'middle', transform: 'translate(14,' + (mT + ph / 2) + ') rotate(-90)' }, 'Net assimilation, A (µmol CO₂ m⁻² s⁻¹)'); svg.appendChild(yl);
+    // Ca line & operating point
+    var Ca = 420, Cop = 0.7 * Ca;
+    svg.appendChild(el('line', { 'class': 'ca', x1: sx(Ca), x2: sx(Ca), y1: mT, y2: mT + ph }));
+    svg.appendChild(el('text', { 'class': 'tick', x: sx(Ca) + 4, y: mT + 12 }, 'Ca = 420'));
+    // potential curves
+    svg.appendChild(el('path', { 'class': 'ser pot', d: path(m.Ac), stroke: 'var(--series-1)' }));
+    svg.appendChild(el('path', { 'class': 'ser pot', d: path(m.Aj), stroke: 'var(--series-2)' }));
+    svg.appendChild(el('path', { 'class': 'ser pot', d: path(function () { return m.Ap(); }), stroke: 'var(--series-3)' }));
+    svg.appendChild(el('path', { 'class': 'ser net', d: path(m.A) }));
+    // direct labels at right edge (clamped, de-overlapped)
+    var labs = [{ t: 'Ac', y: sy(Math.max(Amin, Math.min(Amax, m.Ac(Cmax)))), col: 'var(--series-1)' }, { t: 'Aj', y: sy(Math.max(Amin, Math.min(Amax, m.Aj(Cmax)))), col: 'var(--series-2)' }, { t: 'Ap', y: sy(Math.max(Amin, Math.min(Amax, m.Ap()))), col: 'var(--series-3)' }];
+    labs.sort(function (p, q) { return p.y - q.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    labs.forEach(function (L) { svg.appendChild(el('text', { 'class': 'dl', x: mL + pw + 8, y: L.y + 4, fill: L.col }, L.t)); });
+    // operating point
+    var Aop = m.A(Cop);
+    svg.appendChild(el('circle', { 'class': 'op', cx: sx(Cop), cy: sy(Aop), r: 5 }));
+    svg.appendChild(el('text', { 'class': 'tick', x: sx(Cop) + 10, y: sy(Aop) + 16 }, 'operating point, Ci = 0.7 Ca'));
+    // hover layer
+    var xh = el('line', { 'class': 'xh', x1: 0, x2: 0, y1: mT, y2: mT + ph, visibility: 'hidden' }); svg.appendChild(xh);
+    var dot = el('circle', { r: 4, fill: 'var(--fg)', visibility: 'hidden' }); svg.appendChild(dot);
+    var hit = el('rect', { x: mL, y: mT, width: pw, height: ph, fill: 'transparent' }); svg.appendChild(hit);
+    function move(evt) {
+      var pt = svg.createSVGPoint(); var e = evt.touches ? evt.touches[0] : evt; pt.x = e.clientX; pt.y = e.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var C = Math.max(0, Math.min(Cmax, (p.x - mL) / pw * Cmax));
+      var Av = m.A(C);
+      xh.setAttribute('x1', sx(C)); xh.setAttribute('x2', sx(C)); xh.setAttribute('visibility', 'visible');
+      dot.setAttribute('cx', sx(C)); dot.setAttribute('cy', sy(Math.max(Amin, Math.min(Amax, Av)))); dot.setAttribute('visibility', 'visible');
+      tip.innerHTML = 'Ci <b>' + fmt(C, 0) + '</b> µbar<br>A <b>' + fmt(Av, 1) + '</b> · Ac <b>' + fmt(m.Ac(C), 1) + '</b> · Aj <b>' + fmt(m.Aj(C), 1) + '</b> · Ap <b>' + fmt(m.Ap(), 1) + '</b><br>limiting: ' + m.lim(C);
+      tip.hidden = false;
+      var box = svg.getBoundingClientRect(); var host = tip.parentNode.getBoundingClientRect();
+      var left = e.clientX - host.left + 14; if (left + tip.offsetWidth > host.width - 4) left = e.clientX - host.left - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px'; tip.style.top = (e.clientY - host.top - 10) + 'px';
+    }
+    function leave() { xh.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; }
+    hit.addEventListener('mousemove', move); hit.addEventListener('mouseleave', leave);
+    hit.addEventListener('touchstart', move, { passive: true }); hit.addEventListener('touchmove', move, { passive: true }); hit.addEventListener('touchend', leave);
+    // readouts
+    document.getElementById('oV').textContent = fmt(m.Vc, 1);
+    document.getElementById('oJ').textContent = fmt(m.Jm, 0) + ' · ' + fmt(m.J, 0);
+    document.getElementById('oG').textContent = fmt(m.gs, 1) + ' · ' + fmt(m.kc, 0) + ' µbar';
+    document.getElementById('oA').textContent = fmt(Aop, 1) + ' µmol m⁻² s⁻¹';
+    document.getElementById('oL').textContent = m.lim(Cop);
+    document.getElementById('oX').textContent = m.xo === null ? 'none in range' : fmt(m.xo, 0) + ' µbar';
+    document.getElementById('oC').textContent = m.gam === null ? 'n/a' : fmt(m.gam, 0) + ' µbar (Γ* = ' + fmt(m.gs, 0) + ')';
+    // table
+    var tb = document.getElementById('aciTable'); var html = '<thead><tr><th class="num">Ci</th><th class="num">Ac</th><th class="num">Aj</th><th class="num">Ap</th><th class="num">A</th><th>Limiting</th></tr></thead><tbody>';
+    for (var cc = 100; cc <= Cmax; cc += 100) html += '<tr><td class="num">' + cc + '</td><td class="num">' + fmt(m.Ac(cc)) + '</td><td class="num">' + fmt(m.Aj(cc)) + '</td><td class="num">' + fmt(m.Ap()) + '</td><td class="num">' + fmt(m.A(cc)) + '</td><td>' + m.lim(cc) + '</td></tr>';
+    tb.innerHTML = html + '</tbody>';
+  }
+  ids.forEach(function (id) { inp[id].addEventListener('input', draw); });
+  draw();
+})();
+</script>
+</body>
+</html>
